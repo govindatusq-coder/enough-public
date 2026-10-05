@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "regions": [
+    "syd1"
+  ],
+  "functions": {
+    "app/api/ideas/route.ts": {
+      "maxDuration": 90
+    }
+  }
+}

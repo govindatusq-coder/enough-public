@@ -1,0 +1,6 @@
+"use client";
+import {useEffect,useState} from 'react';
+import type {Idea} from '@/lib/ideas';
+type Credit={image:string;creator:string;license:string;sourceUrl:string};
+export function useIdeaPhoto(idea:Idea){const [photo,setPhoto]=useState<(Credit&{id:number})|null>(null);useEffect(()=>{setPhoto(null);if(idea.image)return;const controller=new AbortController();void fetch('/api/idea-image?id='+idea.id,{signal:controller.signal}).then(r=>r.ok?r.json():null).then(d=>{if(d&&!controller.signal.aborted)setPhoto({...d as Credit,id:idea.id})}).catch(()=>{});return()=>controller.abort()},[idea.id]);return photo?.id===idea.id?photo:null;}
+export function IdeaPhoto({idea,photo}:{idea:Idea;photo:Credit|null}){return <div className="move-photo">{idea.image?<><img src={'/images/'+idea.image+'.webp'} alt={idea.alt}/><span className="image-note">Illustrative image</span></>:photo?<><img src={photo.image} alt={'A scene illustrating '+idea.title}/><a className="image-note photo-credit" href={photo.sourceUrl} target="_blank" rel="noreferrer">{photo.creator} · {photo.license}</a></>:<div className="idea-scene"><span>{idea.category.toUpperCase()} · {idea.source==='ai'?'AI IDEA':'FROM YOUR LIBRARY'}</span><p>{idea.usual}</p><span>A DIFFERENT WAY THROUGH</span></div>}</div>}

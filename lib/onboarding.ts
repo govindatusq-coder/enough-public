@@ -1,0 +1,3 @@
+import {completeProfile,type Profile} from './journey.ts';
+export function resumeSetup(p:Profile){if(completeProfile(p))return 0;const categories=['preferences','interests','needs','strengths'] as const;if(!p.name&&!categories.some(k=>p[k].length)&&!p.activity&&!p.rhythms.length&&!p.window)return 0;const missing=categories.findIndex(k=>p[k].length===0);return missing>=0?missing+1:5;}
+export function setupInstruction(step:number){return step>=1&&step<=4?'Choose at least one answer. “Nothing to add” is an answer too.':step===5?'Answer all three routine questions. “Every day is different”, “No regular routine” and “It varies” are valid choices.':'';}
