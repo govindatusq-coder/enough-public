@@ -20,7 +20,7 @@ export const currencies:readonly string[] = currencyCodes;
 export function completeProfile(p:Profile){return groups.every(g=>p[g.key].length>0)&&!!p.activity&&p.rhythms.length>0&&!!p.window;}
 export function localDate(date=new Date()){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
 export function receipt(entries:Entry[],period:string,currency:string,now=new Date()){
- const start=new Date(now);start.setHours(0,0,0,0);if(period==='This week')start.setDate(start.getDate()-((start.getDay()+6)%7));
+ const start=new Date(now);start.setHours(0,0,0,0);if(period==='This week')start.setDate(start.getDate()-((start.getDay()+6)%7));else if(period==='This month')start.setDate(1);else if(period==='All time')start.setTime(0);
  const rows=entries.filter(e=>e.status==='completed'&&e.completedAt&&new Date(e.completedAt)>=start&&new Date(e.completedAt)<=now);
  return {rows,money:rows.filter(e=>e.currency===currency).reduce((n,e)=>n+(e.moneyCents||0),0),outside:rows.reduce((n,e)=>n+(e.outside?e.minutes||0:0),0),connecting:rows.reduce((n,e)=>n+(e.connecting?e.minutes||0:0),0),worthwhile:rows.filter(e=>e.worthwhile).length};
 }
