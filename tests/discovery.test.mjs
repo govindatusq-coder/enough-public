@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {catalogue} from '../lib/ideas.ts';
 import {emptyState,receipt,restore} from '../lib/journey.ts';
-import {isFreeMove,filterIdeas,placeSearch} from '../lib/discovery.ts';
+import {isFreeMove,filterIdeas,placeSearch,recentMoments} from '../lib/discovery.ts';
 import {eligible,recommend} from '../lib/recommendations.ts';
 import {validateState} from '../lib/account-validation.ts';
 
@@ -40,4 +40,10 @@ test('nearby links need a town and encode the user input as a search rather than
  assert.equal(placeSearch('public parks','  '),null);
  const url=new URL(placeSearch('public parks','Ipswich & surrounds'));
  assert.equal(url.origin,'https://www.google.com');assert.equal(url.searchParams.get('query'),'public parks in Ipswich & surrounds');
+});
+
+test('recent moments follow confirmation date, not acceptance order, without mutating history',()=>{
+ const entries=[{id:'older-plan',status:'completed',completedAt:'2026-10-06T10:00:00Z'},{id:'later-plan',status:'completed',completedAt:'2026-10-05T10:00:00Z'},{id:'future',status:'completed',completedAt:'2026-10-07T10:00:00Z'},{id:'intent',status:'accepted'}];
+ assert.deepEqual(recentMoments(entries,3,new Date('2026-10-06T12:00:00Z')).map(e=>e.id),['older-plan','later-plan']);
+ assert.deepEqual(entries.map(e=>e.id),['older-plan','later-plan','future','intent']);
 });

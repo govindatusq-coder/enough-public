@@ -6,7 +6,7 @@ import {byId,type Idea} from '@/lib/ideas';
 import {groups,receipt,type State} from '@/lib/journey';
 import {formatMoney} from '@/lib/regions';
 import {moneyValue} from '@/lib/recommendations';
-import {discoveryFilters,filterIdeas,ideaCover,isFreeMove,placeSearch,type DiscoveryFilter} from '@/lib/discovery';
+import {discoveryFilters,filterIdeas,ideaCover,isFreeMove,placeSearch,recentMoments,type DiscoveryFilter} from '@/lib/discovery';
 
 export function IdeaTile({idea,state,onOpen}:{idea:Idea;state:State;onOpen:(id:number)=>void}){
  const saving=moneyValue(idea,state);
@@ -61,7 +61,7 @@ export function EnoughDashboard({state,ideas,onIdea,onBrowse,onPins,onWins,onTod
  const categoriesShown=new Set<string>();
  const varied=freePool.filter(i=>{if(categoriesShown.has(i.category))return false;categoriesShown.add(i.category);return true});
  const free=[...varied,...freePool.filter(i=>!varied.includes(i))].slice(0,4);
- const recent=state.entries.filter(e=>e.status==='completed').slice(-3).reverse();
+ const recent=recentMoments(state.entries);
  const categories=groups.filter(g=>state.profile[g.key].length>0).length;
  const planned=state.entries.filter(e=>e.status==='accepted').length;
  return <div className="enough-dashboard"><section className="dashboard-hero"><div><span className="eyebrow">{state.profile.name?`A LITTLE SPACE FOR YOU, ${state.profile.name.toUpperCase()}`:'A LITTLE SPACE FOR YOU'}</span><h1>More life.<br/><em>In the life you have.</em></h1><p>Movement inside the things you’re already doing.<br/>Something back for you.</p><div className="action-row"><button className="primary" onClick={onBrowse}>Find my next move</button><button className="secondary" onClick={()=>onToday()}>Anything different today?</button></div></div><div className="hero-note"><Wind size={28}/><p>Less sacrifice.<br/><strong>More life.</strong></p><span>No catching up. No falling behind.</span></div></section>

@@ -1,5 +1,5 @@
 import {type Idea} from './ideas.ts';
-import {type State} from './journey.ts';
+import {type State,type Entry} from './journey.ts';
 import {moneyValue} from './recommendations.ts';
 
 // These library activities require no purchase or paid entry. Existing belongings
@@ -40,4 +40,8 @@ export function ideaCover(i:Idea){
 export function placeSearch(query:string,locality:string){
   if(!locality.trim())return null;
   return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(query+' in '+locality.trim());
+}
+
+export function recentMoments(entries:Entry[],limit=3,now=new Date()){
+ return entries.filter(e=>e.status==='completed'&&e.completedAt&&Date.parse(e.completedAt)<=now.getTime()).sort((a,b)=>Date.parse(b.completedAt!)-Date.parse(a.completedAt!)).slice(0,limit);
 }
