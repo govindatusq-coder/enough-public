@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./experience.css";
+import "./moves.css";
 
 export const metadata: Metadata = {
   title: "ENOUGH — Movement that gives back",
