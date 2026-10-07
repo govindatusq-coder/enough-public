@@ -1,12 +1,12 @@
 "use client";
 import Image from 'next/image';
 import {useEffect,useState} from 'react';
-import {Bookmark,Footprints,Wallet,Clock,Search,MapPin,Leaf,Users,Heart,SlidersHorizontal,Sparkles,Check,Pin,Camera,Wind} from 'lucide-react';
+import {Bookmark,Footprints,Wallet,Clock,Search,MapPin,Leaf,Users,Heart,SlidersHorizontal,Sparkles,Check,Pin,Camera,ArrowRight} from 'lucide-react';
 import {byId,type Idea} from '@/lib/ideas';
-import {groups,receipt,type State} from '@/lib/journey';
+import {groups,receipt,completeProfile,type State} from '@/lib/journey';
 import {formatMoney} from '@/lib/regions';
 import {moneyValue} from '@/lib/recommendations';
-import {discoveryFilters,filterIdeas,ideaCover,isFreeMove,placeSearch,recentMoments,type DiscoveryFilter} from '@/lib/discovery';
+import {discoveryFilters,filterIdeas,ideaCover,isFreeMove,placeSearch,recentMoments,dashboardFilters,dashboardIdeas,dashboardGreeting,surpriseIdeaId,type DiscoveryFilter,type DashboardFilter,type DashboardOptions} from '@/lib/discovery';
 
 export function IdeaTile({idea,state,onOpen}:{idea:Idea;state:State;onOpen:(id:number)=>void}){
  const saving=moneyValue(idea,state);
@@ -55,22 +55,60 @@ export function ReturnMetrics({state,period='This month',currency=state.profile.
  return <div className="return-metrics" aria-label={'Your confirmed returns · '+period}>{metrics.map(({label,value,caption,Icon})=><div key={label}><span className="metric-icon"><Icon size={25}/></span><strong>{value}</strong><span>{label}</span><small>{caption}</small></div>)}</div>;
 }
 
-type DashboardProps={state:State;ideas:Idea[];onIdea:(id:number)=>void;onBrowse:()=>void;onPins:()=>void;onWins:()=>void;onToday:(context?:string)=>void;onPlanned:()=>void};
-export function EnoughDashboard({state,ideas,onIdea,onBrowse,onPins,onWins,onToday,onPlanned}:DashboardProps){
- const freePool=ideas.filter(isFreeMove);
- const categoriesShown=new Set<string>();
- const varied=freePool.filter(i=>{if(categoriesShown.has(i.category))return false;categoriesShown.add(i.category);return true});
- const free=[...varied,...freePool.filter(i=>!varied.includes(i))].slice(0,4);
+type DashboardProps={state:State;ideas:Idea[];now:number;onIdea:(id:number)=>void;onBrowse:()=>void;onPins:()=>void;onWins:()=>void;onToday:(context?:string)=>void;onPlanned:()=>void};
+const defaultDashboardOptions:DashboardOptions={query:'',maxMinutes:0,setting:'any',gentle:false};
+export function EnoughDashboard({state,ideas,now,onIdea,onBrowse,onPins,onWins,onToday,onPlanned}:DashboardProps){
+ const [filter,setFilter]=useState<DashboardFilter>('For you');
+ const [options,setOptions]=useState<DashboardOptions>(defaultDashboardOptions);
+ const [filtersOpen,setFiltersOpen]=useState(false),[featuredId,setFeaturedId]=useState<number|null>(null);
+ const hasFreeIdeas=ideas.some(isFreeMove);
+ const matches=dashboardIdeas(ideas,filter,state,options);
+ const featured=matches.find(i=>i.id===featuredId)||matches[0];
+ const free=(featured?[featured,...matches.filter(i=>i.id!==featured.id)]:matches).slice(0,4);
+ const saving=featured?moneyValue(featured,state):null;
+ const personalised=completeProfile(state.profile);
+ const chooseFilter=(next:DashboardFilter)=>{setFilter(next);setFeaturedId(next==='Surprise me'?surpriseIdeaId(dashboardIdeas(ideas,next,state,options),featured?.id??null):null)};
+ const clearFilters=()=>{setFilter('For you');setOptions(defaultDashboardOptions);setFeaturedId(null)};
  const recent=recentMoments(state.entries);
  const categories=groups.filter(g=>state.profile[g.key].length>0).length;
  const planned=state.entries.filter(e=>e.status==='accepted').length;
- return <div className="enough-dashboard"><section className="dashboard-hero"><div><span className="eyebrow">{state.profile.name?`A LITTLE SPACE FOR YOU, ${state.profile.name.toUpperCase()}`:'A LITTLE SPACE FOR YOU'}</span><h1>More life.<br/><em>In the life you have.</em></h1><p>Movement inside the things you’re already doing.<br/>Something back for you.</p><div className="action-row"><button className="primary" onClick={onBrowse}>Find my next move</button><button className="secondary" onClick={()=>onToday()}>Anything different today?</button></div></div><div className="hero-note"><Wind size={28}/><p>Less sacrifice.<br/><strong>More life.</strong></p><span>No catching up. No falling behind.</span></div></section>
- <section className="opportunities"><div className="section-heading"><div><span className="eyebrow">A LITTLE POSSIBILITY</span><h2>Today’s opportunities</h2></div><button className="text-button" onClick={onBrowse}>See all ideas</button></div><p className="panel-intro">Free ways to move a little more, with what you already have.</p>{free.length?<div className="discovery-grid">{free.map(i=><IdeaTile key={i.id} idea={i} state={state} onOpen={onIdea}/>)}</div>:<div className="glass-empty"><Leaf size={26}/><p>No free library ideas currently clear your needs. Your boundaries still come first.</p><button className="secondary" onClick={onPins}>Review My Pins</button></div>}</section>
+ return <div className="enough-dashboard">
+ <section className="dashboard-hero featured-hero" aria-label="An idea for your day">
+   <div className="featured-copy">
+     <p className="dashboard-greeting">{dashboardGreeting(new Date(now))}{state.profile.name.trim()?`, ${state.profile.name.trim()}`:''}.</p>
+     <h1>{featured?personalised?'I found something you might like.':'A little idea for the life you have.':'Your life comes first.'}</h1>
+     <p className="featured-subtitle">{featured?personalised?'A small idea for a better today.':'An example to explore. Your PINS make it personal.':'We can find another way when something fits your needs.'}</p>
+     {featured&&<><ul className="featured-benefits" aria-label="Estimated returns for the featured idea">
+       <li><Footprints size={23}/><span><strong>{featured.minutes} min</strong><small>Movement · estimate</small></span></li>
+       <li><Wallet size={23}/><span><strong>{formatMoney(saving?.cents||0,saving?.currency||state.profile.currency,state.profile.country)}</strong><small>MONEY SAVED · estimate</small></span></li>
+       <li>{featured.social?<Users size={23}/>:<Clock size={23}/>}<span><strong>{featured.social?'A conversation':featured.extraMin>0?`${featured.extraMin} extra min`:featured.extraMin<0?`${-featured.extraMin} min reclaimed`:'No extra time'}</strong><small>{featured.social?'Time together':'Fits with your day'}</small></span></li>
+     </ul><p className="featured-estimate-note">Idea estimates. Confirm what happened in My Wins.</p></>}
+     {!personalised&&<button className="secondary" onClick={onPins}>Make it personal</button>}
+   </div>
+   {featured?<button className="featured-idea-card" onClick={()=>onIdea(featured.id)} aria-label={'Explore featured idea: '+featured.title}>
+     <span className="featured-card-top"><Leaf size={20}/>Free activity<span className="featured-card-arrow"><ArrowRight size={22}/></span></span>
+     <span className="featured-card-content"><span className="featured-card-photo"><Image src={ideaCover(featured)} alt={featured.alt||'Illustrative scene for this idea'} fill sizes="100px"/></span><span><strong>{featured.title}</strong><small>{featured.effort==='gentle'?'A gentle way to move':'Move at your own pace'} · {featured.minutes} min</small></span></span>
+     <span className="featured-card-link">See this idea<ArrowRight size={17}/></span>
+   </button>:<div className="featured-empty"><Leaf size={28}/><h2>{hasFreeIdeas?'A different filter might fit.':'Your needs come first.'}</h2><p>{hasFreeIdeas?'Try another filter to find a free idea.':'No free library idea currently clears your needs.'}</p><button className="secondary" onClick={hasFreeIdeas?clearFilters:onPins}>{hasFreeIdeas?'Clear filters':'Review My Pins'}</button></div>}
+   <div className="dashboard-filter-row" role="toolbar" aria-label="Discover your next move">
+     <div className="discovery-filters dashboard-filters">{dashboardFilters.map(f=><button key={f} aria-pressed={filter===f} aria-controls="dashboard-discovery" onClick={()=>chooseFilter(f)}>{f==='Nearby'&&<MapPin size={16}/>} {f==='Surprise me'&&<Sparkles size={16}/>} {f}</button>)}</div>
+     <button className="dashboard-all-filters" aria-expanded={filtersOpen} aria-controls="dashboard-all-filters" onClick={()=>{setFiltersOpen(v=>!v);if(filter==='Nearby')setFilter('For you')}}><SlidersHorizontal size={18}/>All filters</button>
+   </div>
+ </section>
+ {filtersOpen&&<section id="dashboard-all-filters" className="glass-panel dashboard-filter-panel" aria-label="All idea filters">
+   <div className="section-heading"><h2>What would fit your day?</h2><button className="text-button" onClick={clearFilters}>Clear filters</button></div>
+   <label className="idea-search"><Search size={20}/><span className="sr-only">Search today’s ideas</span><input type="search" value={options.query} onChange={e=>setOptions(p=>({...p,query:e.target.value}))} placeholder="Search calls, family, music…"/></label>
+   <div className="dashboard-filter-fields"><label className="field">Activity length<select value={options.maxMinutes} onChange={e=>setOptions(p=>({...p,maxMinutes:Number(e.target.value)}))}><option value={0}>Any length</option>{[5,10,15,30].map(n=><option key={n} value={n}>Up to {n} minutes</option>)}</select></label>
+     <label className="field">Setting<select value={options.setting} onChange={e=>setOptions(p=>({...p,setting:e.target.value as DashboardOptions['setting']}))}><option value="any">Any setting</option><option value="indoors">Indoors</option><option value="outside">Outside</option></select></label>
+     <label className="check-field"><input type="checkbox" checked={options.gentle} onChange={e=>setOptions(p=>({...p,gentle:e.target.checked}))}/>Gentle movement only</label></div>
+   <p className="sample-note">Your PINS boundaries apply to every filter.</p>
+ </section>}
+ <div id="dashboard-discovery">{filter==='Nearby'?<NearbyIdeas state={state}/>:<section className="opportunities"><div className="section-heading"><div><span className="eyebrow">A LITTLE POSSIBILITY</span><h2>Today’s opportunities</h2></div><button className="text-button" onClick={onBrowse}>See all ideas</button></div><p className="panel-intro">Free ways to move a little more, with what you already have.</p><p className="dashboard-result-count" role="status">{matches.length} free {matches.length===1?'idea':'ideas'}{filter==='For you'?'':` · ${filter}`}</p>{free.length?<div className="discovery-grid">{free.map(i=><IdeaTile key={i.id} idea={i} state={state} onOpen={onIdea}/>)}</div>:<div className="glass-empty"><Leaf size={26}/><h2>{hasFreeIdeas?'Let’s try another angle.':'Your needs come first.'}</h2><p>{filter==='Save money'?'No free idea in this view has a saving recorded in your currency yet. Free activities can still give you movement, time and enjoyment.':hasFreeIdeas?'No free ideas match these filters. Try another setting or search.':'No free library ideas currently clear your needs. Your boundaries still come first.'}</p><button className="secondary" onClick={hasFreeIdeas?clearFilters:onPins}>{hasFreeIdeas?'Clear filters':'Review My Pins'}</button></div>}</section>}</div>
  <div className="dashboard-columns"><section className="glass-panel"><div className="section-heading"><div><span className="eyebrow">YOUR ENOUGH</span><h2>A closer fit for your life.</h2></div><Pin size={24}/></div><div className="pins-readiness"><div className="pins-count"><strong>{categories}<small>/ 4</small></strong><span>PINS answered</span></div><div><p>{categories===4?'Your preferences, interests, needs and strengths are the starting point.':'A few things about you help us find a better fit.'}</p><button className="secondary" onClick={onPins}>{categories===4?'Revisit My Pins':'Set up My Pins'}</button></div></div><p className="sample-note">{state.entries.some(e=>e.status==='completed')?'Your confirmed feedback helps refine later matches.':'I’m still learning. Your feedback after a move helps refine later matches.'}</p></section>
  <section className="glass-panel"><div className="section-heading"><div><span className="eyebrow">ON YOUR TERMS</span><h2>What fits today?</h2></div><SlidersHorizontal size={23}/></div><div className="context-tiles">{[{label:'Low energy',value:'Lower energy',Icon:Heart},{label:'A little less time',value:'Less time',Icon:Clock},{label:'Plans changed',value:'Plans changed',Icon:CalendarIcon},{label:'Something else',value:undefined,Icon:Sparkles}].map(({label,value,Icon})=><button key={label} onClick={()=>onToday(value)}><Icon size={20}/>{label}</button>)}</div>{planned>0?<button className="text-button planned-link" onClick={onPlanned}>Check in on {planned===1?'your planned move':`your ${planned} planned moves`}</button>:<p className="sample-note">Take what fits. There’s nothing to make up.</p>}</section></div>
  <section className="glass-panel recent-panel"><div className="section-heading"><div><span className="eyebrow">YOUR LIFE LATELY</span><h2>Little moments. Yours to keep.</h2></div><button className="text-button" onClick={onWins}>My Wins</button></div>{recent.length?<div className="recent-moments">{recent.map(e=>{const i=byId(e.ideaId,state.generated);return <button key={e.id} onClick={onWins}><div className="recent-photo"><Image src={i?ideaCover(i):'/images/welcome-coast.webp'} alt="Illustrative activity scene" fill sizes="(max-width: 600px) 80vw, 30vw"/></div><span>{i?.title||'Your confirmed move'}</span><small>{e.minutes||0} min · {e.worthwhile?'Worthwhile for you':'Your experience'} · {new Date(e.completedAt!).toLocaleDateString()}</small></button>})}</div>:<div className="moments-empty"><Camera size={30}/><p>A walk, a conversation, a useful pause.<br/>Your confirmed moments will appear here.</p><button className="secondary" onClick={onBrowse}>Find an idea</button></div>}</section>
  <section className="glass-panel"><div className="section-heading"><div><span className="eyebrow">WHAT CAME BACK</span><h2>Your returns this month.</h2></div><button className="text-button" onClick={onWins}>See My Wins</button></div><ReturnMetrics state={state}/><p className="sample-note">Only outcomes confirmed by you. Money totals stay in {state.profile.currency}; different currencies stay separate.</p></section>
- <NearbyIdeas state={state}/></div>;
+ {filter!=='Nearby'&&<NearbyIdeas state={state}/>}</div>;
 }
 function CalendarIcon(){return <Clock size={20}/>;}
 

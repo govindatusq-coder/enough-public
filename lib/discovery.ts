@@ -15,6 +15,26 @@ const freeKeys = new Set([
 export function isFreeMove(idea:Idea){return idea.source==='library'&&freeKeys.has(idea.key);}
 export const discoveryFilters = ['For you','Free','Quick wins','Low energy','Outside','With family','Save money'] as const;
 export type DiscoveryFilter = typeof discoveryFilters[number];
+export const dashboardFilters = ['For you','Nearby','Save money','With family','Quick wins','Low energy','Surprise me'] as const;
+export type DashboardFilter = typeof dashboardFilters[number];
+export type DashboardOptions = {query:string;maxMinutes:number;setting:'any'|'indoors'|'outside';gentle:boolean};
+export function dashboardGreeting(now:Date){const hour=now.getHours();return hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';}
+// Narrow the already eligible feed; dashboard controls can never broaden PINS boundaries.
+export function dashboardIdeas(ideas:Idea[],filter:DashboardFilter,state:State,options:DashboardOptions){
+ const selected=filter==='Nearby'||filter==='Surprise me'?'For you':filter;
+ const pool=filterIdeas(ideas.filter(isFreeMove),selected,options.query,state).filter(i=>
+   (!options.maxMinutes||i.minutes<=options.maxMinutes)&&
+   (options.setting==='any'||i.outdoor===(options.setting==='outside'))&&
+   (!options.gentle||i.effort==='gentle'));
+ const categories=new Set<string>();
+ const varied=pool.filter(i=>{if(categories.has(i.category))return false;categories.add(i.category);return true});
+ return [...varied,...pool.filter(i=>!varied.includes(i))];
+}
+export function surpriseIdeaId(ideas:Idea[],currentId:number|null,random=Math.random()){
+ const alternatives=ideas.filter(i=>i.id!==currentId);
+ if(!alternatives.length)return ideas[0]?.id??null;
+ return alternatives[Math.min(alternatives.length-1,Math.max(0,Math.floor(random*alternatives.length)))].id;
+}
 export function filterIdeas(ideas:Idea[],filter:DiscoveryFilter,query:string,state:State){
   const terms=query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
   return ideas.filter(i=>{
