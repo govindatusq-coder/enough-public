@@ -1,9 +1,9 @@
 import {ArrowRight, Zap, Heart, Leaf, Footprints, Wallet, Clock, Search, List, Star, Check, X} from 'lucide-react';
 import s from './welcome.module.css';
 const experiences=[
- {tag:'LIBRARY ERRAND',title:'That errand could be your run.',text:'A book to return? Tuck it in a light backpack and make the drop-off a short, easy run.',image:'library-run',alt:'A woman jogging with a small backpack beside a library'},
- {tag:'THE WATER REFILL',title:'A refill. A flight of stairs.',text:'Refilling your bottle? Choose a water station one floor up and take the stairs as part of the trip.',image:'refill-stairs',alt:'A man taking the office stairs with a water bottle, using the handrail'},
  {tag:'CALLING A FRIEND',title:'Take the catch-up outside.',text:'You were going to call anyway. Keep the conversation and add a comfortable walk on a familiar route.',image:'catchup-walk',alt:'A woman walking along a leafy path while talking on the phone'},
+ {tag:'THE WATER REFILL',title:'A refill. A flight of stairs.',text:'Refilling your bottle? Choose a water station one floor up and take the stairs as part of the trip.',image:'refill-stairs',alt:'A man taking the office stairs with a water bottle, using the handrail'},
+ {tag:'LIBRARY ERRAND',title:'That errand could be your run.',text:'A book to return? Tuck it in a light backpack and make the drop-off a short, easy run.',image:'library-run',alt:'A woman jogging with a small backpack beside a library'},
  {tag:'THE AD BREAK',title:'Keep your show. Add a little strength.',text:'During the adverts, try a few wall push-ups in a clear space beside the sofa.',image:'ad-break-strength',alt:'A woman doing a wall push-up in her living room beside the sofa'}
 ];
 export function Welcome(){return <div className={s.welcome}>
