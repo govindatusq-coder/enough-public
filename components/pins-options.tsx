@@ -1,14 +1,16 @@
 "use client";
 import {useState,type CSSProperties} from 'react';
-import {Sun,Sunset,House,Users,User,VolumeX,CalendarDays,Compass,Clock,Check,Plus,Wallet,BatteryLow,HeartHandshake,ShieldCheck,CloudSun,Accessibility,Route,Briefcase,Footprints,Eye,Leaf,RefreshCw,Lightbulb,Smile,CheckCircle,Headphones,Coffee,Camera,Dog,Flower,BookOpen,Moon,Phone,Music,MapPin,Tv,Utensils} from 'lucide-react';
+import {Check,Plus} from 'lucide-react';
 
-const sprites:Record<string,number>={
- 'Markets':0,'Shopping / browsing':0,'Community activities':1,'Making things':2,'Creative hobbies':2,
- 'Reading':3,'Learning':3,'Audiobooks':3,'Gaming':4,'Podcasts':5,'Listening to something':5,
- 'Solving problems':6,'City streets':7,'Suburban neighbourhoods':8,'Small towns':9,'Country settings':10,'Coastal places':11,
- 'Work or study':12,'Work / shifts':12,'Family or caring':13,'Caring for someone':13,'Household tasks':14,'Groceries':15,
- 'I solve problems':6,'I care for others':13,'I know my neighbourhood':8,'I notice patterns':6,'I like exploring':10,
- 'I enjoy learning':3,'I like getting things done':12
+// Each sheet has sixteen 3:2 photos in a 4 x 4 grid. Explicit mappings keep
+// semantically different options from receiving the same generic icon.
+type Scene = readonly [sheet:'preferences'|'interests'|'needs'|'strengths'|'routines',cell:number];
+const sheets={
+ preferences:'/images/preferences-lifestyle-v1.webp',
+ interests:'/images/onboarding-interests-v1.webp',
+ needs:'/images/onboarding-needs-v1.webp',
+ strengths:'/images/onboarding-strengths-v1.webp',
+ routines:'/images/onboarding-routines-v1.webp'
 };
 const preferenceScenes:Record<string,number>={
  'Outside':0,'Indoors':1,'Alone':2,'With someone':3,
@@ -16,53 +18,51 @@ const preferenceScenes:Record<string,number>={
  'Evening':8,'Planned':9,'Spontaneous':10,'Short bursts':11,
  'Take my time':12,'Familiar places':13,'New places':14,'Nothing to add':15
 };
-function choiceIcon(label:string){
- if(/money/i.test(label))return Wallet;
- if(/physical|pain|comfort/i.test(label))return Accessibility;
- if(/energy|tired|recovery|sleep/i.test(label))return /sleep/i.test(label)?Moon:BatteryLow;
- if(/family|caring|care for/i.test(label))return HeartHandshake;
- if(/safety/i.test(label))return ShieldCheck;
- if(/weather|heat/i.test(label))return CloudSun;
- if(/privacy/i.test(label))return Eye;
- if(/transport|walk where|public transport/i.test(label))return Route;
- if(/work|shift|study|on my feet|active at work/i.test(label))return Briefcase;
- if(/flexib|unpredict|different|varies|spontan|adapt|mix/i.test(label))return RefreshCw;
- if(/time|short|burst/i.test(label))return Clock;
- if(/routine|plan/i.test(label))return CalendarDays;
- if(/outside|outdoor|nature|garden/i.test(label))return Leaf;
- if(/indoor|seated|familiar/i.test(label))return House;
- if(/alone|independently|quiet/i.test(label))return /quiet/i.test(label)?VolumeX:User;
- if(/someone|company|friends|supportive/i.test(label))return Users;
- if(/music/i.test(label))return Music;
- if(/podcast|listen/i.test(label))return Headphones;
- if(/morning/i.test(label))return Sun;
- if(/afternoon|daytime/i.test(label))return CloudSun;
- if(/evening/i.test(label))return Sunset;
- if(/coffee/i.test(label))return Coffee;
- if(/streaming|tv/i.test(label))return Tv;
- if(/food/i.test(label))return Utensils;
- if(/photo/i.test(label))return Camera;
- if(/animal/i.test(label))return Dog;
- if(/garden/i.test(label))return Flower;
- if(/reading|learn/i.test(label))return BookOpen;
- if(/call/i.test(label))return Phone;
- if(/place|neighbour/i.test(label))return MapPin;
- if(/explor|new/i.test(label))return Compass;
- if(/walk|sport|exercise|school/i.test(label))return Footprints;
- if(/problem|pattern/i.test(label))return Lightbulb;
- if(/nothing|no regular/i.test(label))return CheckCircle;
- return Smile;
-}
-export function ChoiceArtwork({label}:{label:string}){
- const cell=sprites[label];
- if(cell!==undefined)return <span className="choice-art choice-art-sprite" style={{'--sprite-x':`${(cell%4)*100/3}%`,'--sprite-y':`${Math.floor(cell/4)*100/3}%`} as CSSProperties} aria-hidden="true"/>;
- const Icon=choiceIcon(label);
- return <span className="choice-art choice-art-icon" aria-hidden="true"><Icon strokeWidth={1.3}/></span>;
+const scenes:Record<string,Scene>={
+ 'Podcasts':['interests',0],'Music':['preferences',5],'Coffee':['interests',1],
+ 'Family time':['interests',2],'Friends / talking':['interests',3],'Nature':['interests',4],
+ 'Animals':['interests',5],'Shopping / browsing':['interests',6],'Photography':['interests',7],
+ 'Exploring new places':['preferences',14],'Learning':['strengths',10],'Gardening':['interests',9],
+ 'Making things':['interests',10],'Audiobooks':['interests',11],'TV / streaming':['interests',12],
+ 'Sport':['interests',13],'Food':['interests',14],'Markets':['interests',6],
+ 'Community activities':['strengths',13],'Creative hobbies':['interests',10],'Reading':['interests',8],
+ 'Gaming':['interests',15],'Listening to something':['interests',0],'Solving problems':['strengths',4],
+ 'Not enough time':['needs',0],'Save money':['needs',1],'Low energy / tired':['needs',2],
+ 'Family or caring':['needs',3],'Work / shifts':['needs',4],'Need recovery':['needs',5],
+ 'Safety matters':['needs',6],'Weather / heat':['needs',7],'Hard to walk where I live':['needs',8],
+ 'Physical comfort / accessibility':['needs',9],'Need flexibility':['needs',10],
+ 'Already active at work':['needs',11],'Sleep matters':['needs',12],'Pain / discomfort':['needs',13],
+ 'Unpredictable day':['routines',3],'Transport limitations':['needs',14],'Money is tight':['needs',1],
+ 'Privacy matters':['needs',15],'I don’t enjoy exercise':['preferences',4],
+ 'I keep routines':['strengths',0],'I like getting things done':['strengths',1],
+ 'I walk when there’s a reason':['strengths',2],'I enjoy company':['interests',3],
+ 'I can do things independently':['strengths',3],'I like exploring':['preferences',14],
+ 'I solve problems':['strengths',4],'I care for others':['needs',3],
+ 'I know my neighbourhood':['strengths',5],'I use public transport':['strengths',6],
+ 'I’m already on my feet':['strengths',7],'I’m willing to try small changes':['strengths',8],
+ 'I know what works for me':['strengths',9],'I enjoy learning':['strengths',10],
+ 'I’m good at planning':['strengths',11],'I adapt when plans change':['strengths',12],
+ 'I have supportive people':['strengths',13],'I like challenges':['strengths',14],
+ 'I notice patterns':['strengths',15],
+ 'Mostly seated':['routines',0],'On my feet':['routines',1],'A mix of both':['routines',2],
+ 'Every day is different':['routines',3],'Work or study':['routines',0],'School run':['routines',4],
+ 'Calls':['routines',5],'Takeaway':['routines',6],'Groceries':['routines',7],
+ 'Podcasts or music':['preferences',5],'Caring for someone':['needs',3],
+ 'Household tasks':['routines',8],'No regular routine':['routines',3],
+ 'Morning':['preferences',6],'Daytime':['routines',14],'Evening':['preferences',8],
+ 'It varies':['routines',3],'City streets':['routines',9],
+ 'Suburban neighbourhoods':['routines',10],'Small towns':['routines',11],
+ 'Country settings':['routines',12],'Coastal places':['routines',13],'Mix it up':['routines',15],
+ 'Nothing to add':['preferences',15]
+};
+export function ChoiceArtwork({label,lifestyle=false}:{label:string;lifestyle?:boolean}){
+ const preferenceCell=lifestyle?preferenceScenes[label]:undefined;
+ const [sheet,cell]:Scene=preferenceCell!==undefined?['preferences',preferenceCell]:scenes[label]||['preferences',15];
+ return <span className="choice-art choice-art-lifestyle" style={{'--scene-atlas':`url('${sheets[sheet]}')`,'--scene-x':`${(cell%4)*100/3}%`,'--scene-y':`${Math.floor(cell/4)*100/3}%`} as CSSProperties} aria-hidden="true"/>;
 }
 export function ChoiceTiles({options,values,onPick,lifestyle=false}:{options:readonly string[];values:string[];onPick:(value:string)=>void;lifestyle?:boolean}){
- return <div className={'choice-grid'+(lifestyle?' choice-grid-lifestyle':'')}>{options.map(v=>{
-   const cell=lifestyle?preferenceScenes[v]:undefined;
-   return <button type="button" className="choice-tile" key={v} aria-pressed={values.includes(v)} onClick={()=>onPick(v)}>{cell!==undefined?<span className="choice-art choice-art-lifestyle" style={{'--scene-x':`${(cell%4)*100/3}%`,'--scene-y':`${Math.floor(cell/4)*100/3}%`} as CSSProperties} aria-hidden="true"/>:<ChoiceArtwork label={v}/>}<span className="choice-label">{v}</span><span className="choice-check" aria-hidden="true">{values.includes(v)?<Check size={14}/>:null}</span></button>;
+ return <div className="choice-grid choice-grid-lifestyle">{options.map(v=>{
+   return <button type="button" className="choice-tile" key={v} aria-pressed={values.includes(v)} onClick={()=>onPick(v)}><ChoiceArtwork label={v} lifestyle={lifestyle}/><span className="choice-label">{v}</span><span className="choice-check" aria-hidden="true">{values.includes(v)?<Check size={14}/>:null}</span></button>;
  })}</div>;
 }
 export function PinsOptions({options,values,onChange,lifestyle=false}:{options:readonly string[];values:string[];onChange:(values:string[])=>void;lifestyle?:boolean}){
