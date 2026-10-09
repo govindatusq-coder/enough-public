@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>ENOUGH — wave through the E</title>
+  <rect width="64" height="64" rx="14" fill="#FAFAF8"/>
+  <path d="M21 12H46V19H29V29H44V36H29V45H46V52H21Z" fill="#0A2F52"/>
+  <path d="M9 35C16 31 23 23 30 27C37 31 37 37 45 37C50 37 54 33 57 30" fill="none" stroke="#FAFAF8" stroke-width="4.3" stroke-linecap="round"/>
+  <path d="M9 35C16 31 23 23 30 27C37 31 37 37 45 37C50 37 54 33 57 30" fill="none" stroke="#3F7FBF" stroke-width="3.3" stroke-linecap="round"/>
+</svg>
