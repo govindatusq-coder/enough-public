@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   description: "Less sacrifice. More life. Explore ENOUGH, a quiet place for movement that fits your everyday.",
   icons: {
     icon: [
-      { url: "/favicon.ico?v=2", type: "image/x-icon", sizes: "16x16 32x32 48x48 64x64" },
-      { url: "/icon-32.png?v=2", type: "image/png", sizes: "32x32" },
-      { url: "/favicon.svg?v=2", type: "image/svg+xml", sizes: "any" },
+      { url: "/favicon.ico?v=3", type: "image/x-icon", sizes: "16x16 32x32 48x48 64x64" },
+      { url: "/icon-32.png?v=3", type: "image/png", sizes: "32x32" },
+      { url: "/favicon.svg?v=3", type: "image/svg+xml", sizes: "any" },
     ],
-    shortcut: "/favicon.ico?v=2",
-    apple: [{ url: "/apple-touch-icon.png?v=2", type: "image/png", sizes: "180x180" }],
+    shortcut: "/favicon.ico?v=3",
+    apple: [{ url: "/apple-touch-icon.png?v=3", type: "image/png", sizes: "180x180" }],
   },
 };
 
