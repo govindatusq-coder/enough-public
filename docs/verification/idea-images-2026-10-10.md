@@ -35,7 +35,7 @@ No dependencies or lockfiles were changed. No Supabase access restrictions, auth
 
 ### Browser test reproducibility
 
-Build first, then run `node scripts/test-idea-images-browser.mjs` with Node 22.13+ and a development-only Playwright/Chromium installation. Do not rebuild `.next` while that production-browser test is running. These are test tools, not application dependencies.
+Build first, then run `node scripts/test-idea-images-browser.mjs` with the verified Node 24.19.0 test environment and a development-only Playwright/Chromium installation. Do not rebuild `.next` while that production-browser test is running. These are test tools, not application dependencies.
 
 The driver accepts `ENOUGH_TEST_PLAYWRIGHT_MODULE`, `ENOUGH_TEST_CHROMIUM_PATH`, `ENOUGH_TEST_CHROMIUM_FLAGS_MODULE` (optional serverless-Chromium flags), `ENOUGH_TEST_PORT`, and `ENOUGH_TEST_RESULTS`. It starts the existing production server, supplies isolated auth/provider/storage fixtures, and prints the assertion result. Its reused fixture pixels test loading, caching and display; they do **not** prove the visual relevance of real model output.
 
