@@ -4,7 +4,7 @@
 
 Fresh My Moves AI batches now generate activity-specific lifestyle pictures using the existing server-only OpenAI key. Pictures are privately cached in the existing owner-restricted storage bucket and shared by the card grid and detailed idea browser. Opening cards only reads the cache; explicit retries for missing pictures use the existing daily AI allowance. Approved library artwork and the private real-moment photo gallery remain separate.
 
-See [the 10 October 2026 image verification record](docs/verification/idea-images-2026-10-10.md) for checks, configuration and the outstanding authenticated live-provider test. The migration notes below describe the original migration, not the latest deployment status.
+See [the 10 October 2026 image verification record](docs/verification/idea-images-2026-10-10.md) for automated checks, configuration, authenticated live-provider verification and remaining batch-test limits. The migration notes below describe the original migration, not the latest deployment status.
 
 This is a separate Next.js application prepared for Vercel and Supabase. The original Sites checkout and private deployment were not edited or deployed.
 

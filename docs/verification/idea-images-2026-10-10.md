@@ -39,11 +39,19 @@ Build first, then run `node scripts/test-idea-images-browser.mjs` with Node 22.1
 
 The driver accepts `ENOUGH_TEST_PLAYWRIGHT_MODULE`, `ENOUGH_TEST_CHROMIUM_PATH`, `ENOUGH_TEST_CHROMIUM_FLAGS_MODULE` (optional serverless-Chromium flags), `ENOUGH_TEST_PORT`, and `ENOUGH_TEST_RESULTS`. It starts the existing production server, supplies isolated auth/provider/storage fixtures, and prints the assertion result. Its reused fixture pixels test loading, caching and display; they do **not** prove the visual relevance of real model output.
 
-## Outstanding live verification
+## Authenticated live verification after publication
 
-**NOT_RUN: an authenticated, real OpenAI → private Supabase storage → rendered My Moves picture round trip.** The available live browser was signed out and no local production key was available. No authentication or access restriction was bypassed. A successful build, fixture test, or `available: true` does not establish model access.
+The implementation was published as commit `d3ff7a61075da7549b2174b73ca5d41b705ab339` through a non-force update from the inspected main head. Its reviewed remote tree matched the local index. GitHub's Vercel deployment status reported success. The existing public host returned HTTP 200 and served the new generated-image styles; the approved tagline and favicon remained intact. Anonymous private-image GET/POST requests returned 401, and a wrong-origin image POST returned 403.
 
-To finish this check in an authorised signed-in ENOUGH session: generate one fresh batch, confirm that each returned idea has a relevant decoded picture in grid and detail, then reload and confirm no repeat model calls. If the existing key lacks image-model access, the UI preserves the text ideas and reports that the existing connection's image-model access needs checking. A 429 preserves the idea and offers a later explicit retry; exhausted daily allowance continues to allow cached picture reads.
+The initial browser was signed out. The user completed sign-in through the authorised ENOUGH/Google flow, after which the live app displayed “My account” and “Saved to your account”. No credentials were extracted, written into source, or copied into the test environment; no access restrictions were bypassed.
+
+**PASSED: real OpenAI → private Supabase storage → decoded My Moves picture.** A missing picture was explicitly prepared for an existing eligible seated mail/photo-sorting idea. It appeared as a relevant warm lifestyle scene of a seated person sorting papers/photos, labelled as an AI-generated illustration. The browser decoded the actual generated image at 1536×1024. Card and detail used the same private image URL, and the detail background matched it. A full page reload restored that same decoded cached image from the signed-in account. The live image was visually inspected and a user-private proof screenshot was retained; no private account content or picture was published into this repository.
+
+These live checks used two existing daily AI slots: one fresh-idea batch and one successful explicit picture retry. The fresh batch returned no new candidates within the account's current needs/constraints, so it correctly generated no pictures. PINS, plans, saved ideas, outcomes and gallery rows were not changed or invented for the test.
+
+**Remaining test limit:** a real multi-picture *fresh* batch was not observed, because that live batch had no qualifying new candidates. Automatic ten-picture batch preparation is covered by the automated tests and fixture-backed production-browser integration. The real-provider connection, storage, display and reload were exercised through the explicit existing-picture path, which uses the same generation/cache service. Live rate-limit failure and cross-account isolation were not deliberately induced; their deterministic checks remain fixture-backed. Reload cache reuse was verified from the restored identical image; direct upstream model-call telemetry was not available.
+
+If a later key loses image-model access, the UI preserves the text ideas and reports that the existing connection's image-model access needs checking. A 429 preserves the idea and offers a later explicit retry; exhausted daily allowance continues to allow cached picture reads.
 
 Official implementation references checked on 10 October 2026:
 
