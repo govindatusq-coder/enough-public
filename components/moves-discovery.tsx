@@ -3,6 +3,7 @@ import Image from 'next/image';
 import {useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,Bike,Bookmark,Check,Clock,Footprints,Headphones,Heart,LayoutGrid,Leaf,MapPin,PanelsTopLeft,Search,SlidersHorizontal,Sparkles,Video,Volleyball,Wallet} from 'lucide-react';
 import {ChoiceArtwork} from '@/components/pins-options';
+import {IdeaImageArt,useIdeaPhoto,type IdeaImageContext,type IdeaPhotoState} from '@/components/idea-photo';
 import {NearbyIdeas} from '@/components/discovery';
 import {type Idea} from '@/lib/ideas';
 import {completeProfile,type State} from '@/lib/journey';
@@ -12,21 +13,24 @@ import {moneyValue} from '@/lib/recommendations';
 import {formatMoney} from '@/lib/regions';
 import {defaultMoveOptions,favouriteCollections,moveCollections,moveFeedback,moveFilters,movesIdeas,moveVisual,type MoveFilter,type MoveOptions} from '@/lib/moves';
 
-type Props={state:State;ideas:Idea[];now:number;onOpen:(id:number)=>void;onSave:(id:number)=>void;onSaved:()=>void;onPlanned:()=>void;onPins:()=>void;onWins:()=>void;onTune:()=>void;aiAvailable:boolean;aiBusy:boolean;aiDisabled:boolean;aiError:string;onGenerate:()=>void};
+type Props={state:State;ideas:Idea[];now:number;onOpen:(id:number)=>void;onSave:(id:number)=>void;onSaved:()=>void;onPlanned:()=>void;onPins:()=>void;onWins:()=>void;onTune:()=>void;imageContext:IdeaImageContext;aiAvailable:boolean;aiBusy:boolean;aiDisabled:boolean;aiError:string;onGenerate:()=>void};
 function scrollTo(id:string){requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}))}
-function MoveArt({idea,art}:{idea?:Idea;art?:string}){
+function MoveArt({idea,art,photo}:{idea?:Idea;art?:string;photo?:IdeaPhotoState}){
+ if(idea?.source==='ai'&&photo)return <IdeaImageArt idea={idea} photo={photo}/>;
  const visual=idea?moveVisual(idea):{art:art||'Outside'};
  const Icon=visual.art==='Cycling'?Bike:visual.art==='Video call'?Video:visual.art==='Active play'?Volleyball:null;
  return visual.image?<Image src={visual.image} alt="" fill sizes="(max-width: 560px) 80vw, (max-width: 1000px) 45vw, 320px"/>:Icon?<span className="choice-art choice-art-icon" aria-hidden="true"><Icon strokeWidth={1.3}/></span>:visual.art==='Garden + Podcast'?<><ChoiceArtwork label="Household tasks"/><span className="move-art-companion" aria-hidden="true"><Headphones size={27}/></span></>:<ChoiceArtwork label={visual.art}/>;
 }
-function MoveCard({idea,state,now,onOpen,onSave,surprise}:{idea:Idea;state:State;now:number;onOpen:(id:number)=>void;onSave:(id:number)=>void;surprise:boolean}){
+function MoveCard({idea,state,now,onOpen,onSave,surprise,imageContext}:{idea:Idea;state:State;now:number;onOpen:(id:number)=>void;onSave:(id:number)=>void;surprise:boolean;imageContext:IdeaImageContext}){
+ const photo=useIdeaPhoto(idea,imageContext,false);
  const saving=moneyValue(idea,state),feedback=moveFeedback(idea.id,state,new Date(now)),saved=state.saved.includes(idea.id);
  return <article className={'discovery-card move-idea-card'+(surprise?' move-surprise-card':'')}>
-   <div className="move-card-art"><button className="move-card-cover" onClick={()=>onOpen(idea.id)} aria-label={'Explore '+idea.title}><MoveArt idea={idea}/><span className="move-art-label">Illustrative scene</span></button>
+   <div className="move-card-art"><button className="move-card-cover" onClick={()=>onOpen(idea.id)} aria-label={'Explore '+idea.title}><MoveArt idea={idea} photo={photo}/>{idea.source!=='ai'&&<span className="move-art-label">Illustrative scene</span>}</button>
      <span className="move-source-badge">{surprise?<><Sparkles size={13}/>Something different</>:isFreeMove(idea)?<><Leaf size={13}/>Free activity</>:idea.source==='ai'?'AI idea':'Everyday idea'}</span>
      <button className="move-quick-save" aria-label={(saved?'Remove saved idea: ':'Save idea: ')+idea.title} aria-pressed={saved} onClick={()=>onSave(idea.id)}><Bookmark size={20} fill={saved?'currentColor':'none'}/></button>
    </div>
    <div className="move-card-copy"><button className="tile-title" onClick={()=>onOpen(idea.id)}><h3>{idea.title}</h3></button><p>{idea.body}</p>
+     {idea.source==='ai'&&photo.status==='error'&&<div className="move-picture-retry"><p>{photo.error}</p><button className="text-button" onClick={photo.retry}>Retry picture</button></div>}
      <div className="move-card-returns"><div><Footprints size={19}/><span><strong>{idea.minutes} min</strong><small>Movement · estimate</small></span></div><div><Wallet size={19}/><span><strong>{formatMoney(saving?.cents||0,saving?.currency||state.profile.currency,state.profile.country)}</strong><small>MONEY SAVED · estimate</small></span></div></div>
      <div className="move-card-time"><Clock size={15}/>{idea.extraMin>0?`${idea.extraMin} extra min`:idea.extraMin<0?`${-idea.extraMin} min reclaimed`:'No extra time'}</div>
      <div className="move-card-feedback">{feedback.tries?<><Heart size={15}/><span>{feedback.worthwhile} of your {feedback.tries} {feedback.tries===1?'try':'tries'} felt worthwhile</span></>:<><Leaf size={15}/><span>{idea.effort==='gentle'?'A gentle idea to explore.':'Choose a pace that suits you.'}</span></>}</div>
@@ -35,7 +39,7 @@ function MoveCard({idea,state,now,onOpen,onSave,surprise}:{idea:Idea;state:State
  </article>;
 }
 
-export function MovesDiscovery({state,ideas,now,onOpen,onSave,onSaved,onPlanned,onPins,onWins,onTune,aiAvailable,aiBusy,aiDisabled,aiError,onGenerate}:Props){
+export function MovesDiscovery({state,ideas,now,onOpen,onSave,onSaved,onPlanned,onPins,onWins,onTune,imageContext,aiAvailable,aiBusy,aiDisabled,aiError,onGenerate}:Props){
  const [filter,setFilter]=useState<MoveFilter>('For you'),[options,setOptions]=useState<MoveOptions>(defaultMoveOptions),[filtersOpen,setFiltersOpen]=useState(false);
  const [layout,setLayout]=useState<'row'|'grid'>('row'),[limit,setLimit]=useState(8),[surpriseId,setSurpriseId]=useState<number|null>(null),[collection,setCollection]=useState<string|null>(null),[savedOnly,setSavedOnly]=useState(false);
  const rail=useRef<HTMLDivElement>(null),personal=completeProfile(state.profile),activity=dashboardActivity(state,new Date(now));
@@ -69,7 +73,7 @@ export function MovesDiscovery({state,ideas,now,onOpen,onSave,onSaved,onPlanned,
    <section id="moves-idea-results" className="moves-results" aria-label="Find movement ideas">
      <div className="moves-results-heading"><div><span className="eyebrow">{personal?'SHAPED BY YOUR PINS':'IDEAS TO EXPLORE'}</span><h2>{selected?selected.title+(savedOnly?' · saved':''):filter==='Surprise me'?'Something you might not think of.':'A little possibility.'}</h2><p role="status">{shown.length} {shown.length===1?'idea':'ideas'}{selected?' in this collection':filter==='For you'?'':` · ${filter}`}</p></div><div className="moves-result-actions"><div className="moves-layout-control" aria-label="Idea display"><button aria-label="Card row" aria-pressed={layout==='row'} onClick={()=>setLayout('row')}><PanelsTopLeft size={18}/></button><button aria-label="Card grid" aria-pressed={layout==='grid'} onClick={()=>setLayout('grid')}><LayoutGrid size={18}/></button></div>{layout==='row'&&shown.length>1&&<div className="moves-rail-controls"><button aria-label="Previous idea cards" onClick={()=>pageRail(-1)}><ArrowLeft size={18}/></button><button aria-label="Next idea cards" onClick={()=>pageRail(1)}><ArrowRight size={18}/></button></div>}</div></div>
      {collection&&<div className="moves-collection-filter"><span>{savedOnly?'Saved ideas within your current needs.':selected?.reason||'Your collection has no ideas within these filters.'}</span><button className="text-button" onClick={()=>{setCollection(null);setSavedOnly(false)}}>Show every collection</button></div>}
-     {shown.length?<><div ref={rail} className={'moves-card-list moves-card-'+layout}>{shown.slice(0,limit).map(i=><MoveCard key={i.id} idea={i} state={state} now={now} onOpen={onOpen} onSave={onSave} surprise={filter==='Surprise me'&&i.id===featured?.id}/>)}</div>{shown.length>limit&&<button className="secondary moves-show-more" onClick={()=>setLimit(n=>n+8)}>Show more ideas</button>}</>:<div className="glass-empty moves-empty"><Leaf size={27}/><h2>{ideas.length?'Let’s try another angle.':'Your needs come first.'}</h2><p>{state.profile.needs.some(n=>n.startsWith('Something else: '))?'Your written need is saved. Suggestions are paused because ENOUGH cannot yet assess free-text needs. Keep your answer or review the listed boundaries in My Pins.':filter==='Save money'?'No saving is recorded for these ideas in your currency. A free move can still give you movement, useful time, and enjoyment.':ideas.length?'Try another word, setting or collection. Your current needs will keep applying.':'No library idea currently clears your needs. Keep your boundaries, or revisit My Pins when something changes.'}</p><button className="secondary" onClick={ideas.length?clear:onPins}>{ideas.length?'Clear search and filters':'Review My Pins'}</button></div>}
+     {shown.length?<><div ref={rail} className={'moves-card-list moves-card-'+layout}>{shown.slice(0,limit).map(i=><MoveCard key={i.id} idea={i} state={state} now={now} onOpen={onOpen} onSave={onSave} surprise={filter==='Surprise me'&&i.id===featured?.id} imageContext={imageContext}/>)}</div>{shown.length>limit&&<button className="secondary moves-show-more" onClick={()=>setLimit(n=>n+8)}>Show more ideas</button>}</>:<div className="glass-empty moves-empty"><Leaf size={27}/><h2>{ideas.length?'Let’s try another angle.':'Your needs come first.'}</h2><p>{state.profile.needs.some(n=>n.startsWith('Something else: '))?'Your written need is saved. Suggestions are paused because ENOUGH cannot yet assess free-text needs. Keep your answer or review the listed boundaries in My Pins.':filter==='Save money'?'No saving is recorded for these ideas in your currency. A free move can still give you movement, useful time, and enjoyment.':ideas.length?'Try another word, setting or collection. Your current needs will keep applying.':'No library idea currently clears your needs. Keep your boundaries, or revisit My Pins when something changes.'}</p><button className="secondary" onClick={ideas.length?clear:onPins}>{ideas.length?'Clear search and filters':'Review My Pins'}</button></div>}
      <div className="moves-library-note"><p>Movement, time and savings are estimates. Only confirmed outcomes enter My Wins.</p><div><button className="text-button" onClick={onTune}>Tune my ideas</button>{aiAvailable&&<button className="secondary" disabled={aiBusy||aiDisabled} onClick={onGenerate}>{aiBusy?'Preparing ideas…':'Generate fresh ideas'}</button>}</div></div>{aiError&&<p className="storage-alert" role="alert">{aiError}</p>}
    </section>
 

@@ -5,7 +5,10 @@
   ],
   "functions": {
     "app/api/ideas/route.ts": {
-      "maxDuration": 90
+      "maxDuration": 300
+    },
+    "app/api/idea-image/route.ts": {
+      "maxDuration": 180
     }
   }
 }
