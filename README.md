@@ -1,5 +1,9 @@
 # ENOUGH public-hosting migration
 
+## Privacy and AI permission
+
+Fresh OpenAI ideas and pictures require an explicit, versioned account choice. My Pins → AI and privacy offers full context, approved non-health context, or Not now. Legacy accounts and previews have no automatic permission. Reduced context still uses all needs for ENOUGH’s own fit checks. Collection notices appear at sign-in and before the first cloud save; `/privacy` is a draft for legal review. See [PR2 verification](docs/verification/pr2-privacy-consent.md).
+
 ## Continuous suggestions
 
 My Moves keeps offering **More suggestions** whenever the user asks. There is no daily batch cap. A private, expiring per-account reservation prevents simultaneous AI requests, and is released on success or failure. Every batch is archived before the response; earlier ideas are browsable in cursor-based pages rather than disappearing after 100 suggestions. Cloud snapshots retain the latest 100 ideas plus every bookmarked, planned, completed or cost-referenced idea. Newly requested suggestions appear first. Existing PINS eligibility checks still apply; an entirely duplicate or ineligible batch gets at most one retry without loosening those boundaries.
