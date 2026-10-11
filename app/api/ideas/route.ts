@@ -2,8 +2,9 @@ import {signedIn} from '@/lib/supabase/server';
 import {validateState} from '@/lib/account-validation';
 import {completeProfile} from '@/lib/journey';
 import {aiContext,aiOutputSchema,generatorPrompt,validateCandidates} from '@/lib/ai-ideas';
-import {generateIdeaImage,prepareIdeaImageBatch} from '@/lib/idea-image-service';
+import {generateIdeaImage,prepareSuggestionPictures} from '@/lib/idea-image-service';
 import {ideaImageStorage} from '@/lib/idea-image-storage';
+import {eligible} from '@/lib/recommendations';
 export const dynamic='force-dynamic';
 export const maxDuration=300;
 const json=(d:unknown,status=200)=>Response.json(d,{status,headers:{'Cache-Control':'no-store'}});
@@ -34,10 +35,11 @@ export async function POST(req:Request){
   if(result.status!=='completed')throw Error('Incomplete model response');
   const raw=(result.output||[]).flatMap(o=>o.content||[]).filter(c=>c.type==='output_text').map(c=>c.text||'').join('');
   const ideas=validateCandidates(JSON.parse(raw),state,now).slice(0,10);
-  // Prepare at most ten pictures inside this already-reserved AI batch. Card
-  // reads cannot incur image charges; explicit retries use the same quota RPC.
-  const pictures=await prepareIdeaImageBatch(ideas,user.id,ideaImageStorage(db),idea=>generateIdeaImage(idea,config().OPENAI_API_KEY||'',config().OPENAI_IMAGE_MODEL||'gpt-image-2.5-sunburst'));
+  // Pictures belong to the user's suggestion request, including missing older
+  // pictures when a batch has spare capacity. Card reads never invoke the model.
+  const previous=(state.generated||[]).filter(i=>eligible(i,state,now)&&!state.tuning?.hidden.includes(i.id));
+  const pictures=await prepareSuggestionPictures(ideas,previous,user.id,ideaImageStorage(db),idea=>generateIdeaImage(idea,config().OPENAI_API_KEY||'',config().OPENAI_IMAGE_MODEL||'gpt-image-2.5-sunburst'));
   if(pictures.errors.length)console.warn('Some idea pictures could not be prepared',{failed:pictures.errors.length,prepared:pictures.ready});
-  return json({ideas,baseRevision:record.revision,...(pictures.errors.length?{imageWarning:pictures.errors[0].message}:{})});
+  return json({ideas,baseRevision:record.revision,picturesPrepared:pictures.ready,...(pictures.errors.length?{imageWarning:true}:{})});
  }catch(e){console.error('Idea generation failed',e);return json({error:'New ideas could not be prepared. Your library remains available. Try again later.'},503);}
 }

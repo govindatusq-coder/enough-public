@@ -8,7 +8,7 @@ import {resolve} from 'node:path';
 import {catalogue} from '../lib/ideas.ts';
 import {emptyState,STORAGE_KEY} from '../lib/journey.ts';
 import {createIdeaImageHandlers} from '../lib/idea-image-http.ts';
-import {IdeaImageError,prepareIdeaImageBatch} from '../lib/idea-image-service.ts';
+import {IdeaImageError,prepareSuggestionPictures} from '../lib/idea-image-service.ts';
 
 const {chromium}=await import(process.env.ENOUGH_TEST_PLAYWRIGHT_MODULE||'playwright');
 const {default:sharp}=await import('sharp');
@@ -17,7 +17,7 @@ const results=resolve(process.env.ENOUGH_TEST_RESULTS||'.idea-image-browser-resu
 await mkdir(results,{recursive:true});
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let output='';
-const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port',String(port)],{cwd:process.cwd(),stdio:['ignore','pipe','pipe']});
+const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port',String(port)],{cwd:process.cwd(),env:{...process.env,NEXT_PUBLIC_SUPABASE_URL:'https://fixture-only.example.invalid',NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:'fixture-only-not-a-real-key'},stdio:['ignore','pipe','pipe']});
 server.stdout.on('data',data=>output+=data);server.stderr.on('data',data=>output+=data);
 let browser;
 const launch={headless:true};
@@ -31,14 +31,15 @@ const batch=Array.from({length:10},(_,n)=>makeIdea(1100+n,n%2?'stairs':'seated',
 const state=emptyState();Object.assign(state.profile,{preferences:['Nothing to add'],interests:['Nothing to add'],needs:['Nothing to add'],strengths:['Nothing to add'],activity:'Every day is different',rhythms:['Calls'],window:'It varies',complete:true});state.generated=initial;
 const picture=await sharp(await readFile('public/images/call.webp')).resize(1536,1024).jpeg({quality:80}).toBuffer();
 const storeObjects=new Map(),store={async read(key){return storeObjects.get(key)?.bytes||null;},async createdAt(key){return storeObjects.get(key)?.created??null;},async create(key,bytes){if(storeObjects.has(key))return false;storeObjects.set(key,{bytes,created:Date.now()});return true;},async remove(key){storeObjects.delete(key);}};
-let accountState=structuredClone(state),revision=1,failProvider=true,failDownload=true;
+let accountState=structuredClone(state),revision=1,failProvider=true,failDownload=true,suggestionRequests=0;
 const generation=new Map(),attempts=[],errors=[];
 const generate=async idea=>{generation.set(idea.id,(generation.get(idea.id)||0)+1);await delay(100);if(idea.id===1004&&failProvider)throw new IdeaImageError('AI pictures are busy right now. Please try again later.',429);return picture;};
-const api=createIdeaImageHandlers({account:async()=>({owner:'browser-test-owner',ideas:accountState.generated||[],store,takeSlot:async()=>true}),licensed:async()=>null,generate});
+const api=createIdeaImageHandlers({account:async()=>({owner:'browser-test-owner',ideas:accountState.generated||[],store}),licensed:async()=>null});
 let assertions=0;const check=(condition,message)=>{assert.ok(condition,message);assertions++;};
 try{
- await prepareIdeaImageBatch(initial,'browser-test-owner',store,generate);
+ await prepareSuggestionPictures(initial,[],'browser-test-owner',store,generate);
  for(let n=0;n<100;n++){try{if((await fetch(base)).ok)break;}catch{}if(server.exitCode!==null)throw Error(output);await delay(100);if(n===99)throw Error('Production server did not start: '+output);}
+ check((await fetch(base+'/api/idea-image?id=1001',{method:'POST',headers:{origin:base}})).status===405,'The real picture route accepts only cache reads, not generation requests');
  browser=await chromium.launch(launch);
  const context=await browser.newContext({viewport:{width:1440,height:1000},timezoneId:'UTC'}),page=await context.newPage();
  page.on('pageerror',error=>errors.push(error.message));
@@ -49,11 +50,12 @@ try{
    if(request.method()==='PUT'){const input=request.postDataJSON();await delay(180);accountState=input.state;revision++;return route.fulfill({json:{revision}});}
    return route.fulfill({json:{user:{email:'browser-test@example.invalid',name:''},state:accountState,revision,signIn:'/signin'}});
   }
-  if(url.pathname==='/api/ideas'){if(request.method()==='POST'){await prepareIdeaImageBatch(batch,'browser-test-owner',store,generate);return route.fulfill({json:{ideas:batch}});}return route.fulfill({json:{available:true}});}
+  if(url.pathname==='/api/ideas'){if(request.method()==='POST'){suggestionRequests++;const ideas=suggestionRequests===1?batch:[];const pictures=await prepareSuggestionPictures(ideas,accountState.generated||[],'browser-test-owner',store,generate);return route.fulfill({json:{ideas,picturesPrepared:pictures.ready,imageWarning:!!pictures.errors.length}});}return route.fulfill({json:{available:true}});}
   if(url.pathname==='/api/idea-image'){
    if(Number(url.searchParams.get('id'))>=1000)attempts.push({id:Number(url.searchParams.get('id')),method:request.method(),saved:(accountState.generated||[]).some(i=>i.id===Number(url.searchParams.get('id')))});
    if(url.searchParams.get('image')==='1'&&Number(url.searchParams.get('id'))===1003&&failDownload){failDownload=false;return route.fulfill({status:503,body:'Image download fixture failure'});}
-   const req=new Request(request.url(),{method:request.method(),headers:request.headers()}),response=await api[request.method()](req);
+   if(request.method()!=='GET')return route.fulfill({status:405});
+   const req=new Request(request.url(),{method:request.method(),headers:request.headers()}),response=await api.GET(req);
    return route.fulfill({status:response.status,headers:Object.fromEntries(response.headers),body:Buffer.from(await response.arrayBuffer())});
   }
   if(url.pathname==='/api/photos')return route.fulfill({json:{photos:[]}});
@@ -63,17 +65,13 @@ try{
  });
  await page.goto(base+'/#moves');await page.getByRole('searchbox',{name:'Search ideas'}).fill('Image test');
  await page.getByRole('button',{name:'Card grid',exact:true}).click();
- await page.locator('.move-idea-card').filter({hasText:'A familiar walk'}).getByRole('button',{name:'Retry picture'}).waitFor();
+ await page.waitForFunction(()=>document.querySelectorAll('.moves-card-list img.generated-idea-picture').length===2);
+ await delay(300);
  check(initial.every(i=>generation.get(i.id)===1),'Every idea in the initial AI batch prepared exactly one picture');
- const runCard=page.locator('.move-idea-card').filter({hasText:'A short run'});
- await runCard.getByRole('button',{name:'Retry picture'}).click();
- await runCard.locator('img.generated-idea-picture').waitFor();
- check(generation.get(1003)===1,'A failed download retries the cached image, not the model');
- failProvider=false;
- await page.locator('.move-idea-card').filter({hasText:'A familiar walk'}).getByRole('button',{name:'Retry picture'}).click();
- await page.waitForFunction(()=>[...document.querySelectorAll('.moves-card-list img.generated-idea-picture')].filter(i=>i.complete&&i.naturalWidth>0).length===4);
- check(generation.get(1004)===2,'A provider error recovers only after an explicit retry');
- await page.screenshot({path:resolve(results,'desktop-generated-card-grid.png'),fullPage:true});
+ check(await page.getByRole('button',{name:'Retry picture'}).count()===0,'Missing and failed pictures never add a separate picture button');
+ check(!(await page.locator('body').innerText()).includes('This picture has not been prepared yet'),'Cards do not show the rejected picture/quota notice');
+ check(generation.get(1004)===1&&suggestionRequests===0,'Opening the page does not retry failed generation');
+ await page.screenshot({path:resolve(results,'desktop-before-request.png'),fullPage:true});
  await page.getByRole('button',{name:'Explore Image test · Taking the stairs',exact:true}).click();
  await page.locator('.move-card img.generated-idea-picture').waitFor();
  const cardSource=await page.locator('.move-card img.generated-idea-picture').getAttribute('src');
@@ -93,12 +91,21 @@ try{
  // Provider calls start before the batch response and cloud-save acknowledgement.
  // Wait for the actual UI update, rather than racing the batch with a count().
  const more=page.getByRole('button',{name:'Show more ideas',exact:true});await more.waitFor();await more.click();
+ await page.waitForFunction(()=>[...document.querySelectorAll('.moves-card-list img.generated-idea-picture')].filter(i=>i.complete&&i.naturalWidth>0).length===13);
+ check(generation.get(1003)===1,'A suggestion request recovers a failed download from the cache without regenerating');
+ check(generation.get(1004)===1,'Fresh pictures have priority within the ten-picture batch limit');
+ failProvider=false;
+ await page.getByRole('button',{name:'Generate fresh ideas',exact:true}).click();
  await page.waitForFunction(()=>[...document.querySelectorAll('.moves-card-list img.generated-idea-picture')].filter(i=>i.complete&&i.naturalWidth>0).length===14);
+ check(generation.get(1004)===2&&suggestionRequests===2,'Requesting suggestions recovers older missing pictures even with no new ideas');
+ check((accountState.generated||[]).length===14,'Picture recovery preserves all existing suggestions without adding duplicates');
  check(batch.every(i=>attempts.some(a=>a.id===i.id))&&attempts.every(a=>a.saved),'Every fresh picture is read only after its cloud-save acknowledgement');
- check(attempts.filter(a=>a.method==='POST').length===2,'Only the two explicit retry clicks POST image requests');
+ check(attempts.every(a=>a.method==='GET'),'Cards and details never POST a separate picture request');
+ check(await page.getByRole('button',{name:'Retry picture'}).count()===0,'No picture controls appear after recovery');
  await page.getByRole('button',{name:'Card grid',exact:true}).click();
  const desktop=await page.locator('.moves-card-list img.generated-idea-picture').evaluateAll(images=>images.map(image=>({width:image.getBoundingClientRect().width,naturalWidth:image.naturalWidth,fit:getComputedStyle(image).objectFit})));
  check(desktop.every(i=>i.width>100&&i.naturalWidth===1536&&i.fit==='cover'),'Desktop cards display decoded landscape pictures');
+ await page.screenshot({path:resolve(results,'desktop-generated-card-grid.png'),fullPage:true});
  await page.setViewportSize({width:390,height:844});
  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'390px mobile has no horizontal page overflow');
  check(await page.locator('.moves-card-list img.generated-idea-picture').evaluateAll(images=>images.every(image=>image.getBoundingClientRect().width>200&&getComputedStyle(image).objectFit==='cover')),'Mobile images fill their cards');

@@ -1,5 +1,7 @@
 # My Moves AI idea pictures — 10 October 2026
 
+This is the historical verification record. The separate picture controls and retry endpoint were removed on 11 October: see [the current suggestion-picture flow](suggestion-pictures-2026-10-11.md). The live-provider result below remains a record of the earlier deployed implementation.
+
 ## Finding and change
 
 Previously, `/api/idea-image` searched Openverse for stock photos, including for AI ideas, and My Moves cards displayed generic onboarding artwork. It did not generate a new picture for each new AI idea.

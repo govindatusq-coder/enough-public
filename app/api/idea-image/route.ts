@@ -2,7 +2,6 @@ import {signedIn} from '@/lib/supabase/server';
 import type {Idea} from '@/lib/ideas';
 import {validateState} from '@/lib/account-validation';
 import {createIdeaImageHandlers} from '@/lib/idea-image-http';
-import {generateIdeaImage} from '@/lib/idea-image-service';
 import {ideaImageStorage} from '@/lib/idea-image-storage';
 export const dynamic='force-dynamic';
 export const maxDuration=180;
@@ -17,9 +16,7 @@ async function licensed(idea:Idea){
  return null;
 }
 const handlers=createIdeaImageHandlers({
- async account(){const {db,user}=await signedIn();if(!user)return null;const {data,error}=await db.from('enough_accounts').select('state_json').eq('user_id',user.id).maybeSingle();if(error)throw error;return {owner:user.id,ideas:data?validateState(data.state_json).generated||[]:[],store:ideaImageStorage(db),async takeSlot(){const {data:slot,error}=await db.rpc('enough_take_ai_slot');if(error)throw error;return !!slot;}};},
- generate:idea=>generateIdeaImage(idea,process.env.OPENAI_API_KEY||'',process.env.OPENAI_IMAGE_MODEL||'gpt-image-2.5-sunburst'),
+ async account(){const {db,user}=await signedIn();if(!user)return null;const {data,error}=await db.from('enough_accounts').select('state_json').eq('user_id',user.id).maybeSingle();if(error)throw error;return {owner:user.id,ideas:data?validateState(data.state_json).generated||[]:[],store:ideaImageStorage(db)};},
  licensed
 });
 export const GET=handlers.GET;
-export const POST=handlers.POST;

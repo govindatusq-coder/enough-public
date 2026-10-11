@@ -3,7 +3,7 @@ import {ideaImageIdentity,type IdeaImageCredit} from './idea-image-spec.ts';
 
 export type ImageSnapshot={status:'idle'|'queued'|'loading'|'ready'|'error';credit:IdeaImageCredit|null;error:string};
 export const emptyImageSnapshot:ImageSnapshot={status:'idle',credit:null,error:''};
-type Job={idea:Idea;key:string;generate:boolean;snapshot:ImageSnapshot};
+type Job={idea:Idea;key:string;refresh:number;snapshot:ImageSnapshot};
 type Options={request?:typeof fetch;wait?:(ms:number)=>Promise<void>;concurrency?:number};
 export function imageClientKey(idea:Idea,scope:string){return scope+'|'+ideaImageIdentity(idea);}
 
@@ -15,9 +15,9 @@ export function createIdeaImageQueue({request=fetch,wait=ms=>new Promise(resolve
   emit(job,{status:'loading',credit:null,error:''});
   try{
    const url='/api/idea-image?id='+job.idea.id,generated=job.idea.source==='ai',signal=AbortSignal.timeout(180_000);
-   let response=await request(url,{method:generated&&job.generate?'POST':'GET',credentials:'same-origin',cache:'no-store',signal});
+   let response=await request(url,{method:'GET',credentials:'same-origin',cache:'no-store',signal});
    let data=await response.json() as IdeaImageCredit&{status?:string;retryAfter?:number;error?:string};
-   // Poll only reads after a duplicate request. GET never starts billable work.
+   // Pictures are prepared with suggestions. Loading and polling only read.
    for(let n=0;response.status===202&&n<60;n++){
     await wait(Math.max(1,Math.min(10,data.retryAfter||3))*1000);
     response=await request(url,{credentials:'same-origin',cache:'no-store',signal});
@@ -32,11 +32,11 @@ export function createIdeaImageQueue({request=fetch,wait=ms=>new Promise(resolve
   snapshot:(key:string)=>jobs.get(key)?.snapshot||emptyImageSnapshot,
   imageFailed(key:string){const job=jobs.get(key);if(job?.snapshot.status==='ready')emit(job,{status:'error',credit:null,error:'The picture could not be loaded. Your idea is still available. Retry when your connection is ready.'});},
   subscribe(key:string,listener:()=>void){let set=listeners.get(key);if(!set){set=new Set();listeners.set(key,set);}set.add(listener);return()=>{set!.delete(listener);if(!set!.size)listeners.delete(key);};},
-  prepare(idea:Idea,scope:string,retry=false){
+  prepare(idea:Idea,scope:string,refresh=0){
    if(idea.image)return;
    const key=imageClientKey(idea,scope),existing=jobs.get(key);
-   if(existing&&(!retry||existing.snapshot.status!=='error'))return;
-   const job:Job={idea,key,generate:retry,snapshot:{status:'queued',credit:null,error:''}};jobs.set(key,job);pending.push(job);listeners.get(key)?.forEach(listener=>listener());pump();
+   if(existing&&(existing.snapshot.status!=='error'||existing.refresh>=refresh))return;
+   const job:Job={idea,key,refresh,snapshot:{status:'queued',credit:null,error:''}};jobs.set(key,job);pending.push(job);listeners.get(key)?.forEach(listener=>listener());pump();
   }
  };
 }

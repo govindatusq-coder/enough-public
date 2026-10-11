@@ -42,6 +42,20 @@ export async function prepareIdeaImageBatch(ideas:Idea[],owner:string,store:Idea
  }));
  return {ready,errors};
 }
+// Called only after /api/ideas reserves its daily batch allowance. New ideas
+// come first; spare capacity fills pictures missing from earlier eligible ideas.
+// Cached pictures and duplicate scenes never spend another provider call.
+export async function prepareSuggestionPictures(fresh:Idea[],previous:Idea[],owner:string,store:IdeaImageStore,generate:(idea:Idea)=>Promise<Uint8Array>){
+ const missing:Idea[]=[],seen=new Set<string>(),errors:{id:number;message:string}[]=[];
+ for(const idea of [...fresh.slice(0,10),...previous.slice().reverse()]){
+  if(idea.source!=='ai'||idea.image)continue;
+  const key=ideaImageKey(owner,idea);if(seen.has(key))continue;seen.add(key);
+  try{if(await store.createdAt(key)===null)missing.push(idea);}catch{errors.push({id:idea.id,message:'Some pictures could not be loaded.'});}
+  if(missing.length===10)break;
+ }
+ const result=await prepareIdeaImageBatch(missing,owner,store,generate);
+ return {ready:result.ready,errors:[...errors,...result.errors]};
+}
 export async function generateIdeaImage(idea:Idea,apiKey:string,model='gpt-image-2.5-sunburst',request:typeof fetch=fetch){
  if(!apiKey)throw new IdeaImageError('AI pictures are not connected. Your idea is still available.');
  const response=await request('https://api.openai.com/v1/images/generations',{
