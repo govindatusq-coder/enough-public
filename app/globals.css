@@ -138,3 +138,4 @@ html[data-enough-large=true] .reel-copy{max-height:calc(100dvh - 270px)}
 .consent-choices .secondary:hover{background:#eef3f8}
 .ai-consent-options .privacy-link,.collection-notice .privacy-link{max-width:100%;white-space:normal}
 @media(max-width:380px){.collection-notice,.ai-privacy-settings{padding:16px}.consent-choices .secondary{padding:14px}}
+.idea-tags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.idea-tags>span{padding:5px 9px;border:1px solid #adc5d8;border-radius:8px;background:#eef3f8;color:#163c5b;font-size:13px;line-height:1.5}.reel-copy .idea-tags>span,.experience-details .idea-tags>span{background:#163c5b;color:#f1f6fa;border-color:#7c9bb5}

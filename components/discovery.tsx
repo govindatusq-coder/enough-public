@@ -1,4 +1,5 @@
 "use client";
+import {IdeaTags} from '@/components/idea-tags';
 import Image from 'next/image';
 import {useEffect,useState} from 'react';
 import {Bookmark,Footprints,Wallet,Clock,Search,MapPin,Leaf,Users,Heart,SlidersHorizontal,Sparkles,Check,ArrowRight} from 'lucide-react';
@@ -17,7 +18,7 @@ export function IdeaTile({idea,state,onOpen}:{idea:Idea;state:State;onOpen:(id:n
      <span className="discovery-badge">{isFreeMove(idea)?'Free activity':idea.source==='ai'?'AI idea':'Everyday idea'}</span>
      {state.saved.includes(idea.id)&&<span className="tile-saved" aria-label="Saved"><Bookmark size={19} fill="currentColor"/></span>}
    </button>
-   <div className="discovery-card-body"><button className="tile-title" onClick={()=>onOpen(idea.id)}><h3>{idea.title}</h3></button><p>{idea.body}</p>
+   <div className="discovery-card-body"><button className="tile-title" onClick={()=>onOpen(idea.id)}><h3>{idea.title}</h3></button><p>{idea.body}</p><IdeaTags idea={idea}/>
      <div className="tile-returns"><span><Footprints size={17}/><strong>{idea.minutes} min</strong></span><span><Wallet size={17}/><strong>{formatMoney(saving?.cents||0,saving?.currency||state.profile.currency,state.profile.country)}</strong></span></div>
      <div className="tile-return-labels"><span>Exercise Minutes</span><span>Money Saved · estimate</span></div>
      <div className="tile-bottom"><span><Clock size={15}/>{idea.extraMin>0?`${idea.extraMin} extra min`:idea.extraMin<0?`${-idea.extraMin} min reclaimed`:'No extra time'}</span><button className="text-button" onClick={()=>onOpen(idea.id)}>See idea</button></div>
