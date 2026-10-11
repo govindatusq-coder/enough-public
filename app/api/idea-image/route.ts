@@ -3,6 +3,7 @@ import type {Idea} from '@/lib/ideas';
 import {validateState} from '@/lib/account-validation';
 import {createIdeaImageHandlers} from '@/lib/idea-image-http';
 import {ideaImageStorage} from '@/lib/idea-image-storage';
+import {ideaSchema} from '@/lib/idea-validation';
 export const dynamic='force-dynamic';
 export const maxDuration=180;
 async function licensed(idea:Idea){
@@ -16,7 +17,13 @@ async function licensed(idea:Idea){
  return null;
 }
 const handlers=createIdeaImageHandlers({
- async account(){const {db,user}=await signedIn();if(!user)return null;const {data,error}=await db.from('enough_accounts').select('state_json').eq('user_id',user.id).maybeSingle();if(error)throw error;return {owner:user.id,ideas:data?validateState(data.state_json).generated||[]:[],store:ideaImageStorage(db)};},
+ async account(id){
+  const {db,user}=await signedIn();if(!user)return null;
+  const {data,error}=await db.from('enough_ideas').select('idea_json').eq('user_id',user.id).eq('idea_id',id).maybeSingle();if(error)throw error;
+  if(data)return {owner:user.id,ideas:[ideaSchema.parse(data.idea_json)],store:ideaImageStorage(db)};
+  const {data:account,error:readError}=await db.from('enough_accounts').select('state_json').eq('user_id',user.id).maybeSingle();if(readError)throw readError;
+  return {owner:user.id,ideas:account?validateState(account.state_json).generated||[]:[],store:ideaImageStorage(db)};
+ },
  licensed
 });
 export const GET=handlers.GET;
