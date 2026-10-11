@@ -26,14 +26,16 @@ export function moveFeedback(ideaId:number,state:State,now=new Date()){
  return {tries:rows.length,worthwhile:rows.filter(e=>e.worthwhile).length};
 }
 
-type Topic={key:string;title:string;art:string;interests:string[];matches:(i:Idea)=>boolean};
+type Topic={key:string;title:string;art:string;image?:string;interests:string[];matches:(i:Idea)=>boolean};
+// Collection covers describe the topic, independently of which eligible idea
+// happens to appear first. Several topics can share the same seated suggestion.
 const topics:Topic[]=[
- {key:'outside',title:'A little fresh air',art:'Outside',interests:['Nature','Exploring new places','Gardening','Photography','Animals'],matches:i=>i.outdoor&&isFreeMove(i)},
- {key:'listen',title:'Listen and move',art:'Podcasts',interests:['Podcasts','Music','Audiobooks','Listening to something','Reading'],matches:i=>i.category==='listen'},
- {key:'family',title:'With the family',art:'Family time',interests:['Family time','Family'],matches:i=>i.category==='family'},
- {key:'calls',title:'Catch-ups and conversations',art:'Calls',interests:['Friends / talking','Friends','Conversation'],matches:i=>i.category==='call'||i.social},
+ {key:'outside',title:'A little fresh air',art:'Outside',image:'/images/welcome-coast.webp',interests:['Nature','Exploring new places','Gardening','Photography','Animals'],matches:i=>i.outdoor&&isFreeMove(i)},
+ {key:'listen',title:'Listen and move',art:'Podcasts',image:'/images/welcome-podcast.webp',interests:['Podcasts','Music','Audiobooks','Listening to something','Reading'],matches:i=>i.category==='listen'},
+ {key:'family',title:'With the family',art:'Family time',image:'/images/welcome-school.webp',interests:['Family time','Family'],matches:i=>i.category==='family'},
+ {key:'calls',title:'Catch-ups and conversations',art:'Calls',image:'/images/welcome-catchup-walk.webp',interests:['Friends / talking','Friends','Conversation'],matches:i=>i.category==='call'||i.social},
  {key:'tasks',title:'Everyday tasks',art:'Household tasks',interests:['Making things','Solving problems','Gardening'],matches:i=>['chores','work','errand','shopping'].includes(i.category)},
- {key:'pauses',title:'Useful little pauses',art:'Short bursts',interests:['Solving problems'],matches:i=>i.category==='waiting'||i.category==='think'||i.category==='work'&&i.minutes<=10}
+ {key:'pauses',title:'Useful little pauses',art:'Short bursts',image:'/images/welcome-ad-break-strength.webp',interests:['Solving problems'],matches:i=>i.category==='waiting'||i.category==='think'||i.category==='work'&&i.minutes<=10}
 ];
 export function moveCollections(ideas:Idea[],state:State,now=new Date()){
  const liked=new Set(confirmedWins(state.entries,now).filter(e=>e.worthwhile).map(e=>e.ideaId));
