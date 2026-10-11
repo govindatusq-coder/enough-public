@@ -7,7 +7,7 @@ export const snapshotSchema=z.object({source:z.enum(['apple-health','health-conn
 export type Snapshot=z.infer<typeof snapshotSchema>;
 export type Evidence=z.infer<typeof movementEvidenceSchema>;
 export type Metric='steps'|'exerciseMinutes';
-export const movementSettingsSchema=z.object({metric:z.enum(['steps','exerciseMinutes']),threshold:z.number().int().finite().positive().max(100000).nullable()}).strict();
+export const movementSettingsSchema=z.object({metric:z.enum(['steps','exerciseMinutes']),threshold:z.number().int().finite().positive().max(100000).nullable(),quietChoice:z.enum(['amount','none']).optional(),keepSittingBreaksAfterEnough:z.boolean().optional()}).strict().refine(s=>s.quietChoice!=='none'||s.threshold===null,'No limit cannot have a threshold').refine(s=>s.quietChoice!=='amount'||s.threshold!==null,'Choose a positive usual amount').refine(s=>s.metric!=='exerciseMinutes'||s.threshold===null||s.threshold<=1440,'Use no more than 1440 minutes');
 export type MovementSettings=z.infer<typeof movementSettingsSchema>;
 export function dateAt(now:Date,timezone:string){const p=new Intl.DateTimeFormat('en-CA',{timeZone:timezone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);const part=(name:string)=>p.find(v=>v.type===name)!.value;return `${part('year')}-${part('month')}-${part('day')}`;}
 export function suggestedThreshold(s:Snapshot,metric:Metric,now=new Date()):number|null{
@@ -15,4 +15,10 @@ export function suggestedThreshold(s:Snapshot,metric:Metric,now=new Date()):numb
  const unique=new Map(s.days.filter(d=>d.date<today&&d.date>=lower).map(d=>[d.date,d[metric]]));const values=[...unique.values()].filter((v):v is number=>v!==null&&Number.isFinite(v)&&v>=0).sort((a,b)=>a-b);if(values.length<7)return null;const middle=Math.floor(values.length/2);const median=values.length%2?values[middle]:(values[middle-1]+values[middle])/2;return median>0?Math.max(1,Math.round(median)):null;
 }
 export function todayMovement(s:Snapshot|null,now=new Date()){if(!s||Date.parse(s.readAt)>now.getTime()+60000||now.getTime()-Date.parse(s.readAt)>15*60000)return null;return s.days.find(d=>d.date===dateAt(now,s.timezone))||null;}
-export function enoughToday(s:Snapshot|null,settings:MovementSettings,now=new Date()){const value=todayMovement(s,now)?.[settings.metric];return settings.threshold!==null&&value!==null&&value!==undefined&&value>=settings.threshold;}
+export function enoughToday(s:Snapshot|null,settings:MovementSettings,now=new Date()){const value=todayMovement(s,now)?.[settings.metric];return settings.quietChoice!=='none'&&settings.threshold!==null&&value!==null&&value!==undefined&&value>=settings.threshold;}
+// New suggestion surfaces quieten after an explicitly chosen amount. Browsing
+// and saved/planned histories stay available; daily readings never enter state.
+export function suggestionsAfterEnough<T extends {breaksSitting:boolean;minutes:number}>(ideas:T[],reached:boolean,settings?:MovementSettings){
+ if(!reached)return ideas;
+ return settings?.keepSittingBreaksAfterEnough===false?[]:ideas.filter(i=>i.breaksSitting&&i.minutes>=1&&i.minutes<=3);
+}
