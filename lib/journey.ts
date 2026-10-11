@@ -1,8 +1,9 @@
+import {weeklyReviewsSchema,planMomentSchema,type WeeklyReview,type PlanMoment} from './weekly-review.ts';
 import {sittingContextsSchema,type SittingContext} from './daily-contexts.ts';
 import {catalogue,byId,promised,type Idea,type ValueType} from "./ideas.ts";
 import {ideaSchema} from "./idea-validation.ts";
 import type { Companion } from "./move-memories";
-import type { SupportPlan } from "./move-support";
+import {supportPlanSchema,type SupportPlan} from "./move-support.ts";
 import {currencyCodes,countrySchema,costSchema,type Cost} from "./regions.ts";
 export const STORAGE_KEY = 'enough.stage2.v1';
 export const groups = [
@@ -14,9 +15,9 @@ export const groups = [
 export type Category = typeof groups[number]['key'];
 export type Profile = {sittingContexts?:SittingContext[];country?:string;name:string;preferences:string[];interests:string[];needs:string[];strengths:string[];activity:string;rhythms:string[];window:string;currency:string;visual:string[];complete:boolean};
 import type {Evidence,MovementSettings} from "./movement";
-export type Entry = {id:string;ideaId:number;status:'accepted'|'completed'|'not-today';acceptedAt:string;completedAt?:string;minutes?:number;outside?:boolean;connecting?:boolean;worthwhile?:boolean;moneyCents?:number;currency:string;support?:SupportPlan;companions?:Companion[];predicted?:ValueType[];gave?:ValueType[];timeCombined?:number;movementWindow?:{start:string;end?:string};movementEvidence?:Evidence;brokeSitting?:'yes'|'no'|'unsure';additionalMovement?:'more'|'same'|'less'|'unsure'};
+export type Entry = {id:string;ideaId:number;status:'accepted'|'completed'|'not-today';acceptedAt:string;completedAt?:string;minutes?:number;outside?:boolean;connecting?:boolean;worthwhile?:boolean;moneyCents?:number;currency:string;support?:SupportPlan;companions?:Companion[];predicted?:ValueType[];gave?:ValueType[];timeCombined?:number;movementWindow?:{start:string;end?:string};movementEvidence?:Evidence;planMoment?:PlanMoment;brokeSitting?:'yes'|'no'|'unsure';additionalMovement?:'more'|'same'|'less'|'unsure'};
 import {aiConsentSchema,type AiConsent} from "./ai-consent.ts";
-export type State = {version:1;aiConsent?:AiConsent;costs?:Cost[];movementSettings?:MovementSettings;profile:Profile;saved:number[];entries:Entry[];demo:boolean;today:{date:string;context:string};generated?:Idea[];passes?:{ideaId:number;at:string}[];tuning?:{extraMinutes:number;travel:'walk'|'drive'|'transit'|'varies';hidden:number[]}};
+export type State = {version:1;weeklyReviews?:WeeklyReview[];aiConsent?:AiConsent;costs?:Cost[];movementSettings?:MovementSettings;profile:Profile;saved:number[];entries:Entry[];demo:boolean;today:{date:string;context:string};generated?:Idea[];passes?:{ideaId:number;at:string}[];tuning?:{extraMinutes:number;travel:'walk'|'drive'|'transit'|'varies';hidden:number[]}};
 export const emptyState = ():State => ({version:1,profile:{name:'',preferences:[],interests:[],needs:[],strengths:[],activity:'',rhythms:[],window:'',currency:'AUD',visual:[],complete:false},saved:[],entries:[],demo:false,today:{date:'',context:''}});
 export const currencies:readonly string[] = currencyCodes;
 export function completeProfile(p:Profile){return groups.every(g=>p[g.key].length>0)&&!!p.activity&&p.rhythms.length>0&&!!p.window;}
@@ -27,16 +28,19 @@ export function receipt(entries:Entry[],period:string,currency:string,now=new Da
  return {rows,money:rows.filter(e=>e.currency===currency).reduce((n,e)=>n+(e.moneyCents||0),0),outside:rows.reduce((n,e)=>n+(e.outside?e.minutes||0:0),0),connecting:rows.reduce((n,e)=>n+(e.connecting?e.minutes||0:0),0),worthwhile:rows.filter(e=>e.worthwhile).length};
 }
 export function accept(s:State,ideaId:number):State{if(!s.demo||!completeProfile(s.profile))return s;if(s.entries.some(e=>e.ideaId===ideaId&&e.status==='accepted'))return s;return {...s,entries:[...s.entries,{id:crypto.randomUUID(),ideaId,status:'accepted',acceptedAt:new Date().toISOString(),currency:s.profile.currency,predicted:byId(ideaId,s.generated)?promised(byId(ideaId,s.generated)!):[]}]};}
-export function finish(s:State,id:string,outcome:Pick<Entry,'minutes'|'outside'|'connecting'|'worthwhile'|'moneyCents'|'gave'|'timeCombined'|'additionalMovement'|'brokeSitting'>):State{
+export function finish(s:State,id:string,outcome:Pick<Entry,'minutes'|'outside'|'connecting'|'worthwhile'|'moneyCents'|'gave'|'timeCombined'|'additionalMovement'|'brokeSitting'|'planMoment'>):State{
+ if(outcome.planMoment!==undefined)planMomentSchema.parse(outcome.planMoment);
  if(outcome.brokeSitting!==undefined&&!['yes','no','unsure'].includes(outcome.brokeSitting))throw Error('Check your sitting-break answer.');
  if(!Number.isInteger(outcome.minutes)||outcome.minutes!<0||outcome.minutes!>240||!Number.isInteger(outcome.moneyCents)||outcome.moneyCents!<0||outcome.moneyCents!>100000)throw Error('Check your minutes and saving.');
  return {...s,entries:s.entries.map(e=>e.id===id&&e.status==='accepted'?{...e,...outcome,status:'completed',completedAt:new Date().toISOString()}:e)};
 }
 export function restore(raw:string):State {
- const s=JSON.parse(raw);if(s?.profile?.sittingContexts!==undefined)s.profile.sittingContexts=sittingContextsSchema.parse(s.profile.sittingContexts);if(s?.aiConsent!==undefined)s.aiConsent=aiConsentSchema.parse(s.aiConsent);if(s?.profile?.country!==undefined)countrySchema.parse(s.profile.country);if(s?.costs!==undefined){if(!Array.isArray(s.costs)||s.costs.length>200)throw Error("Stored costs could not be read.");s.costs=s.costs.map((c:unknown)=>costSchema.parse(c));}if(s?.generated){if(!Array.isArray(s.generated))throw Error('Stored ideas could not be read.');s.generated=s.generated.map((i:unknown)=>ideaSchema.parse(i));} const stringArray=(v:unknown):v is string[]=>Array.isArray(v)&&v.every(x=>typeof x==='string');
+ const s=JSON.parse(raw);if(s?.weeklyReviews!==undefined)s.weeklyReviews=weeklyReviewsSchema.parse(s.weeklyReviews);if(s?.profile?.sittingContexts!==undefined)s.profile.sittingContexts=sittingContextsSchema.parse(s.profile.sittingContexts);if(s?.aiConsent!==undefined)s.aiConsent=aiConsentSchema.parse(s.aiConsent);if(s?.profile?.country!==undefined)countrySchema.parse(s.profile.country);if(s?.costs!==undefined){if(!Array.isArray(s.costs)||s.costs.length>200)throw Error("Stored costs could not be read.");s.costs=s.costs.map((c:unknown)=>costSchema.parse(c));}if(s?.generated){if(!Array.isArray(s.generated))throw Error('Stored ideas could not be read.');s.generated=s.generated.map((i:unknown)=>ideaSchema.parse(i));} const stringArray=(v:unknown):v is string[]=>Array.isArray(v)&&v.every(x=>typeof x==='string');
  if(!s||s.version!==1||!s.profile||!Array.isArray(s.entries)||!Array.isArray(s.saved)||!groups.every(g=>stringArray(s.profile[g.key]))||typeof s.profile.name!=='string'||!stringArray(s.profile.rhythms)||!stringArray(s.profile.visual)||typeof s.profile.activity!=='string'||typeof s.profile.window!=='string'||!currencies.includes(s.profile.currency)||!s.today||typeof s.today.date!=='string'||typeof s.today.context!=='string'||typeof s.demo!=='boolean'||s.saved.some((n:unknown)=>typeof n!=='number'||!byId(n,s.generated)))throw Error('Stored preview could not be read.');
  if(s.entries.some((e:Entry)=>!e||typeof e.id!=='string'||!byId(e.ideaId,s.generated)||!['accepted','completed','not-today'].includes(e.status)||!currencies.includes(e.currency)||!Number.isFinite(Date.parse(e.acceptedAt))||e.status==='completed'&&(!e.completedAt||!Number.isFinite(Date.parse(e.completedAt))||!Number.isInteger(e.minutes)||e.minutes!<0||e.minutes!>240||!Number.isInteger(e.moneyCents)||e.moneyCents!<0||e.moneyCents!>100000||typeof e.outside!=='boolean'||typeof e.connecting!=='boolean'||typeof e.worthwhile!=='boolean')))throw Error('Stored moves could not be read.');
+ for(const e of s.entries){if(e.support!==undefined)e.support=supportPlanSchema.parse(e.support);if(e.planMoment!==undefined)e.planMoment=planMomentSchema.parse(e.planMoment);}
  if(s.entries.some((e:Entry)=>e.brokeSitting!==undefined&&!['yes','no','unsure'].includes(e.brokeSitting)))throw Error('Stored sitting-break answer could not be read.');
+ if(s.weeklyReviews?.some((r:WeeklyReview)=>r.plans.some(p=>!s.entries.some((e:Entry)=>e.id===p.entryId))))throw Error('Stored review plan reference could not be read.');
  if(s.costs?.some((c:Cost)=>!byId(c.ideaId,s.generated)))throw Error("Stored cost reference could not be read.");
  return {...s,profile:{...s.profile,complete:completeProfile(s.profile)}};
 }

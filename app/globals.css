@@ -139,3 +139,8 @@ html[data-enough-large=true] .reel-copy{max-height:calc(100dvh - 270px)}
 .ai-consent-options .privacy-link,.collection-notice .privacy-link{max-width:100%;white-space:normal}
 @media(max-width:380px){.collection-notice,.ai-privacy-settings{padding:16px}.consent-choices .secondary{padding:14px}}
 .idea-tags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.idea-tags>span{padding:5px 9px;border:1px solid #adc5d8;border-radius:8px;background:#eef3f8;color:#163c5b;font-size:13px;line-height:1.5}.reel-copy .idea-tags>span,.experience-details .idea-tags>span{background:#163c5b;color:#f1f6fa;border-color:#7c9bb5}
+.weekly-review{margin-top:20px;padding-top:20px;border-top:1px solid #bbc9cf}
+.weekly-review h3{font-size:20px;margin-bottom:10px}.weekly-review p{line-height:1.6}
+.weekly-review form{display:grid;gap:16px;margin-top:16px}.weekly-review textarea{min-height:80px}
+.weekly-review dt{font-weight:600;margin-top:12px}.weekly-review dd{margin:4px 0;overflow-wrap:anywhere;white-space:pre-wrap}
+.review-plan{display:grid;gap:10px;margin-top:12px}.review-plan legend{font-size:15px}
