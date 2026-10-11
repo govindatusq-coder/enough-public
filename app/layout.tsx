@@ -4,6 +4,9 @@ import "./experience.css";
 import "./moves.css";
 import "./idea-images.css";
 
+// Every HTML response uses a fresh CSP nonce, including sign-in and recovery.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "ENOUGH — Movement that gives back",
   description: "Less sacrifice. More life. Explore ENOUGH, a quiet place for movement that fits your everyday.",
