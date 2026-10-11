@@ -1,8 +1,14 @@
 # ENOUGH public-hosting migration
 
+## Continuous suggestions
+
+My Moves keeps offering **More suggestions** whenever the user asks. There is no daily batch cap. A private, expiring per-account reservation prevents simultaneous AI requests, and is released on success or failure. Every batch is archived before the response; earlier ideas are browsable in cursor-based pages rather than disappearing after 100 suggestions. Cloud snapshots retain the latest 100 ideas plus every bookmarked, planned, completed or cost-referenced idea. Newly requested suggestions appear first. Existing PINS eligibility checks still apply; an entirely duplicate or ineligible batch gets at most one retry without loosening those boundaries.
+
+The follow-up migration is `supabase/migrations/20261011045017_continuous_suggestions.sql`. Applied to the existing project as migration `20261011045017`; do not apply it again. It preserves existing suggestions, retains account revision checks and owner isolation, and updates the legacy daily-slot function for deployment compatibility. `schema.sql` records the original migrations only.
+
 ## Current AI idea pictures
 
-Requesting My Moves suggestions generates activity-specific lifestyle pictures using the existing server-only OpenAI key. New ideas take priority; spare batch capacity fills missing pictures for earlier eligible suggestions, including when there are no new candidates. Pictures are privately cached in the existing owner-restricted storage bucket and shared by cards and details. There are no separate picture buttons or per-picture batch notices. Opening cards only reads the cache; generation happens only within the existing quota-checked suggestion request. Approved library artwork and the private real-moment photo gallery remain separate.
+Requesting My Moves suggestions generates activity-specific lifestyle pictures using the existing server-only OpenAI key. New ideas take priority; spare batch capacity fills missing pictures for earlier eligible suggestions, including when there are no new candidates. Pictures are privately cached in the existing owner-restricted storage bucket and shared by cards and details. There are no separate picture buttons or per-picture batch notices. Opening cards only reads the cache; generation happens only within the user-requested suggestion batch. Approved library artwork and the private real-moment photo gallery remain separate.
 
 See [the 11 October 2026 suggestion-picture verification record](docs/verification/suggestion-pictures-2026-10-11.md) for the current flow and checks. The [10 October image verification record](docs/verification/idea-images-2026-10-10.md) records the original image implementation and real-provider verification. The migration notes below describe the original migration, not the latest deployment status.
 
@@ -15,7 +21,7 @@ This is a separate Next.js application prepared for Vercel and Supabase. The ori
 - Request-scoped Supabase clients and verified server identity. No service-role key.
 - Supabase accounts with optimistic revision protection; private photo metadata and storage.
 - Row-level access rules restrict accounts/photos to their authenticated owner.
-- Five fresh AI batches per UTC day, enforced by a restricted internal database function.
+- User-requested AI batches with a private single-request guard, no daily cap, and persistent paged suggestion history.
 - Existing manual outcomes, PINS, routines, QR check-ins, plans, receipts and region/currency logic retained.
 
 ## Provisioned Supabase project

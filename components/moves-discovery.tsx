@@ -1,6 +1,7 @@
 "use client";
 import Image from 'next/image';
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
+import {freshFirst} from '@/lib/suggestion-history';
 import {ArrowLeft,ArrowRight,Bike,Bookmark,Check,Clock,Footprints,Headphones,Heart,LayoutGrid,Leaf,MapPin,PanelsTopLeft,Search,SlidersHorizontal,Sparkles,Video,Volleyball,Wallet} from 'lucide-react';
 import {ChoiceArtwork} from '@/components/pins-options';
 import {IdeaImageArt,useIdeaPhoto,type IdeaImageContext,type IdeaPhotoState} from '@/components/idea-photo';
@@ -13,7 +14,7 @@ import {moneyValue} from '@/lib/recommendations';
 import {formatMoney} from '@/lib/regions';
 import {defaultMoveOptions,favouriteCollections,moveCollections,moveFeedback,moveFilters,movesIdeas,moveVisual,type MoveFilter,type MoveOptions} from '@/lib/moves';
 
-type Props={state:State;ideas:Idea[];now:number;onOpen:(id:number)=>void;onSave:(id:number)=>void;onSaved:()=>void;onPlanned:()=>void;onPins:()=>void;onWins:()=>void;onTune:()=>void;imageContext:IdeaImageContext;aiAvailable:boolean;aiBusy:boolean;aiDisabled:boolean;aiError:string;onGenerate:()=>void};
+type Props={state:State;ideas:Idea[];now:number;onOpen:(id:number)=>void;onSave:(id:number)=>void;onSaved:()=>void;onPlanned:()=>void;onPins:()=>void;onWins:()=>void;onTune:()=>void;imageContext:IdeaImageContext;aiAvailable:boolean;aiBusy:boolean;aiDisabled:boolean;aiError:string;onGenerate:()=>void;freshIds:number[];history:{hasMore:boolean;loading:boolean;error:string;loadMore:()=>void}};
 function scrollTo(id:string){requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}))}
 function MoveArt({idea,art,image,photo}:{idea?:Idea;art?:string;image?:string;photo?:IdeaPhotoState}){
  if(idea?.source==='ai'&&photo)return <IdeaImageArt idea={idea} photo={photo}/>;
@@ -38,7 +39,7 @@ function MoveCard({idea,state,now,onOpen,onSave,surprise,imageContext}:{idea:Ide
  </article>;
 }
 
-export function MovesDiscovery({state,ideas,now,onOpen,onSave,onSaved,onPlanned,onPins,onWins,onTune,imageContext,aiAvailable,aiBusy,aiDisabled,aiError,onGenerate}:Props){
+export function MovesDiscovery({state,ideas,now,onOpen,onSave,onSaved,onPlanned,onPins,onWins,onTune,imageContext,aiAvailable,aiBusy,aiDisabled,aiError,onGenerate,freshIds,history}:Props){
  const [filter,setFilter]=useState<MoveFilter>('For you'),[options,setOptions]=useState<MoveOptions>(defaultMoveOptions),[filtersOpen,setFiltersOpen]=useState(false);
  const [layout,setLayout]=useState<'row'|'grid'>('row'),[limit,setLimit]=useState(8),[surpriseId,setSurpriseId]=useState<number|null>(null),[collection,setCollection]=useState<string|null>(null),[savedOnly,setSavedOnly]=useState(false);
  const rail=useRef<HTMLDivElement>(null),personal=completeProfile(state.profile),activity=dashboardActivity(state,new Date(now));
@@ -46,7 +47,8 @@ export function MovesDiscovery({state,ideas,now,onOpen,onSave,onSaved,onPlanned,
  const pool=movesIdeas(ideas,filter,state,options),selected=collection?collections.find(t=>t.key===collection):undefined;
  const narrowed=selected?pool.filter(i=>selected.ideas.some(p=>p.id===i.id)&&(!savedOnly||state.saved.includes(i.id))):collection?[]:pool;
  const featured=narrowed.find(i=>i.id===surpriseId)||narrowed[0];
- const shown=filter==='Surprise me'&&featured?[featured,...narrowed.filter(i=>i.id!==featured.id)]:narrowed;
+ const shown=filter==='Surprise me'&&featured?[featured,...narrowed.filter(i=>i.id!==featured.id)]:freshFirst(narrowed,freshIds);
+ useEffect(()=>{if(freshIds.length){setLimit(8);if(rail.current)rail.current.scrollLeft=0}},[freshIds]);
  const free=pool.filter(isFreeMove),planned=activity.planned;
  const clear=()=>{setFilter('For you');setOptions(defaultMoveOptions);setCollection(null);setSavedOnly(false);setSurpriseId(null);setLimit(8)};
  const chooseFilter=(value:MoveFilter)=>{setFilter(value);setCollection(null);setSavedOnly(false);setLimit(8);setSurpriseId(value==='Surprise me'?surpriseIdeaId(movesIdeas(ideas,value,state,options),featured?.id??null):null);if(value==='Near me')scrollTo('moves-nearby');else if(rail.current)rail.current.scrollLeft=0};
@@ -73,7 +75,8 @@ export function MovesDiscovery({state,ideas,now,onOpen,onSave,onSaved,onPlanned,
      <div className="moves-results-heading"><div><span className="eyebrow">{personal?'SHAPED BY YOUR PINS':'IDEAS TO EXPLORE'}</span><h2>{selected?selected.title+(savedOnly?' · saved':''):filter==='Surprise me'?'Something you might not think of.':'A little possibility.'}</h2><p role="status">{shown.length} {shown.length===1?'idea':'ideas'}{selected?' in this collection':filter==='For you'?'':` · ${filter}`}</p></div><div className="moves-result-actions"><div className="moves-layout-control" aria-label="Idea display"><button aria-label="Card row" aria-pressed={layout==='row'} onClick={()=>setLayout('row')}><PanelsTopLeft size={18}/></button><button aria-label="Card grid" aria-pressed={layout==='grid'} onClick={()=>setLayout('grid')}><LayoutGrid size={18}/></button></div>{layout==='row'&&shown.length>1&&<div className="moves-rail-controls"><button aria-label="Previous idea cards" onClick={()=>pageRail(-1)}><ArrowLeft size={18}/></button><button aria-label="Next idea cards" onClick={()=>pageRail(1)}><ArrowRight size={18}/></button></div>}</div></div>
      {collection&&<div className="moves-collection-filter"><span>{savedOnly?'Saved ideas within your current needs.':selected?.reason||'Your collection has no ideas within these filters.'}</span><button className="text-button" onClick={()=>{setCollection(null);setSavedOnly(false)}}>Show every collection</button></div>}
      {shown.length?<><div ref={rail} className={'moves-card-list moves-card-'+layout}>{shown.slice(0,limit).map(i=><MoveCard key={i.id} idea={i} state={state} now={now} onOpen={onOpen} onSave={onSave} surprise={filter==='Surprise me'&&i.id===featured?.id} imageContext={imageContext}/>)}</div>{shown.length>limit&&<button className="secondary moves-show-more" onClick={()=>setLimit(n=>n+8)}>Show more ideas</button>}</>:<div className="glass-empty moves-empty"><Leaf size={27}/><h2>{ideas.length?'Let’s try another angle.':'Your needs come first.'}</h2><p>{state.profile.needs.some(n=>n.startsWith('Something else: '))?'Your written need is saved. Suggestions are paused because ENOUGH cannot yet assess free-text needs. Keep your answer or review the listed boundaries in My Pins.':filter==='Save money'?'No saving is recorded for these ideas in your currency. A free move can still give you movement, useful time, and enjoyment.':ideas.length?'Try another word, setting or collection. Your current needs will keep applying.':'No library idea currently clears your needs. Keep your boundaries, or revisit My Pins when something changes.'}</p><button className="secondary" onClick={ideas.length?clear:onPins}>{ideas.length?'Clear search and filters':'Review My Pins'}</button></div>}
-     <div className="moves-library-note"><p>Movement, time and savings are estimates. Only confirmed outcomes enter My Wins.</p><div><button className="text-button" onClick={onTune}>Tune my ideas</button>{aiAvailable&&<button className="secondary" disabled={aiBusy||aiDisabled} onClick={onGenerate}>{aiBusy?'Preparing ideas and pictures…':'Generate fresh ideas'}</button>}</div></div>{aiError&&<p className="storage-alert" role="alert">{aiError}</p>}
+     {(history.hasMore||history.error)&&<div className="moves-history"><button className="secondary moves-show-more" disabled={history.loading} onClick={()=>{setLimit(n=>n+32);history.loadMore()}}>{history.loading?'Loading earlier ideas…':history.error?'Retry earlier ideas':'Show earlier ideas'}</button>{history.error&&<p className="storage-alert" role="alert">{history.error}</p>}</div>}
+     <div className="moves-library-note"><p>Movement, time and savings are estimates. Only confirmed outcomes enter My Wins.</p><div><button className="text-button" onClick={onTune}>Tune my ideas</button>{aiAvailable&&<button className="secondary" disabled={aiBusy||aiDisabled} onClick={()=>{clear();onGenerate()}}>{aiBusy?'Preparing ideas and pictures…':'More suggestions'}</button>}</div></div>{aiAvailable&&<p className="sample-note">Keep exploring. Ask for more whenever you like.</p>}{aiError&&<p className="storage-alert" role="alert">{aiError}</p>}
    </section>
 
    <div className="moves-context-row">

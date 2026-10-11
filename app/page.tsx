@@ -23,6 +23,8 @@ import { IdeaPhoto,useIdeaPhoto,usePrepareIdeaPhotos } from "@/components/idea-p
 import { catalogue,byId,type ValueType } from "@/lib/ideas";
 import { recommend,moneyValue,learnedWeights,eligible } from "@/lib/recommendations";
 import { useCloudAccount } from "@/hooks/use-cloud-account";
+import { useSuggestionHistory } from "@/hooks/use-suggestion-history";
+import { mergeIdeas } from "@/lib/suggestion-history";
 const tabs = [{id:"enough",label:"My Enough",Icon:House},{id:"moves",label:"My Moves",Icon:Footprints},{id:"wins",label:"My Wins",Icon:ReceiptText},{id:"pins",label:"My Pins",Icon:Pin}];
 
 function PathMark({large=false}:{large?:boolean}){return <svg className={large?"path-art":"path-mark"} viewBox="0 0 240 150" fill="none" aria-hidden="true"><path d="M8 124C48 125 49 86 90 91S155 119 166 75 124 30 149 17 216 39 229 6" stroke="currentColor" strokeWidth={large?1.5:7} strokeLinecap="round"/></svg>}
@@ -41,9 +43,11 @@ export default function Home(){
  const [state,setState]=useState<State>(emptyState),[ready,setReady]=useState(false),[storageError,setStorageError]=useState(""),[step,setStep]=useState<number|null>(null),[draft,setDraft]=useState<Profile>(emptyState().profile),[pending,setPending]=useState<'save'|'accept'|null>(null),[selected,setSelected]=useState(""),[minutes,setMinutes]=useState(""),[saving,setSaving]=useState(""),[savedMoney,setSavedMoney]=useState(false),[outside,setOutside]=useState(false),[connecting,setConnecting]=useState(false),[worthwhile,setWorthwhile]=useState<string|null>(null),[formError,setFormError]=useState(""),[filter,setFilter]=useState("Explore");
  const [gave,setGave]=useState<ValueType[]>([]),[combined,setCombined]=useState(''),[aiAvailable,setAiAvailable]=useState(false),[aiBusy,setAiBusy]=useState(false),[aiError,setAiError]=useState(''),[savedPreview,setSavedPreview]=useState(0);
  const [detailOpen,setDetailOpen]=useState(false);
- const [imageRefresh,setImageRefresh]=useState(0);
+ const [imageRefresh,setImageRefresh]=useState(0),[freshIds,setFreshIds]=useState<number[]>([]);
+ const generating=useRef(false);
  const [setupRequested,setSetupRequested]=useState(false);
  const accountStore=useCloudAccount(state,setState,ready);
+ const suggestionHistory=useSuggestionHistory(accountStore.account?.user?.email||'',accountStore.cloud,setState);
  const [supportId,setSupportId]=useState<string|null>(null),[clock,setClock]=useState(Date.now());
  useEffect(()=>{const timer=setInterval(()=>setClock(Date.now()),30000);return()=>clearInterval(timer)},[]);
  const supportEntry=state.entries.find(e=>e.id===supportId);
@@ -59,9 +63,10 @@ export default function Home(){
  useEffect(()=>{if(isComplete&&feed.length)setIndex(feed[0].idea.id)},[isComplete,rankingContext]);
  useEffect(()=>{void fetch('/api/ideas').then(r=>r.json()).then(d=>setAiAvailable(!!(d as {available?:boolean}).available)).catch(()=>{})},[]);
  const freshIdeas=async()=>{
-  if(aiBusy)return;
+  if(generating.current)return;
   if(!accountStore.cloud){setModal('account');return}
-  setAiBusy(true);setAiError('');
+  if(!accountStore.synced)return;
+  generating.current=true;setAiBusy(true);setAiError('');
   try{
    const r=await fetch('/api/ideas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timezone:Intl.DateTimeFormat().resolvedOptions().timeZone})});
    const d=await r.json() as {ideas?:typeof catalogue;error?:string;imageWarning?:boolean;picturesPrepared?:number};
@@ -71,12 +76,14 @@ export default function Home(){
     setNotice(d.imageWarning?'Your existing suggestions are available. Some pictures couldn’t be prepared this time.':d.picturesPrepared?'Pictures for your existing suggestions are ready. No new ideas cleared your current needs.':'No new ideas cleared your needs and constraints. Your library remains available.');
     return;
    }
-   update(s=>{const all=[...(s.generated||[]),...d.ideas!],needed=new Set([...s.saved,...s.entries.map(e=>e.ideaId),...(s.costs||[]).map(c=>c.ideaId)]),kept=all.filter(i=>needed.has(i.id)),other=all.filter(i=>!needed.has(i.id));return {...s,generated:[...kept,...other.slice(-(100-kept.length))].slice(0,100)}});
+   update(s=>({...s,generated:mergeIdeas(s.generated||[],d.ideas!)}));
+   setFreshIds(d.ideas.map(i=>i.id));
+   setIndex(d.ideas[0].id);
    setNotice(d.imageWarning?'Your new suggestions are ready. Some pictures couldn’t be prepared this time.':'Your new suggestions are ready, alongside your library.');
-  }catch(e){setAiError((e as Error).message)}finally{setAiBusy(false)}
+  }catch(e){setAiError((e as Error).message)}finally{generating.current=false;setAiBusy(false)}
  };
  const imageContext={scope:accountStore.account?.user?.email||'',ready:isComplete&&accountStore.cloud&&accountStore.status==='saved'&&accountStore.synced,refresh:imageRefresh};
- usePrepareIdeaPhotos((state.generated||[]).filter(i=>eligible(i,state,new Date(clock))),imageContext);
+ usePrepareIdeaPhotos((state.generated||[]).slice(-10).filter(i=>eligible(i,state,new Date(clock))),imageContext);
  const photo=useIdeaPhoto(idea,imageContext);
  const money=(cents:number,currency=profile.currency)=>formatMoney(cents,currency,profile.country);
  const update=(fn:(s:State)=>State)=>setState(fn);
@@ -137,9 +144,9 @@ export default function Home(){
  {tab==="moves"&&<>{(filter!=='Explore'||detailOpen)&&<div className="page-heading"><div><span className="eyebrow">LIFE FIRST. MOVEMENT FITS.</span><h1>My Moves</h1><p>A little possibility in what you’re already doing.</p></div><button className="icon-button" aria-label={focus?"Exit focused view":"Focus on the idea"} onClick={()=>{setDetailOpen(true);setFocus(!focus)}}>{focus?<X/>:<Maximize2 size={20}/>}</button></div>}
  {!isComplete&&(filter!=='Explore'||detailOpen)&&<div className="pins-intro"><div><p>These are examples. Complete your PINS and routines to get personalised ideas. An account is needed only when you save or accept one.</p><button className="text-button" onClick={startSetup}>Set up My Pins</button></div></div>}
  <div className="period-control" aria-label="Move view">{['Explore','Saved','Planned'].map(v=><button key={v} aria-pressed={filter===v} onClick={()=>{setFilter(v);setDetailOpen(false)}}>{v}{v==='Saved'&&state.saved.length>0?` (${state.saved.length})`:v==='Planned'&&state.entries.some(e=>e.status==='accepted')?` (${state.entries.filter(e=>e.status==='accepted').length})`:''}</button>)}</div>
- {filter==='Explore'&&detailOpen&&isComplete&&<div className="personalisation-bar"><div><span className="small-label">MATCHED TO YOUR PINS</span><p>{feed.length} ideas that cleared your current needs.</p>{aiAvailable&&<p className="sample-note">Fresh AI ideas use your PINS, routines and activity feedback. Your name, photos, companions and visual profile are never sent.</p>}</div><div className="action-row"><button className="secondary" onClick={()=>setModal('tune')}>Tune my ideas</button>{aiAvailable&&<button className="secondary" disabled={aiBusy||accountStore.status==='waiting'||accountStore.status==='saving'} onClick={freshIdeas}>{aiBusy?'Preparing ideas and pictures…':'Generate fresh ideas'}</button>}</div>{aiError&&<p className="storage-alert" role="alert">{aiError}</p>}</div>}
+ {filter==='Explore'&&detailOpen&&isComplete&&<div className="personalisation-bar"><div><span className="small-label">MATCHED TO YOUR PINS</span><p>{feed.length} ideas that cleared your current needs.</p>{aiAvailable&&<p className="sample-note">Fresh AI ideas use your PINS, routines and activity feedback. Your name, photos, companions and visual profile are never sent.</p>}</div><div className="action-row"><button className="secondary" onClick={()=>setModal('tune')}>Tune my ideas</button>{aiAvailable&&<button className="secondary" disabled={aiBusy||(accountStore.cloud&&!accountStore.synced)} onClick={freshIdeas}>{aiBusy?'Preparing ideas and pictures…':'More suggestions'}</button>}</div>{aiError&&<p className="storage-alert" role="alert">{aiError}</p>}</div>}
  {filter==='Explore'&&detailOpen&&<button className="secondary detail-back" onClick={()=>{setDetailOpen(false);setFocus(false)}}>Back to all ideas</button>}
- {filter==='Explore'&&<div hidden={detailOpen}><MovesDiscovery ideas={feed.map(r=>r.idea)} state={state} now={clock} onOpen={id=>{setIndex(id);setDetailOpen(true);window.scrollTo(0,0)}} onSave={toggleSavedMove} onSaved={()=>{setFilter('Saved');setDetailOpen(false);window.scrollTo(0,0)}} onPlanned={()=>{setFilter('Planned');setDetailOpen(false);window.scrollTo(0,0)}} onPins={startSetup} onWins={()=>navigate('wins')} onTune={()=>setModal('tune')} imageContext={imageContext} aiAvailable={aiAvailable} aiBusy={aiBusy} aiDisabled={accountStore.status==='waiting'||accountStore.status==='saving'} aiError={aiError} onGenerate={freshIdeas}/></div>}
+ {filter==='Explore'&&<div hidden={detailOpen}><MovesDiscovery ideas={feed.map(r=>r.idea)} state={state} now={clock} onOpen={id=>{setIndex(id);setDetailOpen(true);window.scrollTo(0,0)}} onSave={toggleSavedMove} onSaved={()=>{setFilter('Saved');setDetailOpen(false);window.scrollTo(0,0)}} onPlanned={()=>{setFilter('Planned');setDetailOpen(false);window.scrollTo(0,0)}} onPins={startSetup} onWins={()=>navigate('wins')} onTune={()=>setModal('tune')} imageContext={imageContext} aiAvailable={aiAvailable} aiBusy={aiBusy} aiDisabled={accountStore.cloud&&!accountStore.synced} aiError={aiError} onGenerate={freshIdeas} freshIds={freshIds} history={suggestionHistory}/></div>}
  {filter==='Explore'?(!detailOpen?null:feed.length===0?<div className="empty-state"><Leaf/><h2>Let’s keep your needs first.</h2><p>{profile.needs.some(n=>n.startsWith('Something else: '))?'Your written need is saved. ENOUGH cannot yet assess free-text needs, so suggestions are paused. Keep your answer, or choose equivalent listed boundaries in My Pins.':'No library idea currently clears your constraints. Keep your needs as they are, or update them if something has changed.'}</p><button className="secondary" onClick={()=>setModal('tune')}>Review idea settings</button><button className="text-button" onClick={startSetup}>Review My Pins</button></div>:<div className="moves-layout"><article className="move-card" style={{backgroundImage:photo.credit?`linear-gradient(rgba(6,39,68,.08),rgba(6,39,68,.24)), url(${photo.credit.image})`:idea.image?`linear-gradient(rgba(6,39,68,.08),rgba(6,39,68,.24)), url(/images/${idea.image}.webp)`:'linear-gradient(150deg,#5c9cc4,#164b73 65%,#0a2f52)'}} aria-label="Idea browser · use arrow keys or Previous and Next" tabIndex={0} onKeyDown={e=>{if(e.target!==e.currentTarget)return;if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();next(1)}if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();next(-1)}}} onTouchStart={e=>{if((e.target as HTMLElement).closest('button,a'))return;touch.current={x:e.touches[0].clientX,y:e.touches[0].clientY}}} onTouchCancel={()=>touch.current=null} onTouchEnd={e=>{if(touch.current!==null){const dx=e.changedTouches[0].clientX-touch.current.x,dy=e.changedTouches[0].clientY-touch.current.y;const d=Math.abs(dy)>Math.abs(dx)?dy:dx;if(Math.abs(d)>65)next(d<0?1:-1);touch.current=null}}}>
  <div className="experience-header"><span>ENOUGH</span><span className="experience-number" aria-label={`Idea ${position+1} of ${feed.length}`}>{position+1}</span><div className="experience-progress" aria-hidden="true">{feed.slice(Math.max(0,position-2),Math.max(0,position-2)+5).map(r=><span key={r.idea.id} className={r.idea.id===idea.id?'current':''}/>)}</div></div>
  <IdeaPhoto idea={idea} photo={photo}/>
