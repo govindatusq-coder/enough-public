@@ -18,7 +18,7 @@ test('15 stable short sitting breaks describe movement, alternatives and safe ve
  assert.equal(new Set(catalogue.map(i=>i.id)).size,catalogue.length);
 });
 test('landing examples exist as genuine library alternatives',()=>{
- for(const key of ['call-family-walk','water-refill-far','library-easy-run','ad-break-wall-pushups'])assert.ok(catalogue.find(i=>i.key===key));
+ for(const key of ['call-family-walk','water-refill-far','library-easy-run','ad-break-wall-pushups']){const i=catalogue.find(i=>i.key===key);assert.ok(i);assert.ok(describesMovement(i.movementMode,i.body,true));}
  assert.equal(catalogue.find(i=>i.key==='water-refill-far').movementMode,'stairs');
 });
 test('sitting-break collection narrows the eligible pool; restricted needs block intense library and disguised AI variants',()=>{

@@ -4,9 +4,10 @@
   "description": "ENOUGH native movement integration \u2014 device validation pending",
   "main": "index.js",
   "scripts": {
-    "sync": "cap sync",
+    "sync": "node configure.mjs && cap sync",
     "ios": "cap open ios",
-    "android": "cap open android"
+    "android": "cap open android",
+    "configure": "node configure.mjs"
   },
   "keywords": [],
   "author": "",
