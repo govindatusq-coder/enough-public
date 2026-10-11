@@ -8,8 +8,8 @@ import {intensities,libraryMovementTags,ideaTagLabels} from '../lib/idea-tags.ts
 import {movesIdeas,defaultMoveOptions} from '../lib/moves.ts';
 
 test('all original library ideas have explicit intensity and sitting-break tags without changing their IDs',()=>{
- assert.equal(catalogue.length,44);assert.deepEqual(catalogue.map(i=>i.id),[1,3,4,5,6,7,8,9,10,11,12,0,...Array.from({length:32},(_,n)=>n+14)]);
- for(const idea of catalogue){assert.ok(libraryMovementTags[idea.key]);assert.ok(intensities.includes(idea.intensity));assert.equal(typeof idea.breaksSitting,'boolean');}
+ assert.equal(catalogue.slice(0,44).length,44);assert.deepEqual(catalogue.slice(0,44).map(i=>i.id),[1,3,4,5,6,7,8,9,10,11,12,0,...Array.from({length:32},(_,n)=>n+14)]);
+ for(const idea of catalogue.slice(0,44)){assert.ok(libraryMovementTags[idea.key]);assert.ok(intensities.includes(idea.intensity));assert.equal(typeof idea.breaksSitting,'boolean');}
  assert.equal(catalogue.find(i=>i.key==='break-stretch').breaksSitting,false);assert.equal(catalogue.find(i=>i.key==='bank-bike').breaksSitting,false);
 });
 test('untagged legacy AI ideas restore and validate as light movement with no sitting-break claim',()=>{

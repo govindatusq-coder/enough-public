@@ -35,6 +35,7 @@ type Topic={key:string;title:string;art:string;image?:string;interests:string[];
 // Collection covers describe the topic, independently of which eligible idea
 // happens to appear first. Several topics can share the same seated suggestion.
 const topics:Topic[]=[
+ {key:'break-the-sit',title:'Break the sit',art:'Short bursts',interests:[],matches:i=>i.breaksSitting&&i.minutes>=1&&i.minutes<=3},
  {key:'outside',title:'A little fresh air',art:'Outside',image:'/images/welcome-coast.webp',interests:['Nature','Exploring new places','Gardening','Photography','Animals'],matches:i=>i.outdoor&&isFreeMove(i)},
  {key:'listen',title:'Listen and move',art:'Podcasts',image:'/images/welcome-podcast.webp',interests:['Podcasts','Music','Audiobooks','Listening to something','Reading'],matches:i=>i.category==='listen'},
  {key:'family',title:'With the family',art:'Family time',image:'/images/welcome-school.webp',interests:['Family time','Family'],matches:i=>i.category==='family'},
