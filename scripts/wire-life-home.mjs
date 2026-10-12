@@ -1,3 +1,4 @@
+// One-shot deterministic integration patch for PR #19.
 import fs from 'node:fs';
 const path='app/page.tsx';
 let s=fs.readFileSync(path,'utf8');
