@@ -24,7 +24,7 @@ public class EnoughMovementPlugin: CAPPlugin, CAPBridgedPlugin {
     private let exercise = HKQuantityType.quantityType(forIdentifier: .appleExerciseTime)!
     private func trusted() -> Bool {
         guard let url = bridge?.webView?.url else { return false }
-        return url.scheme == "https" && url.host == "enough-movement.govindatusq.chatgpt.site" && (url.port == nil || url.port == 443)
+        return url.scheme == "https" && url.host == "enough-public.vercel.app" && (url.port == nil || url.port == 443)
     }
     @objc func authorize(_ call: CAPPluginCall) {
         DispatchQueue.main.async {

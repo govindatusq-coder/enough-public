@@ -1,8 +1,12 @@
+import {DM_Sans,Newsreader} from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
 import "./experience.css";
 import "./moves.css";
 import "./idea-images.css";
+
+const sans=DM_Sans({subsets:['latin'],display:'swap',variable:'--font-dm-sans'});
+const editorial=Newsreader({subsets:['latin'],style:['normal','italic'],display:'swap',variable:'--font-newsreader'});
 
 export const metadata: Metadata = {
   title: "ENOUGH — Movement that gives back",
@@ -24,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en-AU" className={`${sans.variable} ${editorial.variable}`}>
       <body className="antialiased">{children}</body>
     </html>
   );

@@ -24,7 +24,7 @@ class EnoughMovementPlugin : Plugin() {
     private val permissions = setOf(HealthPermission.getReadPermission(StepsRecord::class), HealthPermission.getReadPermission(ExerciseSessionRecord::class))
     private fun trusted(): Boolean {
         val url = Uri.parse(bridge.webView.url ?: "")
-        return url.scheme == "https" && url.host == "enough-movement.govindatusq.chatgpt.site" && (url.port == -1 || url.port == 443)
+        return url.scheme == "https" && url.host == "enough-public.vercel.app" && (url.port == -1 || url.port == 443)
     }
     private fun client(): HealthConnectClient {
         when (HealthConnectClient.getSdkStatus(context)) {
