@@ -1,0 +1,26 @@
+# Dependencies and web build output
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Local environment and hosting configuration
+.env*
+!.env.example
+.vercel/
+supabase/.temp/
+
+# Native generated output; retain native sources and configuration
+native/www/
+native/**/build/
+native/android/.gradle/
+native/android/local.properties
+native/ios/**/DerivedData/
+native/ios/**/Pods/
+native/**/*.xcuserstate
+native/**/xcuserdata/
+
+# Local logs and OS files
+*.log
+.DS_Store

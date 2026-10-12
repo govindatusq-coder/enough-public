@@ -1,0 +1,510 @@
+{
+  "version": 1,
+  "note": "Reviewed pre-existing findings; new or changed findings fail CI. See docs/verification/engineering-hygiene-2026-10-11.md.",
+  "findings": [
+    {
+      "file": "app/page.tsx",
+      "rule": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "line": 6,
+      "fingerprint": "385661803788b1d3a5fe8f31638188f0fa83a0bd3b78b75509cd44ad264e763c"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "line": 6,
+      "fingerprint": "ef13e5f6cda512726bb906ed69a15d83ad4f74083463e991a09127941e24dab3"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "line": 8,
+      "fingerprint": "d07e852daa753c21cbaba1ff355aa2e42a6f2f1e3f4d0e6967f537a9fbdefc65"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/purity",
+      "severity": 2,
+      "line": 56,
+      "fingerprint": "b407641541b8ab7cf1cd7ef8e27ba3f5c2c8677d41ddfe2a92a155624c17bbbd"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 67,
+      "fingerprint": "1503d69f02c22f50c8aef2ef23318ab525de8d80ff8de6b99e706803f3b349e1"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 67,
+      "fingerprint": "1ca7e3a8e4a66c3f3c932234856ea8a35ece35d09e3acdfb7cc982fc927807ca"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 69,
+      "fingerprint": "49d12bba4e7365f414e538a83bd9a33ba1dae17464a245b3e032d214343eeb73"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 69,
+      "fingerprint": "bb83bb2d93623926edbe6216a5d94a3d30ff9a7482db161a945f824e4926ebd7"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 102,
+      "fingerprint": "38217fc3ec09d44e20e1630bb84b2957424a17a14e6383a4d512cca0eca7faf7"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 104,
+      "fingerprint": "cfdf3bccee57fa70aded40e891b666ae8f146ff0150d892a2b9fdbc59bd2e5bd"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 105,
+      "fingerprint": "c930b0d820c5c0bf390f3a367967b63cc5ba6c3037378f656c2fa68115114ab9"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 107,
+      "fingerprint": "68af662095efde692491181cd395da3bc239068784df5431d5486f9c89f98efa"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "@typescript-eslint/no-explicit-any",
+      "severity": 2,
+      "line": 108,
+      "fingerprint": "7efbaa609d77dc0c80dd52f6163c0c096f5023ef77b517d9451a1e8e09028de6"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "@typescript-eslint/no-explicit-any",
+      "severity": 2,
+      "line": 108,
+      "fingerprint": "fd62c3bc53da796fed6242ad9a7faaa02c226f87bd5e0c1c37fb8a9339704538"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 110,
+      "fingerprint": "15b36647d189cba4ecb385555660370a06c19e8c53762da68248d4ff5e271a63"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "line": 117,
+      "fingerprint": "49336d4819d7863709a88f4432a90920ada597f13d72db328b579b7152e399df"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "react-hooks/immutability",
+      "severity": 2,
+      "line": 122,
+      "fingerprint": "f3943566f9b34ddf471594ab16bfeb2194dabeb7eed331d029dc097ab2ceaa5a"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "@next/next/no-html-link-for-pages",
+      "severity": 2,
+      "line": 134,
+      "fingerprint": "26cee944bedd895750897b89570157868d77ca36035dadda53bd0e8f9eeafa1e"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 134,
+      "fingerprint": "3ffe48c68aafffff7ad6f84b633841b2461330cdd17bfe69f7aa58df60df88e1"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "@next/next/no-html-link-for-pages",
+      "severity": 2,
+      "line": 135,
+      "fingerprint": "32164278506bcc0fed161db65e87d1494d696cf982191833c8096104fb697149"
+    },
+    {
+      "file": "app/page.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 135,
+      "fingerprint": "2a3d771982bb4bf5bd2f83eaff370eddb73e7038a135ea3905bf6c46fa7f610c"
+    },
+    {
+      "file": "app/signin/page.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 7,
+      "fingerprint": "69cc8fed677ea2839bce8fb8f8a7bad45fd4a5e4c254e7987a737a60d977edc6"
+    },
+    {
+      "file": "app/signin/page.tsx",
+      "rule": "@next/next/no-location-assign-relative-destination",
+      "severity": 1,
+      "line": 11,
+      "fingerprint": "0274cb6e04e7b280f88e4496d1030d8968db73845bf27021d460100dd9dd26dd"
+    },
+    {
+      "file": "app/signin/page.tsx",
+      "rule": "@next/next/no-location-assign-relative-destination",
+      "severity": 1,
+      "line": 12,
+      "fingerprint": "bda3507100efdd4051cbdd8f0cae1aae5629480de30a3ffb051ca38166f5bae8"
+    },
+    {
+      "file": "app/signin/page.tsx",
+      "rule": "@next/next/no-html-link-for-pages",
+      "severity": 2,
+      "line": 15,
+      "fingerprint": "c2caf374b4c604280cf76220399ea5d1b37c6e260e7d666f306cc44205b66e8e"
+    },
+    {
+      "file": "app/signin/page.tsx",
+      "rule": "@next/next/no-html-link-for-pages",
+      "severity": 2,
+      "line": 15,
+      "fingerprint": "318376703899f5a881007305e09f00162b9a5438a9f7c4b62da342100b7cb774"
+    },
+    {
+      "file": "app/signout/page.tsx",
+      "rule": "@next/next/no-location-assign-relative-destination",
+      "severity": 1,
+      "line": 4,
+      "fingerprint": "ad1c4784407313b90c4367022dbb5367531fc3fb86d6fe55da967f5541876e83"
+    },
+    {
+      "file": "app/signout/page.tsx",
+      "rule": "@next/next/no-html-link-for-pages",
+      "severity": 2,
+      "line": 4,
+      "fingerprint": "04efe1129c2a07d6284c771ed2d552a360b7a0e3f480acfe0d68cc7ac3b7e627"
+    },
+    {
+      "file": "app/update-password/page.tsx",
+      "rule": "@next/next/no-location-assign-relative-destination",
+      "severity": 1,
+      "line": 4,
+      "fingerprint": "0e4fa3b8b54b6d23ea62448b33fa26e1198b4889a79c1547640d95413a5b541c"
+    },
+    {
+      "file": "components/activity-movement.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 7,
+      "fingerprint": "e25f408fcd405fb76987911279dea3621afee0425768e9fc436580212b285c01"
+    },
+    {
+      "file": "components/activity-movement.tsx",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 8,
+      "fingerprint": "2cd52458874de954449bcb183207f7a09c9989d7a8d3b0297e937523e49065b1"
+    },
+    {
+      "file": "components/discovery.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 45,
+      "fingerprint": "2aea4d7e27ab3f29b94ff32e99096818cd0e38995978f2738564582ab040b903"
+    },
+    {
+      "file": "components/enough-widgets.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 79,
+      "fingerprint": "39c70c4ac0f77e621e08ac177107bddc23eb74ebb30db4963096d8b85378d91a"
+    },
+    {
+      "file": "components/health-panel.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 11,
+      "fingerprint": "723227dab96b193b30ce7d91a99b3e6a257802536e3c3b8674208d57eda42cf6"
+    },
+    {
+      "file": "components/health-panel.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 12,
+      "fingerprint": "3871535ba6fc6c42ca31f86cfed4d63ddef34748a7a420d3fa7009fa5227ba42"
+    },
+    {
+      "file": "components/health-panel.tsx",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 13,
+      "fingerprint": "47efe040b0e71dede82fef68b6bc5e3d75cb6294a6d6ce2470227042522d258b"
+    },
+    {
+      "file": "components/idea-photo.tsx",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 16,
+      "fingerprint": "09c5e3d87c413918d53c042dda0003888ede802bfa33eed43c89e7ee3e61e3e6"
+    },
+    {
+      "file": "components/idea-photo.tsx",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 21,
+      "fingerprint": "c944326efcbbba402d9b2faaded1294422bd2a0596008ff37d87bc99a086bd1b"
+    },
+    {
+      "file": "components/idea-photo.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 25,
+      "fingerprint": "211ee815c3aa6e553afb0ef3b90a4de4f89fd2103ae7e97606b454f042fe70b2"
+    },
+    {
+      "file": "components/idea-photo.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 28,
+      "fingerprint": "ca2d53a6aba2fa4f5e1ac00ff173daeeb65544bccbe1dffcbabaae20a21d9b08"
+    },
+    {
+      "file": "components/meeting-checkin.tsx",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 10,
+      "fingerprint": "d7eae13bde25ccec9dd51db61e46834709b82b2ca756443f29e1121525f98e8a"
+    },
+    {
+      "file": "components/meeting-checkin.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 15,
+      "fingerprint": "50af634f28efc6cbf0946cadc350d2834020d288e93c9b671a9178140bf2280a"
+    },
+    {
+      "file": "components/movement-panel.tsx",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 10,
+      "fingerprint": "6a954f554fc9de76a00dbb748f16bc23f59fc0ddd4da347e3b29e067ad40dec7"
+    },
+    {
+      "file": "components/moves-discovery.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 51,
+      "fingerprint": "83fffb230e97be0a410d283fdc0a5154246df956a217a0a1d927350443160f9c"
+    },
+    {
+      "file": "components/reading-settings.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 6,
+      "fingerprint": "24d8a55247bac64f7830ba3609d734642304d593eb775370d574a640d11dd9e6"
+    },
+    {
+      "file": "components/reading-settings.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 6,
+      "fingerprint": "1e1e92c79be4eb5a8c9900a3e1e6bb53719a38b3fb3d1aabc2f2c67135a71fec"
+    },
+    {
+      "file": "components/ui/carousel.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 98,
+      "fingerprint": "3d8b69e4226537c121b0cce079f78fbcceed33b5714c3bceea9c81ff0eccc83f"
+    },
+    {
+      "file": "components/ui/combobox.tsx",
+      "rule": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "line": 277,
+      "fingerprint": "c6becb0441c72fcd7709162623fb7ae63100f15497fcfd5261e50bd9ab3e1646"
+    },
+    {
+      "file": "components/welcome.tsx",
+      "rule": "@next/next/no-html-link-for-pages",
+      "severity": 2,
+      "line": 11,
+      "fingerprint": "1885e6b07b11c94eda3d2afeaf0e4368119ed550f8126163051c2ffa206b355c"
+    },
+    {
+      "file": "components/welcome.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 11,
+      "fingerprint": "fcc3ee986001c9bba4852cc6c3a751561d95a06ca172c85a2f1afd4807dbda15"
+    },
+    {
+      "file": "components/welcome.tsx",
+      "rule": "@next/next/no-html-link-for-pages",
+      "severity": 2,
+      "line": 11,
+      "fingerprint": "c73db04cf822a2d0400d847bce51b950e0347d1330c74601ceb3204e46928c9e"
+    },
+    {
+      "file": "components/welcome.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 13,
+      "fingerprint": "e7696825e10fb07d39a5c4dec3b4c6eb932a34b9f5acc6f07c853badb76c9719"
+    },
+    {
+      "file": "components/welcome.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 17,
+      "fingerprint": "8dc3df82ea2f3bb4f076d93b13321e947aed6483267ef1287ecf73791d505357"
+    },
+    {
+      "file": "components/welcome.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 22,
+      "fingerprint": "39ab13d58965f1f43fc1a49abf694b995a23b80bb6934d0bfedda77abb520791"
+    },
+    {
+      "file": "components/wins-gallery.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 20,
+      "fingerprint": "7d153743f1afa2b1ab7e8f72ecf12e8080da00a68ddcc333a55008d9a72822e9"
+    },
+    {
+      "file": "components/wins-gallery.tsx",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 20,
+      "fingerprint": "4d2cd6d83e0425f37ffe765a58a29ad1a8348052a7cc998e2fc5ffeaffa58715"
+    },
+    {
+      "file": "components/wins-gallery.tsx",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 21,
+      "fingerprint": "d191e9c46af5e01f5ab8b51c313bd587a98d6df81108caec629938dfdd37ce73"
+    },
+    {
+      "file": "components/wins-gallery.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 39,
+      "fingerprint": "fba599eb76256e7086aba1629c1a5c0a91f026780a04150cb3ec4f904a1d9957"
+    },
+    {
+      "file": "components/wins-gallery.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 41,
+      "fingerprint": "4bf7d75c193110b40bff8b7b5861f25a2e212b11806ea7e2519d51d81610cc5c"
+    },
+    {
+      "file": "components/wins-gallery.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 43,
+      "fingerprint": "a5efc7fa22c407124f6752a56a25559c9549927ca674869d697f8a06d47cd971"
+    },
+    {
+      "file": "components/wins-gallery.tsx",
+      "rule": "@next/next/no-img-element",
+      "severity": 1,
+      "line": 44,
+      "fingerprint": "6f1abcbe20446cffd7a56481acd16d3384c54f15c144e3a8753d0c069bbe7e54"
+    },
+    {
+      "file": "hooks/use-cloud-account.ts",
+      "rule": "react-hooks/refs",
+      "severity": 2,
+      "line": 8,
+      "fingerprint": "8a7479e9d56df57b95a15f79ae67f3c9e0c53f8f797143f7c5665bc7b00e0c17"
+    },
+    {
+      "file": "hooks/use-cloud-account.ts",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 12,
+      "fingerprint": "8427039fdd406caf4128ab78e2f1e93d81a192c408765b955a6fa779549cfc89"
+    },
+    {
+      "file": "hooks/use-cloud-account.ts",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 12,
+      "fingerprint": "933431c4b7ec18f7ec95de5a1c1d7997eacc2f1b13485f4c9c9bb8d4f86a60ef"
+    },
+    {
+      "file": "hooks/use-cloud-account.ts",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 14,
+      "fingerprint": "3fe3a8123bbfba015d1c8c2e619557fe614dbc8bdb215797a99b8e0f82812229"
+    },
+    {
+      "file": "hooks/use-cloud-account.ts",
+      "rule": "react-hooks/refs",
+      "severity": 2,
+      "line": 19,
+      "fingerprint": "1858613b5b0c5b7dfdb4fbee621875296ebeecaf956865944914fef651e0b9a6"
+    },
+    {
+      "file": "hooks/use-mobile.ts",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 14,
+      "fingerprint": "c04e8b06bdc9d9b98055ad22775de1700f0454964289821567d3a8dbbbf134d3"
+    },
+    {
+      "file": "hooks/use-suggestion-history.ts",
+      "rule": "react-hooks/refs",
+      "severity": 2,
+      "line": 9,
+      "fingerprint": "2ed40c410d1293349f4a9b27f67c8ced6cabcb3537212e114fb41b166cb51279"
+    },
+    {
+      "file": "hooks/use-suggestion-history.ts",
+      "rule": "react-hooks/set-state-in-effect",
+      "severity": 2,
+      "line": 16,
+      "fingerprint": "74a667568227377980d31ede9c6a2f03de1232321d909c8bbfa26134f3770e4d"
+    },
+    {
+      "file": "hooks/use-suggestion-history.ts",
+      "rule": "react-hooks/exhaustive-deps",
+      "severity": 1,
+      "line": 21,
+      "fingerprint": "a88f49eaacbeb7da4390c54fb55cec9522d2b4ecdaa1a9c893895393d2669fbc"
+    },
+    {
+      "file": "lib/journey.ts",
+      "rule": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "line": 1,
+      "fingerprint": "c91c5bb8de2c24b867dad671deb3ceeb9f8159ce54205a7b5ba1d2839f7dcc4c"
+    },
+    {
+      "file": "tests/recommendations.test.mjs",
+      "rule": "@typescript-eslint/no-unused-vars",
+      "severity": 1,
+      "line": 5,
+      "fingerprint": "d010df17ac69beca794438b0c920731398ffda376d463a98ea665334be956724"
+    }
+  ]
+}
