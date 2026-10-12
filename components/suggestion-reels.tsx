@@ -1,4 +1,5 @@
 "use client";
+import {IdeaTags} from '@/components/idea-tags';
 import {useEffect,useRef,useState,type WheelEvent} from 'react';
 import {ArrowLeft,ArrowDown,ArrowUp,Bookmark,Footprints,Info,Sparkles,Wallet,Wind} from 'lucide-react';
 import {IdeaPhoto,type IdeaPhotoState} from '@/components/idea-photo';
@@ -65,7 +66,7 @@ export function SuggestionReels({idea,photo,position,total,personal,saved,planne
     <div key={idea.id} className="reel-content">
      <div className="reel-copy" data-scrollable={scrollable}>
       <span className="reel-fit">{personal?'MATCHED TO YOUR PINS':'AN IDEA TO EXPLORE'}</span>
-      <h1>{idea.title}</h1><p className="reel-description">{idea.body}</p>
+      <h1>{idea.title}</h1><p className="reel-description">{idea.body}</p><IdeaTags idea={idea}/>
       <div className="reel-returns"><span><Footprints size={18}/><strong>{idea.minutes} min</strong><small>Movement · estimate</small></span><span><Wallet size={18}/><strong>{saving}</strong><small>Saved · estimate</small></span><span><Wind size={18}/><strong>{idea.extraMin>0?`+${idea.extraMin} min`:idea.extraMin<0?`${-idea.extraMin} min reclaimed`:'No extra time'}</strong><small>Fits your day</small></span></div>
       {reason&&<p className="reel-reason">{reason}</p>}
       <div className="reel-meta"><span>{idea.source==='ai'?'AI-generated idea':'From your idea library'}</span><button onClick={onDetails}>Full details</button></div>

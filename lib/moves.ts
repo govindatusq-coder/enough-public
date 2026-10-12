@@ -3,20 +3,25 @@ import {completeProfile,type State} from './journey.ts';
 import {filterIdeas,isFreeMove,type DashboardOptions,type DiscoveryFilter} from './discovery.ts';
 import {confirmedWins} from './wins.ts';
 
-export const moveFilters=['For you','Near me','Free','Save money','With family','Nature','Quick wins','Low energy','Surprise me'] as const;
+export const moveFilters=['For you','Near me','Free','Save money','With family','Nature','Quick wins','Low energy','Breaks up sitting','Strength','Brisk burst','Surprise me'] as const;
 export type MoveFilter=typeof moveFilters[number];
-export type MoveOptions=DashboardOptions&{category:'any'|Idea['category'];noExtra:boolean};
-export const defaultMoveOptions:MoveOptions={query:'',maxMinutes:0,setting:'any',gentle:false,category:'any',noExtra:false};
+export type MoveOptions=DashboardOptions&{category:'any'|Idea['category'];noExtra:boolean;breaksSitting:boolean;intensity:'any'|Idea['intensity']};
+export const defaultMoveOptions:MoveOptions={query:'',maxMinutes:0,setting:'any',gentle:false,category:'any',noExtra:false,breaksSitting:false,intensity:'any'};
 
 // The input is the current eligible feed. Every discovery control only narrows it.
 export function movesIdeas(ideas:Idea[],filter:MoveFilter,state:State,options:MoveOptions){
- const base=filter==='Near me'||filter==='Surprise me'?'Free':filter==='Nature'?'For you':filter;
+ const base=['Breaks up sitting','Strength','Brisk burst'].includes(filter)?'For you':filter==='Near me'||filter==='Surprise me'?'Free':filter==='Nature'?'For you':filter;
  return filterIdeas(ideas,base as DiscoveryFilter,options.query,state).filter(i=>
    (!options.maxMinutes||i.minutes<=options.maxMinutes)&&
    (options.setting==='any'||i.outdoor===(options.setting==='outside'))&&
    (!options.gentle||i.effort==='gentle')&&
    (options.category==='any'||i.category===options.category)&&
    (!options.noExtra||i.extraMin<=0)&&
+   (!options.breaksSitting||i.breaksSitting===true)&&
+   (options.intensity==='any'||i.intensity===options.intensity)&&
+   (filter!=='Breaks up sitting'||i.breaksSitting===true)&&
+   (filter!=='Strength'||i.intensity==='strength')&&
+   (filter!=='Brisk burst'||i.intensity==='vigorous-burst')&&
    (filter!=='Near me'||i.outdoor)&&
    (filter!=='Nature'||i.outdoor&&i.enjoy.some(t=>['Nature','Exploring','Gardening','Photography','Animals'].includes(t))));
 }
