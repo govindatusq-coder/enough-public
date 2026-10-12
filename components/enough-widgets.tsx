@@ -9,7 +9,7 @@ import {ideaCover,recentMoments} from '@/lib/discovery';
 import {dashboardActivity,durationLabel,momentDateLabel,previousReturns,returnCurrencies,returnPeriods,type ReturnPeriod} from '@/lib/dashboard';
 import {formatMoney} from '@/lib/regions';
 
-export type TodayChoice='Low energy'|'Got some time'|'With the kids'|'Save money'|'Want to get out'|'Something else';
+export type TodayChoice='Feeling stressed'|'Tired after a shift'|'Low energy'|'Got some time'|'With the kids'|'Save money'|'Want to get out'|'Something else';
 type WidgetProps={
  state:State;now:number;cloud:boolean;
  onPins:()=>void;onWins:()=>void;onBrowse:()=>void;onSaved:()=>void;onPlanned:()=>void;
@@ -135,7 +135,7 @@ function Learning({state,activity,onPins}:Pick<WidgetProps,'state'|'onPins'>&{ac
  </section>;
 }
 
-const contexts=[{label:'Low energy',Icon:Heart},{label:'Got some time',Icon:Clock},{label:'With the kids',Icon:Users},{label:'Save money',Icon:Wallet},{label:'Want to get out',Icon:Leaf},{label:'Something else',Icon:MoreHorizontal}] as const;
+const contexts=[{label:'Feeling stressed',Icon:Brain},{label:'Tired after a shift',Icon:Clock},{label:'Low energy',Icon:Heart},{label:'Got some time',Icon:Clock},{label:'With the kids',Icon:Users},{label:'Save money',Icon:Wallet},{label:'Want to get out',Icon:Leaf},{label:'Something else',Icon:MoreHorizontal}] as const;
 function TodayContext({state,now,onContext}:Pick<WidgetProps,'state'|'now'|'onContext'>){
  const note=state.today.date===localDate(new Date(now))?state.today.context:'';
  return <section className="glass-panel enough-widget today-context-widget" aria-labelledby="today-context-heading"><div className="widget-heading"><h2 id="today-context-heading">Anything different today?</h2></div><div className="today-context-tiles">{contexts.map(({label,Icon})=><button key={label} onClick={()=>onContext(label)}><Icon size={19}/><span>{label}</span></button>)}</div><p className="widget-note">{note?<>Today’s note: <strong>{note}</strong></>:'Pick what fits right now. Your PINS needs always apply.'}</p></section>;

@@ -79,6 +79,7 @@ export function EnoughDashboard({state,ideas,now,cloud,onSaved,onIdea,onBrowse,o
    if(context==='Something else'){onToday();return}
    if(context==='Got some time'){setOptions(p=>({...p,maxMinutes:0}));setFilter('For you');setFiltersOpen(true);scrollToSection('dashboard-all-filters');return}
    if(context==='Want to get out'){chooseSetting('outside');return}
+   if(context==='Feeling stressed'||context==='Tired after a shift'){onToday(context);chooseFilter('For you');scrollToSection();return}
    if(context==='Low energy'){onToday('Lower energy');chooseFilter('Low energy')}
    else chooseFilter(context==='With the kids'?'With family':'Save money');
    scrollToSection();
