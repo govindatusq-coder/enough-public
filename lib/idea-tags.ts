@@ -42,7 +42,7 @@ export const libraryMovementTags:Record<string,{intensity:IdeaIntensity;breaksSi
  'walking-1on1':{intensity:'light',breaksSitting:true},
  'lunch-walk-out':{intensity:'light',breaksSitting:true},
  'break-stretch':{intensity:'light',breaksSitting:false},
- 'water-refill-far':{intensity:'light',breaksSitting:true},
+ 'water-refill-far':{intensity:'moderate',breaksSitting:true},
  'wait-appointment':{intensity:'light',breaksSitting:true},
  'wait-pickup':{intensity:'light',breaksSitting:true},
  'wait-laundry':{intensity:'light',breaksSitting:true},

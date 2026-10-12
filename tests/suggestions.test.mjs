@@ -87,6 +87,6 @@ test('retrying never weakens PINS and stops after two unsafe batches',async()=>{
 test('the prompt receives precise current limits and a bounded novelty context',()=>{
  const state=profile();state.profile.needs.push('Safety matters','Need recovery','Family or caring','Not enough time');state.generated=Array.from({length:350},(_,n)=>idea(n+1));
  const context=aiContext(state,new Date(2026,9,11,21));
- assert.deepEqual(context.hardLimits,{movementModes:['seated'],allowOutdoors:false,avoidOutdoorWalkingAndCycling:false,effort:'gentle',maxMovementMinutes:20,maxExtraMinutes:0,familyOnlyIfAddingTime:true});
+ assert.deepEqual(context.hardLimits,{avoidIntensity:['strength','vigorous-burst'],movementModes:['seated'],allowOutdoors:false,avoidOutdoorWalkingAndCycling:false,effort:'gentle',maxMovementMinutes:20,maxExtraMinutes:0,familyOnlyIfAddingTime:true});
  assert.equal(context.alreadyShown.includes('Useful moment 1'),false);assert.equal(context.alreadyShown.includes('Useful moment 350'),true);assert.ok(context.alreadyShown.length<250);
 });

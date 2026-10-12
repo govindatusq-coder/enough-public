@@ -60,7 +60,7 @@ test('dashboard filters intersect free eligible ideas, duration, setting and eff
  assert.ok(matches.length>0);
  assert.ok(matches.every(i=>isFreeMove(i)&&i.minutes<=10&&!i.outdoor&&i.effort==='gentle'));
  assert.ok(dashboardIdeas(catalogue,'With family',s,dashboardOptions).every(i=>i.category==='family'&&isFreeMove(i)));
- assert.deepEqual(dashboardIdeas(catalogue,'For you',s,{...options,query:'fountain'}).map(i=>i.key),['water-refill-far']);
+ assert.deepEqual(dashboardIdeas(catalogue,'For you',s,{...options,query:'fountain'}).map(i=>i.key),[]); // Stairs no longer appear in a gentle-only water search.
 });
 test('dashboard savings use the selected currency and user records, and never bring paid activities into free discovery',()=>{
  const s=emptyState(),idea=catalogue.find(i=>i.key==='break-stretch');
