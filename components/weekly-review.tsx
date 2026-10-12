@@ -1,0 +1,16 @@
+"use client";
+import {useState} from 'react';
+import {byId} from '@/lib/ideas';
+import {activePlans,localWeek,type WeeklyReview} from '@/lib/weekly-review';
+import type {State} from '@/lib/journey';
+
+export function WeeklyReviewCard({state,now,onSave,onEditPlan}:{state:State;now:number;onSave:(review:Omit<WeeklyReview,'week'|'reviewedAt'>)=>void;onEditPlan:(id:string)=>void}){
+ const week=localWeek(new Date(now)),saved=state.weeklyReviews?.find(r=>r.week===week),plans=activePlans(state);
+ const [open,setOpen]=useState(false),[worked,setWorked]=useState(''),[barrier,setBarrier]=useState(''),[smallFix,setSmallFix]=useState(''),[choices,setChoices]=useState<Record<string,'keep'|'change'|'pause'>>({}),[error,setError]=useState('');
+ return <section className="weekly-review" aria-labelledby="weekly-review-title"><h3 id="weekly-review-title">A moment to reflect</h3>{saved?<><p role="status">Your review for this week is saved.</p><dl>{saved.worked&&<><dt>What worked</dt><dd>{saved.worked}</dd></>}{saved.barrier&&<><dt>A barrier</dt><dd>{saved.barrier}</dd></>}{saved.smallFix&&<><dt>A small fix</dt><dd>{saved.smallFix}</dd></>}</dl>{saved.plans.map(p=><div className="review-plan" key={p.entryId}><span>{byId(state.entries.find(e=>e.id===p.entryId)?.ideaId??-1,state.generated)?.title||'Your plan'} · {p.choice==='keep'?'Keep':p.choice==='pause'?'Paused':'Change'}</span>{p.choice==='change'&&state.entries.some(e=>e.id===p.entryId&&e.status==='accepted')&&<button className="text-button" onClick={()=>onEditPlan(p.entryId)}>Edit this plan</button>}</div>)}</>:<><p>What fitted your life this week? Keep what helped, change the size or pause a plan. This review is optional.</p>{!open?<button className="secondary" onClick={()=>setOpen(true)}>Review this week</button>:<form onSubmit={e=>{e.preventDefault();try{onSave({worked,barrier,smallFix,plans:plans.filter(p=>choices[p.id]).map(p=>({entryId:p.id,choice:choices[p.id]}))});setOpen(false);setError('')}catch(e){setError((e as Error).message)}}}>
+ <label className="field">What worked? · optional<textarea maxLength={240} value={worked} onChange={e=>setWorked(e.target.value)}/></label>
+ <label className="field">What got in the way? · optional<textarea maxLength={240} value={barrier} onChange={e=>setBarrier(e.target.value)}/></label>
+ <label className="field">One small fix · optional<textarea maxLength={240} value={smallFix} onChange={e=>setSmallFix(e.target.value)}/></label>
+ {plans.map(p=><fieldset className="review-plan" key={p.id}><legend>{byId(p.ideaId,state.generated)?.title||'Your plan'}</legend><div className="chips">{(['keep','change','pause'] as const).map(choice=><button type="button" key={choice} aria-pressed={choices[p.id]===choice} onClick={()=>setChoices(c=>({...c,[p.id]:choice}))}>{choice==='keep'?'Keep':choice==='change'?'Change':'Pause'}</button>)}</div></fieldset>)}
+ {Object.values(choices).includes('pause')&&<p className="sample-note">Pausing stops ENOUGH’s in-app note. Edit or remove any downloaded event in your own calendar.</p>}{error&&<p className="storage-alert" role="alert">{error}</p>}<div className="action-row"><button type="submit" className="primary">Save this week’s review</button><button type="button" className="text-button" onClick={()=>setOpen(false)}>Leave for now</button></div></form>}</>}</section>;
+}

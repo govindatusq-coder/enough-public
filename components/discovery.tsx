@@ -7,6 +7,7 @@ import {type Idea} from '@/lib/ideas';
 import {receipt,completeProfile,type State} from '@/lib/journey';
 import {formatMoney} from '@/lib/regions';
 import {moneyValue} from '@/lib/recommendations';
+import type {WeeklyReview} from '@/lib/weekly-review';
 import {EnoughWidgets,type TodayChoice} from '@/components/enough-widgets';
 import {discoveryFilters,filterIdeas,ideaCover,isFreeMove,placeSearch,dashboardFilters,dashboardIdeas,dashboardGreeting,surpriseIdeaId,type DiscoveryFilter,type DashboardFilter,type DashboardOptions} from '@/lib/discovery';
 
@@ -57,9 +58,9 @@ export function ReturnMetrics({state,period='This month',currency=state.profile.
  return <div className="return-metrics" aria-label={'Your confirmed returns · '+period}>{metrics.map(({label,value,caption,Icon})=><div key={label}><span className="metric-icon"><Icon size={25}/></span><strong>{value}</strong><span>{label}</span><small>{caption}</small></div>)}</div>;
 }
 
-type DashboardProps={state:State;ideas:Idea[];now:number;cloud:boolean;onSaved:()=>void;onIdea:(id:number)=>void;onBrowse:()=>void;onPins:()=>void;onWins:()=>void;onToday:(context?:string)=>void;onPlanned:()=>void};
+type DashboardProps={state:State;ideas:Idea[];now:number;cloud:boolean;onSaved:()=>void;onIdea:(id:number)=>void;onBrowse:()=>void;onPins:()=>void;onWins:()=>void;onToday:(context?:string)=>void;onPlanned:()=>void;onReview:(review:Omit<WeeklyReview,'week'|'reviewedAt'>)=>void;onEditPlan:(id:string)=>void};
 const defaultDashboardOptions:DashboardOptions={query:'',maxMinutes:0,setting:'any',gentle:false};
-export function EnoughDashboard({state,ideas,now,cloud,onSaved,onIdea,onBrowse,onPins,onWins,onToday,onPlanned}:DashboardProps){
+export function EnoughDashboard({state,ideas,now,cloud,onSaved,onIdea,onBrowse,onPins,onWins,onToday,onPlanned,onReview,onEditPlan}:DashboardProps){
  const [filter,setFilter]=useState<DashboardFilter>('For you');
  const [options,setOptions]=useState<DashboardOptions>(defaultDashboardOptions);
  const [filtersOpen,setFiltersOpen]=useState(false),[featuredId,setFeaturedId]=useState<number|null>(null);
@@ -117,7 +118,7 @@ export function EnoughDashboard({state,ideas,now,cloud,onSaved,onIdea,onBrowse,o
    <p className="sample-note">Your PINS boundaries apply to every filter.</p>
  </section>}
  <div id="dashboard-discovery">{filter==='Nearby'?<NearbyIdeas state={state}/>:<section className="opportunities"><div className="section-heading"><div><span className="eyebrow">A LITTLE POSSIBILITY</span><h2>Today’s opportunities</h2></div><button className="text-button" onClick={onBrowse}>See all ideas</button></div><p className="panel-intro">Free ways to move a little more, with what you already have.</p><p className="dashboard-result-count" role="status">{matches.length} free {matches.length===1?'idea':'ideas'}{filter==='For you'?'':` · ${filter}`}</p>{free.length?<div className="discovery-grid">{free.map(i=><IdeaTile key={i.id} idea={i} state={state} onOpen={onIdea}/>)}</div>:<div className="glass-empty"><Leaf size={26}/><h2>{hasFreeIdeas?'Let’s try another angle.':'Your needs come first.'}</h2><p>{filter==='Save money'?'No free idea in this view has a saving recorded in your currency yet. Free activities can still give you movement, time and enjoyment.':hasFreeIdeas?'No free ideas match these filters. Try another setting or search.':'No free library ideas currently clear your needs. Your boundaries still come first.'}</p><button className="secondary" onClick={hasFreeIdeas?clearFilters:onPins}>{hasFreeIdeas?'Clear filters':'Review My Pins'}</button></div>}</section>}</div>
- <EnoughWidgets state={state} now={now} cloud={cloud} onPins={onPins} onWins={onWins} onBrowse={onBrowse} onSaved={onSaved} onPlanned={onPlanned} onSetting={chooseSetting} onContext={chooseContext} onSurprise={surprise}/>
+ <EnoughWidgets onReview={onReview} onEditPlan={onEditPlan} state={state} now={now} cloud={cloud} onPins={onPins} onWins={onWins} onBrowse={onBrowse} onSaved={onSaved} onPlanned={onPlanned} onSetting={chooseSetting} onContext={chooseContext} onSurprise={surprise}/>
  {filter!=='Nearby'&&<NearbyIdeas state={state}/>}</div>;
 }
 

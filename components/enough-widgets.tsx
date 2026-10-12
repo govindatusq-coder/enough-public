@@ -1,4 +1,6 @@
 "use client";
+import {WeeklyReviewCard} from '@/components/weekly-review';
+import {localWeek,type WeeklyReview} from '@/lib/weekly-review';
 import Image from 'next/image';
 import {useEffect,useState} from 'react';
 import {ArrowRight,Bookmark,Brain,Camera,Check,Clock,Footprints,Heart,Leaf,MoreHorizontal,Plus,Sparkles,Users,Wallet} from 'lucide-react';
@@ -15,7 +17,7 @@ type WidgetProps={
  onPins:()=>void;onWins:()=>void;onBrowse:()=>void;onSaved:()=>void;onPlanned:()=>void;
  onSetting:(setting:'indoors'|'outside')=>void;
  onContext:(context:TodayChoice)=>void;
- onSurprise:()=>void;
+ onSurprise:()=>void;onReview:(review:Omit<WeeklyReview,'week'|'reviewedAt'>)=>void;onEditPlan:(id:string)=>void;
 };
 type ActivityPhoto={id:string;entry_id:string;caption:string;created_at:string};
 type Activity=ReturnType<typeof dashboardActivity>;
@@ -103,11 +105,11 @@ function GivenBack({state,now}:Pick<WidgetProps,'state'|'now'>){
  </section>;
 }
 
-function WeekActivity({activity,onWins}:{activity:Activity;onWins:()=>void}){
+function WeekActivity({activity,onWins,state,now,onReview,onEditPlan}:Pick<WidgetProps,'state'|'now'|'onReview'|'onEditPlan'|'onWins'>&{activity:Activity}){
  return <section className="glass-panel enough-widget week-widget" aria-labelledby="week-activity-heading">
    <div className="widget-heading"><h2 id="week-activity-heading">Your week, at your pace</h2><button className="widget-arrow" onClick={onWins} aria-label="See activity history"><ArrowRight size={19}/></button></div>
    <div className="week-body"><div className="week-count"><Leaf size={29}/><strong>{activity.activeDays}</strong><span>{activity.activeDays===1?'day':'days'} with a<br/>confirmed moment</span></div><div className="activity-days" aria-label="Confirmed moments this week">{activity.days.map(d=><div key={d.date} className={(d.today?'is-today ':'')+(d.future?'is-future':'')} aria-label={`${d.label}: ${d.count} confirmed ${d.count===1?'moment':'moments'}${d.today?', today':''}`}><span className={d.count?'day-has-moment':''}>{d.count?<Check size={18}/>:<span className="day-dot"/>}</span><small>{d.label}</small></div>)}</div></div>
-   <p className="widget-note">Each check marks a move you confirmed. You decide what enough looks like.</p>
+   <p className="widget-note">Each check marks a move you confirmed. You decide what enough looks like.</p><WeeklyReviewCard key={localWeek(new Date(now))} state={state} now={now} onSave={onReview} onEditPlan={onEditPlan}/>
  </section>;
 }
 
@@ -149,7 +151,7 @@ export function EnoughWidgets(props:WidgetProps){
      <TodayProgress activity={activity} onWins={props.onWins} onPlanned={props.onPlanned}/>
      <RecentLife state={props.state} now={props.now} cloud={props.cloud} activity={activity} onWins={props.onWins} onBrowse={props.onBrowse} onPlanned={props.onPlanned}/>
      <GivenBack state={props.state} now={props.now}/>
-     <WeekActivity activity={activity} onWins={props.onWins}/>
+     <WeekActivity activity={activity} onWins={props.onWins} state={props.state} now={props.now} onReview={props.onReview} onEditPlan={props.onEditPlan}/>
      <SavedForYou state={props.state} onSaved={props.onSaved}/>
    </div>
    <div className="enough-widget-bottom"><Learning state={props.state} activity={activity} onPins={props.onPins}/><TodayContext state={props.state} now={props.now} onContext={props.onContext}/><button className="surprise-widget" onClick={props.onSurprise}><Image src="/images/welcome-coast.webp" alt="" fill sizes="(max-width: 760px) 90vw, 300px"/><span className="surprise-content"><Sparkles size={27}/><strong>Find me something I’d never think of.</strong><small>A free idea that fits your PINS.</small><span className="surprise-arrow"><ArrowRight size={24}/></span></span></button></div>
