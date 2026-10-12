@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 const path='app/page.tsx';
 let s=fs.readFileSync(path,'utf8');
+if(s.includes('import { EnoughLifeHome } from "@/components/enough-life-home";')){console.log('My Enough is already wired.');process.exit(0)}
 const must=(from,to,label)=>{if(!s.includes(from))throw new Error(`Could not find ${label}`);s=s.replace(from,to)};
 must('import { EnoughDashboard } from "@/components/discovery";','import { EnoughLifeHome } from "@/components/enough-life-home";','dashboard import');
 must('import { groups, currencies, emptyState, completeProfile, localDate, receipt, accept, finish, restore, STORAGE_KEY, type State, type Profile, type Category } from "@/lib/journey";','import { groups, currencies, emptyState, completeProfile, localDate, receipt, accept, finish, keepSwap, restore, STORAGE_KEY, type State, type Profile, type Category } from "@/lib/journey";','journey import');
