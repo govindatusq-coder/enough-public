@@ -1,0 +1,16 @@
+"use client";
+import {ArrowRight,Clock,Footprints,Leaf,Sparkles} from 'lucide-react';
+import Image from 'next/image';
+import type {State} from '@/lib/journey';
+import {enoughHome} from '@/lib/enough-architecture';
+import {ideaCover} from '@/lib/discovery';
+
+export function EnoughLifeHome({state,onIdea,onBrowse,onKeep,onQuiet}:{state:State;onIdea:(id:number)=>void;onBrowse:()=>void;onKeep:(id:number)=>void;onQuiet:()=>void}){
+ const home=enoughHome(state);
+ if(home.quiet)return <section className="life-home quiet-life"><span className="eyebrow">ENOUGH, WHEN YOU WANT IT</span><h1>Nothing to catch up on.</h1><p>We’ll find another moment when you ask. No streaks. No guilt.</p><div className="life-actions"><button className="primary" onClick={onBrowse}>Got a spare moment?</button><button className="text-button" onClick={onQuiet}>Turn suggestions back on</button></div></section>;
+ return <div className="life-home">
+  <section className="life-now" aria-labelledby="now-heading"><div className="life-kicker"><span>NOW</span><small>One thing that fits this moment</small></div>{home.now?<div className="life-now-card"><button className="life-now-photo" onClick={()=>onIdea(home.now!.idea.id)}><Image src={ideaCover(home.now.idea)} alt={home.now.idea.alt||''} fill sizes="(max-width:760px) 92vw, 420px"/></button><div className="life-now-copy"><span className="eyebrow">{home.now.idea.contexts?.[0]||'INSIDE YOUR DAY'}</span><h1 id="now-heading">{home.now.idea.title}</h1><p>{home.now.idea.body}</p><div className="life-fit"><span><Clock size={17}/>{home.now.idea.extraMin===0?'No extra time':`${Math.abs(home.now.idea.extraMin)} ${home.now.idea.extraMin<0?'min reclaimed':'extra min'}`}</span><span><Footprints size={17}/>{home.now.idea.minutes} min movement</span></div><div className="life-actions"><button className="primary" onClick={()=>onKeep(home.now!.idea.id)}>I’ll try this</button><button className="text-button" onClick={onBrowse}>Another idea</button></div></div></div>:<div className="glass-empty"><Leaf size={28}/><h2>Your boundaries come first.</h2><p>No current idea clears the fit checks. You can ask again when your day changes.</p></div>}</section>
+  <section className="life-mine" aria-labelledby="mine-heading"><div className="life-section-heading"><div><span className="eyebrow">MINE</span><h2 id="mine-heading">What’s starting to stick</h2></div><small>{home.mine.length}/3 kept swaps</small></div>{home.mine.length?<div className="life-mine-grid">{home.mine.map(({idea,uses,graduated})=><button key={idea.id} className="life-mine-card" onClick={()=>onIdea(idea.id)}><span>{graduated?'Part of your routine':'Kept swap'}</span><strong>{idea.title}</strong><small>{uses?`Used ${uses} ${uses===1?'time':'times'}`:'Ready when the cue appears'}</small></button>)}</div>:<div className="life-empty-inline"><Sparkles size={20}/><p>When an idea survives real life, keep it here. ENOUGH learns from what actually works.</p></div>}</section>
+  <section className="life-more" aria-labelledby="more-heading"><div className="life-section-heading"><div><span className="eyebrow">MORE</span><h2 id="more-heading">Only when you want more</h2></div><button className="text-button" onClick={onBrowse}>Browse ideas <ArrowRight size={15}/></button></div><p>Discovery stays out of the way until you ask for it.</p></section>
+ </div>;
+}
