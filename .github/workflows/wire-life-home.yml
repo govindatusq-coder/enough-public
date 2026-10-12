@@ -1,0 +1,26 @@
+name: Wire life-matched My Enough
+on:
+  push:
+    branches: [codex/enough-life-matched-rebuild]
+    paths: [scripts/wire-life-home.mjs]
+permissions:
+  contents: write
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/enough-life-matched-rebuild
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/wire-life-home.mjs
+      - name: Commit integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/page.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "Wire life-matched My Enough into app state"
+          git push origin HEAD:codex/enough-life-matched-rebuild
