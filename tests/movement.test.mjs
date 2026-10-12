@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {snapshotSchema,suggestedThreshold,todayMovement,enoughToday,movementEvidenceSchema,dateAt} from '../lib/movement.ts';
+import {snapshotSchema,suggestedThreshold,todayMovement,enoughToday,movementEvidenceSchema,dateAt,movementSettingsSchema,suggestionsAfterEnough} from '../lib/movement.ts';
 import {emptyState,finish} from '../lib/journey.ts';
 import {validateState} from '../lib/account-validation.ts';
 const now=new Date('2026-10-05T12:00:00Z');
@@ -10,3 +10,18 @@ test('fresh current-day readings alone can quiet suggestions',()=>{const s=readi
 test('timezone boundaries use local days, including DST',()=>{assert.equal(dateAt(new Date('2026-11-01T05:30:00Z'),'America/New_York'),'2026-11-01');assert.equal(dateAt(new Date('2026-10-05T01:00:00Z'),'America/Los_Angeles'),'2026-10-04')});
 test('unknown samples, duplicate dates, invalid timezone and nonfinite data are rejected',()=>{const s=readings();assert.throws(()=>snapshotSchema.parse({...s,heartRate:80}));assert.throws(()=>snapshotSchema.parse({...s,timezone:'wrong'}));assert.throws(()=>snapshotSchema.parse({...s,days:[s.days[0],s.days[0]]}));assert.throws(()=>snapshotSchema.parse({...s,days:[{...s.days[0],steps:NaN}]}));assert.throws(()=>movementEvidenceSchema.parse({source:'health-connect',start:now.toISOString(),end:now.toISOString(),readAt:now.toISOString(),steps:0,exerciseMinutes:null}))});
 test('health evidence never completes a move; confirmed outcomes keep evidence and reflection',()=>{const s=emptyState(),start='2026-10-05T10:00:00Z',end='2026-10-05T10:15:00Z';s.entries=[{id:'one',ideaId:0,status:'accepted',acceptedAt:start,currency:'AUD',movementWindow:{start,end},movementEvidence:{source:'apple-health',start,end,readAt:now.toISOString(),steps:500,exerciseMinutes:null}}];assert.equal(validateState(s).entries[0].status,'accepted');const result=finish(s,'one',{minutes:15,moneyCents:0,outside:false,connecting:false,worthwhile:true,additionalMovement:'more'});assert.equal(validateState(result).entries[0].additionalMovement,'more');assert.throws(()=>validateState({...s,entries:[{...s.entries[0],movementWindow:{start:'2026-10-05T11:00:00Z',end}}]}));assert.equal(validateState(emptyState()).movementSettings,undefined)});
+test('a suggested usual amount never becomes a chosen threshold; No limit stays quiet-free',()=>{
+ const s=readings();assert.equal(suggestedThreshold(s,'steps',now),400);assert.equal(enoughToday(s,{metric:'steps',threshold:null},now),false);
+ const chosen=movementSettingsSchema.parse({metric:'steps',threshold:400,quietChoice:'amount'});assert.equal(enoughToday(s,chosen,now),true);
+ const unlimited=movementSettingsSchema.parse({metric:'steps',threshold:null,quietChoice:'none'});assert.equal(enoughToday(s,unlimited,now),false);assert.throws(()=>movementSettingsSchema.parse({...chosen,quietChoice:'none'}));assert.throws(()=>movementSettingsSchema.parse({...chosen,threshold:null}));
+});
+test('after enough, default-on sitting breaks narrow new suggestions to genuine short breaks only',()=>{
+ const pool=[{id:1,breaksSitting:true,minutes:1},{id:2,breaksSitting:true,minutes:3},{id:3,breaksSitting:false,minutes:2},{id:4,breaksSitting:true,minutes:4}];
+ assert.equal(suggestionsAfterEnough(pool,false),pool);assert.deepEqual(suggestionsAfterEnough(pool,true).map(i=>i.id),[1,2]);assert.deepEqual(suggestionsAfterEnough(pool,true,{metric:'steps',threshold:900,keepSittingBreaksAfterEnough:false}),[]);assert.equal(pool.length,4);
+ assert.deepEqual(suggestionsAfterEnough([],true),[]);
+});
+test('quiet settings preserve explicit legacy thresholds, validate bounds, round-trip and keep daily totals out of accounts',()=>{
+ const s=emptyState();s.movementSettings={metric:'steps',threshold:900};assert.deepEqual(validateState(s).movementSettings,s.movementSettings);assert.equal(enoughToday(readings(),s.movementSettings,now),true);
+ s.movementSettings={metric:'exerciseMinutes',threshold:30,quietChoice:'amount',keepSittingBreaksAfterEnough:true};assert.deepEqual(validateState(s).movementSettings,s.movementSettings);
+ for(const patch of [{threshold:0},{threshold:1441},{quietChoice:'automatic'},{keepSittingBreaksAfterEnough:'yes'}])assert.throws(()=>validateState({...s,movementSettings:{...s.movementSettings,...patch}}));assert.throws(()=>validateState({...s,movementSnapshot:readings()}));
+});
