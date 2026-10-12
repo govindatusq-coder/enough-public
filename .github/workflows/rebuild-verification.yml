@@ -3,12 +3,16 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: codex/enough-life-matched-rebuild
       - uses: pnpm/action-setup@v4
         with:
           version: 11.25.0
@@ -16,6 +20,8 @@ jobs:
         with:
           node-version: 22.13.0
           cache: pnpm
+      - name: Wire rebuilt My Enough
+        run: node scripts/wire-life-home.mjs
       - run: pnpm install --frozen-lockfile
       - name: Tests
         run: pnpm test
@@ -23,3 +29,11 @@ jobs:
         run: pnpm exec tsc --noEmit
       - name: Production build
         run: pnpm build
+      - name: Persist verified integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/page.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "Wire life-matched My Enough into app state"
+          git push origin HEAD:codex/enough-life-matched-rebuild
