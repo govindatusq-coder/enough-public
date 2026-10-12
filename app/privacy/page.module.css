@@ -1,0 +1,11 @@
+.page{max-width:780px;margin:0 auto;padding:32px 24px 64px;overflow-wrap:anywhere}
+.page h1{font-size:clamp(36px,7vw,52px);margin:24px 0;line-height:1.12}
+.page h2{font-size:28px;line-height:1.25;margin-bottom:14px}
+.page section{margin:32px 0}
+.page p{margin:12px 0;line-height:1.75}
+.page ul{padding-left:24px;list-style:disc}
+.page li{margin:12px 0;line-height:1.75}
+.page a{text-decoration:underline;text-underline-offset:3px}
+.back{display:inline-flex;align-items:center;min-height:48px;margin-bottom:24px}
+.draft{background:#eef3f8;border:1px solid #b9ccdd;border-radius:14px;padding:20px;color:#163c5b}
+@media(max-width:380px){.page{padding-inline:18px}.draft{padding:16px}}

@@ -1,6 +1,7 @@
 import {aiContext,validateCandidates} from './ai-ideas.ts';
 import type {State} from './journey.ts';
 import type {Idea} from './ideas.ts';
+import {requireAiConsent} from './ai-consent.ts';
 
 export class SuggestionBusy extends Error{
  constructor(){super('Your suggestions are still being prepared in another request. Try again when they are ready.');}
@@ -13,6 +14,7 @@ export async function withSuggestionRequest<T>(begin:(id:string)=>Promise<boolea
 }
 type BatchContext=ReturnType<typeof aiContext>&{requestSeed:string;attempt:number;previousAttemptTitles:string[]};
 export async function generateFreshCandidates(state:State,now:Date,generate:(context:BatchContext)=>Promise<unknown>,keepUnique:(ideas:Idea[])=>Promise<Idea[]>){
+ requireAiConsent(state.aiConsent);
  const requestSeed=crypto.randomUUID(),previousAttemptTitles:string[]=[];
  // A single retry can find another safe angle when a batch is entirely
  // duplicate or ineligible. Neither attempt loosens the user's boundaries.
