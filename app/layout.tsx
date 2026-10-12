@@ -4,6 +4,7 @@ import "./globals.css";
 import "./experience.css";
 import "./moves.css";
 import "./idea-images.css";
+import "./life-matched.css";
 
 const sans=DM_Sans({subsets:['latin'],display:'swap',variable:'--font-dm-sans'});
 const editorial=Newsreader({subsets:['latin'],style:['normal','italic'],display:'swap',variable:'--font-newsreader'});
