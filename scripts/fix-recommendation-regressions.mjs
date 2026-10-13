@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+const path='lib/recommendations.ts';
+let s=fs.readFileSync(path,'utf8');
+s=s.replace("import {frictionPenalty} from './opportunity-profile.ts';","import {frictionPenalty,opportunityComplete} from './opportunity-profile.ts';");
+s=s.replace("function opportunityAllows(i:Idea,s:State){const p=s.profile.opportunity;if(!p)return true;","function opportunityAllows(i:Idea,s:State){const p=s.profile.opportunity;if(!p||!opportunityComplete(p))return true;");
+s=s.replace("function opportunityScore(i:Idea,s:State){const p=s.profile.opportunity;if(!p)return 0;","function opportunityScore(i:Idea,s:State){const p=s.profile.opportunity;if(!p||!opportunityComplete(p))return 0;");
+const marker="if(idea.breaksSitting&&idea.minutes<=3){score+=2;protects.push('A short break from sitting, if it fits.')}";
+const legacy="if(s.today.date===localDate(now)&&s.today.context==='Feeling stressed'&&idea.movementMode==='walk'&&idea.minutes<=15){score+=3+(idea.outdoor?2:0)+(s.profile.preferences.includes('Familiar places')?1:0);told.push('A short familiar walk for the kind of day you noted.')}if(keys.has('Fatigue')&&idea.minutes>15)score-=4;if(keys.has('Privacy matters')&&idea.social)score-=2;if(keys.has('Caring responsibilities'))score+=idea.category==='family'?2:idea.extraMin>0?-2:0;";
+if(!s.includes("A short familiar walk for the kind of day you noted."))s=s.replace(marker,legacy+marker);
+const old="return ranked.sort((a,b)=>b.score-a.score).slice(0,12);";
+const replacement="const result:Ranked[]=[];while(ranked.length){let best=0,bestScore=-Infinity;ranked.forEach((r,n)=>{if(result.length<5&&r.idea.movementMode==='walk'&&result.filter(p=>p.idea.movementMode==='walk').length>=2&&ranked.some(p=>p.idea.movementMode!=='walk'))return;const similarity=result.slice(-4).reduce((sum,p)=>sum+(p.idea.category===r.idea.category?1:0)+(p.idea.family===r.idea.family?2:0)+(p.idea.mechanism===r.idea.mechanism?1:0),0);const walkPenalty=result.length<5&&r.idea.movementMode==='walk'&&result.filter(p=>p.idea.movementMode==='walk').length>=2?20:0;const adjusted=r.score-similarity*1.2-walkPenalty;if(adjusted>bestScore){best=n;bestScore=adjusted}});result.push(ranked.splice(best,1)[0])}return result;";
+if(s.includes(old))s=s.replace(old,replacement);
+for(const required of ['opportunityComplete(p)',"A short familiar walk for the kind of day you noted.",'const result:Ranked[]=[]'])if(!s.includes(required))throw new Error(`Recommendation repair failed: ${required}`);
+fs.writeFileSync(path,s);
+console.log('Recommendation regressions repaired.');
