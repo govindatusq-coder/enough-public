@@ -14,7 +14,8 @@ const PICKS: { k: Preference; label: string; Icon: typeof Feather }[] = [
   { k: 'time', label: 'I’ve got time', Icon: Clock },
 ];
 
-const openTask = (t: Task) => router.push(t.status === 'new' || t.status === 'later' ? { pathname: '/task/[id]', params: { id: t.id } } : { pathname: '/now/[id]', params: { id: t.id } });
+/** Every task opens on the task screen (Do it now / Do it later / Something else), whatever its state. */
+const openTask = (t: Task) => router.push({ pathname: '/task/[id]', params: { id: t.id } });
 
 /** Home — "mindful" variant from the v3 reference. The picker is a sort over clinician tasks; nothing is scored or stored. */
 export default function Home() {
@@ -88,7 +89,7 @@ export default function Home() {
               <Text style={T.italic}>{subOf(stepT)}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
                 <PrimaryButton style={{ flex: 1, minHeight: 52, paddingHorizontal: 10, shadowOpacity: 0, elevation: 0 }} icon={<Play size={18} weight="light" color={colors.cream} />}
-                  label={stepT.status === 'new' ? 'Have a look' : 'Start'} onPress={() => openTask(stepT)} />
+                  label="Have a look" onPress={() => openTask(stepT)} />
                 <TextButton label="Something else" onPress={() => (homePrompt ? setPref(null) : skip(stepT.id, live.map((x) => x.id)))} style={{ minHeight: 52, paddingHorizontal: 12 }} />
               </View>
             </Glass>
