@@ -35,7 +35,6 @@ export default function Home() {
   const newTasks = tasks.filter((t) => t.status === 'new');
   const laterTasks = tasks.filter((t) => t.status === 'later');
   const doneToday = tasks.filter((t) => t.today && t.status !== 'finished');
-  const setAside = tasks.filter((t) => t.status === 'finished');
   const showNewNote = newTasks.length > 0 && !(stepT && stepT.status === 'new');
   const allDone = !live.length;
   const calmLine = homePrompt && !pref ? 'Take a breath. There’s nothing you need to do this second.' : 'Take a breath. One small step is enough today.';
@@ -121,13 +120,6 @@ export default function Home() {
               ))}
             </View>
           )}
-
-          {setAside.map((t) => (
-            <Pressable key={t.id} onPress={() => router.push({ pathname: '/task/[id]', params: { id: t.id } })} accessibilityRole="button" style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingVertical: 4, minHeight: 44 }}>
-              <ArrowClockwise size={16} weight="light" color={colors.steel} style={{ marginTop: 4 }} />
-              <Text style={[T.muted, { flex: 1 }]}>Set aside: {t.title}. <Text style={{ color: colors.navy, textDecorationLine: 'underline', textDecorationColor: '#0F274640' }}>Try it again.</Text></Text>
-            </Pressable>
-          ))}
 
           {laterTasks.map((t) => (
             <Pressable key={t.id} onPress={() => openTask(t)} accessibilityRole="button" style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingVertical: 4, minHeight: 44 }}>

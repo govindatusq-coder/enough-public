@@ -11,32 +11,31 @@ import { toast } from '../../src/toast';
 
 /** Your commitment — a simple tap seals it; reminders are scheduled locally at the routine time. */
 export default function Pledge() {
-  const q = useLocalSearchParams<{ id: string; routine: RoutineId; how: string; where: string; prep: string; daily?: string }>();
+  const q = useLocalSearchParams<{ id: string; routine: RoutineId; how: string; where: string; prep: string; time?: string; daily?: string }>();
   const task = useTask(q.id);
   const shareDefault = useStore((s) => s.shareDefault);
   const notifDetail = useStore((s) => s.notifDetail);
-  const routineTimes = useStore((s) => s.routineTimes);
   const patchTask = useStore((s) => s.patchTask);
   const [share, setShare] = useState(shareDefault);
-  if (!task) return <Background><BackRow label="Edit plan" /></Background>;
+  if (!task) return <Background><BackRow label="Home" onPress={() => router.dismissTo('/home')} /></Background>;
 
-  const plan: Plan = { routine: q.routine, how: q.how, where: q.where, prep: q.prep };
-  const r = routineOf(plan.routine, routineTimes);
+  const plan: Plan = { routine: q.routine, how: q.how, where: q.where, prep: q.prep, time: q.time || null };
+  const r = routineOf(plan.routine);
   const daily = q.daily === '1';
   const hasPrep = !!plan.prep && plan.prep !== NOPREP;
 
   const commit = async () => {
     const next = { ...task, status: 'planned' as const, kind: 'commitment' as const, plan, daily, today: null, shared: share };
     patchTask(task.id, { status: 'planned', kind: 'commitment', plan, daily, today: null, shared: share });
-    const notifIds = await scheduleCommitment(next, notifDetail, routineTimes);
+    const notifIds = await scheduleCommitment(next, notifDetail);
     patchTask(task.id, { notifIds });
-    toast('Committed. Added to your ' + r.name.toLowerCase() + ' routine' + (daily ? ', every day.' : ' for next time.'));
+    toast(plan.time ? 'Committed. We’ll nudge you at ' + plan.time + (daily ? ', every day.' : '.') : 'Committed. Added to your ' + r.name.toLowerCase() + ' routine' + (daily ? ', every day.' : ' for next time.'));
     router.dismissTo('/home');
   };
 
   return (
     <Background>
-      <BackRow label="Edit plan" />
+      <BackRow label="Home" onPress={() => router.dismissTo('/home')} />
       <ScrollView contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 24, gap: 16 }}>
         <View style={{ paddingHorizontal: 4 }}>
           <Kicker>Commitment</Kicker>
@@ -53,7 +52,7 @@ export default function Pledge() {
         </NavyCard>
         <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingHorizontal: 6 }}>
           <Bell size={20} weight="light" color={colors.steel} />
-          <Text style={[T.meta, { flex: 1, fontSize: 15, lineHeight: 22 }]}>We’ll nudge you around {r.time}, when your {r.name.toLowerCase()} usually starts{daily ? ', every day.' : '.'}</Text>
+          <Text style={[T.meta, { flex: 1, fontSize: 15, lineHeight: 22 }]}>{plan.time ? 'We’ll nudge you at ' + plan.time + (daily ? ', every day.' : '.') : 'We’ll nudge you around ' + r.time + ', when your ' + r.name.toLowerCase() + ' usually starts' + (daily ? ', every day.' : '.')}</Text>
         </View>
         <CheckRow size={20} on={share} onPress={() => setShare(!share)} label={'Share my commitment with ' + PSYCH.short} />
       </ScrollView>

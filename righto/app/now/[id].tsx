@@ -50,7 +50,7 @@ export default function Now() {
     return () => clearInterval(i);
   }, [running]);
 
-  if (!task) return <Background><BackRow /></Background>;
+  if (!task) return <Background><BackRow label="Home" onPress={() => router.dismissTo('/home')} /></Background>;
 
   const toggle = () => {
     if (running) { setRunning(false); return; }
@@ -65,7 +65,7 @@ export default function Now() {
 
   return (
     <Background>
-      <BackRow right={<InfoButtons taskId={task.id} />} />
+      <BackRow label="Home" onPress={() => router.dismissTo('/home')} right={<InfoButtons taskId={task.id} />} />
       <ScrollView contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 24, gap: 16 }}>
         <View style={{ paddingHorizontal: 4 }}>
           <Kicker>Doing it now · about {task.mins} min</Kicker>

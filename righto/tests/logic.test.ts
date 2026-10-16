@@ -91,12 +91,18 @@ test('status tags for the psychologist view', () => {
   assert.equal(statusTag(mkTask({ id: 'x', title: 'X', status: 'tried' })).label, 'Done once');
 });
 
-test('routine times can be the client’s own', async () => {
-  const { routineOf, formatTime } = await import('../src/logic.ts');
-  assert.equal(routineOf('lunch').time, '12:30 pm');
-  assert.equal(routineOf('lunch', { lunch: '1:15 pm' }).time, '1:15 pm');
-  assert.equal(routineOf('lunch', { coffee: '6:00 am' }).time, '12:30 pm');
+test('reminder time: own time wins over the routine time', async () => {
+  const { reminderTime, formatTime, seedTasks } = await import('../src/logic.ts');
+  const { to12, to24, dateToTime, timeToDate } = await import('../src/utils/time.ts');
+  assert.equal(reminderTime({ routine: 'lunch', how: '', where: '', prep: '' }), '12:30 pm');
+  assert.equal(reminderTime({ routine: 'lunch', how: '', where: '', prep: '', time: '1:15 pm' }), '1:15 pm');
+  assert.equal(reminderTime(null), '7:30 am');
+  assert.equal(to12('14:05'), '2:05 pm');
+  assert.equal(to12('00:30'), '12:30 am');
+  assert.equal(to24('2:05 pm'), '14:05');
+  assert.equal(to24('12:30 am'), '00:30');
+  assert.equal(to24('nonsense'), '');
+  assert.equal(dateToTime(timeToDate('9:45 pm')), '9:45 pm');
   assert.equal(formatTime(new Date(2026, 9, 16, 15, 5)), '3:05 pm');
-  assert.equal(formatTime(new Date(2026, 9, 16, 0, 0)), '12:00 am');
-  assert.equal(formatTime(new Date(2026, 9, 16, 12, 30)), '12:30 pm');
+  assert.ok(seedTasks().some((t) => t.status === 'finished' && t.title === 'Notice three things you can hear'));
 });

@@ -35,7 +35,7 @@ export default function Privacy() {
   const setDetail = async (v: boolean) => {
     s.set({ notifDetail: v });
     for (const t of s.tasks.filter((x) => x.status === 'planned')) {
-      const ids = t.kind === 'goal' ? await scheduleGoal(t, v) : await scheduleCommitment(t, v, s.routineTimes);
+      const ids = t.kind === 'goal' ? await scheduleGoal(t, v) : await scheduleCommitment(t, v);
       s.patchTask(t.id, { notifIds: ids });
     }
   };
@@ -49,7 +49,7 @@ export default function Privacy() {
   const unlink = () => Alert.alert('End sharing with ' + PSYCH.short + '?', 'They lose access to anything new from now on. What you already shared stays in their clinical record.',
     [{ text: 'Cancel', style: 'cancel' }, { text: 'End sharing', style: 'destructive', onPress: () => { s.set({ linked: false, shareDefault: false }); toast('Sharing ended. Nothing new will be shared.'); } }]);
   const download = async () => {
-    const { set: _a, patchTask: _b, addTask: _c, record: _d, rollDay: _e, resetDemo: _f, wipe: _g, ...data } = s;
+    const { set: _a, patchTask: _b, addTask: _c, record: _d, tryAgain: _t, rollDay: _e, resetDemo: _f, wipe: _g, ...data } = s;
     try { await Share.share({ message: JSON.stringify({ exportedAt: new Date().toISOString(), ...data }, null, 2), title: 'My Righto data' }); } catch { /* cancelled */ }
   };
   const del = () => Alert.alert('Delete my account?', 'Your homework, plans and check-ins are deleted from this device now and from Righto’s servers within 30 days (backups within 35 days). Your psychologist keeps their own clinical record.',

@@ -8,7 +8,7 @@ export type Tag = 'quick' | 'quiet';
 export type Kind = 'commitment' | 'goal';
 export type Preference = 'tiny' | 'quiet' | 'next' | 'time' | 'skip';
 
-export type Plan = { routine: RoutineId; how: string; where: string; prep: string };
+export type Plan = { routine: RoutineId; how: string; where: string; prep: string; time?: string | null }; // time: own reminder time, null = routine time
 export type GoalAnswers = { s: string; m: string; a: string; r: string; t: string };
 export type Reminder = { time: string; days: boolean[] };
 export type Goal = GoalAnswers & { rem: Reminder };
@@ -97,14 +97,9 @@ export const lc = (s: string) => (s ? s.replace(/^./, (c) => c.toLowerCase()) : 
 export const trim = (s: string | undefined) => (s || '').replace(/[.\s]+$/, '');
 export const fmt = (n: number) => Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
 
-export type RoutineTimes = Record<RoutineId, string>;
-export const DEFAULT_ROUTINE_TIMES: RoutineTimes = { coffee: '7:30 am', lunch: '12:30 pm', wind: '9:30 pm' };
-/** A routine, with the client's own time for it when they have changed it. */
-export const routineOf = (id: RoutineId | string | undefined, times?: Partial<RoutineTimes>): Routine => {
-  const r = ROUTINES.find((x) => x.id === id) || ROUTINES[0];
-  const t = times?.[r.id];
-  return t ? { ...r, time: t } : r;
-};
+export const routineOf = (id: RoutineId | string | undefined): Routine => ROUTINES.find((x) => x.id === id) || ROUTINES[0];
+/** When a commitment's reminder fires: the client's own time if they chose one, otherwise the routine time. */
+export const reminderTime = (p: Plan | null | undefined) => (p?.time ? p.time : routineOf(p?.routine).time);
 /** Date → "3:05 pm" */
 export const formatTime = (d: Date) => {
   const h = d.getHours();
@@ -116,9 +111,9 @@ export const lineOf = (t: Task) => (t.kind === 'goal' ? goalLine(t.goal) : sente
 export const suggestionLine = (s: Suggestion | null) => (s ? (s.kind === 'goal' ? goalLine(s.goal) : sentence(s.plan)) : '');
 
 export const defaultPlan = (t: Task): Plan => {
-  if (t.plan) return { ...t.plan };
+  if (t.plan) return { ...t.plan, time: t.plan.time ?? null };
   const sp = t.suggestion && t.suggestion.kind === 'commitment' ? t.suggestion.plan : null;
-  return sp ? { ...sp, prep: sp.prep || t.prepOpts[0] || NOPREP } : { routine: t.suggest || 'coffee', how: t.howOpts[0] || '', where: t.whereOpts[0] || '', prep: t.prepOpts[0] || NOPREP };
+  return sp ? { ...sp, prep: sp.prep || t.prepOpts[0] || NOPREP, time: null } : { routine: t.suggest || 'coffee', how: t.howOpts[0] || '', where: t.whereOpts[0] || '', prep: t.prepOpts[0] || NOPREP, time: null };
 };
 export const defaultGoal = (t: Task): Goal => {
   if (t.goal) return { ...t.goal, rem: { ...t.goal.rem, days: [...t.goal.rem.days] } };
@@ -292,6 +287,9 @@ export const seedTasks = (): Task[] => [
   mkTask({ id: 't3', title: 'Plan one small pleasant activity', detail: 'Pick something you used to enjoy and do it for a short while.',
     why: 'When mood is low we tend to do less, which lowers mood further. Small enjoyable activities help break that cycle.', needs: 'Nothing', mins: 20, sent: 'Thu 9 Oct', status: 'later', laterUntil: 'Thu 16 Oct', suggest: 'coffee',
     whereOpts: ['at home', 'outside'], howOpts: ['do something I used to enjoy for 20 minutes'], prepOpts: ['pick the activity the night before', 'put it in my calendar'] }),
+  mkTask({ id: 't5', tags: ['quick'], title: 'Notice three things you can hear', detail: 'Pause, close your eyes if you like, and name three sounds around you.',
+    why: 'Shifting attention to your senses can help you step out of a busy mind for a moment.', needs: 'Nothing', mins: 2, sent: 'Mon 29 Sep', status: 'finished', suggest: 'coffee',
+    whereOpts: ['wherever I am'], howOpts: ['name three sounds around me'], prepOpts: [] }),
 ];
 
 export const seedHistory = (): CheckIn[] => [

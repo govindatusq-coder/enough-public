@@ -14,7 +14,6 @@ export default function Again() {
   const task = useTask(id);
   const patchTask = useStore((s) => s.patchTask);
   const notifDetail = useStore((s) => s.notifDetail);
-  const routineTimes = useStore((s) => s.routineTimes);
   const top = useTop();
   if (!task) return <Background />;
 
@@ -33,7 +32,7 @@ export default function Again() {
       toast('We’ll remind you every day at ' + task.goal.rem.time + '.');
     } else {
       patchTask(task.id, { daily: true });
-      patchTask(task.id, { notifIds: await scheduleCommitment({ ...task, daily: true }, notifDetail, routineTimes) });
+      patchTask(task.id, { notifIds: await scheduleCommitment({ ...task, daily: true }, notifDetail) });
       toast('Now part of your ' + rName + ' routine, every day.');
     }
     home();
@@ -42,7 +41,7 @@ export default function Again() {
     if (!hasPlan) return router.push({ pathname: '/task/[id]', params: { id: task.id } });
     if (!isGoal) {
       patchTask(task.id, { daily: false });
-      patchTask(task.id, { notifIds: await scheduleCommitment({ ...task, daily: false }, notifDetail, routineTimes) });
+      patchTask(task.id, { notifIds: await scheduleCommitment({ ...task, daily: false }, notifDetail) });
     }
     toast(isGoal ? 'Righto. We’ll remind you next time.' : 'Righto. It’s in your ' + rName + ' routine for next time.');
     home();

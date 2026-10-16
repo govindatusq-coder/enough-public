@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Ms+Madi&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>body{margin:0;background:#FBF8F1;color:#0F2746;font-family:'Newsreader',Georgia,serif;-webkit-font-smoothing:antialiased}a{color:#0F2746}a:hover{color:#5E7C96}input::placeholder,textarea::placeholder{color:#8a919b}button:focus-visible,input:focus-visible,textarea:focus-visible,[role=button]:focus-visible{outline:2px solid #0F2746;outline-offset:3px}button:disabled{cursor:default}</style>
+</helmet>
+<div style="display:flex;flex-direction:column;align-items:center;gap:20px;padding:24px 0;font-family:'Newsreader',Georgia,serif;color:#0F2746">
+<sc-if value="{{ chrome }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center">
+<div style="display:flex;gap:3px;padding:4px;border:1px solid #0F274626;border-radius:60px;background:#fbf8f1b0">
+<sc-for list="{{ roles }}" as="r" hint-placeholder-count="2"><button onClick="{{ r.pick }}" style="min-height:40px;padding:0 16px;border-radius:30px;border:0;font:500 15px 'Newsreader',Georgia,serif;cursor:pointer;color:{{ r.fg }};background:{{ r.bg }}">{{ r.label }}</button></sc-for>
+</div>
+<button onClick="{{ fireAlert }}" style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:40px;font:500 15px 'Newsreader',Georgia,serif;color:#0F2746;background:#fbf8f1b0;border:1px solid #0F274640;cursor:pointer" style-hover="background:#F6E7D6"><i class="ph-light ph-envelope-simple" style="font-size:17px"></i>New homework alert</button>
+<button onClick="{{ fireRoutine }}" style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:40px;font:500 15px 'Newsreader',Georgia,serif;color:#0F2746;background:#fbf8f1b0;border:1px solid #0F274640;cursor:pointer" style-hover="background:#F6E7D6"><i class="ph-light ph-bell-ringing" style="font-size:17px"></i>Routine reminder</button>
+<button onClick="{{ reset }}" style="display:flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:30px;border:0;background:none;font:400 15px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#F6E7D6"><i class="ph-light ph-arrow-counter-clockwise"></i>Reset</button>
+</div>
+</sc-if>
+<div style="position:relative;width:390px;height:844px;border-radius:52px;overflow:hidden;background:#FBF8F1;box-shadow:0 0 0 10px #0F2746,0 30px 70px #0f274630;flex:none;isolation:isolate">
+<div style="position:absolute;inset:-12px;z-index:-2;background:linear-gradient(#fbf8f180,#f6e7d6a8 65%,#0f274670),url(assets/welcome-coast.webp) 50%/cover no-repeat;filter:blur(3px)"></div>
+<div style="position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#fbf8f1b0 0%,#fbf8f138 45%,#fbf8f158 100%)"></div>
+<div style="position:absolute;top:0;left:0;right:0;height:50px;padding:4px 30px 0 34px;display:flex;justify-content:space-between;align-items:center;z-index:6;font:600 15px 'DM Sans',Arial,sans-serif;pointer-events:none;color:{{ sbColor }}"><span>{{ clock }}</span><span style="display:flex;gap:5px;font-size:17px"><i class="ph-fill ph-cell-signal-full"></i><i class="ph ph-wifi-high"></i><i class="ph-fill ph-battery-full"></i></span></div>
+<div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:#0a1a2a;z-index:7"></div>
+<div style="position:absolute;inset:0;display:flex;flex-direction:column">
+
+<sc-if value="{{ is.splash }}" hint-placeholder-val="{{ false }}">
+<div role="button" tabIndex="0" onClick="{{ splashNext }}" aria-label="Open Righto" style="position:relative;height:100%;display:flex;flex-direction:column;align-items:center;cursor:pointer;background:linear-gradient(180deg,#fbf8f1f0 0%,#fbf8f1c0 38%,#fbf8f100 70%),url(assets/welcome-coast.webp) center 60%/cover">
+<div style="flex:1"></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:22px;transform:translateY(-60px)">
+<div style="font:400 104px/1 'Ms Madi',cursive;color:#0F2746;letter-spacing:-1px">righto<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#D8B48E;margin-left:6px"></span></div>
+<div style="font:500 12px 'DM Sans',Arial,sans-serif;letter-spacing:4px;text-transform:uppercase;color:#0F2746;text-align:center;line-height:2">Your way<br>forward.</div>
+</div>
+<div style="flex:1.3"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.consent }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="flex:1;overflow-y:auto;padding:66px 22px 16px;display:flex;flex-direction:column;gap:16px">
+<div style="font:400 34px/1 'Ms Madi',cursive">righto<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#D8B48E;margin-left:3px"></span></div>
+<div><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Step 1 of 4 · Before you start</span><h3 style="font:400 34px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:8px 0 8px">Your privacy</h3><p style="margin:0;font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">Righto keeps your homework, notes and check-ins private. Only you, and the psychologist you link with, can see what you choose to share.</p></div>
+<div style="display:flex;flex-direction:column;padding:2px 16px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid #0f274612"><i class="ph-light ph-lock-simple" style="font-size:22px;color:#5E7C96;margin-top:1px"></i><span style="font:400 16px/1.45 'Newsreader',Georgia,serif;text-wrap:pretty">Locked with Face ID or a passcode.</span></div>
+<div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid #0f274612"><i class="ph-light ph-map-pin" style="font-size:22px;color:#5E7C96;margin-top:1px"></i><span style="font:400 16px/1.45 'Newsreader',Georgia,serif;text-wrap:pretty">Stored in Australia. Never sold or used for advertising.</span></div>
+<div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid #0f274612"><i class="ph-light ph-eye-slash" style="font-size:22px;color:#5E7C96;margin-top:1px"></i><span style="font:400 16px/1.45 'Newsreader',Georgia,serif;text-wrap:pretty">You choose what your psychologist sees.</span></div>
+<div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid #0f274612"><i class="ph-light ph-clock-countdown" style="font-size:22px;color:#5E7C96;margin-top:1px"></i><span style="font:400 16px/1.45 'Newsreader',Georgia,serif;text-wrap:pretty">Not monitored in real time. For urgent help call 000 or Lifeline 13 11 14.</span></div>
+<div style="display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid #0f274612"><i class="ph-light ph-info" style="font-size:22px;color:#5E7C96;margin-top:1px"></i><span style="font:400 16px/1.45 'Newsreader',Georgia,serif;text-wrap:pretty">Righto doesn’t assess, diagnose or treat. It helps you do the homework you plan in session.</span></div>
+</div>
+<div style="display:flex;gap:18px;padding:0 4px;font:400 15px 'Newsreader',Georgia,serif"><span style="text-decoration:underline;text-decoration-color:#0F274640;text-underline-offset:3px">Privacy policy</span><span style="text-decoration:underline;text-decoration-color:#0F274640;text-underline-offset:3px">Collection notice</span></div>
+<label style="display:flex;align-items:flex-start;gap:12px;min-height:44px;cursor:pointer;font:400 16px/1.45 'Newsreader',Georgia,serif;padding:0 4px"><input type="checkbox" checked="{{ consentOk }}" onChange="{{ toggleConsent }}" style="width:22px;height:22px;flex:none;margin-top:1px;accent-color:#0F2746"><span style="text-wrap:pretty">I agree to Righto collecting and storing my health information so I can share homework with my psychologist.</span></label>
+<label style="display:flex;align-items:flex-start;gap:12px;min-height:44px;cursor:pointer;font:400 16px/1.45 'Newsreader',Georgia,serif;padding:0 4px"><input type="checkbox" checked="{{ shareDefault }}" onChange="{{ toggleShareDefault }}" style="width:22px;height:22px;flex:none;margin-top:1px;accent-color:#0F2746"><span style="text-wrap:pretty">Share my check-ins with my psychologist by default. I can change this each time.</span></label>
+</div>
+<div style="padding:10px 18px 34px;display:flex;flex-direction:column;align-items:center;gap:4px"><button disabled="{{ consentBlocked }}" onClick="{{ toLink }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;box-shadow:0 6px 18px #0f27461f;cursor:pointer;opacity:{{ consentOp }}">Agree and continue</button><button onClick="{{ consentLater }}" style="min-height:44px;padding:0 16px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#4B5B70;cursor:pointer">Not now</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.link }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="flex:1;overflow-y:auto;padding:66px 22px 16px;display:flex;flex-direction:column;gap:18px">
+<div><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Step 2 of 4</span><h3 style="font:400 34px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:8px 0 8px">Confirm your psychologist</h3><p style="margin:0;font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">You opened an invite link. Check these details match the psychologist you’re seeing.</p></div>
+<div style="display:flex;flex-direction:column;gap:14px;padding:20px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="display:flex;align-items:center;gap:14px"><span style="width:52px;height:52px;flex:none;border-radius:50%;background:#0F2746;color:#FBF8F1;display:grid;place-items:center;font:500 17px 'Newsreader',Georgia,serif">MC</span><div><div style="font:400 22px/1.2 'Newsreader',Georgia,serif">Dr Maya Chen</div><div style="font-size:14px;color:#4B5B70">Psychologist · Harbour Psychology, Sydney</div></div></div>
+<div style="display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid #0f274614;font-size:14px;color:#4B5B70"><span style="display:flex;gap:8px;align-items:center"><i class="ph-light ph-identification-card" style="font-size:17px"></i>Ahpra registration PSY0001234567</span><span style="display:flex;gap:8px;align-items:center"><i class="ph-light ph-timer" style="font-size:17px"></i>Single-use invite · expires in 47 hours</span></div>
+</div>
+<p style="margin:0;font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty;font-size:15px;padding:0 4px">Only link with a psychologist you’re seeing. You can end sharing at any time in Settings.</p>
+</div>
+<div style="padding:10px 18px 34px;display:flex;flex-direction:column;align-items:center;gap:4px"><button onClick="{{ go.applock }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;box-shadow:0 6px 18px #0f27461f;cursor:pointer"><i class="ph-light ph-link-simple"></i>Yes, link with Dr Chen</button><button onClick="{{ linkWrong }}" style="min-height:44px;padding:0 16px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#4B5B70;cursor:pointer">This isn’t my psychologist</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.applock }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="flex:1;overflow-y:auto;padding:66px 22px 16px;display:flex;flex-direction:column;gap:22px">
+<div><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Step 3 of 4</span><h3 style="font:400 34px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:8px 0 8px">Keep Righto private</h3><p style="margin:0;font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">Lock the app so no one else who picks up your phone can read your homework or notes.</p></div>
+<div style="align-self:center;width:120px;height:120px;border-radius:50%;display:grid;place-items:center;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)"><i class="ph-light ph-scan-smiley" style="font-size:56px"></i></div>
+<div style="display:flex;flex-direction:column;gap:2px;padding:0 4px;font-size:14px;line-height:1.45;color:#4B5B70"><span>Locks again after 5 minutes in the background.</span><span>Righto is hidden in the app switcher.</span></div>
+</div>
+<div style="padding:10px 18px 34px;display:flex;flex-direction:column;align-items:center;gap:10px"><button onClick="{{ go.notifs }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;box-shadow:0 6px 18px #0f27461f;cursor:pointer"><i class="ph-light ph-scan-smiley"></i>Use Face ID</button><button onClick="{{ go.notifs }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#0F2746;background:#fbf8f170;border:1px solid #0F274640;cursor:pointer">Set a passcode</button><button onClick="{{ go.notifs }}" style="min-height:44px;padding:0 16px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#4B5B70;cursor:pointer;min-height:36px">Skip for now</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.notifs }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="flex:1;overflow-y:auto;padding:66px 22px 16px;display:flex;flex-direction:column;gap:18px">
+<div><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Step 4 of 4</span><h3 style="font:400 34px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:8px 0 8px">Gentle reminders</h3><p style="margin:0;font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">We’ll remind you at the times you choose. On your lock screen they won’t say what the task is.</p></div>
+<div style="display:flex;gap:10px;padding:14px;border:1px solid #ffffffa8;border-radius:24px;background:linear-gradient(115deg,#fbf8f1e0,#f6e7d6c8);box-shadow:0 8px 35px #0f274614"><div style="width:40px;height:40px;flex:none;border-radius:10px;background:#0F2746;display:grid;place-items:center;font:400 30px/1 'Ms Madi',cursive;color:#FBF8F1;padding-bottom:4px">r<span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:#E6C7A3;margin-left:2px"></span></div><div style="flex:1;font-size:15px;line-height:1.35"><div style="display:flex;justify-content:space-between;font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:1px;color:#5f6c7d"><span>RIGHTO</span><span>now</span></div><div style="font-weight:500">{{ previewTitle }}</div><div style="color:#4B5B70;font-size:13px">{{ previewBody }}</div></div></div>
+<label style="display:flex;align-items:flex-start;gap:12px;min-height:44px;cursor:pointer;font:400 16px/1.45 'Newsreader',Georgia,serif;padding:0 4px"><input type="checkbox" checked="{{ notifDetail }}" onChange="{{ toggleNotifDetail }}" style="width:22px;height:22px;flex:none;margin-top:1px;accent-color:#0F2746"><span style="text-wrap:pretty">Show task details on my lock screen</span></label>
+</div>
+<div style="padding:10px 18px 34px;display:flex;flex-direction:column;align-items:center;gap:4px"><button onClick="{{ finishOnboard }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;box-shadow:0 6px 18px #0f27461f;cursor:pointer"><i class="ph-light ph-bell"></i>Allow reminders</button><button onClick="{{ finishOnboard }}" style="min-height:44px;padding:0 16px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#4B5B70;cursor:pointer">Not now</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ homeCalmOn }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:58px 26px 0;display:flex;align-items:center;justify-content:space-between"><span style="font:400 30px/1 'Ms Madi',cursive">righto<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#D8B48E;margin-left:3px"></span></span><span style="font:400 15px 'Newsreader',Georgia,serif;color:#4B5B70">Monday</span></div>
+<div style="flex:1;overflow-y:auto;padding:44px 26px 120px;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;flex-direction:column">
+<div style="font:400 28px/1.1 'Newsreader',Georgia,serif;letter-spacing:-.5px">Good afternoon,</div>
+<div style="font:400 66px/1 'Ms Madi',cursive;margin-left:-2px">Sam.</div>
+<p style="margin:16px 0 0;font:italic 400 17px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">{{ calmLine }}</p>
+<div style="display:flex;align-items:center;gap:8px;margin-top:10px;font:400 15px 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-calendar-blank" style="font-size:17px"></i>Your next session is Monday 20 Oct.</div>
+</div>
+<sc-if value="{{ vOne }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<sc-if value="{{ hasNext }}"><div style="display:flex;flex-direction:column;gap:12px;padding:26px 24px 22px;border:1px solid #ffffffa8;border-radius:26px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274610;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">{{ next.kicker }}</span>
+<div style="font:400 28px/1.15 'Newsreader',Georgia,serif;letter-spacing:-.5px;text-wrap:balance">{{ next.title }}</div>
+<div style="font:italic 400 16px/1.45 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">{{ next.sub }}</div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:8px"><button onClick="{{ next.start }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:0;cursor:pointer"><i class="ph-light ph-play"></i>{{ next.cta }}</button><button onClick="{{ next.skip }}" style="min-height:52px;padding:0 18px;border:0;background:none;border-radius:40px;font:400 16px 'Newsreader',Georgia,serif;color:#4B5B70;cursor:pointer" style-hover="background:#fbf8f160">{{ next.skipLabel }}</button></div>
+</div></sc-if>
+<sc-if value="{{ allDone }}"><div style="display:flex;flex-direction:column;gap:8px;padding:12px 0"><span style="font:400 46px/1.05 'Ms Madi',cursive">You’ve done enough for today.</span><span style="font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70">Rest, or look back over your journal.</span></div></sc-if>
+<sc-if value="{{ hasNewNote }}"><button onClick="{{ newNoteOpen }}" style="display:flex;align-items:flex-start;gap:12px;padding:4px 0;border:0;background:none;text-align:left;cursor:pointer;color:#0F2746;min-height:44px"><span style="width:7px;height:7px;flex:none;border-radius:50%;background:#D8B48E;margin-top:9px"></span><span style="font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">Dr Chen sent you something new. <span style="color:#0F2746;text-decoration:underline;text-decoration-color:#0F274640;text-underline-offset:3px">Have a look when you’re ready.</span></span></button></sc-if>
+<sc-if value="{{ hasRest }}">
+<button onClick="{{ toggleMore }}" style="align-self:flex-start;display:flex;align-items:center;gap:8px;min-height:44px;padding:0;border:0;background:none;cursor:pointer;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746">{{ moreLabel }}<i class="{{ moreIcon }}" style="font-size:14px"></i></button>
+<sc-if value="{{ showMore }}"><div style="display:flex;flex-direction:column;margin-top:-10px"><sc-for list="{{ restItems }}" as="i"><div role="button" tabIndex="0" onClick="{{ i.open }}" style="display:flex;align-items:center;gap:14px;min-height:60px;padding:8px 0;border-top:1px solid #0f274612;cursor:pointer"><span style="width:20px;height:20px;flex:none;box-sizing:border-box;border-radius:50%;border:1.25px solid #0F2746;display:grid;place-items:center;font-size:11px;color:#FBF8F1;background:{{ i.dotBg }};opacity:{{ i.op }}"><i class="{{ i.dotIcon }}"></i></span><div style="flex:1;min-width:0"><div style="font:400 17px/1.3 'Newsreader',Georgia,serif;text-wrap:pretty">{{ i.title }}</div><div style="font-size:14px;line-height:1.35;color:#4B5B70">{{ i.sub }}</div></div></div></sc-for></div></sc-if>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ vQuiet }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:26px">
+<sc-if value="{{ hasNewNote }}"><button onClick="{{ newNoteOpen }}" style="display:flex;align-items:flex-start;gap:12px;padding:4px 0;border:0;background:none;text-align:left;cursor:pointer;color:#0F2746;min-height:44px"><span style="width:7px;height:7px;flex:none;border-radius:50%;background:#D8B48E;margin-top:9px"></span><span style="font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">Dr Chen sent you something new. <span style="color:#0F2746;text-decoration:underline;text-decoration-color:#0F274640;text-underline-offset:3px">Have a look when you’re ready.</span></span></button></sc-if>
+<sc-for list="{{ quietGroups }}" as="g" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column">
+<button onClick="{{ g.toggle }}" style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0;border:0;background:none;cursor:pointer;color:#0F2746;text-align:left"><i class="{{ g.icon }}" style="font-size:22px;color:#5E7C96"></i><span style="flex:1;font:400 21px/1.2 'Newsreader',Georgia,serif">{{ g.name }}</span><span style="font:italic 400 15px 'Newsreader',Georgia,serif;color:#4B5B70">{{ g.summary }}</span></button>
+<sc-if value="{{ g.isOpen }}"><div style="display:flex;flex-direction:column;margin-top:6px"><sc-for list="{{ g.steps }}" as="st"><div role="button" tabIndex="0" onClick="{{ st.open }}" style="display:flex;align-items:center;gap:14px;min-height:60px;padding:8px 0;border-top:1px solid #0f274612;cursor:pointer"><span style="width:20px;height:20px;flex:none;box-sizing:border-box;border-radius:50%;border:1.25px solid #0F2746;display:grid;place-items:center;font-size:11px;color:#FBF8F1;background:{{ st.dotBg }};opacity:{{ st.op }}"><i class="{{ st.dotIcon }}"></i></span><div style="flex:1;min-width:0"><div style="font:400 17px/1.3 'Newsreader',Georgia,serif;text-wrap:pretty">{{ st.title }}</div><div style="font-size:14px;line-height:1.35;color:#4B5B70">{{ st.sub }}</div></div></div></sc-for></div></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{ allDone }}"><div style="display:flex;flex-direction:column;gap:8px;padding:12px 0"><span style="font:400 46px/1.05 'Ms Madi',cursive">You’ve done enough for today.</span><span style="font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70">Rest, or look back over your journal.</span></div></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ vMind }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<sc-if value="{{ showPrompt }}">
+<div style="display:flex;flex-direction:column;gap:16px;padding:24px;border:1px solid #ffffffa8;border-radius:26px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274610;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="font:400 22px/1.25 'Newsreader',Georgia,serif">What feels doable right now?</div><div style="font-size:14px;color:#4B5B70;margin-top:-8px">Picks from the tasks Dr Chen gave you.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><sc-for list="{{ moods }}" as="m" hint-placeholder-count="4"><button onClick="{{ m.pick }}" style="display:flex;flex-direction:row;align-items:center;gap:10px;padding:12px 14px;min-height:60px;text-align:left;border-radius:20px;border:1px solid #ffffffa8;background:#fbf8f150;cursor:pointer;color:#0F2746;font:400 15px 'Newsreader',Georgia,serif" style-hover="background:#fbf8f1a0"><i class="{{ m.icon }}" style="font-size:24px;color:#5E7C96"></i>{{ m.label }}</button></sc-for></div>
+<button onClick="{{ moodSkip }}" style="align-self:flex-start;min-height:36px;padding:0;border:0;background:none;cursor:pointer;font:italic 400 15px 'Newsreader',Georgia,serif;color:#4B5B70">Just show me what’s next</button>
+</div>
+</sc-if>
+<sc-if value="{{ showMindStep }}">
+<sc-if value="{{ hasNext }}"><div style="display:flex;flex-direction:column;gap:12px;padding:26px 24px 22px;border:1px solid #ffffffa8;border-radius:26px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274610;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">{{ mindNext.kicker }}</span>
+<div style="font:400 28px/1.15 'Newsreader',Georgia,serif;letter-spacing:-.5px;text-wrap:balance">{{ mindNext.title }}</div>
+<div style="font:italic 400 16px/1.45 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">{{ mindNext.sub }}</div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:8px"><button onClick="{{ mindNext.start }}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:0;cursor:pointer"><i class="ph-light ph-play"></i>{{ mindNext.cta }}</button><button onClick="{{ mindNext.skip }}" style="min-height:52px;padding:0 18px;border:0;background:none;border-radius:40px;font:400 16px 'Newsreader',Georgia,serif;color:#4B5B70;cursor:pointer" style-hover="background:#fbf8f160">{{ mindNext.skipLabel }}</button></div>
+</div></sc-if>
+<sc-if value="{{ allDone }}"><div style="display:flex;flex-direction:column;gap:8px;padding:12px 0"><span style="font:400 46px/1.05 'Ms Madi',cursive">You’ve done enough for today.</span><span style="font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70">Rest, or look back over your journal.</span></div></sc-if>
+</sc-if>
+<sc-if value="{{ hasNewNote }}"><button onClick="{{ newNoteOpen }}" style="display:flex;align-items:flex-start;gap:12px;padding:4px 0;border:0;background:none;text-align:left;cursor:pointer;color:#0F2746;min-height:44px"><span style="width:7px;height:7px;flex:none;border-radius:50%;background:#D8B48E;margin-top:9px"></span><span style="font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">Dr Chen sent you something new. <span style="color:#0F2746;text-decoration:underline;text-decoration-color:#0F274640;text-underline-offset:3px">Have a look when you’re ready.</span></span></button></sc-if>
+</div>
+</sc-if>
+<button onClick="{{ openSupport }}" style="align-self:flex-start;display:flex;align-items:center;gap:8px;min-height:44px;padding:0;margin-top:auto;border:0;background:none;cursor:pointer;font:italic 400 15px 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-lifebuoy" style="font-size:18px;font-style:normal"></i>Need support now?</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ homeBusyOn }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:56px 22px 4px;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font:400 34px/1 'Ms Madi',cursive">righto<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#D8B48E;margin-left:3px"></span></span><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Mon 13 Oct</span></div>
+<div style="margin-top:22px;font:400 30px/1.1 'Newsreader',Georgia,serif;letter-spacing:-.5px">Good afternoon,</div>
+<div style="font:400 64px/1 'Ms Madi',cursive;margin-left:-2px">Sam.</div>
+</div>
+<div style="flex:1;overflow-y:auto;padding:6px 18px 120px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:14px;padding:12px 16px 12px 12px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="width:52px;flex:none;display:flex;flex-direction:column;align-items:center;padding:6px 0;border-radius:14px;background:#0F2746;color:#FBF8F1"><span style="font:500 10px 'DM Sans',Arial,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#E6C7A3">{{ appt.mon }}</span><span style="font:400 24px/1.05 'Newsreader',Georgia,serif">{{ appt.day }}</span></div>
+<div style="flex:1;min-width:0"><div style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Next session</div><div style="font:400 18px/1.25 'Newsreader',Georgia,serif;margin-top:2px">{{ appt.when }}</div><div style="font-size:14px;color:#4B5B70">{{ appt.with }}</div></div>
+<div style="text-align:center;flex:none"><div style="font:400 30px/1 'Newsreader',Georgia,serif">{{ appt.days }}</div><div style="font-size:12px;color:#4B5B70">days</div></div>
+</div>
+<sc-for list="{{ newTasks }}" as="n" hint-placeholder-count="1">
+<div style="padding:18px;border-radius:22px;background:linear-gradient(120deg,#0f2746e8,#0f2746c4),url(assets/welcome-coast.webp) center 45%/cover;color:#FBF8F1;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px #0f274630">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="display:flex;align-items:center;gap:8px;font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#F6E7D6"><span style="width:7px;height:7px;border-radius:50%;background:#E6C7A3"></span>New from Dr Chen</span>
+<div style="display:flex;margin:-12px -10px"><button onClick="{{ n.why }}" aria-label="Why this task?" style="width:40px;height:44px;display:grid;place-items:center;border:0;background:none;cursor:pointer;padding:0"><span style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:1px solid #FBF8F166;color:#FBF8F1;font:400 14px 'Newsreader',Georgia,serif">?</span></button><button onClick="{{ n.info }}" aria-label="More about this task" style="width:40px;height:44px;display:grid;place-items:center;border:0;background:none;cursor:pointer;padding:0"><span style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:1px solid #FBF8F166;color:#FBF8F1;font:italic 500 14px 'Newsreader',Georgia,serif">i</span></button></div></div>
+<div role="button" tabIndex="0" onClick="{{ n.open }}" style="font:400 25px/1.15 'Newsreader',Georgia,serif;letter-spacing:-.4px;text-wrap:pretty;cursor:pointer">{{ n.title }}</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:#E9DFD2">About {{ n.mins }} min<span style="font-style:italic">· before Monday’s session</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+<button onClick="{{ n.now }}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#0F2746;background:#FBF8F1;border:0;cursor:pointer"><i class="ph-light ph-play"></i>Do it now</button>
+<button onClick="{{ n.plan }}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#FBF8F1;background:transparent;border:1px solid #FBF8F180;cursor:pointer"><i class="ph-light ph-list-bullets"></i>Other options</button>
+</div>
+</div>
+</sc-for>
+<div style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70;margin:6px 4px 0">Today</div>
+<sc-for list="{{ routines }}" as="r" hint-placeholder-count="2">
+<div style="display:flex;flex-direction:column;padding:14px 8px 4px 16px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,inset 0 -1px 1px #ffffff40,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="display:flex;align-items:center;gap:10px;padding-right:8px"><i class="{{ r.icon }}" style="font-size:22px;color:#5E7C96"></i><span style="flex:1;font:400 21px/1.1 'Newsreader',Georgia,serif">{{ r.name }}</span><span style="font-size:14px;color:#4B5B70">{{ r.status }}</span></div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;font:italic 400 15px 'Newsreader',Georgia,serif;color:#4B5B70"><i class="{{ r.phraseIcon }}" style="font-size:16px;width:22px;text-align:center"></i>{{ r.phrase }}</div>
+<sc-for list="{{ r.steps }}" as="st">
+<div style="display:flex;align-items:center;gap:6px;min-height:60px;padding:6px 0;border-top:1px solid #0f274614">
+<div role="button" tabIndex="0" onClick="{{ st.open }}" style="flex:1;min-width:0;display:flex;align-items:center;gap:12px;cursor:pointer">
+<span style="width:22px;height:22px;flex:none;box-sizing:border-box;border-radius:50%;border:1.25px solid #0F2746;display:grid;place-items:center;font-size:12px;color:#FBF8F1;background:{{ st.dotBg }};opacity:{{ st.op }}"><i class="{{ st.dotIcon }}"></i></span>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column"><div style="font:400 17px/1.25 'Newsreader',Georgia,serif;text-wrap:pretty">{{ st.title }}</div><div style="font-size:14px;line-height:1.35;color:#4B5B70">{{ st.sub }}</div></div>
+</div>
+<div style="display:flex;flex:none"><button onClick="{{ st.why }}" aria-label="Why this task?" style="width:40px;height:44px;display:grid;place-items:center;border:0;background:none;cursor:pointer;padding:0"><span style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#fbf8f1a0;border:1px solid #0F274633;color:#0F2746;font:400 14px 'Newsreader',Georgia,serif">?</span></button><button onClick="{{ st.info }}" aria-label="More about this task" style="width:40px;height:44px;display:grid;place-items:center;border:0;background:none;cursor:pointer;padding:0"><span style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#fbf8f1a0;border:1px solid #0F274633;color:#0F2746;font:italic 500 14px 'Newsreader',Georgia,serif">i</span></button></div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+<sc-if value="{{ noRoutines }}"><div style="padding:8px 4px;font:400 16px/1.45 'Newsreader',Georgia,serif;color:#4B5B70">Nothing planned yet. Choose how to start a task and it will show up here.</div></sc-if>
+<sc-if value="{{ hasLater }}">
+<div style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70;margin:6px 4px 0">Later</div>
+<div style="display:flex;flex-direction:column;padding:2px 12px 2px 16px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<sc-for list="{{ laterItems }}" as="l">
+<div role="button" tabIndex="0" onClick="{{ l.open }}" style="display:flex;align-items:center;gap:12px;min-height:62px;padding:6px 0;cursor:pointer;border-top:1px solid {{ l.rule }}"><i class="ph-light ph-hourglass-medium" style="font-size:20px;color:#5E7C96;width:22px;text-align:center"></i><div style="flex:1;min-width:0"><div style="font:400 17px/1.25 'Newsreader',Georgia,serif;text-wrap:pretty">{{ l.title }}</div><div style="font-size:14px;color:#4B5B70">{{ l.sub }}</div></div><span style="font:500 15px 'Newsreader',Georgia,serif">Choose</span><i class="ph-light ph-caret-right" style="font-size:16px"></i></div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.newtask }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:52px 10px 0;display:flex;justify-content:space-between;align-items:center"><button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:2px;min-height:44px;padding:0 10px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160"><i class="ph-light ph-caret-left" style="font-size:18px"></i>Home</button>
+<div style="display:flex;padding-right:6px"><button onClick="{{ openWhy }}" aria-label="Why this task?" style="width:40px;height:44px;display:grid;place-items:center;border:0;background:none;cursor:pointer;padding:0"><span style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#fbf8f1a0;border:1px solid #0F274633;color:#0F2746;font:400 14px 'Newsreader',Georgia,serif">?</span></button><button onClick="{{ openInfo }}" aria-label="More about this task" style="width:40px;height:44px;display:grid;place-items:center;border:0;background:none;cursor:pointer;padding:0"><span style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#fbf8f1a0;border:1px solid #0F274633;color:#0F2746;font:italic 500 14px 'Newsreader',Georgia,serif">i</span></button></div></div>
+<div style="flex:1;overflow-y:auto;padding:4px 18px 24px;display:flex;flex-direction:column;gap:14px">
+<div style="padding:0 4px;display:flex;flex-direction:column;gap:10px">
+<span style="display:flex;align-items:center;gap:8px;font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70"><span style="width:7px;height:7px;border-radius:50%;background:#D8B48E"></span>From Dr Maya Chen (Psychologist) · {{ task.sent }}</span>
+<h3 style="font:400 34px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:0;text-wrap:balance">{{ task.title }}</h3>
+<div style="font-size:15px;color:#4B5B70">About {{ task.mins }} min · {{ task.needs }}</div>
+<span style="display:flex;align-items:center;gap:6px;font:italic 400 15px 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-calendar-blank" style="font-size:16px;font-style:normal"></i>Before Monday’s session</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;padding:18px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">What to do</span>
+<p style="margin:0;font:400 17px/1.5 'Newsreader',Georgia,serif;text-wrap:pretty">{{ task.detail }}</p>
+</div>
+<sc-if value="{{ hasSuggest }}">
+<div style="display:flex;flex-direction:column;gap:6px;padding:16px 18px;border-radius:22px;color:#FBF8F1;background:linear-gradient(120deg,#0f2746e0,#0f2746b8),url(assets/welcome-coast.webp) center 45%/cover;box-shadow:0 10px 30px #0f274626">
+<span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70;color:#F6E7D6">Dr Chen suggests {{ suggestKind }}</span>
+<div style="font:400 19px/1.35 'Newsreader',Georgia,serif;text-wrap:pretty">{{ suggestText }}</div>
+<div style="font-size:14px;color:#E9DFD2">From your session. You can change any of it.</div>
+</div>
+</sc-if>
+<div style="padding:4px 6px 0;font:400 21px/1.25 'Newsreader',Georgia,serif">How would you like to start?</div>
+<div style="display:flex;flex-direction:column;padding:2px 14px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<sc-for list="{{ startOpts }}" as="o" hint-placeholder-count="3">
+<button onClick="{{ o.go }}" style="display:flex;align-items:center;gap:14px;min-height:72px;padding:10px 0;border:0;border-bottom:1px solid {{ o.rule }};background:none;text-align:left;cursor:pointer;color:#0F2746;font:inherit"><span style="width:42px;height:42px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:20px;color:{{ o.icFg }};background:{{ o.icBg }}"><i class="{{ o.icon }}"></i></span><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font:400 18px/1.2 'Newsreader',Georgia,serif">{{ o.label }}</span><sc-if value="{{ o.hasTag }}"><span style="font-size:12px;padding:2px 9px;border-radius:20px;background:#F6E7D6;color:#7a5a36">Suggested</span></sc-if></div><div style="font-size:14px;line-height:1.35;color:#4B5B70">{{ o.sub }}</div></div><i class="ph-light ph-caret-right" style="font-size:16px"></i></button>
+</sc-for>
+</div>
+</div>
+<div style="padding:12px 18px 34px;display:flex;flex-direction:column;align-items:center;gap:2px">
+<button onClick="{{ nothingNow }}" style="min-height:48px;padding:0 20px;border:0;background:none;border-radius:30px;font:500 17px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160">Nothing for now</button>
+<span style="font-size:13px;color:#4B5B70">We’ll check in again in a few days.</span>
+<button onClick="{{ openSupport }}" style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 4px;border:0;background:none;cursor:pointer;font:italic 400 15px 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-lifebuoy" style="font-size:18px;font-style:normal"></i>Need support now?</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.plan }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:52px 10px 0;display:flex;justify-content:space-between;align-items:center"><button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:2px;min-height:44px;padding:0 10px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160"><i class="ph-light ph-caret-left" style="font-size:18px"></i>Home</button><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70;padding-right:14px">When · Where · How</span></div>
+<div style="padding:4px 18px 10px">
+<div style="padding:16px 18px;border-radius:22px;color:#FBF8F1;background:linear-gradient(120deg,#0f2746e0,#0f2746b8),url(assets/welcome-coast.webp) center 45%/cover;box-shadow:0 10px 30px #0f274626">
+<span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#F6E7D6">Your plan{{ dailyTag }}</span>
+<div style="font:400 20px/1.35 'Newsreader',Georgia,serif;margin-top:6px;text-wrap:pretty"><span style="color:#F6E7D6">{{ ps.anchor }}</span>, I will <span style="color:#F6E7D6">{{ ps.how }}</span>, <span style="color:#F6E7D6">{{ ps.where }}</span>.</div>
+<sc-if value="{{ ps.hasPrep }}"><div style="font:italic 400 15px/1.4 'Newsreader',Georgia,serif;margin-top:6px;color:#E9DFD2">To make it easier, I’ll {{ ps.prep }}.</div></sc-if>
+</div>
+</div>
+<div style="flex:1;overflow-y:auto;padding:8px 18px 24px;display:flex;flex-direction:column;gap:22px">
+<sc-for list="{{ planSections }}" as="sec" hint-placeholder-count="4">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="padding:0 4px"><div style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">{{ sec.title }}</div><div style="font:400 18px/1.3 'Newsreader',Georgia,serif;margin-top:4px">{{ sec.q }}</div></div>
+<sc-if value="{{ sec.isAnchor }}">
+<div style="display:flex;flex-direction:column;padding:2px 14px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<sc-for list="{{ sec.chips }}" as="c">
+<button onClick="{{ c.pick }}" style="display:flex;align-items:center;gap:12px;min-height:62px;padding:8px 0;border:0;border-bottom:1px solid {{ c.rule }};background:none;text-align:left;cursor:pointer;color:#0F2746;font:inherit"><i class="{{ c.icon }}" style="font-size:22px;color:#5E7C96;width:24px"></i><div style="flex:1"><div style="font:400 17px/1.25 'Newsreader',Georgia,serif">{{ c.label }}</div><div style="font-size:13px;line-height:1.35;color:#4B5B70">{{ c.sub }}</div></div><i class="{{ c.check }}" style="font-size:22px"></i></button>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ sec.isPills }}">
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ sec.chips }}" as="c"><button onClick="{{ c.pick }}" style="min-height:44px;padding:8px 16px;border-radius:24px;font:400 16px/1.25 'Newsreader',Georgia,serif;text-align:left;cursor:pointer;color:{{ c.fg }};background:{{ c.bg }};border:1px solid {{ c.bd }};backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">{{ c.label }}</button></sc-for>
+</div>
+</sc-if>
+</div>
+</sc-for>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="padding:0 4px"><div style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Reminder</div><div style="font:400 18px/1.3 'Newsreader',Georgia,serif;margin-top:4px">When should we nudge you?</div></div>
+<div style="display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<button onClick="{{ planUseRoutine }}" style="display:flex;align-items:center;justify-content:space-between;min-height:50px;padding:0 16px;border-radius:40px;font:400 16px 'Newsreader',Georgia,serif;cursor:pointer;color:{{ planRoutineSel.fg }};background:{{ planRoutineSel.bg }};border:1px solid {{ planRoutineSel.bd }}">Around {{ ps.routineTime }}, with my routine<i class="{{ planRoutineSel.icon }}" style="font-size:20px"></i></button>
+<label style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:50px;padding:4px 6px 4px 16px;border-radius:40px;border:1px solid {{ planOwnBd }};background:{{ planOwnBg }};cursor:pointer"><span style="display:flex;align-items:center;gap:8px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746"><i class="ph-light ph-clock" style="font-size:18px;color:#5E7C96"></i>At a time I choose</span><input type="time" value="{{ planOwn }}" onChange="{{ onPlanOwn }}" aria-label="At a time I choose" style="min-height:40px;padding:0 12px;border-radius:30px;border:1px solid #ffffffc4;background:#ffffff80;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746"></label>
+</div>
+</div>
+</div>
+<div style="padding:12px 18px 34px"><button onClick="{{ toPledge }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;box-shadow:0 6px 18px #0f27461f;cursor:pointer" style-hover="box-shadow:0 10px 26px #0f274633">Next: make your commitment<i class="ph-light ph-arrow-right"></i></button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.pledge }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:52px 10px 0"><button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:2px;min-height:44px;padding:0 10px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160"><i class="ph-light ph-caret-left" style="font-size:18px"></i>Home</button></div>
+<div style="flex:1;overflow-y:auto;padding:4px 18px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="padding:0 4px"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Commitment</span><h3 style="font:400 34px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:8px 0 0">Make your commitment</h3></div>
+<div style="display:flex;flex-direction:column;gap:12px;padding:22px;border-radius:24px;color:#FBF8F1;background:linear-gradient(160deg,#0f2746ee,#0f2746c0),url(assets/welcome-coast.webp) center 45%/cover;box-shadow:0 14px 40px #0f274633">
+<div style="font:400 46px/1 'Ms Madi',cursive;color:#F6E7D6">I commit,</div>
+<div style="font:400 23px/1.3 'Newsreader',Georgia,serif;letter-spacing:-.3px;text-wrap:pretty">{{ pledgeSentence }}</div>
+<sc-if value="{{ ps.hasPrep }}"><div style="font:italic 400 16px/1.45 'Newsreader',Georgia,serif;color:#E9DFD2">To make it easier, I’ll {{ ps.prep }}.</div></sc-if>
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;padding-top:12px;border-top:1px solid #FBF8F133"><span style="font:400 30px/1 'Ms Madi',cursive">Sam Patel</span><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#E9DFD2">13 Oct 2026</span></div>
+</div>
+<div style="display:flex;gap:12px;align-items:flex-start;padding:0 6px;font:400 15px/1.45 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-bell" style="font-size:20px;color:#5E7C96"></i><span style="text-wrap:pretty">{{ nudgeLine }}</span></div>
+<label style="display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;font:400 16px 'Newsreader',Georgia,serif;padding:0 4px"><input type="checkbox" checked="{{ share }}" onChange="{{ toggleShare }}" style="width:20px;height:20px;accent-color:#0F2746">Share my commitment with Dr Chen</label>
+</div>
+<div style="padding:12px 18px 34px;display:flex;flex-direction:column;gap:8px;align-items:center">
+<button onClick="{{ commitNow }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;box-shadow:0 6px 18px #0f27461f;cursor:pointer" style-hover="box-shadow:0 10px 26px #0f274633"><i class="ph-light ph-hand-heart" style="font-size:20px"></i>Make this commitment</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.goal }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:52px 10px 0;display:flex;justify-content:space-between;align-items:center"><button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:2px;min-height:44px;padding:0 10px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160"><i class="ph-light ph-caret-left" style="font-size:18px"></i>Home</button><button onClick="{{ fillGoal }}" style="min-height:44px;padding:0 12px;border:0;background:none;border-radius:30px;font:italic 400 15px 'Newsreader',Georgia,serif;color:#5E7C96;cursor:pointer">Fill example</button></div>
+<div style="flex:1;overflow-y:auto;padding:4px 18px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="padding:0 4px"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Set a goal</span><h3 style="font:400 34px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:8px 0 8px">Make it specific</h3><p style="margin:0;font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">{{ goalIntro }}</p></div>
+<div style="display:flex;flex-direction:column;gap:16px;padding:18px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<sc-for list="{{ goalFields }}" as="f" hint-placeholder-count="5">
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:400 17px/1.3 'Newsreader',Georgia,serif">{{ f.q }}</label><input style="width:100%;box-sizing:border-box;min-height:46px;padding:12px 14px;border-radius:14px;border:1px solid #ffffffc4;background:#ffffff4d;font:16px 'Newsreader',Georgia,serif;color:#0F2746" placeholder="{{ f.ph }}" value="{{ f.value }}" onChange="{{ f.onChange }}"></div>
+</sc-for>
+<div style="display:flex;gap:10px;align-items:flex-start;padding-top:12px;border-top:1px solid #0f274614;font:400 14px/1.45 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-clock-countdown" style="font-size:18px;color:#5E7C96;margin-top:1px"></i><span style="text-wrap:pretty">Dr Chen reads these before your session, not in real time. If you need help now, call 000 or Lifeline 13 11 14.</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding:18px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Remind me</span><span style="font-size:14px;color:#4B5B70">{{ goalRemLine }}</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><sc-for list="{{ goalTimes }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.pick }}" style="min-height:46px;border-radius:40px;font:400 16px 'Newsreader',Georgia,serif;cursor:pointer;color:{{ o.fg }};background:{{ o.bg }};border:1px solid {{ o.bd }}">{{ o.label }}</button></sc-for></div>
+<label style="display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:50px;padding:4px 6px 4px 16px;border-radius:40px;border:1px solid {{ goalOwnBd }};background:{{ goalOwnBg }};cursor:pointer"><span style="display:flex;align-items:center;gap:8px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746"><i class="ph-light ph-clock" style="font-size:18px;color:#5E7C96"></i>Or pick your own time</span><input type="time" value="{{ goalOwn }}" onChange="{{ onGoalOwn }}" aria-label="Or pick your own time" style="min-height:40px;padding:0 12px;border-radius:30px;border:1px solid #ffffffc4;background:#ffffff80;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746"></label>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px"><sc-for list="{{ goalDays }}" as="d" hint-placeholder-count="7"><button onClick="{{ d.pick }}" aria-label="{{ d.full }}" style="aspect-ratio:1;min-height:40px;padding:0;border-radius:50%;font:500 14px 'DM Sans',Arial,sans-serif;cursor:pointer;color:{{ d.fg }};background:{{ d.bg }};border:1px solid {{ d.bd }}">{{ d.label }}</button></sc-for></div>
+</div>
+</div>
+<div style="padding:12px 18px 34px"><button disabled="{{ goalIncomplete }}" onClick="{{ saveGoal }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;box-shadow:0 6px 18px #0f27461f;cursor:pointer;opacity:{{ goalOp }}"><i class="ph-light ph-target" style="font-size:20px"></i>Set this goal</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.now }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:52px 10px 0;display:flex;justify-content:space-between;align-items:center"><button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:2px;min-height:44px;padding:0 10px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160"><i class="ph-light ph-caret-left" style="font-size:18px"></i>Home</button>
+<div style="display:flex;padding-right:6px"><button onClick="{{ openWhy }}" aria-label="Why this task?" style="width:40px;height:44px;display:grid;place-items:center;border:0;background:none;cursor:pointer;padding:0"><span style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#fbf8f1a0;border:1px solid #0F274633;color:#0F2746;font:400 14px 'Newsreader',Georgia,serif">?</span></button><button onClick="{{ openInfo }}" aria-label="More about this task" style="width:40px;height:44px;display:grid;place-items:center;border:0;background:none;cursor:pointer;padding:0"><span style="width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#fbf8f1a0;border:1px solid #0F274633;color:#0F2746;font:italic 500 14px 'Newsreader',Georgia,serif">i</span></button></div></div>
+<div style="flex:1;overflow-y:auto;padding:4px 18px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="padding:0 4px"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Doing it now · about {{ task.mins }} min</span><h3 style="font:400 32px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:8px 0 0;text-wrap:balance">{{ task.title }}</h3></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 18px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="position:relative;width:150px;height:150px;border-radius:50%;background:conic-gradient(#0F2746 0 {{ timerPct }}%,#0f27461a 0)"><div style="position:absolute;inset:6px;border-radius:50%;background:#f6efe4;display:grid;place-items:center;align-content:center;gap:2px"><span style="font:400 40px/1 'Newsreader',Georgia,serif;font-variant-numeric:tabular-nums">{{ timerLabel }}</span><span style="font-size:13px;color:#4B5B70">{{ timerSub }}</span></div></div>
+<button onClick="{{ toggleTimer }}" style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 20px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#0F2746;background:#fbf8f170;border:1px solid #0F274640;cursor:pointer" style-hover="background:#F6E7D6"><i class="{{ timerIcon }}"></i>{{ timerCta }}</button>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;padding:0 6px">
+<span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">What to do</span>
+<p style="margin:0;font:400 17px/1.5 'Newsreader',Georgia,serif;text-wrap:pretty">{{ nowText }}</p>
+</div>
+<button onClick="{{ openSupport }}" style="align-self:flex-start;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 4px;border:0;background:none;cursor:pointer;font:italic 400 15px 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-lifebuoy" style="font-size:18px;font-style:normal"></i>Need support now?</button>
+</div>
+<div style="padding:12px 18px 34px;display:flex;flex-direction:column;gap:6px">
+<button onClick="{{ toCheckin }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;box-shadow:0 6px 18px #0f27461f;cursor:pointer" style-hover="box-shadow:0 10px 26px #0f274633"><i class="ph-light ph-check"></i>I’ve done it</button>
+<button onClick="{{ nowLater }}" style="min-height:44px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#4B5B70;cursor:pointer" style-hover="background:#fbf8f160">{{ nowLaterLabel }}</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.checkin }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:52px 10px 0"><button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:2px;min-height:44px;padding:0 10px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160"><i class="ph-light ph-caret-left" style="font-size:18px"></i>Home</button></div>
+<div style="flex:1;overflow-y:auto;padding:4px 18px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="padding:0 4px"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">{{ task.title }}</span><h3 style="font:400 34px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:8px 0 0">How did it go?</h3></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+<sc-for list="{{ outcomeOpts }}" as="o" hint-placeholder-count="3">
+<button onClick="{{ o.pick }}" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 6px;min-height:112px;border-radius:20px;color:inherit;font:inherit;cursor:pointer;box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);border:1.5px solid {{ o.bd }};background:{{ o.bg }}"><span style="width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:22px;color:{{ o.ic }};background:{{ o.icBg }}"><i class="{{ o.icon }}"></i></span><span style="font:400 17px/1.15 'Newsreader',Georgia,serif;text-align:center">{{ o.label }}</span></button>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding:18px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">What you learned</span><span style="font-size:13px;color:#4B5B70">Optional</span></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:400 16px 'Newsreader',Georgia,serif">{{ q1 }}</label><input style="width:100%;box-sizing:border-box;min-height:46px;padding:12px 14px;border-radius:14px;border:1px solid #ffffffc4;background:#ffffff4d;font:16px 'Newsreader',Georgia,serif;color:#0F2746" placeholder="One line is plenty" value="{{ refl.helped }}" onChange="{{ onHelped }}"></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:400 16px 'Newsreader',Georgia,serif">What would you change next time?</label><input style="width:100%;box-sizing:border-box;min-height:46px;padding:12px 14px;border-radius:14px;border:1px solid #ffffffc4;background:#ffffff4d;font:16px 'Newsreader',Georgia,serif;color:#0F2746" placeholder="e.g. Go before checking messages" value="{{ refl.next }}" onChange="{{ onNext }}"></div>
+<button onClick="{{ fillRefl }}" style="align-self:flex-start;min-height:36px;padding:0 4px;border:0;background:none;font:italic 400 15px 'Newsreader',Georgia,serif;color:#5E7C96;cursor:pointer">Fill example</button>
+<div style="display:flex;gap:10px;align-items:flex-start;padding-top:12px;border-top:1px solid #0f274614;font:400 14px/1.45 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-clock-countdown" style="font-size:18px;color:#5E7C96;margin-top:1px"></i><span style="text-wrap:pretty">Dr Chen reads these before your session, not in real time. If you need help now, call 000 or Lifeline 13 11 14.</span></div>
+</div>
+<button onClick="{{ openSupport }}" style="align-self:flex-start;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 4px;border:0;background:none;cursor:pointer;font:italic 400 15px 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-lifebuoy" style="font-size:18px;font-style:normal"></i>Need support now?</button>
+</div>
+<div style="padding:12px 18px 34px"><button disabled="{{ noOutcome }}" onClick="{{ saveCheckin }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;box-shadow:0 6px 18px #0f27461f;cursor:pointer;opacity:{{ outOp }}">Save check-in</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.again }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:52px 10px 0;display:flex;justify-content:flex-end"><button onClick="{{ goHome }}" style="min-height:44px;padding:0 12px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160">Skip</button></div>
+<div style="flex:1;overflow-y:auto;padding:4px 18px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="padding:0 4px"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Check-in saved</span><div style="font:400 50px/1 'Ms Madi',cursive;margin:10px 0 0">{{ againScript }}</div><h3 style="font:400 32px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:4px 0 8px">{{ againTitle }}</h3><p style="margin:0;font:400 16px/1.5 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">{{ againBody }}</p></div>
+<sc-if value="{{ hasPlan }}">
+<div style="padding:16px 18px;border-radius:22px;color:#FBF8F1;background:linear-gradient(120deg,#0f2746e0,#0f2746b8),url(assets/welcome-coast.webp) center 45%/cover">
+<span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#F6E7D6">{{ commitKicker }}</span>
+<div style="font:400 19px/1.35 'Newsreader',Georgia,serif;margin-top:6px;text-wrap:pretty">{{ taskPledge }}</div>
+</div>
+</sc-if>
+</div>
+<div style="padding:12px 18px 34px;display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ againOpts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.go }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;cursor:pointer;color:{{ o.fg }};background:{{ o.bg }};border:1px solid {{ o.bd }};backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)"><i class="{{ o.icon }}"></i>{{ o.label }}</button></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.alert }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;padding:0 12px;background:linear-gradient(#0f274640,#0f274610 40%,#0f274699),url(assets/welcome-coast.webp) 50%/cover">
+<div style="padding-top:76px;text-align:center;color:#FBF8F1"><div style="font:500 18px 'DM Sans',Arial,sans-serif">Monday 13 October</div><div style="font:400 96px/1 'Newsreader',Georgia,serif;letter-spacing:-3px;margin-top:4px">4:12</div></div>
+<div style="flex:1"></div>
+<button onClick="{{ alertOpen }}" style="text-align:left;font:inherit;color:#0F2746;cursor:pointer;display:flex;gap:10px;padding:14px;border:1px solid #ffffffa8;border-radius:24px;background:linear-gradient(115deg,#fbf8f1e0,#f6e7d6c8);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274620;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)">
+<div style="width:40px;height:40px;flex:none;border-radius:10px;background:#0F2746;display:grid;place-items:center;font:400 30px/1 'Ms Madi',cursive;color:#FBF8F1;padding-bottom:4px">r<span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:#E6C7A3;margin-left:2px"></span></div>
+<div style="flex:1;font-size:15px;line-height:1.35"><div style="display:flex;justify-content:space-between;font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:1px;color:#5f6c7d"><span>RIGHTO</span><span>now</span></div><div style="font-weight:500">You have something new from your psychologist.</div><div style="color:#4B5B70;font-size:13px;display:flex;align-items:center;gap:5px;margin-top:2px"><i class="ph-light ph-lock-simple"></i>Details hidden until you unlock</div></div>
+</button>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 0">
+<button onClick="{{ alertNow }}" style="min-height:48px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#0F2746;background:#FBF8F1d8;border:1px solid #0F274640;cursor:pointer;backdrop-filter:blur(12px)">Do it now</button>
+<button onClick="{{ alertPlan }}" style="min-height:48px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;cursor:pointer">See options</button>
+</div>
+<div style="height:120px"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.notif }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%;padding:0 12px;background:linear-gradient(#0f274640,#0f274610 40%,#0f274699),url(assets/welcome-coast.webp) 50%/cover">
+<div style="padding-top:76px;text-align:center;color:#FBF8F1"><div style="font:500 18px 'DM Sans',Arial,sans-serif">Monday 13 October</div><div style="font:400 96px/1 'Newsreader',Georgia,serif;letter-spacing:-3px;margin-top:4px">12:52</div></div>
+<div style="flex:1"></div>
+<button onClick="{{ notifOpen }}" style="text-align:left;font:inherit;color:#0F2746;cursor:pointer;display:flex;gap:10px;padding:14px;border:1px solid #ffffffa8;border-radius:24px;background:linear-gradient(115deg,#fbf8f1e0,#f6e7d6c8);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274620;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)">
+<div style="width:40px;height:40px;flex:none;border-radius:10px;background:#0F2746;display:grid;place-items:center;font:400 30px/1 'Ms Madi',cursive;color:#FBF8F1;padding-bottom:4px">r<span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:#E6C7A3;margin-left:2px"></span></div>
+<div style="flex:1;font-size:15px;line-height:1.35"><div style="display:flex;justify-content:space-between;font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:1px;color:#5f6c7d"><span>RIGHTO</span><span>now</span></div><div style="font-weight:500">Time for your lunch break routine.</div><div style="color:#4B5B70;font-size:13px;display:flex;align-items:center;gap:5px;margin-top:2px"><i class="ph-light ph-lock-simple"></i>Details hidden until you unlock</div></div>
+</button>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0 0">
+<button onClick="{{ notifDone }}" style="min-height:48px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;cursor:pointer">Done</button>
+<button onClick="{{ notifSkip }}" style="min-height:48px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#0F2746;background:#FBF8F1d8;border:1px solid #0F274640;cursor:pointer;backdrop-filter:blur(12px)">Not today</button>
+<button onClick="{{ notifOpen }}" style="min-height:48px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#0F2746;background:#FBF8F1d8;border:1px solid #0F274640;cursor:pointer;backdrop-filter:blur(12px)">Start</button>
+</div>
+<div style="height:120px"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.journal }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:60px 22px 14px"><div style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Journal</div><h2 style="font:400 36px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:6px 0 0">What you’ve learned</h2><div style="margin-top:6px"><button onClick="{{ openSupport }}" style="align-self:flex-start;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 4px;border:0;background:none;cursor:pointer;font:italic 400 15px 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-lifebuoy" style="font-size:18px;font-style:normal"></i>Need support now?</button></div></div>
+<div style="flex:1;overflow-y:auto;padding:4px 18px 120px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;gap:14px;padding:18px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="display:flex;align-items:baseline;gap:10px"><span style="font:400 52px/1 'Newsreader',Georgia,serif;letter-spacing:-1.5px">{{ doneCount }}</span><span style="font:400 17px/1.3 'Newsreader',Georgia,serif;color:#4B5B70">of {{ taskTotal }} done or partly done in October</span></div>
+<div style="display:flex;gap:4px;height:12px"><sc-for list="{{ segs }}" as="g" hint-placeholder-count="7"><span title="{{ g.label }}" style="flex:1;border-radius:6px;box-sizing:border-box;border:1.25px {{ g.bs }} #0F2746;background:{{ g.bg }};opacity:{{ g.op }}"></span></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding-top:12px;border-top:1px solid #0f274614"><sc-for list="{{ legend }}" as="l" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:4px"><span style="font:400 22px/1 'Newsreader',Georgia,serif">{{ l.n }}</span><span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#4B5B70"><span style="width:10px;height:10px;flex:none;box-sizing:border-box;border-radius:3px;border:1px {{ l.bs }} #0F2746;background:{{ l.bg }};opacity:{{ l.op }}"></span>{{ l.label }}</span></div></sc-for></div>
+</div>
+<sc-if value="{{ hasFinished }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:8px;padding:16px 18px 6px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Finished homework</span><div style="font:400 14px/1.4 'Newsreader',Georgia,serif;color:#4B5B70;margin-top:4px">You can come back to any of these whenever you like.</div></div>
+<sc-for list="{{ finishedItems }}" as="f" hint-placeholder-count="1">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid {{ f.rule }}"><div style="flex:1;min-width:0"><div style="font:400 17px/1.3 'Newsreader',Georgia,serif">{{ f.title }}</div><div style="font-size:13px;line-height:1.35;color:#4B5B70;text-wrap:pretty">{{ f.sub }}</div></div><button onClick="{{ f.again }}" style="flex:none;display:flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:40px;font:500 15px 'Newsreader',Georgia,serif;color:#0F2746;background:#fbf8f170;border:1px solid #0F274640;cursor:pointer" style-hover="background:#fbf8f1b0"><i class="ph-light ph-arrow-counter-clockwise"></i>Try again</button></div>
+</sc-for>
+</div>
+</sc-if>
+<div style="display:flex;flex-direction:column;padding:4px 18px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<sc-for list="{{ hist }}" as="h" hint-placeholder-count="4">
+<div style="display:flex;flex-direction:column;gap:6px;padding:16px 0;border-bottom:1px solid {{ h.rule }}">
+<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span style="font-size:13px;color:#5f6c7d">{{ h.date }}</span><span style="font-size:13px;padding:3px 11px;border-radius:30px;background:{{ h.tag.bg }};color:{{ h.tag.fg }}">{{ h.tag.label }}</span></div>
+<div style="font-size:16px;font-weight:500">{{ h.title }}</div>
+<div style="font:italic 400 18px/1.35 'Newsreader',Georgia,serif;color:#4B5B70;text-wrap:pretty">“{{ h.learning }}”</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.clients }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:56px 22px 14px"><div style="font:400 34px/1 'Ms Madi',cursive;margin-bottom:18px">righto<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#D8B48E;margin-left:3px"></span></div><div style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Dr Maya Chen</div><h2 style="font:400 36px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:6px 0 0">Your clients</h2></div>
+<div style="flex:1;overflow-y:auto;padding:4px 18px 120px;display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ clients }}" as="c" hint-placeholder-count="3">
+<button onClick="{{ c.open }}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;font:inherit;color:inherit;text-align:left;cursor:pointer;min-height:72px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)" style-hover="background:#fbf8f170">
+<span style="width:44px;height:44px;flex:none;border-radius:50%;background:#0F2746;color:#FBF8F1;display:grid;place-items:center;font:500 15px 'Newsreader',Georgia,serif">{{ c.ini }}</span>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px"><div style="font:400 21px/1.15 'Newsreader',Georgia,serif">{{ c.name }}</div><div style="font-size:14px;color:#4B5B70">{{ c.line }}</div><div style="display:flex;align-items:center;gap:8px"><span style="flex:1;height:5px;border-radius:3px;background:#0f27461a;overflow:hidden"><span style="display:block;height:100%;border-radius:3px;background:#0F2746;width:{{ c.pct }}"></span></span><span style="font-size:13px;color:#4B5B70;flex:none">{{ c.rate }}</span></div></div>
+<i class="ph-light ph-caret-right" style="font-size:18px"></i>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.review }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:52px 10px 0;display:flex;justify-content:space-between;align-items:center"><button onClick="{{ back }}" style="display:flex;align-items:center;gap:2px;min-height:44px;padding:0 10px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160"><i class="ph-light ph-caret-left" style="font-size:18px"></i>Clients</button><button onClick="{{ go.assign }}" style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 20px;margin-right:8px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;cursor:pointer"><i class="ph-light ph-plus"></i>Assign</button></div>
+<div style="flex:1;overflow-y:auto;padding:8px 18px 24px;display:flex;flex-direction:column;gap:12px">
+<div style="padding:0 4px"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Homework</span><h3 style="font:400 34px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:6px 0 4px">{{ client }}</h3><div style="display:flex;align-items:center;gap:6px;font-size:14px;color:#4B5B70"><i class="ph-light ph-calendar-dots"></i>Next session {{ appt.when }} · in {{ apptLeft }}</div><div style="display:flex;align-items:center;gap:6px;font-size:13px;color:#5f6c7d;margin-top:4px"><i class="ph-light ph-shield-check"></i>Your access to this record is logged</div></div>
+<div style="display:flex;flex-direction:column;gap:14px;padding:18px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Homework this month</span><span style="font-size:13px;color:#4B5B70">{{ rateLabel }}</span></div>
+<div style="display:flex;align-items:baseline;gap:10px"><span style="font:400 46px/1 'Newsreader',Georgia,serif;letter-spacing:-1.5px">{{ reviewDone }}</span><span style="font:400 16px/1.3 'Newsreader',Georgia,serif;color:#4B5B70">of {{ checkCount }} check-ins done or partly done</span></div>
+<div style="display:flex;gap:4px;height:10px"><sc-for list="{{ histSegs }}" as="g" hint-placeholder-count="5"><span title="{{ g.label }}" style="flex:1;border-radius:5px;box-sizing:border-box;border:1.25px {{ g.bs }} #0F2746;background:{{ g.bg }};opacity:{{ g.op }}"></span></sc-for></div>
+<div style="display:flex;flex-direction:column;padding-top:4px">
+<sc-for list="{{ perTask }}" as="p" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:12px;min-height:40px;border-top:1px solid #0f274612"><span style="flex:1;min-width:0;font:400 15px/1.3 'Newsreader',Georgia,serif;text-wrap:pretty">{{ p.title }}</span><span style="display:flex;gap:4px;flex:none"><sc-for list="{{ p.dots }}" as="d"><span title="{{ d.label }}" style="width:10px;height:10px;box-sizing:border-box;border-radius:50%;border:1.25px {{ d.bs }} #0F2746;background:{{ d.bg }};opacity:{{ d.op }}"></span></sc-for></span><span style="width:34px;text-align:right;font:400 15px 'Newsreader',Georgia,serif;flex:none">{{ p.ratio }}</span></div>
+</sc-for>
+</div>
+</div>
+<label style="display:flex;align-items:center;gap:14px;padding:14px 16px;min-height:44px;cursor:pointer;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)"><div style="flex:1;min-width:0"><div style="font:400 17px/1.3 'Newsreader',Georgia,serif">Ask “What feels doable?” on Home</div><div style="font-size:14px;line-height:1.4;color:#4B5B70">Lets {{ clientFirst }} pick a small, quiet or longer task first. Not scored or shared.</div></div><input type="checkbox" checked="{{ homePrompt }}" onChange="{{ toggleHomePrompt }}" style="width:22px;height:22px;flex:none;accent-color:#0F2746"></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button onClick="{{ exportNotes }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#0F2746;background:#fbf8f170;border:1px solid #0F274640;cursor:pointer;min-height:48px;font-size:15px"><i class="ph-light ph-file-pdf"></i>Export to notes</button><button onClick="{{ discharge }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#0F2746;background:#fbf8f170;border:1px solid #0F274640;cursor:pointer;min-height:48px;font-size:15px;color:#4B5B70"><i class="ph-light ph-link-break"></i>End sharing</button></div>
+<sc-if value="{{ noClientTasks }}"><p style="color:#4B5B70;margin:0;padding:0 4px">No homework yet. Assign something small to start.</p></sc-if>
+<sc-for list="{{ clientTasks }}" as="t" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span style="font-size:13px;color:#5f6c7d">Sent {{ t.sent }}</span><span style="font-size:13px;padding:3px 11px;border-radius:30px;white-space:nowrap;background:{{ t.tag.bg }};color:{{ t.tag.fg }}">{{ t.tag.label }}</span></div>
+<div style="font:400 23px/1.15 'Newsreader',Georgia,serif;letter-spacing:-.4px;text-wrap:pretty">{{ t.title }}</div>
+<sc-if value="{{ t.hasPlan }}"><div style="display:flex;gap:10px;font:italic 400 16px/1.45 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-hand-heart" style="font-size:18px;color:#5E7C96;margin-top:2px"></i><span style="text-wrap:pretty">“{{ t.pledgeLine }}”</span></div></sc-if>
+<sc-if value="{{ t.noPlan }}"><div style="font-size:14px;color:#4B5B70">Waiting for {{ clientFirst }} to choose how to start.</div></sc-if>
+<sc-if value="{{ t.hasLearn }}">
+<div style="padding:14px;border-radius:16px;background:#ffffff38;border:1px solid #ffffff9c;display:flex;flex-direction:column;gap:6px">
+<span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">Latest learning · {{ t.learnDate }}</span>
+<div style="font:400 18px/1.35 'Newsreader',Georgia,serif;text-wrap:pretty">“{{ t.learned }}”</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.assign }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;height:100%">
+<div style="padding:52px 10px 0;display:flex;justify-content:space-between;align-items:center"><button onClick="{{ back }}" style="display:flex;align-items:center;gap:2px;min-height:44px;padding:0 10px;border:0;background:none;border-radius:30px;font:400 16px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160"><i class="ph-light ph-caret-left" style="font-size:18px"></i>{{ clientFirst }}</button><button onClick="{{ fillAssign }}" style="min-height:44px;padding:0 12px;border:0;background:none;border-radius:30px;font:italic 400 15px 'Newsreader',Georgia,serif;color:#5E7C96;cursor:pointer">Fill example</button></div>
+<div style="flex:1;overflow-y:auto;padding:4px 18px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="padding:0 4px"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">For {{ client }}</span><h3 style="font:400 34px/1.1 'Newsreader',Georgia,serif;letter-spacing:-1px;margin:8px 0 0">New homework</h3></div>
+<div style="display:flex;flex-direction:column;gap:16px;padding:18px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 15px 'Newsreader',Georgia,serif">Task</label><input style="width:100%;box-sizing:border-box;min-height:46px;padding:12px 14px;border-radius:14px;border:1px solid #ffffffc4;background:#ffffff4d;font:16px 'Newsreader',Georgia,serif;color:#0F2746" placeholder="e.g. Take a 10-minute walk after lunch" value="{{ assign.title }}" onChange="{{ onTitle }}"></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 15px 'Newsreader',Georgia,serif">Instructions</label><textarea style="width:100%;box-sizing:border-box;min-height:84px;padding:12px 14px;border-radius:14px;border:1px solid #ffffffc4;background:#ffffff4d;font:16px/1.45 'Newsreader',Georgia,serif;color:#0F2746;resize:none" placeholder="What should they do and notice?" value="{{ assign.detail }}" onChange="{{ onDetail }}"></textarea></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 15px 'Newsreader',Georgia,serif">Why this helps</label><span style="font-size:14px;line-height:1.4;color:#5f6c7d;margin-top:-4px">{{ clientFirst }} sees this when they tap “?”. Righto shows your words as written and never generates advice.</span><textarea style="width:100%;box-sizing:border-box;min-height:84px;padding:12px 14px;border-radius:14px;border:1px solid #ffffffc4;background:#ffffff4d;font:16px/1.45 'Newsreader',Georgia,serif;color:#0F2746;resize:none" placeholder="e.g. A short walk adds light and movement when your mood usually dips." value="{{ assign.why }}" onChange="{{ onWhy }}"></textarea></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 15px 'Newsreader',Georgia,serif">Takes about</label><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ minOpts }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.pick }}" style="min-height:44px;padding:0 16px;border-radius:40px;font:400 16px 'Newsreader',Georgia,serif;cursor:pointer;color:{{ o.fg }};background:{{ o.bg }};border:1px solid {{ o.bd }}">{{ o.label }}</button></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 15px 'Newsreader',Georgia,serif">They’ll need <span style="font-weight:400;color:#5f6c7d">Optional</span></label><span style="font-size:14px;line-height:1.4;color:#5f6c7d;margin-top:-4px">Shown when they tap “i”.</span><input style="width:100%;box-sizing:border-box;min-height:46px;padding:12px 14px;border-radius:14px;border:1px solid #ffffffc4;background:#ffffff4d;font:16px 'Newsreader',Georgia,serif;color:#0F2746" placeholder="e.g. Comfortable shoes" value="{{ assign.needs }}" onChange="{{ onNeeds }}"></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 15px 'Newsreader',Georgia,serif">Tag it <span style="font-weight:400;color:#5f6c7d">Optional</span></label><span style="font-size:14px;line-height:1.4;color:#5f6c7d;margin-top:-4px">Used only to sort when {{ clientFirst }} picks “Something quick” or “Something quiet”.</span><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ tagOpts }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.pick }}" style="min-height:44px;padding:0 16px;border-radius:40px;font:400 16px 'Newsreader',Georgia,serif;cursor:pointer;color:{{ o.fg }};background:{{ o.bg }};border:1px solid {{ o.bd }}">{{ o.label }}</button></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px solid #0f274614"><label style="font:500 15px 'Newsreader',Georgia,serif">Talked it through in session?</label><span style="font-size:14px;line-height:1.4;color:#5f6c7d;margin-top:-4px">Suggest how {{ clientFirst }} could start. They can change it.</span>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ aStartOpts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.pick }}" style="min-height:44px;padding:0 16px;border-radius:40px;font:400 16px 'Newsreader',Georgia,serif;cursor:pointer;color:{{ o.fg }};background:{{ o.bg }};border:1px solid {{ o.bd }}">{{ o.label }}</button></sc-for></div></div>
+<sc-if value="{{ aIsCommit }}">
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 15px 'Newsreader',Georgia,serif">When</label><div style="display:flex;flex-direction:column;gap:6px"><sc-for list="{{ aRoutines }}" as="o"><button onClick="{{ o.pick }}" style="min-height:44px;padding:8px 16px;border-radius:24px;text-align:left;font:400 16px 'Newsreader',Georgia,serif;cursor:pointer;color:{{ o.fg }};background:{{ o.bg }};border:1px solid {{ o.bd }}">{{ o.label }}</button></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 15px 'Newsreader',Georgia,serif">Where</label><input style="width:100%;box-sizing:border-box;min-height:46px;padding:12px 14px;border-radius:14px;border:1px solid #ffffffc4;background:#ffffff4d;font:16px 'Newsreader',Georgia,serif;color:#0F2746" placeholder="e.g. around the block near work" value="{{ assign.where }}" onChange="{{ onWhere }}"></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 15px 'Newsreader',Georgia,serif">How</label><input style="width:100%;box-sizing:border-box;min-height:46px;padding:12px 14px;border-radius:14px;border:1px solid #ffffffc4;background:#ffffff4d;font:16px 'Newsreader',Georgia,serif;color:#0F2746" placeholder="e.g. walk for 10 minutes" value="{{ assign.how }}" onChange="{{ onHow }}"></div>
+</sc-if>
+<sc-if value="{{ aIsGoal }}">
+<sc-for list="{{ aGoalFields }}" as="f"><div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 15px 'Newsreader',Georgia,serif">{{ f.q }}</label><input style="width:100%;box-sizing:border-box;min-height:46px;padding:12px 14px;border-radius:14px;border:1px solid #ffffffc4;background:#ffffff4d;font:16px 'Newsreader',Georgia,serif;color:#0F2746" placeholder="{{ f.ph }}" value="{{ f.value }}" onChange="{{ f.onChange }}"></div></sc-for>
+</sc-if>
+</div>
+<div style="display:flex;gap:10px;padding:0 4px;font-size:14px;line-height:1.45;color:#4B5B70"><i class="ph-light ph-bell" style="font-size:18px;color:#5E7C96"></i><span style="text-wrap:pretty">{{ clientFirst }} gets an alert straight away, then chooses how to start. Anything you suggest is a starting point they can change.</span></div>
+</div>
+<div style="padding:12px 18px 34px"><button disabled="{{ assignEmpty }}" onClick="{{ sendAssign }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border-radius:40px;font:500 17px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;box-shadow:0 6px 18px #0f27461f;cursor:pointer;opacity:{{ assignOp }}">Send to {{ clientFirst }}<i class="ph-light ph-paper-plane-tilt"></i></button></div>
+</div>
+</sc-if>
+</div>
+
+<sc-if value="{{ hasSheet }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeSheet }}" style="position:absolute;inset:0;z-index:5;background:#0F274640;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)"></div>
+<div style="position:absolute;left:10px;right:10px;bottom:10px;z-index:6;display:flex;flex-direction:column;gap:12px;padding:22px 22px 28px;border:1px solid #ffffffa8;border-radius:30px;background:linear-gradient(115deg,#fbf8f1f4,#f6e7d6f0);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:inset 0 1px 2px #ffffffd0,0 -8px 40px #0f274625">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">{{ sheet.kicker }}</span><button onClick="{{ closeSheet }}" aria-label="Close" style="width:44px;height:44px;margin:-10px -12px -10px 0;border:0;background:none;cursor:pointer;color:#0F2746;font-size:20px;display:grid;place-items:center"><i class="ph-light ph-x"></i></button></div>
+<div style="font:400 24px/1.15 'Newsreader',Georgia,serif;letter-spacing:-.4px">{{ sheet.title }}</div>
+<sc-for list="{{ sheet.rows }}" as="row" hint-placeholder-count="1"><div><div style="font-size:13px;color:#5f6c7d">{{ row.k }}</div><div style="font:400 16px/1.5 'Newsreader',Georgia,serif;text-wrap:pretty">{{ row.v }}</div></div></sc-for>
+<button onClick="{{ closeSheet }}" style="margin-top:6px;min-height:48px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#0F2746;background:#fbf8f170;border:1px solid #0F274640;cursor:pointer">Got it</button>
+</div>
+</sc-if>
+<sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:50%;transform:translateX(-50%);bottom:28px;display:flex;gap:3px;padding:5px;border:1px solid #ffffffa8;border-radius:60px;background:linear-gradient(110deg,#fbf8f170,#f6e7d638);backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);box-shadow:inset 0 1px 2px #ffffffb5,0 4px 25px #0f27461a;z-index:4">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.go }}" style="display:flex;align-items:center;gap:8px;min-height:48px;padding:0 20px;border-radius:40px;border:0;font:500 16px 'Newsreader',Georgia,serif;cursor:pointer;color:{{ t.fg }};background:{{ t.bg }}"><i class="{{ t.icon }}" style="font-size:20px"></i>{{ t.label }}</button></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ hasToast }}">
+<div style="position:absolute;top:58px;left:14px;right:14px;z-index:8;display:flex;gap:10px;align-items:center;padding:14px 16px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f1e8,#f6e7d6d0);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 35px #0f274625;font-size:15px;line-height:1.4"><i class="ph-fill ph-check-circle" style="font-size:22px"></i>{{ toast }}</div>
+</sc-if>
+<div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;z-index:9;background:{{ sbColor }}"></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;homeVariant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;mindful&quot;,&quot;one&quot;,&quot;quiet&quot;,&quot;busy&quot;],&quot;default&quot;:&quot;mindful&quot;,&quot;tsType&quot;:&quot;'mindful'|'one'|'quiet'|'busy'&quot;,&quot;section&quot;:&quot;Home&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;client&quot;,&quot;psych&quot;],&quot;default&quot;:&quot;client&quot;,&quot;tsType&quot;:&quot;'client'|'psych'&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;startMood&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;chrome&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const INK = '#0F2746';
+const HALF = 'linear-gradient(90deg,#0F2746 50%,transparent 50%)';
+const GLASS = 'linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133)';
+const sel = on => on ? {fg:'#FBF8F1',bg:INK,bd:INK} : {fg:INK,bg:'#fbf8f170',bd:'#0F274633'};
+const ROUTINES = [
+  {id:'coffee',name:'Morning coffee',icon:'ph-light ph-coffee',anchor:'While my coffee brews',time:'7:30 am'},
+  {id:'lunch',name:'Lunch break',icon:'ph-light ph-fork-knife',anchor:'After I finish lunch',time:'12:30 pm'},
+  {id:'wind',name:'Evening wind-down',icon:'ph-light ph-moon',anchor:'After I brush my teeth',time:'9:30 pm'},
+];
+const NOPREP = 'Nothing needed';
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const TIMES = ['7:30 am','12:30 pm','6:00 pm','8:30 pm'];
+const GOALQ = [
+  {k:'s',q:'What exactly will you do, and where?',pq:'What exactly will they do, and where?',ph:'e.g. Walk around the block near work'},
+  {k:'m',q:'How will you know you’ve done it?',pq:'How will they know it’s done?',ph:'e.g. 10 minutes on my phone timer'},
+  {k:'a',q:'What makes it doable for you right now?',pq:'What makes it doable right now?',ph:'e.g. I already take a lunch break'},
+  {k:'r',q:'Why does it matter to you?',pq:'Why does it matter to them?',ph:'e.g. It helps my afternoon slump'},
+  {k:'t',q:'When will you do it, and until when?',pq:'When, and until when?',ph:'e.g. Mon, Wed and Fri until our next session'},
+];
+const OUT = {
+  done:{label:'Done',bg:'#e3eaf0',fg:INK},
+  partial:{label:'Partly',bg:'#F6E7D6',fg:'#7a5a36'},
+  missed:{label:'Not today',bg:'#ffffff80',fg:'#4B5B70'},
+};
+const OUTCOMES = [
+  {key:'done',label:'Done',icon:'ph-light ph-check',ic:INK,icBg:'#e3eaf0cc'},
+  {key:'partial',label:'Some of it',icon:'ph-light ph-circle-half',ic:'#a87d52',icBg:'#F6E7D6cc'},
+  {key:'missed',label:'Not today',icon:'ph-light ph-leaf',ic:'#5f6c7d',icBg:'#ffffff80'},
+];
+const CLIENTS = [
+  {name:'Sam Patel',ini:'SP',line:'1 routine, 1 goal · checked in Sat'},
+  {name:'Jordan Lee',ini:'JL',line:'1 routine · checked in Fri',done:2,of:5},
+  {name:'Ari Nguyen',ini:'AN',line:'New homework sent today',done:0,of:0},
+];
+const MINS = [2,5,10,20];
+const APPT = {mon:'Oct', day:'20', when:'Mon 20 Oct, 10:00 am', with:'With Dr Maya Chen · in person', days:7};
+const dLabel = n => n===1 ? '1 day' : n+' days';
+const allDays = () => [true,true,true,true,true,true,true];
+const weekdays = () => [true,true,true,true,true,false,false];
+const daysLine = d => { const n=d.filter(Boolean).length; return n===7 ? 'every day' : (n===5 && !d[5] && !d[6]) ? 'weekdays' : n ? DAYS.filter((_,i)=>d[i]).map(x=>x.slice(0,3)).join(', ') : 'no days picked'; };
+const uniq = a => [...new Set(a.filter(Boolean))];
+const lc = s => s ? s.replace(/^./,c=>c.toLowerCase()) : s;
+const trim = s => (s||'').replace(/[.\s]+$/,'');
+const emptyGoal = () => ({s:'',m:'',a:'',r:'',t:''});
+const emptyAssign = () => ({tags:[],title:'',detail:'',why:'',mins:10,needs:'',start:'client',routine:'coffee',where:'',how:'',goal:emptyGoal()});
+const seedTasks = () => [
+  {id:'t5',tags:['quick'],title:'Notice three things you can hear',detail:'Pause, close your eyes if you like, and name three sounds around you.',why:'Shifting attention to your senses can help you step out of a busy mind for a moment.',needs:'Nothing',mins:2,sent:'Mon 29 Sep',status:'finished',kind:null,daily:false,today:null,plan:null,goal:null,whereOpts:['wherever I am'],howOpts:['name three sounds around me'],prepOpts:[]},
+  {id:'t2',title:'Write down one worry and when it shows up',detail:'When a worry comes up, write one line: the worry, the time, and where you were. Keep it short.',why:'Worries can feel constant. Writing them down shows when and where they actually appear, which helps us spot patterns and plan around them.',needs:'Your phone’s notes app',mins:2,sent:'Today',status:'new',kind:null,daily:false,today:null,plan:null,goal:null,suggest:'wind',
+   suggestion:{kind:'commitment',plan:{routine:'wind',how:'write down today’s main worry and when it showed up',where:'in my notes app',prep:'pin a note to my home screen'}},
+   whereOpts:['in my notes app','in a small notebook'],howOpts:['write down today’s main worry and when it showed up','write one line about my day'],prepOpts:['pin a note to my home screen','keep a notebook by the sink']},
+  {id:'t1',title:'Take a 10-minute walk after lunch',detail:'Walk at an easy pace for 10 minutes. Notice how your body and mood feel before and after.',why:'You mentioned your mood dips most in the early afternoon. A short walk adds light, movement and a change of scene right when the slump usually hits.',needs:'Comfortable shoes',mins:10,sent:'Mon 6 Oct',status:'planned',kind:'commitment',daily:true,today:null,goal:null,suggestion:null,
+   plan:{routine:'lunch',how:'walk for 10 minutes',where:'around the block near work',prep:'keep my trainers under my desk'},
+   whereOpts:['around the block near work','to the park and back','up and down the office stairs'],howOpts:['walk for 10 minutes','walk for 5 minutes','walk while listening to a podcast'],prepOpts:['keep my trainers under my desk','set a 10-minute timer','ask a colleague to join']},
+  {id:'t0',tags:['quiet'],title:'Five slow breaths before bed',detail:'Sit on your bed. Breathe in for four and out for six, five times.',why:'A longer out-breath helps your body settle, which can make it easier to fall asleep.',needs:'Nothing',mins:2,sent:'Mon 29 Sep',status:'planned',kind:'goal',daily:true,today:null,plan:null,suggestion:null,
+   goal:{s:'Five slow breaths, sitting on my bed',m:'I’ve counted all five',a:'It takes under two minutes',r:'I want to fall asleep more easily',t:'Every night until our next session',rem:{time:'8:30 pm',days:allDays()}},
+   whereOpts:['sitting on my bed'],howOpts:['take five slow breaths'],prepOpts:['leave my phone charging in the kitchen']},
+  {id:'t3',title:'Plan one small pleasant activity',detail:'Pick something you used to enjoy and do it for a short while.',why:'When mood is low we tend to do less, which lowers mood further. Small enjoyable activities help break that cycle.',needs:'Nothing',mins:20,sent:'Thu 9 Oct',status:'later',laterUntil:'Thu 16 Oct',kind:null,daily:false,today:null,plan:null,goal:null,suggestion:null,suggest:'coffee',
+   whereOpts:['at home','outside'],howOpts:['do something I used to enjoy for 20 minutes'],prepOpts:['pick the activity the night before','put it in my calendar']},
+];
+const seedHistory = () => [
+  {title:'Five slow breaths before bed',date:'Sat 11 Oct',outcome:'done',learning:'Doing it in bed rather than on the couch made it stick.'},
+  {title:'Take a 10-minute walk after lunch',date:'Fri 10 Oct',outcome:'done',learning:'The 3 pm slump was much easier.'},
+  {title:'Five slow breaths before bed',date:'Thu 9 Oct',outcome:'partial',learning:'Did two breaths. Notifications pulled me out.'},
+  {title:'Take a 10-minute walk after lunch',date:'Wed 8 Oct',outcome:'missed',learning:'It rained. An indoor option would help.'},
+];
+const routineOf = id => ROUTINES.find(r=>r.id===id) || ROUTINES[0];
+const sentence = p => p ? routineOf(p.routine).anchor+', I will '+p.how+', '+p.where+'.' : '';
+const to12 = v => { const [h,m]=v.split(':').map(Number); return (h%12||12)+':'+String(m).padStart(2,'0')+' '+(h<12?'am':'pm'); };
+const to24 = s => { const m=(s||'').match(/(\d+):(\d+)\s*(am|pm)/); if(!m) return ''; let h=+m[1]%12; if(m[3]==='pm') h+=12; return String(h).padStart(2,'0')+':'+m[2]; };
+const goalLine = g => g ? trim(g.s)+'. '+trim(g.t)+'.' : '';
+const lineOf = x => x.kind==='goal' ? goalLine(x.goal) : sentence(x.plan);
+const defaultPlan = t => { if(t.plan) return {...t.plan}; const sp = t.suggestion && t.suggestion.kind==='commitment' ? t.suggestion.plan : null;
+  return sp ? {...sp, prep: sp.prep || t.prepOpts[0]} : {routine:t.suggest||'coffee', how:t.howOpts[0], where:t.whereOpts[0], prep:t.prepOpts[0]}; };
+const defaultGoal = t => { if(t.goal) return {...t.goal, rem:{...t.goal.rem, days:[...t.goal.rem.days]}};
+  const sg = t.suggestion && t.suggestion.kind==='goal' ? t.suggestion.goal : emptyGoal(); return {...sg, rem:{time:'8:30 pm',days:weekdays()}}; };
+const fmt = n => Math.floor(n/60)+':'+String(n%60).padStart(2,'0');
+const BACK = {plan:'newtask',goal:'newtask',pledge:'plan',now:'today',checkin:'now',review:'clients',assign:'review',newtask:'today'};
+
+class Component extends DCLogic {
+  state = this.initial();
+  initial() {
+    const P = this.props, role = P.role ?? 'client';
+    const start = P.startScreen ?? (role==='client' ? 'splash' : 'clients');
+    const sel = ['newtask','plan','pledge','alert','now','goal'].includes(start) ? 't2' : 't1';
+    const tasks = seedTasks(), task = tasks.find(t=>t.id===sel);
+    if (start==='again') task.today = 'done';
+    return { role, screen:start, tasks, history:seedHistory(), sel, client:'Sam Patel', plan:defaultPlan(task), goal:defaultGoal(task),
+      outcome: start==='again' ? 'done' : null, refl:{helped:'',next:''}, share:true, toast:'', sheet:null,
+      makeDaily:false, skipped:[], showMore:false, homePrompt:true, onboarded:false, consentOk:false, shareDefault:true, notifDetail:false, openGroups:{}, mood: P.startMood ?? null, left:task.mins*60, running:false, assign:emptyAssign() };
+  }
+  componentDidMount(){ this.armSplash(); }
+  armSplash(){ clearTimeout(this._s); if(this.state.screen==='splash' && (this.props.chrome ?? true)) this._s = setTimeout(()=>{ if(this.state.screen==='splash') this.go(this.state.onboarded?'today':'consent'); }, 2200); }
+  componentWillUnmount(){ clearTimeout(this._s); clearTimeout(this._t); clearInterval(this._i); }
+  flash(msg){ this.setState({toast:msg}); clearTimeout(this._t); this._t = setTimeout(()=>this.setState({toast:''}), 3000); }
+  patch(id,o){ this.setState(s=>({tasks:s.tasks.map(t=>t.id===id?{...t,...o}:t)})); }
+  cur(){ return this.state.tasks.find(t=>t.id===this.state.sel) || this.state.tasks[0]; }
+  stop(){ clearInterval(this._i); this._i=null; }
+  go(screen, extra){ this.stop(); this.setState({screen, sheet:null, running:false, ...(extra||{})}); }
+  startNow(t){ this.go('now',{sel:t.id,left:t.mins*60,outcome:null}); }
+  startPlan(t, daily){ this.go('plan',{sel:t.id,plan:defaultPlan(t),makeDaily:!!daily}); }
+  startGoal(t, daily){ const g=defaultGoal(t); if(daily) g.rem.days=allDays(); this.go('goal',{sel:t.id,goal:g}); }
+  commitNow(){
+    const s=this.state, t=this.cur(), daily = s.makeDaily || (t.status==='planned' && t.daily), r=routineOf(s.plan.routine);
+    this.patch(t.id,{status:'planned',kind:'commitment',plan:{...s.plan},daily,today:null});
+    this.flash(s.plan.time ? 'Committed. We’ll nudge you at '+s.plan.time+(daily?', every day.':'.') : 'Committed. Added to your '+r.name.toLowerCase()+' routine'+(daily?', every day.':' for next time.'));
+    this.go('today',{makeDaily:false});
+  }
+  saveGoal(){
+    const s=this.state, t=this.cur(), g=s.goal;
+    this.patch(t.id,{status:'planned',kind:'goal',goal:{...g,rem:{...g.rem,days:[...g.rem.days]}},daily:g.rem.days.every(Boolean),today:null});
+    this.flash('Goal set. We’ll remind you at '+g.rem.time+', '+daysLine(g.rem.days)+'.');
+    this.go('today');
+  }
+  record(t, outcome, learning){
+    this.setState(st=>({history:[{title:t.title,date:'Today',outcome,learning:learning||'No notes added'},...st.history]}));
+    this.patch(t.id,{today:outcome, status: (t.status==='new'||t.status==='later') ? 'tried' : t.status});
+  }
+
+  renderVals() {
+    const s=this.state, P=this.props, set=o=>this.setState(o), t=this.cur();
+    const is={}; ['consent','link','applock','notifs','splash','today','newtask','plan','pledge','goal','now','checkin','again','alert','notif','journal','clients','review','assign'].forEach(k=>is[k]=s.screen===k);
+    const go={}; Object.keys(is).forEach(k=>go[k]=()=>this.go(k));
+    const openSheet = (task,kind) => e => { if(e&&e.stopPropagation) e.stopPropagation(); set({sel:task.id,sheet:kind}); };
+
+    const newTasks = s.tasks.filter(x=>x.status==='new').map(x=>({...x, why:openSheet(x,'why'), info:openSheet(x,'info'),
+      open:()=>this.go('newtask',{sel:x.id}), now:()=>this.startNow(x), plan:()=>this.go('newtask',{sel:x.id})}));
+    const planned = s.tasks.filter(x=>x.status==='planned');
+    const stepOf = (x, sub) => ({title:x.title, sub,
+      left: x.today ? 'Done today · '+dLabel(APPT.days)+' to session' : dLabel(APPT.days)+' left before your session',
+      leftBg: APPT.days<=2 && !x.today ? '#F6E7D6' : '#fbf8f180', leftFg: APPT.days<=2 && !x.today ? '#7a5a36' : '#4B5B70',
+      dotBg: x.today==='done'?INK : x.today==='partial'?HALF : 'transparent', dotIcon: x.today==='done'?'ph-bold ph-check':'', op: x.today==='missed'?0.45:1,
+      open:()=> x.today ? this.go('again',{sel:x.id,outcome:x.today}) : this.startNow(x), why:openSheet(x,'why'), info:openSheet(x,'info')});
+    const routines = ROUTINES.map(r=>{ const steps = planned.filter(x=>x.kind==='commitment' && x.plan.routine===r.id); if(!steps.length) return null;
+      return {...r, phrase:r.anchor+'…', phraseIcon:'ph-light ph-link-simple', status: steps.every(x=>x.today) ? 'Done today' : r.time,
+        steps: steps.map(x=>stepOf(x,(x.daily?'Daily':'Next time')+' · '+x.plan.how+', '+x.plan.where))}; }).filter(Boolean);
+    const goalTasks = planned.filter(x=>x.kind==='goal');
+    if (goalTasks.length) routines.push({id:'goals',name:'Your goals',icon:'ph-light ph-target',phrase:'Reminders at the times you chose',phraseIcon:'ph-light ph-bell',
+      status: goalTasks.every(x=>x.today) ? 'Done today' : '', steps: goalTasks.map(x=>stepOf(x, x.goal.rem.time+', '+daysLine(x.goal.rem.days)+' · '+trim(x.goal.s)))});
+    const laterTasks = s.tasks.filter(x=>x.status==='later');
+    const laterItems = laterTasks.map((x,i)=>({title:x.title, sub:'We’ll check in again '+x.laterUntil, rule: i?'#0f274614':'transparent', open:()=>this.go('newtask',{sel:x.id})}));
+
+    const HV = P.homeVariant ?? 'mindful';
+    const CUR = 'lunch';
+    const live = s.tasks.filter(x=>x.status==='new' || (x.status==='planned' && !x.today));
+    const rank = x => x.status==='planned' ? (x.kind==='commitment' && x.plan.routine===CUR ? 0 : 2) : 1;
+    let pool = live.filter(x=>!s.skipped.includes(x.id)); if(!pool.length) pool = live;
+    const ordered = [...pool].sort((a,b)=>rank(a)-rank(b));
+    const subOf = x => x.status==='new' ? 'New from Dr Chen · about '+x.mins+' min' : x.kind==='goal' ? 'Your goal · '+trim(x.goal.s) : routineOf(x.plan.routine).anchor+', '+x.plan.where;
+    const stepCard = (x, kicker, skipLabel, skip) => x ? {title:x.title, sub:subOf(x), kicker, cta: x.status==='new' ? 'Have a look' : 'Start', skipLabel,
+      start: () => x.status==='new' ? this.go('newtask',{sel:x.id}) : this.startNow(x), skip} : {};
+    const nextT = ordered[0];
+    const skipNext = () => { const sk = [...s.skipped, nextT.id]; set({skipped: live.every(x=>sk.includes(x.id)) ? [] : sk}); };
+    const next = stepCard(nextT, 'Your next small step', 'Not now', skipNext);
+    const moodPickT = k => { const byMins = [...live].sort((a,b)=>a.mins-b.mins)[0]; const breath = live.find(x=>(x.tags||[]).includes('quiet'));
+      const byLong = [...live].sort((a,b)=>b.mins-a.mins)[0];
+      return k==='quiet' ? (breath||byMins) : k==='tiny' ? byMins : k==='time' ? byLong : nextT; };
+    const MOODS = [{k:'tiny',label:'Something quick',icon:'ph-light ph-feather'},{k:'quiet',label:'Something quiet',icon:'ph-light ph-wind'},{k:'next',label:'Whatever’s next',icon:'ph-light ph-arrow-right'},{k:'time',label:'I’ve got time',icon:'ph-light ph-clock'}];
+    const moodKick = {tiny:'Your quickest task', quiet:'A quiet one Dr Chen picked', next:'Your next small step', time:'You’ve got time for this', skip:'Your next small step'};
+    const effMood = s.homePrompt ? s.mood : (s.mood || 'skip');
+    const mindT = effMood ? (effMood==='skip' || effMood==='next' ? nextT : moodPickT(effMood)) : null;
+    const mindNext = stepCard(mindT, moodKick[s.mood]||'', 'Something else', () => set({mood:null}));
+    const restItems = s.tasks.filter(x=>(x.status==='new'||x.status==='planned') && x!==nextT).map(x=>({title:x.title, sub: x.today ? 'Done today' : subOf(x),
+      dotBg: x.today==='done'?INK : x.today==='partial'?HALF : 'transparent', dotIcon: x.today==='done'?'ph-bold ph-check':'', op: x.today==='missed'?0.45:1,
+      open: () => x.today ? this.go('again',{sel:x.id,outcome:x.today}) : x.status==='new' ? this.go('newtask',{sel:x.id}) : this.startNow(x)}));
+    const pending = s.tasks.filter(x=>x.status==='new' || x.status==='later' || (x.status==='planned' && !x.today));
+    const doneCount = s.history.filter(h=>h.outcome!=='missed').length, taskTotal = s.history.length + pending.length;
+    const look = {done:{bs:'solid',bg:INK,op:1}, partial:{bs:'solid',bg:HALF,op:1}, missed:{bs:'solid',bg:'#0f274626',op:0.45}, todo:{bs:'dashed',bg:'transparent',op:1}};
+    const segs = [...s.history].reverse().map(h=>({label:h.title+' · '+OUT[h.outcome].label, ...look[h.outcome]})).concat(pending.map(x=>({label:x.title+' · to do', ...look.todo})));
+    const cnt = k => s.history.filter(h=>h.outcome===k).length;
+    const legend = [['done','Done',cnt('done')],['partial','Partly',cnt('partial')],['missed','Not today',cnt('missed')],['todo','To do',pending.length]].map(([k,label,n])=>({label,n,...look[k]}));
+
+    const sheet = s.sheet==='support' ? {kicker:'Support', title:'Need support now?', rows:[
+        {k:'If you’re in danger or need urgent help',v:'Call 000'},{k:'Lifeline · 24 hours',v:'13 11 14 · lifeline.org.au'},{k:'Beyond Blue',v:'1300 22 4636'},
+        {k:'About Righto',v:'Righto shares homework from your psychologist, reminds you and keeps your notes. It doesn’t assess, diagnose or treat, and no one is watching it in real time. For anything urgent, use the services above or contact your psychologist.'}]}
+      : s.sheet==='why' ? {kicker:'Why Dr Chen suggested this', title:t.title, rows:[{k:'',v:t.why || 'Dr Chen hasn’t added a reason yet. Ask about it at your next session.'}]}
+      : {kicker:'About this task', title:t.title, rows:[{k:'What to do',v:t.detail},{k:'Takes about',v:t.mins+' minutes'},{k:'You’ll need',v:t.needs||'Nothing'},{k:'Sent by',v:'Dr Maya Chen (Psychologist) · '+t.sent}]};
+
+    const sg = t.suggestion;
+    const startOpts = [
+      {k:'now',label:'Do it now',sub:'About '+t.mins+' min. We’ll start a timer.',icon:'ph-light ph-play',go:()=>this.startNow(t)},
+      {k:'commitment',label:'Set a commitment',sub:'Link it to something you already do, like your morning coffee.',icon:'ph-light ph-link-simple',go:()=>this.startPlan(t, s.makeDaily)},
+      {k:'goal',label:'Set a goal',sub:'Spell out exactly what, how much and by when, with your own reminder.',icon:'ph-light ph-target',go:()=>this.startGoal(t, s.makeDaily)},
+    ].map((o,i,a)=>{ const tag = !!sg && sg.kind===o.k; return {...o, hasTag:tag, rule: i<a.length-1?'#0f274614':'transparent', icFg: tag?'#FBF8F1':INK, icBg: tag?INK:'#fbf8f1a0'}; });
+
+    const p = s.plan, r = routineOf(p.routine);
+    const pill = (opts,key) => uniq([p[key],...opts]).map(o=>({label:o, ...sel(p[key]===o), pick:()=>set({plan:{...p,[key]:o}})}));
+    const planSections = [
+      {title:'When', q:'Link it to something you already do', isAnchor:true, isPills:false,
+       chips: ROUTINES.map((x,i)=>({label:x.anchor, sub:x.name+' routine · around '+x.time, icon:x.icon, check: p.routine===x.id?'ph-fill ph-check-circle':'ph-light ph-circle', rule: i<ROUTINES.length-1?'#0f274614':'transparent', pick:()=>set({plan:{...p,routine:x.id}})}))},
+      {title:'Where', q:'Where will you be?', isAnchor:false, isPills:true, chips:pill(t.whereOpts,'where')},
+      {title:'How', q:'What exactly will you do?', isAnchor:false, isPills:true, chips:pill(t.howOpts,'how')},
+      {title:'Make it easy', q:'One thing to set up beforehand', isAnchor:false, isPills:true, chips:pill([...t.prepOpts,NOPREP],'prep')},
+    ];
+    const ps = {routineTime:r.time, anchor:r.anchor, how:p.how, where:p.where, prep:p.prep, hasPrep: !!p.prep && p.prep!==NOPREP};
+    const willBeDaily = s.makeDaily || (t.status==='planned' && t.daily);
+
+    const g = s.goal;
+    const goalFields = GOALQ.map(f=>({...f, value:g[f.k]||'', onChange:e=>{ const v=e.target.value; this.setState(st=>({goal:{...st.goal,[f.k]:v}})); }}));
+    const goalIncomplete = GOALQ.some(f=>!(g[f.k]||'').trim()) || !g.rem.days.some(Boolean);
+    const goalTimes = TIMES.map(x=>({label:x, ...sel(g.rem.time===x), pick:()=>set({goal:{...g,rem:{...g.rem,time:x}}})}));
+    const goalDays = DAYS.map((d,i)=>({label:d[0], full:d, ...sel(g.rem.days[i]), pick:()=>{ const days=[...g.rem.days]; days[i]=!days[i]; set({goal:{...g,rem:{...g.rem,days}}}); }}));
+
+    const total = t.mins*60, left = s.left;
+    const toggleTimer = () => { if(s.running){ this.stop(); set({running:false}); return; }
+      this.stop(); set({running:true}); this._i = setInterval(()=>this.setState(st=>{ const l=Math.max(0,st.left-1); if(!l) this.stop(); return {left:l, running:l>0}; }),1000); };
+
+    const outcome = s.outcome;
+    const outcomeOpts = OUTCOMES.map(o=>({...o, bd: outcome===o.key?INK:'#ffffffa8', bg: outcome===o.key?'#fbf8f1b0':GLASS, pick:()=>set({outcome:o.key})}));
+    const onRefl = k => e => { const v=e.target.value; this.setState(st=>({refl:{...st.refl,[k]:v}})); };
+    const saveCheckin = () => { this.record(t, outcome, s.refl.helped || s.refl.next); this.go('again',{refl:{helped:'',next:''}}); };
+
+    const hasPlan = t.status==='planned', isGoal = t.kind==='goal';
+    const rName = hasPlan && !isGoal ? routineOf(t.plan.routine).name.toLowerCase() : '';
+    const makeDaily = () => {
+      if(!hasPlan) return this.go('newtask',{makeDaily:true});
+      if(isGoal){ this.patch(t.id,{daily:true,goal:{...t.goal,rem:{...t.goal.rem,days:allDays()}}}); this.flash('We’ll remind you every day at '+t.goal.rem.time+'.'); }
+      else { this.patch(t.id,{daily:true}); this.flash('Now part of your '+rName+' routine, every day.'); }
+      this.go('today');
+    };
+    const repeatOnce = () => {
+      if(!hasPlan) return this.go('newtask',{makeDaily:false});
+      if(!isGoal) this.patch(t.id,{daily:false});
+      this.flash(isGoal ? 'Righto. We’ll remind you next time.' : 'Righto. It’s in your '+rName+' routine for next time.'); this.go('today');
+    };
+    const notNow = () => { this.patch(t.id,{status:'finished'}); this.flash('Saved to your journal.'); this.go('today'); };
+    const wasDone = t.today==='done' || outcome==='done';
+    const againOpts = [
+      {label: hasPlan && t.daily ? 'Keep it as part of my day' : 'Make it part of my daily routine', icon:'ph-light ph-sun-horizon', go:makeDaily, ...sel(true)},
+      {label:'Repeat it once more', icon:'ph-light ph-arrow-clockwise', go:repeatOnce, ...sel(false)},
+      {label:'Not for now', icon:'ph-light ph-pause', go:notNow, fg:'#4B5B70', bg:'transparent', bd:'transparent'},
+    ];
+
+    const hist = s.history.map((h,i,a)=>({...h, tag:OUT[h.outcome], rule: i<a.length-1 ? '#0f274614' : 'transparent'}));
+    const clientTasks = s.tasks.filter(()=>s.client==='Sam Patel').map(x=>{ const last = s.history.find(h=>h.title===x.title);
+      const planned = x.status==='planned';
+      const line = planned ? lineOf(x) : x.suggestion ? 'You suggested: '+(x.suggestion.kind==='goal' ? goalLine(x.suggestion.goal) : sentence(x.suggestion.plan)) : '';
+      const tag = x.status==='new' ? {label:'Not started',bg:'#F6E7D6',fg:'#7a5a36'} : x.status==='later' ? {label:'Later · '+x.laterUntil,bg:'#F6E7D6',fg:'#7a5a36'}
+        : planned ? (x.kind==='goal' ? {label:'Goal · '+x.goal.rem.time,bg:'#e3eaf0',fg:INK} : {label:(x.daily?'Daily · ':'Commitment · ')+routineOf(x.plan.routine).name,bg:'#e3eaf0',fg:INK})
+        : {label:x.status==='tried'?'Done once':'Paused',bg:'#ffffff80',fg:'#4B5B70'};
+      return {...x, tag, hasPlan: !!line, noPlan: !line, pledgeLine: line, hasLearn: !!last, learned: last?last.learning:'', learnDate: last?last.date:''}; });
+    const samDone = s.history.filter(h=>h.outcome!=='missed').length, samOf = s.history.length;
+    const clients = CLIENTS.map(c=>{ const d = c.name==='Sam Patel' ? samDone : c.done, o = c.name==='Sam Patel' ? samOf : c.of;
+      return {...c, pct: o ? Math.round(d/o*100)+'%' : '0%', rate: o ? d+' of '+o+' done' : 'No check-ins yet', open:()=>this.go('review',{client:c.name})}; });
+    const isSam = s.client==='Sam Patel';
+    const histSegs = isSam ? [...s.history].reverse().map(h=>({label:h.title+' · '+OUT[h.outcome].label, ...look[h.outcome]})) : [];
+    const perTask = isSam ? s.tasks.filter(x=>s.history.some(h=>h.title===x.title) || x.status==='planned').map(x=>{ const hs=[...s.history].filter(h=>h.title===x.title).reverse();
+      return {title:x.title, ratio: hs.filter(h=>h.outcome!=='missed').length+'/'+hs.length, dots: hs.length ? hs.map(h=>({label:h.date+' · '+OUT[h.outcome].label, ...look[h.outcome]})) : [{label:'No check-ins yet', ...look.todo}]}; }) : [];
+    const A = s.assign;
+    const onAssign = k => e => { const v=e.target.value; this.setState(st=>({assign:{...st.assign,[k]:v}})); };
+    const assignEmpty = !A.title.trim() || !A.why.trim();
+    const sendAssign = () => { const id='t'+Date.now(), lt=lc(A.title.trim());
+      let suggestion = null;
+      if(A.start==='commitment' && A.where.trim() && A.how.trim()) suggestion = {kind:'commitment', plan:{routine:A.routine, where:A.where.trim(), how:A.how.trim(), prep:''}};
+      if(A.start==='goal' && GOALQ.some(f=>A.goal[f.k].trim())) suggestion = {kind:'goal', goal:{...A.goal}};
+      const nt = {id,tags:A.tags||[],title:A.title.trim(),detail:A.detail.trim()||A.title.trim(),why:A.why.trim(),needs:A.needs.trim()||'Nothing',mins:A.mins,sent:'Today',status:'new',kind:null,daily:false,today:null,plan:null,goal:null,suggestion,suggest:A.routine,
+        whereOpts:uniq([A.where.trim(),'at home','at work','outside']),howOpts:uniq([A.how.trim(),lt]),prepOpts:['set a phone reminder','put a note where I’ll see it']};
+      this.setState(st=>({tasks:[nt,...st.tasks],assign:emptyAssign()}));
+      this.flash('Sent. '+s.client.split(' ')[0]+' will get an alert now.'); this.go('review'); };
+
+    const firstNew = s.tasks.find(x=>x.status==='new') || s.tasks[0];
+    const walk = s.tasks.find(x=>x.id==='t1');
+    const tabs = (s.role==='client'
+      ? [{label:'Home',icon:'ph-light ph-house',k:'today'},{label:'Journal',icon:'ph-light ph-book-open',k:'journal'}]
+      : [{label:'Clients',icon:'ph-light ph-users',k:'clients'}])
+      .map(x=>{ const on=s.screen===x.k; return {...x, go:go[x.k], fg:on?'#FBF8F1':INK, bg:on?INK:'transparent', icon:on?x.icon.replace('ph-light ','ph-fill '):x.icon}; });
+    const roles = [{label:'Client view',k:'client'},{label:'Psychologist view',k:'psych'}].map(x=>{ const on=s.role===x.k; return {...x, fg:on?'#FBF8F1':INK, bg:on?INK:'transparent', pick:()=>this.go(x.k==='client'?'today':'clients',{role:x.k})}; });
+    const lock = is.alert || is.notif;
+
+    return {
+      chrome: P.chrome ?? true, clock: lock ? '' : '9:41', sbColor: lock ? '#FBF8F1' : INK, is, go, roles, tabs,
+      showTabs: is.today || is.journal || is.clients,
+      back: () => this.go(BACK[s.screen] || (s.role==='client'?'today':'clients')),
+      goHome: () => this.go('today'),
+      splashNext: () => this.go(s.onboarded ? 'today' : 'consent'),
+      consentOk: s.consentOk, toggleConsent: () => set({consentOk:!s.consentOk}), consentBlocked: !s.consentOk, consentOp: s.consentOk ? 1 : 0.45,
+      shareDefault: s.shareDefault, toggleShareDefault: () => set({shareDefault:!s.shareDefault, share:!s.shareDefault}),
+      toLink: () => this.go('link'), consentLater: () => { this.flash('Nothing has been saved. Come back when you’re ready.'); this.go('splash'); },
+      linkWrong: () => { this.flash('Not linked. Ask your psychologist for a new invite.'); this.go('consent'); },
+      notifDetail: s.notifDetail, toggleNotifDetail: () => set({notifDetail:!s.notifDetail}),
+      previewTitle: s.notifDetail ? 'Finished lunch? Time for your walk.' : 'Time for your lunch break routine.',
+      previewBody: s.notifDetail ? 'Walk for 10 minutes, around the block near work.' : 'Details hidden until you unlock',
+      finishOnboard: () => { set({onboarded:true}); this.go('today'); },
+      exportNotes: () => this.flash('PDF summary ready to add to your clinical notes.'),
+      discharge: () => this.flash(s.client.split(' ')[0]+' will be asked to confirm. Sharing stops for new entries.'),
+      tagOpts: [['quick','Quick'],['quiet','Quiet']].map(([k,l])=>{ const on=(s.assign.tags||[]).includes(k); return {label:l, ...sel(on), pick:()=>set({assign:{...s.assign, tags: on ? s.assign.tags.filter(x=>x!==k) : [...(s.assign.tags||[]),k]}})}; }),
+      reset: () => { this.stop(); clearTimeout(this._t); this.setState(this.initial(), ()=>this.armSplash()); },
+      fireAlert: () => this.go('alert',{role:'client',sel:firstNew.id}),
+      fireRoutine: () => this.go('notif',{role:'client',sel:'t1'}),
+      appt: APPT, apptLeft: dLabel(APPT.days),
+      homeCalmOn: is.today && HV!=='busy', homeBusyOn: is.today && HV==='busy',
+      vOne: HV==='one', vQuiet: HV==='quiet', vMind: HV==='mindful',
+      calmLine: HV==='mindful' && s.homePrompt && !s.mood ? 'Take a breath. There’s nothing you need to do this second.' : 'Take a breath. One small step is enough today.',
+      hasNext: !!(HV==='mindful' ? mindT : nextT), next, mindNext, allDone: !live.length,
+      hasNewNote: newTasks.length>0 && !(HV==='one' && nextT && nextT.status==='new') && !(HV==='mindful' && mindT && mindT.status==='new'),
+      newNoteOpen: () => newTasks[0] && this.go('newtask',{sel:newTasks[0].id}),
+      hasRest: restItems.length>0, restItems, showMore: s.showMore, toggleMore: () => set({showMore:!s.showMore}),
+      moreLabel: s.showMore ? 'Hide the rest of today' : 'See everything for today · '+restItems.length, moreIcon: s.showMore ? 'ph-light ph-caret-up' : 'ph-light ph-caret-down',
+      quietGroups: routines.map(r=>{ const done = r.steps.length && r.status==='Done today'; const def = r.id===CUR && !done; const open = s.openGroups[r.id] ?? def;
+        return {...r, isOpen: open, summary: done ? 'Done today' : open ? '' : (r.id==='goals' ? r.steps.length+(r.steps.length>1?' goals':' goal') : 'Around '+r.time), toggle: () => set({openGroups:{...s.openGroups,[r.id]:!open}})}; }),
+      showPrompt: s.homePrompt && !s.mood, showMindStep: !!effMood, openSupport: () => set({sheet:'support'}),
+      homePrompt: s.homePrompt, toggleHomePrompt: () => set({homePrompt:!s.homePrompt}), moods: MOODS.map(m=>({...m, pick:()=>set({mood:m.k})})), moodSkip: () => set({mood:'skip'}),
+      newTasks, routines, noRoutines: !routines.length, hasLater: laterItems.length>0, laterItems, task:t,
+      doneCount, taskTotal, segs, legend,
+      hasSheet: !!s.sheet, sheet, closeSheet: () => set({sheet:null}),
+      openWhy: openSheet(t,'why'), openInfo: openSheet(t,'info'),
+      startOpts, hasSuggest: !!sg, suggestKind: sg && sg.kind==='goal' ? 'a goal' : 'a commitment',
+      suggestText: sg ? (sg.kind==='goal' ? goalLine(sg.goal) : sentence(sg.plan)) : '',
+      nothingNow: () => { this.patch(t.id,{status:'later',laterUntil:'Thu 16 Oct'}); this.flash('Okay. We’ll check in again on Thursday.'); this.go('today'); },
+      planSections, ps, dailyTag: willBeDaily ? ' · every day' : '', toPledge: () => this.go('pledge'),
+      pledgeSentence: sentence(p), share: s.share, toggleShare: () => set({share:!s.share}),
+      nudgeLine: p.time ? 'We’ll nudge you at '+p.time+(willBeDaily?', every day.':'.') : 'We’ll nudge you around '+r.time+', when your '+r.name.toLowerCase()+' usually starts'+(willBeDaily?', every day.':'.'),
+      planRoutineSel: {...sel(!p.time), icon: !p.time ? 'ph-fill ph-check-circle' : 'ph-light ph-circle'}, planUseRoutine: () => set({plan:{...p,time:null}}),
+      planOwn: p.time ? to24(p.time) : '', planOwnBd: p.time ? INK : '#0F274633', planOwnBg: p.time ? '#fbf8f1b0' : '#fbf8f170',
+      onPlanOwn: e => { const v=e.target.value; if(v) this.setState(st=>({plan:{...st.plan,time:to12(v)}})); },
+      goalOwn: TIMES.includes(g.rem.time) ? '' : to24(g.rem.time), goalOwnBd: TIMES.includes(g.rem.time) ? '#0F274633' : INK, goalOwnBg: TIMES.includes(g.rem.time) ? '#fbf8f170' : '#fbf8f1b0',
+      onGoalOwn: e => { const v=e.target.value; if(v) this.setState(st=>({goal:{...st.goal,rem:{...st.goal.rem,time:to12(v)}}})); },
+      finishedItems: s.tasks.filter(x=>x.status==='finished').map((x,i)=>({title:x.title, sub: x.kind ? lineOf(x) : 'From Dr Chen · '+x.sent, rule: i?'#0f274614':'transparent', again: () => { this.patch(x.id,{status:'tried',today:null}); this.go('newtask',{sel:x.id}); }})),
+      hasFinished: s.tasks.some(x=>x.status==='finished'),
+      commitNow: () => this.commitNow(),
+      goalFields, goalTimes, goalDays, goalIncomplete, goalOp: goalIncomplete ? 0.45 : 1, saveGoal: () => this.saveGoal(),
+      goalRemLine: g.rem.time+', '+daysLine(g.rem.days),
+      goalIntro: (sg && sg.kind==='goal' ? 'Dr Chen’s suggestions from your session are filled in. Change anything that doesn’t fit.' : 'A few words for each is enough.'),
+      fillGoal: () => set({goal:{...g, s:'Write one line in my notes app when a worry comes up', m:'There’s a line with the worry, the time and the place', a:'My phone is always with me', r:'I want to see when my worries really show up', t:'Every evening until Mon 20 Oct'}}),
+      timerPct: Math.round((1 - left/total)*100), timerLabel: fmt(left), timerSub: left===0 ? 'Time’s up' : s.running ? 'remaining' : left===total ? 'ready when you are' : 'paused',
+      toggleTimer, timerIcon: s.running ? 'ph-light ph-pause' : 'ph-light ph-play', timerCta: s.running ? 'Pause' : left<total ? 'Resume' : 'Start timer',
+      nowText: hasPlan ? (isGoal ? trim(t.goal.s)+'. You’ll know it’s done when '+lc(trim(t.goal.m))+'.' : 'I will '+t.plan.how+', '+t.plan.where+'.') : t.detail,
+      toCheckin: () => this.go('checkin',{outcome:'done'}),
+      nowLater: () => (t.status==='new'||t.status==='later') ? this.go('newtask') : this.go('today'),
+      nowLaterLabel: (t.status==='new'||t.status==='later') ? 'Not now, see other options' : 'Not right now',
+      outcomeOpts, q1: outcome==='missed' ? 'What got in the way?' : 'What helped?', refl: s.refl,
+      onHelped: onRefl('helped'), onNext: onRefl('next'),
+      fillRefl: () => set({refl:{helped:'Having my trainers ready under the desk.',next:'Go straight after eating, before checking messages.'}}),
+      noOutcome: !outcome, outOp: outcome ? 1 : 0.45, saveCheckin,
+      againScript: wasDone ? 'Nice work.' : 'That’s okay.',
+      againTitle: wasDone ? 'Want to keep it going?' : 'Want to try it again?',
+      againBody: hasPlan ? (isGoal ? 'You can repeat it once more, or get a reminder every day so it becomes part of your routine.' : 'You can repeat it once more, or make it part of your '+rName+' routine so it happens every day.') : 'You can repeat it once more, or make it part of a daily routine. We’ll help you set it up.',
+      hasPlan, taskPledge: lineOf(t), commitKicker: isGoal ? 'Your goal' : 'Your commitment', againOpts,
+      alertTitle: firstNew.title, alertMins: firstNew.mins,
+      alertOpen: () => this.go('newtask',{sel:firstNew.id}), alertNow: () => this.startNow(firstNew), alertPlan: () => this.go('newtask',{sel:firstNew.id}),
+      notifBody: walk && walk.plan ? 'You committed to '+walk.plan.how+', '+walk.plan.where+'. Your trainers are under your desk.' : '',
+      notifOpen: () => this.startNow(walk), notifDone: () => { this.record(walk,'done',''); this.go('again',{sel:walk.id,outcome:'done'}); },
+      notifSkip: () => { this.record(walk,'missed',''); this.flash('No problem. See you tomorrow.'); this.go('today'); },
+      reviewDone: isSam ? samDone : 0, histSegs, perTask, checkCount: isSam ? s.history.length : 0, rateLabel: isSam && s.history.length ? 'Recorded by '+s.client.split(' ')[0] : 'No check-ins yet',
+      hist, clients, client: s.client, clientFirst: s.client.split(' ')[0], clientTasks, noClientTasks: !clientTasks.length,
+      assign: A, onTitle: onAssign('title'), onDetail: onAssign('detail'), onWhy: onAssign('why'), onNeeds: onAssign('needs'), onWhere: onAssign('where'), onHow: onAssign('how'),
+      minOpts: MINS.map(m=>({label:m+' min', ...sel(A.mins===m), pick:()=>set({assign:{...A,mins:m}})})),
+      aStartOpts: [['client','Let them choose'],['commitment','Suggest a commitment'],['goal','Suggest a goal']].map(([k,l])=>({label:l, ...sel(A.start===k), pick:()=>set({assign:{...A,start:k}})})),
+      aIsCommit: A.start==='commitment', aIsGoal: A.start==='goal',
+      aRoutines: ROUTINES.map(x=>({label:x.anchor+' · '+x.name, ...sel(A.routine===x.id), pick:()=>set({assign:{...A,routine:x.id}})})),
+      aGoalFields: GOALQ.map(f=>({q:f.pq, ph:f.ph, value:A.goal[f.k], onChange:e=>{ const v=e.target.value; this.setState(st=>({assign:{...st.assign,goal:{...st.assign.goal,[f.k]:v}}})); }})),
+      assignEmpty, assignOp: assignEmpty ? 0.45 : 1, sendAssign,
+      fillAssign: () => set({assign:{...A,title:'Plan one small pleasant activity',detail:'Pick something you used to enjoy and do it for a short while.',why:'When mood is low we tend to do less, which lowers mood further. Small enjoyable activities help break that cycle.',mins:20,needs:'Nothing',start:'commitment',routine:'coffee',where:'at home',how:'spend 20 minutes on something I used to enjoy'}}),
+      hasToast: !!s.toast, toast: s.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
