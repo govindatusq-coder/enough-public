@@ -162,9 +162,15 @@ export const expoWeekday = (mondayIndex: number) => ((mondayIndex + 1) % 7) + 1;
 
 // ---- Selection rules (Home) ---------------------------------------------------------------------
 
-export const isLive = (t: Task) => t.status === 'new' || (t.status === 'planned' && !t.today);
-export const liveTasks = (tasks: Task[]) => tasks.filter(isLive);
-export const pendingTasks = (tasks: Task[]) => tasks.filter((x) => x.status === 'new' || x.status === 'later' || (x.status === 'planned' && !x.today));
+export const isActive = (t: Task) => t.status === 'new' || t.status === 'planned' || t.status === 'tried';
+export const isLive = (t: Task) => isActive(t) && !t.today;
+/** Tasks Home can suggest: anything active and not yet done today; if everything is done today, fall back to
+ *  the active tasks so the four tiles always lead somewhere. Only set-aside and finished tasks are left out. */
+export const liveTasks = (tasks: Task[]) => {
+  const live = tasks.filter(isLive);
+  return live.length ? live : tasks.filter(isActive);
+};
+export const pendingTasks = (tasks: Task[]) => tasks.filter((x) => x.status === 'later' || (isActive(x) && !x.today));
 
 /** Current-routine commitments first, then new homework, then everything else. */
 export const orderedTasks = (tasks: Task[], skipped: string[], cur: RoutineId) => {
@@ -197,8 +203,13 @@ export const PREF_KICKER: Record<Preference, string> = {
   skip: 'Your next small step',
 };
 
-export const subOf = (x: Task) =>
-  x.status === 'new' ? 'New from Dr Chen · about ' + x.mins + ' min' : x.kind === 'goal' ? 'Your goal · ' + trim(x.goal?.s) : routineOf(x.plan?.routine).anchor + ', ' + (x.plan?.where || '');
+export const subOf = (x: Task) => {
+  const base = x.status === 'new' ? 'New from Dr Chen · about ' + x.mins + ' min'
+    : !x.kind ? 'From Dr Chen · about ' + x.mins + ' min'
+      : x.kind === 'goal' ? 'Your goal · ' + trim(x.goal?.s)
+        : routineOf(x.plan?.routine).anchor + ', ' + (x.plan?.where || '');
+  return x.today ? 'Done today · ' + base : base;
+};
 
 // ---- Journal / review -----------------------------------------------------------------------------
 

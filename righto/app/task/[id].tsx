@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ScrollView, Text, View, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
@@ -24,6 +24,8 @@ export default function NewTask() {
   const notifDetail = useStore((s) => s.notifDetail);
   const nextSession = useStore((s) => s.nextSession);
   const [open, setOpen] = useState(later === '1'); // closed whenever the screen opens, unless opened with later=1
+  const scroll = useRef<ScrollView>(null);
+  const toggleLater = () => setOpen((o) => { if (!o) setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 60); return !o; });
   if (!task) return <Background><BackRow label="Home" onPress={() => router.dismissTo('/home')} /></Background>;
 
   const sg = task.suggestion;
@@ -41,7 +43,7 @@ export default function NewTask() {
 
   const opts: { k: string; label: string; sub: string; Icon: React.ComponentType<IconProps>; tag: boolean; go: () => void }[] = [
     { k: 'now', label: 'Do it now', sub: 'About ' + task.mins + ' min. We’ll start a timer.', Icon: Play, tag: false, go: () => router.push({ pathname: '/now/[id]', params: { id: task.id } }) },
-    { k: 'later', label: 'Do it later', sub: 'Choose when, and we’ll remind you.', Icon: CalendarPlus, tag: !!sg, go: () => setOpen((o) => !o) },
+    { k: 'later', label: 'Do it later', sub: 'Choose when, and we’ll remind you.', Icon: CalendarPlus, tag: !!sg, go: toggleLater },
     { k: 'else', label: 'Something else', sub: 'Set this one aside for now and see what else there is.', Icon: Shuffle, tag: false, go: somethingElse },
   ];
   const laterOpts = [
@@ -54,7 +56,7 @@ export default function NewTask() {
   return (
     <Background>
       <BackRow label="Home" onPress={() => router.dismissTo('/home')} right={<InfoButtons taskId={task.id} />} />
-      <ScrollView contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 24, gap: 14 }}>
+      <ScrollView ref={scroll} contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 24, gap: 14 }}>
         <View style={{ paddingHorizontal: 4, gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.champagne }} />
