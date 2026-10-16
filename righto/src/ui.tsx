@@ -38,7 +38,7 @@ export function Background({ children, splash }: { children?: React.ReactNode; s
 export function Glass({ children, style, radius = 22, intensity = 40, tint }: { children?: React.ReactNode; style?: ViewStyle | ViewStyle[]; radius?: number; intensity?: number; tint?: string }) {
   return (
     <View style={[{ borderRadius: radius, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.08, shadowRadius: 35, shadowOffset: { width: 0, height: 8 }, elevation: 2 }, style]}>
-      <BlurView intensity={intensity} tint="light" experimentalBlurMethod="dimezisBlurView" style={fill} />
+      <BlurView intensity={intensity} tint="light" blurMethod="dimezisBlurView" style={fill} />
       <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.6 }} colors={['#fbf8f142', '#f6e7d61f', '#fbf8f133']} locations={[0, 0.6, 1]} style={fill} />
       {tint ? <View style={[fill, { backgroundColor: tint }]} /> : null}
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, backgroundColor: '#ffffffe0' }} />
@@ -220,7 +220,7 @@ export function TabBar({ active }: { active: 'home' | 'journal' | 'clients' }) {
   return (
     <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: insets.bottom > 0 ? insets.bottom - 6 : 16, alignItems: 'center' }}>
       <View style={{ borderRadius: 60, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.1, shadowRadius: 25, shadowOffset: { width: 0, height: 4 }, elevation: 3 }}>
-        <BlurView intensity={30} tint="light" experimentalBlurMethod="dimezisBlurView" style={fill} />
+        <BlurView intensity={30} tint="light" blurMethod="dimezisBlurView" style={fill} />
         <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.4 }} colors={['#fbf8f170', '#f6e7d638']} style={fill} />
         <View style={{ flexDirection: 'row', gap: 3, padding: 5 }} accessibilityRole="tablist">
           {tabs.map(({ k, label, Icon, href }) => {
@@ -299,7 +299,7 @@ export function SheetFrame({ kicker, title, children, onClose, got = 'Got it' }:
   const bottom = useBottom();
   return (
     <View style={{ marginHorizontal: 10, marginBottom: 10, borderRadius: 30, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.15, shadowRadius: 40, shadowOffset: { width: 0, height: -8 }, elevation: 8 }}>
-      <BlurView intensity={30} tint="light" experimentalBlurMethod="dimezisBlurView" style={fill} />
+      <BlurView intensity={30} tint="light" blurMethod="dimezisBlurView" style={fill} />
       <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.6 }} colors={['#fbf8f1f4', '#f6e7d6f0']} style={fill} />
       <View style={{ padding: 22, paddingBottom: Math.max(28, bottom - 6), gap: 12 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

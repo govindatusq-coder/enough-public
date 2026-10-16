@@ -31,7 +31,7 @@ export function ToastHost() {
     <Animated.View entering={FadeInUp.duration(200)} exiting={FadeOutUp.duration(200)} pointerEvents="none"
       accessibilityLiveRegion="polite" accessibilityRole="alert"
       style={{ position: 'absolute', top: insets.top + 11, left: 14, right: 14, zIndex: 50, borderRadius: 22, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.15, shadowRadius: 35, shadowOffset: { width: 0, height: 8 }, elevation: 6 }}>
-      <BlurView intensity={40} tint="light" experimentalBlurMethod="dimezisBlurView" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+      <BlurView intensity={40} tint="light" blurMethod="dimezisBlurView" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.6 }} colors={['#fbf8f1e8', '#f6e7d6d0']} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 14, paddingHorizontal: 16 }}>
         <CheckCircle size={22} weight="fill" color={colors.navy} />
