@@ -18,7 +18,7 @@ Open it in a browser (it needs support.js and assets/ beside it, already there).
 Also read: ../design_handoff_righto_app/PROMPT_update_1.md and PROMPT_update_2.md, and apply both.
 
 Then go through every client and psychologist screen in the reference and make the app match, including:
-- Home (mindful): "What feels doable right now?" card with 4 tiles (Something quick, Something quiet, Whatever's next, I've got time) and "Just show me what's next" link; calm line; next-session line; "Need support now?". No mood check.
+- Home (mindful): "What feels doable right now?" card with 4 tiles (Something quick, Something quiet, Whatever's next, I've got time) and "Just show me what's next" link; calm line; next-session line; "Need support now?". No mood check. Every time the user lands on Home, reset the pick so the "What feels doable right now?" card shows first (the next-step card only appears after they tap a tile; "Something else" returns to the tiles).
 - Onboarding: Consent → Confirm psychologist → App lock → Gentle reminders (private preview, details toggle off by default).
 - New task: "How would you like to do it?" → Do it now / Do it later (expands: With something I already do / At a time I choose) / Something else. No "Nothing for now".
 - Top-left button says "Home" and goes to Home on Set a commitment, Your commitment, Set a goal, Do it now, Check-in.

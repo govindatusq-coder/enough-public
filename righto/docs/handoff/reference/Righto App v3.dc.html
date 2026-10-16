@@ -668,7 +668,7 @@ class Component extends DCLogic {
   patch(id,o){ this.setState(s=>({tasks:s.tasks.map(t=>t.id===id?{...t,...o}:t)})); }
   cur(){ return this.state.tasks.find(t=>t.id===this.state.sel) || this.state.tasks[0]; }
   stop(){ clearInterval(this._i); this._i=null; }
-  go(screen, extra){ this.stop(); this.setState({screen, sheet:null, running:false, ...(screen==='newtask'?{laterOpen:false}:{}), ...(extra||{})}); }
+  go(screen, extra){ this.stop(); this.setState({screen, sheet:null, running:false, ...(screen==='newtask'?{laterOpen:false}:{}), ...(screen==='today'?{mood:null}:{}), ...(extra||{})}); }
   startNow(t){ this.go('now',{sel:t.id,left:t.mins*60,outcome:null}); }
   startPlan(t, daily){ this.go('plan',{sel:t.id,plan:defaultPlan(t),makeDaily:!!daily}); }
   startGoal(t, daily){ const g=defaultGoal(t); if(daily) g.rem.days=allDays(); this.go('goal',{sel:t.id,goal:g}); }

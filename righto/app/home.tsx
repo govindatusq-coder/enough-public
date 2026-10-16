@@ -1,6 +1,6 @@
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { ScrollView, Text, View, Pressable } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Feather, Wind, ArrowRight, Clock, Play, CalendarBlank, GearSix } from 'phosphor-react-native';
 import { Background, Glass, Kicker, Logo, PrimaryButton, TextButton, SupportLink, TabBar, T, F, useTop } from '../src/ui';
 import { colors } from '../src/theme';
@@ -26,6 +26,8 @@ export default function Home() {
   const now = new Date();
   const scroll = useRef<ScrollView>(null);
   const restart = () => { setPref(null); scroll.current?.scrollTo({ y: 0, animated: true }); };
+  // Every time the user lands on Home the pick resets, so the "What feels doable right now?" card shows first.
+  useFocusEffect(useCallback(() => { setPref(null); }, [setPref]));
 
   const live = useMemo(() => liveTasks(tasks), [tasks]);
   const ordered = useMemo(() => orderedTasks(tasks, skipped, currentRoutine(now.getHours())), [tasks, skipped]); // eslint-disable-line react-hooks/exhaustive-deps
