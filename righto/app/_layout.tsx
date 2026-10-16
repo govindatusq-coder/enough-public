@@ -40,7 +40,7 @@ export default function Layout() {
       <StatusBar style="dark" />
       <DayRoller />
       <NotificationResponses />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream }, animation: 'ios_from_right' }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream }, animation: 'fade', animationDuration: 380, gestureEnabled: true, fullScreenGestureEnabled: true }}>
         <Stack.Screen name="index" options={{ animation: 'fade' }} />
         <Stack.Screen name="home" options={{ animation: 'fade' }} />
         <Stack.Screen name="journal" options={{ animation: 'fade' }} />
