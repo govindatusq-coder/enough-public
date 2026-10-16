@@ -85,7 +85,7 @@ export default function Now() {
       </ScrollView>
       <BottomBar>
         <PrimaryButton label="I’ve done it" icon={<Check size={20} weight="light" color={colors.cream} />} onPress={() => router.push({ pathname: '/checkin/[id]', params: { id: task.id, outcome: 'done' } })} />
-        <TextButton label={isNew ? 'Not now, see other options' : 'Not right now'} onPress={() => (isNew ? (router.canGoBack() ? router.back() : router.replace({ pathname: '/task/[id]', params: { id: task.id } })) : router.dismissTo('/home'))} />
+        <TextButton label={isNew ? 'Not now, do it later' : 'Not right now'} onPress={() => (isNew ? router.replace({ pathname: '/task/[id]', params: { id: task.id, later: '1' } }) : router.dismissTo('/home'))} />
       </BottomBar>
     </Background>
   );

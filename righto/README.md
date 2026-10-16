@@ -22,7 +22,7 @@ Other commands: `npm run typecheck` (TypeScript), `npm test` (pure-logic unit te
 **Client:** Splash · Consent (express consent, collection notice, share default) · Confirm psychologist (mock invite) ·
 App lock (Face ID / fingerprint / device passcode via `expo-local-authentication`) · Reminder primer with private
 lock-screen preview · Home ("What feels doable right now?" picker, next-step card, new-homework line) · New task
-(Why "?" and About "i" sheets, suggested commitment/goal, Do it now / Set a commitment / Set a goal, Nothing for now)
+(Why "?" and About "i" sheets, suggested commitment/goal, Do it now / Do it later with a routine or at a chosen time / Something else)
 · Set a commitment (When · Where · How · Make it easy · Reminder with the routine or at a time you choose, live navy
 preview) · Your commitment · Set a goal (5 questions, reminder chips or your own time, days) · Do it now (SVG + Reanimated timer ring) · Check-in (Done / Some of it / Not today, what you
 learned, per-check-in share toggle) · Keep it going · Journal (progress tile, segmented bar, legend, Finished homework with Try again, entries) · Settings
@@ -39,7 +39,7 @@ goal). Assigned tasks appear on the client side through the shared store and fir
 **Reminders & privacy:** local notifications only (`expo-notifications`): commitments at the routine time (daily or
 next occurrence), goals weekly on the chosen days, "Nothing for now" nudges in 3 days. Lock-screen copy is the private
 copy from PRIVACY.md §4 unless "Show task details on my lock screen" is on. Notification actions: Done / Not today /
-Start (routine), Do it now / See options (new homework). Android channel uses `VISIBILITY_PRIVATE`. The app relocks
+Start (routine), Do it now / Do it later (new homework). Android channel uses `VISIBILITY_PRIVATE`. The app relocks
 after the chosen time in the background and shows an opaque privacy overlay in the app switcher. Local state is
 encrypted (XChaCha20-Poly1305 via `@noble/ciphers`) with a key in `expo-secure-store`; the "What feels doable" answer is
 never persisted.
@@ -56,7 +56,7 @@ src/notifications.ts  local reminder scheduling + categories
 src/time-picker.tsx   "pick your own time" pill (compact picker on iOS, clock dialog on Android)
 src/utils/time.ts     to12 / to24 / Date converters
 tests/          node --test
-docs/handoff/   DESIGN_SPEC.md, INTENDED_PURPOSE.md, PRIVACY.md, COMPLIANCE_REVIEW.md, PROMPT_update_1.md, reference/
+docs/handoff/   DESIGN_SPEC.md, INTENDED_PURPOSE.md, PRIVACY.md, COMPLIANCE_REVIEW.md, PROMPT_update_1.md, PROMPT_update_2.md, reference/
 ```
 
 ## Guardrails followed (INTENDED_PURPOSE.md)

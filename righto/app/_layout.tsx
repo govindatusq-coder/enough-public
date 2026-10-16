@@ -66,7 +66,7 @@ function DayRoller() {
   return null;
 }
 
-/** Handles taps and action buttons on local notifications (Done / Not today / Start / Do it now / See options). */
+/** Handles taps and action buttons on local notifications (Done / Not today / Start / Do it now / Do it later). */
 function NotificationResponses() {
   const handled = useRef<string | null>(null);
   useEffect(() => {
@@ -88,6 +88,7 @@ function NotificationResponses() {
         return;
       }
       if (a === ACTION.start || a === ACTION.now) { router.push({ pathname: '/now/[id]', params: { id } }); return; }
+      if (a === ACTION.options) { router.push({ pathname: '/task/[id]', params: { id, later: '1' } }); return; }
       if (data.kind === 'new' || data.kind === 'nudge' || task.status === 'new' || task.status === 'later') { router.push({ pathname: '/task/[id]', params: { id } }); return; }
       router.push({ pathname: '/now/[id]', params: { id } });
     };

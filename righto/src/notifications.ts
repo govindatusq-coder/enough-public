@@ -31,7 +31,7 @@ export function setupNotifications() {
       ]);
       await Notifications.setNotificationCategoryAsync(CATEGORY.new, [
         { identifier: ACTION.now, buttonTitle: 'Do it now', options: { opensAppToForeground: true } },
-        { identifier: ACTION.options, buttonTitle: 'See options', options: { opensAppToForeground: true } },
+        { identifier: ACTION.options, buttonTitle: 'Do it later', options: { opensAppToForeground: true } },
       ]);
     } catch (e) {
       console.warn('[righto] notification setup failed', e);
@@ -106,7 +106,7 @@ export async function scheduleGoal(task: Task, detail: boolean): Promise<string[
   return ids;
 }
 
-/** "Nothing for now" → a single gentle nudge in 3 days. */
+/** "Something else" → a single gentle nudge in 3 days. */
 export async function scheduleNudge(task: Task, detail: boolean): Promise<string[]> {
   await setupNotifications();
   await cancelFor(task);

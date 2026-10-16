@@ -238,16 +238,22 @@
 <div style="font-size:14px;color:#E9DFD2">From your session. You can change any of it.</div>
 </div>
 </sc-if>
-<div style="padding:4px 6px 0;font:400 21px/1.25 'Newsreader',Georgia,serif">How would you like to start?</div>
+<div style="padding:4px 6px 0;font:400 21px/1.25 'Newsreader',Georgia,serif">{{ startTitle }}</div>
 <div style="display:flex;flex-direction:column;padding:2px 14px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
 <sc-for list="{{ startOpts }}" as="o" hint-placeholder-count="3">
-<button onClick="{{ o.go }}" style="display:flex;align-items:center;gap:14px;min-height:72px;padding:10px 0;border:0;border-bottom:1px solid {{ o.rule }};background:none;text-align:left;cursor:pointer;color:#0F2746;font:inherit"><span style="width:42px;height:42px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:20px;color:{{ o.icFg }};background:{{ o.icBg }}"><i class="{{ o.icon }}"></i></span><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font:400 18px/1.2 'Newsreader',Georgia,serif">{{ o.label }}</span><sc-if value="{{ o.hasTag }}"><span style="font-size:12px;padding:2px 9px;border-radius:20px;background:#F6E7D6;color:#7a5a36">Suggested</span></sc-if></div><div style="font-size:14px;line-height:1.35;color:#4B5B70">{{ o.sub }}</div></div><i class="ph-light ph-caret-right" style="font-size:16px"></i></button>
+<button onClick="{{ o.go }}" style="display:flex;align-items:center;gap:14px;min-height:72px;padding:10px 0;border:0;border-bottom:1px solid {{ o.rule }};background:none;text-align:left;cursor:pointer;color:#0F2746;font:inherit"><span style="width:42px;height:42px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:20px;color:{{ o.icFg }};background:{{ o.icBg }}"><i class="{{ o.icon }}"></i></span><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font:400 18px/1.2 'Newsreader',Georgia,serif">{{ o.label }}</span><sc-if value="{{ o.hasTag }}"><span style="font-size:12px;padding:2px 9px;border-radius:20px;background:#F6E7D6;color:#7a5a36">Suggested</span></sc-if></div><div style="font-size:14px;line-height:1.35;color:#4B5B70">{{ o.sub }}</div></div><i class="{{ o.caret }}" style="font-size:16px"></i></button>
 </sc-for>
 </div>
+<sc-if value="{{ laterOpen }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:4px;padding:14px 14px 4px;border:1px solid #ffffffa8;border-radius:22px;background:linear-gradient(115deg,#fbf8f142,#f6e7d61f 60%,#fbf8f133);box-shadow:inset 0 1px 1px #ffffffe0,0 8px 35px #0f274614;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)">
+<span style="padding:0 2px;font:500 11px 'DM Sans',Arial,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:#4B5B70">When will you do it?</span>
+<sc-for list="{{ laterOpts }}" as="o" hint-placeholder-count="2">
+<button onClick="{{ o.go }}" style="display:flex;align-items:center;gap:12px;min-height:64px;padding:8px 0;border:0;border-bottom:1px solid {{ o.rule }};background:none;text-align:left;cursor:pointer;color:#0F2746;font:inherit"><i class="{{ o.icon }}" style="font-size:22px;color:#5E7C96;width:24px"></i><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font:400 17px/1.25 'Newsreader',Georgia,serif">{{ o.label }}</span><sc-if value="{{ o.hasTag }}"><span style="font-size:12px;padding:2px 9px;border-radius:20px;background:#F6E7D6;color:#7a5a36">Suggested</span></sc-if></div><div style="font-size:13px;line-height:1.35;color:#4B5B70">{{ o.sub }}</div></div><i class="ph-light ph-caret-right" style="font-size:16px"></i></button>
+</sc-for>
+</div>
+</sc-if>
 </div>
 <div style="padding:12px 18px 34px;display:flex;flex-direction:column;align-items:center;gap:2px">
-<button onClick="{{ nothingNow }}" style="min-height:48px;padding:0 20px;border:0;background:none;border-radius:30px;font:500 17px 'Newsreader',Georgia,serif;color:#0F2746;cursor:pointer" style-hover="background:#fbf8f160">Nothing for now</button>
-<span style="font-size:13px;color:#4B5B70">We’ll check in again in a few days.</span>
 <button onClick="{{ openSupport }}" style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 4px;border:0;background:none;cursor:pointer;font:italic 400 15px 'Newsreader',Georgia,serif;color:#4B5B70"><i class="ph-light ph-lifebuoy" style="font-size:18px;font-style:normal"></i>Need support now?</button>
 </div>
 </div>
@@ -409,7 +415,7 @@
 </button>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 0">
 <button onClick="{{ alertNow }}" style="min-height:48px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#0F2746;background:#FBF8F1d8;border:1px solid #0F274640;cursor:pointer;backdrop-filter:blur(12px)">Do it now</button>
-<button onClick="{{ alertPlan }}" style="min-height:48px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;cursor:pointer">See options</button>
+<button onClick="{{ alertPlan }}" style="min-height:48px;border-radius:40px;font:500 16px 'Newsreader',Georgia,serif;color:#FBF8F1;background:#0F2746;border:1px solid #0F2746;cursor:pointer">Do it later</button>
 </div>
 <div style="height:120px"></div>
 </div>
@@ -662,7 +668,7 @@ class Component extends DCLogic {
   patch(id,o){ this.setState(s=>({tasks:s.tasks.map(t=>t.id===id?{...t,...o}:t)})); }
   cur(){ return this.state.tasks.find(t=>t.id===this.state.sel) || this.state.tasks[0]; }
   stop(){ clearInterval(this._i); this._i=null; }
-  go(screen, extra){ this.stop(); this.setState({screen, sheet:null, running:false, ...(extra||{})}); }
+  go(screen, extra){ this.stop(); this.setState({screen, sheet:null, running:false, ...(screen==='newtask'?{laterOpen:false}:{}), ...(extra||{})}); }
   startNow(t){ this.go('now',{sel:t.id,left:t.mins*60,outcome:null}); }
   startPlan(t, daily){ this.go('plan',{sel:t.id,plan:defaultPlan(t),makeDaily:!!daily}); }
   startGoal(t, daily){ const g=defaultGoal(t); if(daily) g.rem.days=allDays(); this.go('goal',{sel:t.id,goal:g}); }
@@ -743,11 +749,16 @@ class Component extends DCLogic {
       : {kicker:'About this task', title:t.title, rows:[{k:'What to do',v:t.detail},{k:'Takes about',v:t.mins+' minutes'},{k:'You’ll need',v:t.needs||'Nothing'},{k:'Sent by',v:'Dr Maya Chen (Psychologist) · '+t.sent}]};
 
     const sg = t.suggestion;
+    const sgKind = sg ? sg.kind : null;
     const startOpts = [
       {k:'now',label:'Do it now',sub:'About '+t.mins+' min. We’ll start a timer.',icon:'ph-light ph-play',go:()=>this.startNow(t)},
-      {k:'commitment',label:'Set a commitment',sub:'Link it to something you already do, like your morning coffee.',icon:'ph-light ph-link-simple',go:()=>this.startPlan(t, s.makeDaily)},
-      {k:'goal',label:'Set a goal',sub:'Spell out exactly what, how much and by when, with your own reminder.',icon:'ph-light ph-target',go:()=>this.startGoal(t, s.makeDaily)},
-    ].map((o,i,a)=>{ const tag = !!sg && sg.kind===o.k; return {...o, hasTag:tag, rule: i<a.length-1?'#0f274614':'transparent', icFg: tag?'#FBF8F1':INK, icBg: tag?INK:'#fbf8f1a0'}; });
+      {k:'later',label:'Do it later',sub:'Choose when, and we’ll remind you.',icon:'ph-light ph-calendar-plus',go:()=>set({laterOpen:!s.laterOpen})},
+      {k:'else',label:'Something else',sub:'Set this one aside for now and see what else there is.',icon:'ph-light ph-shuffle',go:()=>{ this.patch(t.id,{status:'later',laterUntil:'Thu 16 Oct'}); this.flash('Set aside. We’ll check in again on Thursday.'); this.go('today',{laterOpen:false}); }},
+    ].map((o,i,a)=>{ const tag = o.k==='later' && !!sg; return {...o, hasTag:tag, rule: i<a.length-1?'#0f274614':'transparent', icFg: tag?'#FBF8F1':INK, icBg: tag?INK:'#fbf8f1a0', caret: o.k==='later' ? (s.laterOpen?'ph-light ph-caret-up':'ph-light ph-caret-down') : 'ph-light ph-caret-right'}; });
+    const laterOpts = [
+      {k:'commitment',label:'With something I already do',sub:'Like after lunch or while my coffee brews.',icon:'ph-light ph-link-simple',go:()=>this.startPlan(t, s.makeDaily)},
+      {k:'goal',label:'At a time I choose',sub:'Say what you’ll do and when, and pick your reminder.',icon:'ph-light ph-target',go:()=>this.startGoal(t, s.makeDaily)},
+    ].map((o,i,a)=>({...o, hasTag: sgKind===o.k, rule: i<a.length-1?'#0f274614':'transparent'}));
 
     const p = s.plan, r = routineOf(p.routine);
     const pill = (opts,key) => uniq([p[key],...opts]).map(o=>({label:o, ...sel(p[key]===o), pick:()=>set({plan:{...p,[key]:o}})}));
@@ -859,7 +870,7 @@ class Component extends DCLogic {
       calmLine: HV==='mindful' && s.homePrompt && !s.mood ? 'Take a breath. There’s nothing you need to do this second.' : 'Take a breath. One small step is enough today.',
       hasNext: !!(HV==='mindful' ? mindT : nextT), next, mindNext, allDone: !live.length,
       hasNewNote: newTasks.length>0 && !(HV==='one' && nextT && nextT.status==='new') && !(HV==='mindful' && mindT && mindT.status==='new'),
-      newNoteOpen: () => newTasks[0] && this.go('newtask',{sel:newTasks[0].id}),
+      newNoteOpen: () => newTasks[0] && this.go('newtask',{sel:newTasks[0].id,laterOpen:false}),
       hasRest: restItems.length>0, restItems, showMore: s.showMore, toggleMore: () => set({showMore:!s.showMore}),
       moreLabel: s.showMore ? 'Hide the rest of today' : 'See everything for today · '+restItems.length, moreIcon: s.showMore ? 'ph-light ph-caret-up' : 'ph-light ph-caret-down',
       quietGroups: routines.map(r=>{ const done = r.steps.length && r.status==='Done today'; const def = r.id===CUR && !done; const open = s.openGroups[r.id] ?? def;
@@ -870,7 +881,7 @@ class Component extends DCLogic {
       doneCount, taskTotal, segs, legend,
       hasSheet: !!s.sheet, sheet, closeSheet: () => set({sheet:null}),
       openWhy: openSheet(t,'why'), openInfo: openSheet(t,'info'),
-      startOpts, hasSuggest: !!sg, suggestKind: sg && sg.kind==='goal' ? 'a goal' : 'a commitment',
+      startOpts, laterOpts, laterOpen: !!s.laterOpen, startTitle: 'How would you like to do it?', hasSuggest: !!sg, suggestKind: sg && sg.kind==='goal' ? 'a goal' : 'a commitment',
       suggestText: sg ? (sg.kind==='goal' ? goalLine(sg.goal) : sentence(sg.plan)) : '',
       nothingNow: () => { this.patch(t.id,{status:'later',laterUntil:'Thu 16 Oct'}); this.flash('Okay. We’ll check in again on Thursday.'); this.go('today'); },
       planSections, ps, dailyTag: willBeDaily ? ' · every day' : '', toPledge: () => this.go('pledge'),
@@ -892,8 +903,8 @@ class Component extends DCLogic {
       toggleTimer, timerIcon: s.running ? 'ph-light ph-pause' : 'ph-light ph-play', timerCta: s.running ? 'Pause' : left<total ? 'Resume' : 'Start timer',
       nowText: hasPlan ? (isGoal ? trim(t.goal.s)+'. You’ll know it’s done when '+lc(trim(t.goal.m))+'.' : 'I will '+t.plan.how+', '+t.plan.where+'.') : t.detail,
       toCheckin: () => this.go('checkin',{outcome:'done'}),
-      nowLater: () => (t.status==='new'||t.status==='later') ? this.go('newtask') : this.go('today'),
-      nowLaterLabel: (t.status==='new'||t.status==='later') ? 'Not now, see other options' : 'Not right now',
+      nowLater: () => (t.status==='new'||t.status==='later') ? this.go('newtask',{laterOpen:true}) : this.go('today'),
+      nowLaterLabel: (t.status==='new'||t.status==='later') ? 'Not now, do it later' : 'Not right now',
       outcomeOpts, q1: outcome==='missed' ? 'What got in the way?' : 'What helped?', refl: s.refl,
       onHelped: onRefl('helped'), onNext: onRefl('next'),
       fillRefl: () => set({refl:{helped:'Having my trainers ready under the desk.',next:'Go straight after eating, before checking messages.'}}),
@@ -903,7 +914,7 @@ class Component extends DCLogic {
       againBody: hasPlan ? (isGoal ? 'You can repeat it once more, or get a reminder every day so it becomes part of your routine.' : 'You can repeat it once more, or make it part of your '+rName+' routine so it happens every day.') : 'You can repeat it once more, or make it part of a daily routine. We’ll help you set it up.',
       hasPlan, taskPledge: lineOf(t), commitKicker: isGoal ? 'Your goal' : 'Your commitment', againOpts,
       alertTitle: firstNew.title, alertMins: firstNew.mins,
-      alertOpen: () => this.go('newtask',{sel:firstNew.id}), alertNow: () => this.startNow(firstNew), alertPlan: () => this.go('newtask',{sel:firstNew.id}),
+      alertOpen: () => this.go('newtask',{sel:firstNew.id}), alertNow: () => this.startNow(firstNew), alertPlan: () => this.go('newtask',{sel:firstNew.id,laterOpen:true}),
       notifBody: walk && walk.plan ? 'You committed to '+walk.plan.how+', '+walk.plan.where+'. Your trainers are under your desk.' : '',
       notifOpen: () => this.startNow(walk), notifDone: () => { this.record(walk,'done',''); this.go('again',{sel:walk.id,outcome:'done'}); },
       notifSkip: () => { this.record(walk,'missed',''); this.flash('No problem. See you tomorrow.'); this.go('today'); },
