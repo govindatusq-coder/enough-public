@@ -6,6 +6,8 @@ import { api, backendConfigured, supabase } from './supabase';
 import { useStore } from '../store';
 import { type Task, type CheckIn, type Outcome, type GoalAnswers, PSYCH, CLIENT, dayLabel, dayKey, plusDays, mkTask, lc, uniq } from '../logic';
 import { notifyNewTask } from '../notifications';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 
 export type Role = 'client' | 'psych';
 export type Profile = { user_id: string; role: Role; display_name: string; consent_version: string | null; consent_at: string | null; settings: Record<string, unknown> };
@@ -114,6 +116,40 @@ export async function signUp(p: { email: string; password: string; role: Role; d
 export async function signIn(email: string, password: string) {
   const { error } = await supabase().auth.signInWithPassword({ email: email.trim(), password });
   if (error) throw error;
+  return loadProfile();
+}
+
+/**
+ * Google sign-in through the system browser (works in Expo Go and in a build). Google only confirms who the person is;
+ * nothing about homework goes to Google. Resolves to the profile, or null when the account is new and still needs a
+ * role and name (see completeProfile).
+ */
+export async function signInWithGoogle(): Promise<Profile | null | 'cancelled'> {
+  const sb = supabase();
+  const redirectTo = Linking.createURL('auth'); // exp://…/--/auth in Expo Go, righto://auth in a build
+  const { data, error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo, skipBrowserRedirect: true, queryParams: { prompt: 'select_account' } } });
+  if (error) throw error;
+  const res = await WebBrowser.openAuthSessionAsync(data.url, redirectTo, { preferEphemeralSession: false });
+  if (res.type !== 'success') return 'cancelled';
+  const url = new URL(res.url);
+  const code = url.searchParams.get('code');
+  const errDesc = url.searchParams.get('error_description');
+  if (errDesc) throw new Error(errDesc);
+  if (!code) throw new Error('Google did not return a sign-in code. Check the redirect URL in Supabase → Authentication → URL Configuration.');
+  const { error: xErr } = await sb.auth.exchangeCodeForSession(code);
+  if (xErr) throw xErr;
+  return loadProfile();
+}
+
+/** Name Google (or the person) gave us, for prefilling the profile form. */
+export const suggestedName = () => {
+  const m = useCloud.getState().session?.user.user_metadata as Record<string, unknown> | undefined;
+  return (typeof m?.full_name === 'string' && m.full_name) || (typeof m?.name === 'string' && m.name) || '';
+};
+
+/** First sign-in through Google: the person picks a role and name, and the profile row is created. */
+export async function completeProfile(p: { role: Role; display_name: string; practice?: string; ahpra?: string }) {
+  useCloud.getState().set({ pendingProfile: { role: p.role, display_name: p.display_name, practice: p.practice, ahpra: p.ahpra } });
   return loadProfile();
 }
 

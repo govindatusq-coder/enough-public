@@ -28,6 +28,7 @@ export function supabase(): SupabaseClient {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,
+        flowType: 'pkce', // Google sign-in: the browser hands back a one-time code, exchanged here for the session
       },
       global: { headers: { 'x-righto-client': 'expo' } },
     });

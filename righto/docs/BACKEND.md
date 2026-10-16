@@ -32,7 +32,13 @@ Nothing on the server scores, flags or interprets. Counts shown to the psycholog
 5. **Project Settings → API Keys**: the **publishable** key (`sb_publishable_…`) is built into `src/backend/supabase.ts` together with the project URL.
    A `.env` with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` overrides them (for a second project). Never share or commit the
    **secret** / `service_role` key.
-6. Optional, to run the isolation tests against the project (use a **separate test project**, not the one real people will use):
+6. **Google sign-in** (optional). In Google Cloud Console → APIs & Services → Credentials → Create credentials → OAuth client ID →
+   Web application, with `https://<project-ref>.supabase.co/auth/v1/callback` as the authorised redirect URI. Paste the Client ID and
+   Client secret into Supabase → Authentication → Sign In / Providers → Google and enable it. Then under **Authentication → URL
+   Configuration → Redirect URLs** add `exp://**` (Expo Go) and `righto://**` (builds) so the browser can hand the sign-in back to the app.
+   Google only confirms the person's identity; no homework data goes to Google. Sign in with Apple is left for the development build
+   (it needs an Apple Developer account and does not work in Expo Go).
+7. Optional, to run the isolation tests against the project (use a **separate test project**, not the one real people will use):
 
    ```
    RIGHTO_SUPABASE_URL=... RIGHTO_SUPABASE_ANON_KEY=... RIGHTO_SUPABASE_SERVICE_ROLE_KEY=... node --test tests/backend/*.test.ts
@@ -46,8 +52,9 @@ Nothing on the server scores, flags or interprets. Counts shown to the psycholog
 
 `src/backend/cloud.ts` is the only place the screens talk to the project.
 
-- **Accounts.** Splash → Consent → Create account / Sign in (`app/account.tsx`). The role, name and (for psychologists) practice and
-  Ahpra number become the `righto_profiles` / `righto_psychologists` rows; consent version and time are written with them. Psychologists
+- **Accounts.** Splash → Consent → Create account / Sign in (`app/account.tsx`), by email and password or **Continue with Google**
+  (system browser, PKCE, `signInWithGoogle` in cloud.ts; a first Google sign-in then asks for the role and name). The role, name and
+  (for psychologists) practice and Ahpra number become the `righto_profiles` / `righto_psychologists` rows; consent version and time are written with them. Psychologists
   then go to `app/mfa.tsx` to add an authenticator app or enter their code.
 - **Linking.** Clients → Your clients → **Invite a client** mints a code (`righto_create_invite`). The client types it on "Your invite code"
   (`app/link.tsx`, also reachable from Settings → Privacy & data), sees the name, practice and Ahpra number from `righto_preview_invite`
