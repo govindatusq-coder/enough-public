@@ -4,8 +4,11 @@ import 'react-native-url-polyfill/auto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { encryptedStorage } from '../storage';
 
-export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
-export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+// Project "righto" · Oceania (Sydney, ap-southeast-2). The publishable key is designed to ship inside the app.
+const DEFAULT_URL = 'https://nvszkfxbduokokihsbgx.supabase.co';
+const DEFAULT_KEY = 'sb_publishable_Mgkvrv01NAB2mKy-REcdTQ_cqMTGXZU';
+export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || DEFAULT_URL;
+export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_KEY;
 
 export const backendConfigured = () => /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(SUPABASE_URL) && SUPABASE_ANON_KEY.length > 20;
 
@@ -35,6 +38,7 @@ export function supabase(): SupabaseClient {
 // ---- Typed wrappers around the SQL functions in supabase/migrations ------------------------------------
 
 export type InvitePreview = { display_name: string; title: string; practice: string; ahpra: string; expires_at: string };
+export type PsychLinkRow = { link_id: string; psych_id: string; display_name: string; title: string; practice: string; ahpra: string; linked_at: string; home_prompt: boolean };
 export type ClientRow = { client_id: string; display_name: string; linked_at: string; checkins_total: number; checkins_done: number; last_checkin: string | null; next_session: string | null };
 
 export const api = {
@@ -63,7 +67,7 @@ export const api = {
   async myPsychologist() {
     const { data, error } = await supabase().rpc('righto_my_psychologist');
     if (error) throw error;
-    return (Array.isArray(data) ? data[0] : data) ?? null;
+    return ((Array.isArray(data) ? data[0] : data) ?? null) as PsychLinkRow | null;
   },
   async myClients(): Promise<ClientRow[]> {
     const { data, error } = await supabase().rpc('righto_my_clients');

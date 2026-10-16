@@ -10,6 +10,8 @@ import { NotifPreview } from './notifs';
 import { scheduleCommitment, scheduleGoal, cancelAll } from '../src/notifications';
 import { wipeLocalData } from '../src/storage';
 import { toast } from '../src/toast';
+import { cloudActive, isPsych, refreshLink, signOut, useCloud } from '../src/backend/cloud';
+import { api } from '../src/backend/supabase';
 
 function Row({ title, sub, right, onPress, first }: { title: string; sub?: string; right?: React.ReactNode; onPress?: () => void; first?: boolean }) {
   const inner = (
@@ -28,6 +30,9 @@ function Row({ title, sub, right, onPress, first }: { title: string; sub?: strin
 /** Settings → Privacy & data (PRIVACY.md §3.4, APP 12 access, APP 13 correction, retention). */
 export default function Privacy() {
   const s = useStore();
+  const link = useCloud((c) => c.link);
+  const cloud = cloudActive();
+  const psych = isPsych();
   const sample = s.tasks.find((t) => t.status === 'planned' && t.kind === 'commitment') || s.tasks[0];
   const copy = sample ? notifCopy('commitment', sample, s.notifDetail) : { title: 'Righto', body: 'Time for your routine.' };
   const preview = s.notifDetail ? copy : { title: copy.body, body: 'Details hidden until you unlock' };
@@ -47,14 +52,21 @@ export default function Privacy() {
     } catch { toast('App lock isn’t available on this device.'); }
   };
   const unlink = () => Alert.alert('End sharing with ' + PSYCH.short + '?', 'They lose access to anything new from now on. What you already shared stays in their clinical record.',
-    [{ text: 'Cancel', style: 'cancel' }, { text: 'End sharing', style: 'destructive', onPress: () => { s.set({ linked: false, shareDefault: false }); toast('Sharing ended. Nothing new will be shared.'); } }]);
+    [{ text: 'Cancel', style: 'cancel' }, { text: 'End sharing', style: 'destructive', onPress: async () => {
+      if (cloud && link) { try { await api.endLink(link.link_id); await refreshLink(); } catch (e) { toast((e as Error).message); return; } }
+      s.set({ linked: false, shareDefault: false }); toast('Sharing ended. Nothing new will be shared.');
+    } }]);
   const download = async () => {
     const { set: _a, patchTask: _b, addTask: _c, record: _d, tryAgain: _t, rollDay: _e, resetDemo: _f, wipe: _g, ...data } = s;
-    try { await Share.share({ message: JSON.stringify({ exportedAt: new Date().toISOString(), ...data }, null, 2), title: 'My Righto data' }); } catch { /* cancelled */ }
+    let server: Record<string, unknown> | null = null;
+    if (cloud) { try { server = await api.exportMe(); } catch (e) { toast('Couldn’t reach your account: ' + (e as Error).message); } }
+    try { await Share.share({ message: JSON.stringify({ exportedAt: new Date().toISOString(), account: server, thisPhone: data }, null, 2), title: 'My Righto data' }); } catch { /* cancelled */ }
   };
   const del = () => Alert.alert('Delete my account?', 'Your homework, plans and check-ins are deleted from this device now and from Righto’s servers within 30 days (backups within 35 days). Your psychologist keeps their own clinical record.',
     [{ text: 'Cancel', style: 'cancel' }, { text: 'Continue', style: 'destructive', onPress: () => Alert.alert('This can’t be undone', 'Delete everything?',
-      [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: async () => { await cancelAll(); s.wipe(); await wipeLocalData(STORE_NAME); if (router.canDismiss()) router.dismissAll(); router.replace('/'); } }]) }]);
+      [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: async () => {
+        if (cloud) { try { await api.deleteMe(); } catch (e) { toast('Couldn’t delete your account: ' + (e as Error).message); return; } await signOut(); }
+        await cancelAll(); s.wipe(); await wipeLocalData(STORE_NAME); if (router.canDismiss()) router.dismissAll(); router.replace('/'); } }]) }]);
 
   return (
     <Background>
@@ -85,13 +97,16 @@ export default function Privacy() {
           </View>
         </Glass>
 
-        <Glass style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
-          <Row first title={s.linked ? PSYCH.name + ' · ' + PSYCH.title : 'No psychologist linked'} sub={s.linked ? PSYCH.practice + ' · Ahpra ' + PSYCH.ahpra : 'Ask your psychologist for an invite link.'}
-            right={s.linked ? <SecondaryButton label="Unlink" size={15} icon={<LinkBreak size={16} weight="light" color={colors.navy} />} onPress={unlink} style={{ minHeight: 40, paddingHorizontal: 14 }} /> : undefined} />
-        </Glass>
+        {!psych && (
+          <Glass style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
+            <Row first title={s.linked ? PSYCH.name + ' · ' + PSYCH.title : cloud ? 'Link with a psychologist' : 'No psychologist linked'} sub={s.linked ? (PSYCH.practice ? PSYCH.practice + ' · ' : '') + 'Ahpra ' + (PSYCH.ahpra || 'not provided') : cloud ? 'Enter the invite code your psychologist gave you.' : 'Ask your psychologist for an invite link.'}
+              onPress={!s.linked && cloud ? () => router.push({ pathname: '/link', params: { from: 'settings' } }) : undefined}
+              right={s.linked ? <SecondaryButton label="Unlink" size={15} icon={<LinkBreak size={16} weight="light" color={colors.navy} />} onPress={unlink} style={{ minHeight: 40, paddingHorizontal: 14 }} /> : !s.linked && cloud ? <CaretRight size={18} weight="light" color={colors.navy} /> : undefined} />
+          </Glass>
+        )}
 
         <Glass style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
-          <Row first title="Download my data" sub="Everything Righto holds about you, as JSON, via the share sheet." onPress={download} right={<DownloadSimple size={20} weight="light" color={colors.navy} />} />
+          <Row first title="Download my data" sub={cloud ? 'Everything in your account and on this phone, as JSON, via the share sheet.' : 'Everything Righto holds about you, as JSON, via the share sheet.'} onPress={download} right={<DownloadSimple size={20} weight="light" color={colors.navy} />} />
           <Row title="Delete my account" sub="Two steps. Explains what is kept and for how long." onPress={del} right={<Trash size={20} weight="light" color={colors.navy} />} />
         </Glass>
 

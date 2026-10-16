@@ -1,30 +1,48 @@
+import { useCallback, useState } from 'react';
 import { ScrollView, Text, View, Alert, Share } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Plus, CalendarDots, ShieldCheck, FilePdf, LinkBreak, HandHeart } from 'phosphor-react-native';
 import { Background, Glass, Kicker, BackRow, PrimaryButton, SecondaryButton, SegBar, Seg, Pill, Toggle, T, F } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore } from '../../src/store';
 import { CLIENT, OUT, LOOK, lineOf, suggestionLine, statusTag, perTaskRows, daysUntil, dLabel, learningOf, dayLabel, PSYCH } from '../../src/logic';
 import { toast } from '../../src/toast';
+import { cloudActive, clientRecord, setHomePrompt, type RecordView } from '../../src/backend/cloud';
+import { api } from '../../src/backend/supabase';
 
-/** Psychologist · Client review. Shows only what the client shared; every view is (to be) logged server-side in Phase 4. */
+/** Psychologist · Client review. Shows only what the client shared; in cloud mode every view is logged server-side. */
 export default function ClientReview() {
-  const { client = CLIENT.name } = useLocalSearchParams<{ client?: string }>();
+  const { client = CLIENT.name, id = '' } = useLocalSearchParams<{ client?: string; id?: string }>();
   const first = client.split(' ')[0];
-  const isSam = client === CLIENT.name;
+  const cloud = cloudActive() && !!id;
+  const isSam = !cloud && client === CLIENT.name;
   const allTasks = useStore((s) => s.tasks);
   const allHistory = useStore((s) => s.history);
-  const nextSession = useStore((s) => s.nextSession);
-  const homePrompt = useStore((s) => s.homePrompt);
+  const localSession = useStore((s) => s.nextSession);
+  const localPrompt = useStore((s) => s.homePrompt);
   const set = useStore((s) => s.set);
+  const [rec, setRec] = useState<RecordView | null>(null);
+  const [err, setErr] = useState('');
 
-  const tasks = isSam ? allTasks : [];
-  const history = isSam ? allHistory.filter((h) => h.shared) : [];
+  useFocusEffect(useCallback(() => {
+    if (!cloud) return;
+    clientRecord(id).then((r) => { setRec(r); setErr(''); }).catch((e: Error) => { if (/multi-factor/i.test(e.message)) router.replace('/mfa'); else setErr(e.message); });
+  }, [cloud, id]));
+
+  const tasks = cloud ? rec?.tasks ?? [] : isSam ? allTasks : [];
+  const history = cloud ? rec?.checkins ?? [] : isSam ? allHistory.filter((h) => h.shared) : [];
+  const homePrompt = cloud ? rec?.client.home_prompt ?? true : localPrompt;
+  const nextIso = cloud ? rec?.sessions.find((x) => new Date(x.starts_at).getTime() > Date.now())?.starts_at ?? null : localSession.iso;
+  const togglePrompt = async (v: boolean) => {
+    if (!cloud) { set({ homePrompt: v }); return; }
+    setRec((r) => (r ? { ...r, client: { ...r.client, home_prompt: v } } : r));
+    try { await setHomePrompt(id, v); } catch (e) { toast((e as Error).message); setRec((r) => (r ? { ...r, client: { ...r.client, home_prompt: !v } } : r)); }
+  };
   const done = history.filter((h) => h.outcome !== 'missed').length;
   const segs = [...history].reverse().map((h) => ({ key: h.id, label: h.title + ' · ' + OUT[h.outcome].label, ...LOOK[h.outcome] }));
   const rows = perTaskRows(history, tasks);
-  const when = new Date(nextSession.iso);
-  const whenLabel = dayLabel(when) + ', ' + when.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+  const when = nextIso ? new Date(nextIso) : null;
+  const whenLabel = when ? dayLabel(when) + ', ' + when.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' }).toLowerCase() : '';
 
   const exportNotes = async () => {
     const lines = [
@@ -36,19 +54,23 @@ export default function ClientReview() {
       'Check-ins (' + history.length + '):',
       ...history.map((h) => '• ' + h.label + ' · ' + h.title + ' · ' + OUT[h.outcome].label + ' · ' + learningOf(h)),
     ];
+    if (cloud) api.logAccess(id, 'export_record').catch(() => undefined);
     try { await Share.share({ message: lines.join('\n'), title: 'Righto summary · ' + client }); toast('Summary ready to add to your clinical notes.'); } catch { /* cancelled */ }
   };
-  const endSharing = () => Alert.alert('End sharing with ' + first + '?', first + ' will be asked to confirm. Sharing stops for new entries; your own clinical record is unaffected.',
-    [{ text: 'Cancel', style: 'cancel' }, { text: 'End sharing', style: 'destructive', onPress: () => toast(first + ' will be asked to confirm. Sharing stops for new entries.') }]);
+  const endSharing = () => Alert.alert('End sharing with ' + first + '?', cloud ? 'Sharing stops now: no new homework can be sent and this record closes. Your own clinical record is unaffected.' : first + ' will be asked to confirm. Sharing stops for new entries; your own clinical record is unaffected.',
+    [{ text: 'Cancel', style: 'cancel' }, { text: 'End sharing', style: 'destructive', onPress: async () => {
+      if (!cloud) { toast(first + ' will be asked to confirm. Sharing stops for new entries.'); return; }
+      try { await api.logAccess(id, 'end_link').catch(() => undefined); await api.endLink(rec!.client.link_id); toast('Sharing with ' + first + ' has ended.'); router.back(); } catch (e) { toast((e as Error).message); }
+    } }]);
 
   return (
     <Background>
-      <BackRow label="Clients" right={<PrimaryButton label="Assign" icon={<Plus size={18} weight="light" color={colors.cream} />} style={{ minHeight: 44, paddingHorizontal: 20, marginRight: 8, shadowOpacity: 0, elevation: 0 }} onPress={() => router.push({ pathname: '/psych/assign', params: { client } })} />} />
+      <BackRow label="Clients" right={<PrimaryButton label="Assign" icon={<Plus size={18} weight="light" color={colors.cream} />} style={{ minHeight: 44, paddingHorizontal: 20, marginRight: 8, shadowOpacity: 0, elevation: 0 }} onPress={() => router.push({ pathname: '/psych/assign', params: { client, id } })} />} />
       <ScrollView contentContainerStyle={{ paddingTop: 8, paddingHorizontal: 18, paddingBottom: 24, gap: 12 }}>
         <View style={{ paddingHorizontal: 4 }}>
           <Kicker>Homework</Kicker>
           <Text style={[T.h1, { marginTop: 6, marginBottom: 4 }]}>{client}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><CalendarDots size={16} weight="light" color={colors.slate} /><Text style={T.meta}>Next session {whenLabel} · in {dLabel(daysUntil(nextSession.iso, new Date()))}</Text></View>
+          {nextIso ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><CalendarDots size={16} weight="light" color={colors.slate} /><Text style={T.meta}>Next session {whenLabel} · in {dLabel(daysUntil(nextIso, new Date()))}</Text></View> : null}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}><ShieldCheck size={15} weight="light" color={colors.slateLight} /><Text style={[T.small, { color: colors.slateLight }]}>Your access to this record is logged</Text></View>
         </View>
 
@@ -75,13 +97,14 @@ export default function ClientReview() {
           </View>
         </Glass>
 
-        {isSam && (
+        {err ? <Text style={[T.meta, { paddingHorizontal: 4, fontFamily: F.serifIt }]}>{err}</Text> : null}
+        {(isSam || cloud) && (
           <Glass style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 16 }}>
             <View style={{ flex: 1 }}>
               <Text style={{ fontFamily: F.serif, fontSize: 17, lineHeight: 22, color: colors.navy }}>Ask “What feels doable?” on Home</Text>
               <Text style={[T.meta, { lineHeight: 20 }]}>Lets {first} pick a small, quiet or longer task first. Not scored or shared.</Text>
             </View>
-            <Toggle on={homePrompt} onChange={(v) => set({ homePrompt: v })} label="Ask what feels doable on Home" />
+            <Toggle on={homePrompt} onChange={togglePrompt} label="Ask what feels doable on Home" />
           </Glass>
         )}
 
@@ -90,7 +113,7 @@ export default function ClientReview() {
           <SecondaryButton label="End sharing" size={15} icon={<LinkBreak size={18} weight="light" color={colors.slate} />} onPress={endSharing} style={{ flex: 1, minHeight: 48, paddingHorizontal: 12 }} />
         </View>
 
-        {tasks.length === 0 && <Text style={[T.muted, { paddingHorizontal: 4 }]}>No homework yet. Assign something small to start.</Text>}
+        {tasks.length === 0 && (!cloud || rec) && <Text style={[T.muted, { paddingHorizontal: 4 }]}>No homework yet. Assign something small to start.</Text>}
         {tasks.map((t) => {
           const tag = statusTag(t);
           const last = history.find((h) => h.taskId === t.id);

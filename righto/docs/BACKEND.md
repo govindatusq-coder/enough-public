@@ -22,18 +22,16 @@ Nothing on the server scores, flags or interprets. Counts shown to the psycholog
 ## One-time setup (you)
 
 1. Create a project at https://supabase.com. Region **Sydney (ap-southeast-2)**. Give it a strong database password and keep it in a password manager.
-2. Open **SQL Editor → New query**, paste the whole of `supabase/migrations/20261016120000_righto_core.sql`, run it. It should finish with "Success. No rows returned".
-3. **Authentication → Providers → Email**: leave "Confirm email" on. Under **Authentication → Multi-Factor**, enable TOTP (this is what the psychologist MFA check relies on).
-4. **Project Settings → API**: copy the **Project URL** and the **anon public** key. Never share or commit the **service_role** key.
-5. In the `righto` folder create a file named `.env` (it is git-ignored) with:
-
-   ```
-   EXPO_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-   EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-   ```
-
-   Then restart the dev server with `npx expo start -c`.
-
+2. Open **SQL Editor → New query**, paste the whole of `supabase/migrations/20261016120000_righto_core.sql`, run it, then do the same with
+   `supabase/migrations/20261016130000_righto_home_prompt.sql`. Each should finish with "Success. No rows returned".
+3. **Authentication → Multi-Factor**: enable **TOTP**. Psychologist accounts are refused any client data until the session has passed a second
+   factor, so without this psychologists cannot get past the two-step screen. While testing you can switch the requirement off with
+   `update public.righto_settings set value = 'false'::jsonb where key = 'require_psych_mfa';` (set it back to `'true'` before real use).
+4. **Authentication → Providers → Email**: "Confirm email" on means every new account gets a confirmation email before it can sign in.
+   Turn it off while testing on your own phones if you want to skip that.
+5. **Project Settings → API Keys**: the **publishable** key (`sb_publishable_…`) is built into `src/backend/supabase.ts` together with the project URL.
+   A `.env` with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` overrides them (for a second project). Never share or commit the
+   **secret** / `service_role` key.
 6. Optional, to run the isolation tests against the project (use a **separate test project**, not the one real people will use):
 
    ```
@@ -44,16 +42,25 @@ Nothing on the server scores, flags or interprets. Counts shown to the psycholog
    unshared plans and check-ins stay hidden, that invites are single-use, and that ending a link cuts access, then
    delete the users.
 
-## What the app does with it
+## How the app uses it
 
-Until `.env` exists the app runs exactly as now, on local sample data. Once configured, the next step wires:
+`src/backend/cloud.ts` is the only place the screens talk to the project.
 
-- sign up / sign in (email + password; psychologists then enrol TOTP), the consent record written to `righto_profiles`;
-- the invite flow: psychologist mints a code in Clients, client types it on "Confirm your psychologist", which shows the
-  name, practice and Ahpra number from `righto_preview_invite()` before linking;
-- tasks and check-ins stored in the project instead of the local store (the local encrypted store becomes an offline cache);
-- the psychologist screens reading through `righto_client_record()` and `righto_my_clients()`;
-- a "new homework" push via Expo Push with the private copy only (needs a development build; Expo Go cannot receive remote push).
+- **Accounts.** Splash → Consent → Create account / Sign in (`app/account.tsx`). The role, name and (for psychologists) practice and
+  Ahpra number become the `righto_profiles` / `righto_psychologists` rows; consent version and time are written with them. Psychologists
+  then go to `app/mfa.tsx` to add an authenticator app or enter their code.
+- **Linking.** Clients → Your clients → **Invite a client** mints a code (`righto_create_invite`). The client types it on "Your invite code"
+  (`app/link.tsx`, also reachable from Settings → Privacy & data), sees the name, practice and Ahpra number from `righto_preview_invite`
+  and confirms (`righto_redeem_invite`). Either side can end sharing (`righto_end_link`).
+- **Homework.** Assign homework inserts a `righto_tasks` row. The client's phone pulls tasks, check-ins and the next session on launch,
+  when the app comes to the foreground and every 45 seconds while open, and fires the private local "new homework" alert for rows it has
+  not seen. Plans, goals, status, today's outcome and check-ins are written back as the client makes them (`pushTaskPatch`, `pushCheckIn`).
+  Remote push is still to come (needs a development build; Expo Go cannot receive it), so a task arrives when Righto is next opened.
+- **Psychologist screens** read through `righto_my_clients` and `righto_client_record` (logged server-side; unshared plans and check-ins
+  never leave the database). The "Ask ‘What feels doable?’ on Home" switch is `righto_set_home_prompt`. Export logs `export_record`.
+- **Privacy & data** in cloud mode: Download my data calls `righto_export_me` and includes what is on the phone; Delete my account calls
+  `righto_delete_me`, signs out and wipes the phone.
+- **Local sample mode.** If the project URL is ever removed from the build, every screen falls back to the sample data as before.
 
 ## Still open after this
 

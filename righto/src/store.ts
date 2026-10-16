@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { encryptedStorage } from './storage';
+
+// Lazy to avoid an import cycle (cloud → store). No-ops unless cloud mode is active.
+const cloud = () => require('./backend/cloud') as typeof import('./backend/cloud');
 import { type Task, type CheckIn, type Outcome, type Preference, seedTasks, seedHistory, dayKey, dayLabel } from './logic';
 
 export const STORE_NAME = 'righto.v1';
@@ -57,7 +60,7 @@ export const useStore = create<State>()(
     (set) => ({
       ...base(),
       set: (p) => set(p),
-      patchTask: (id, p) => set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...p } : t)) })),
+      patchTask: (id, p) => { set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...p } : t)) })); cloud().pushTaskPatch(id, p); },
       addTask: (t) => set((s) => ({ tasks: [t, ...s.tasks] })),
       record: (taskId, outcome, helped, next, shared) =>
         set((s) => {
@@ -65,12 +68,14 @@ export const useStore = create<State>()(
           if (!t) return {};
           const now = new Date();
           const entry: CheckIn = { id: 'c' + now.getTime(), taskId, title: t.title, date: now.toISOString(), label: dayLabel(now), outcome, helped: helped.trim(), next: next.trim(), shared };
+          cloud().pushCheckIn(entry);
+          cloud().pushTaskPatch(taskId, { today: outcome, status: t.status === 'new' || t.status === 'later' || t.status === 'finished' ? 'tried' : t.status });
           return {
             history: [entry, ...s.history],
             tasks: s.tasks.map((x) => (x.id === taskId ? { ...x, today: outcome, status: x.status === 'new' || x.status === 'later' || x.status === 'finished' ? 'tried' : x.status } : x)),
           };
         }),
-      tryAgain: (taskId) => set((s) => ({ tasks: s.tasks.map((t) => (t.id === taskId ? { ...t, status: 'tried', today: null } : t)) })),
+      tryAgain: (taskId) => { set((s) => ({ tasks: s.tasks.map((t) => (t.id === taskId ? { ...t, status: 'tried', today: null } : t)) })); cloud().pushTaskPatch(taskId, { status: 'tried', today: null }); },
       rollDay: () =>
         set((s) => {
           const today = dayKey(new Date());

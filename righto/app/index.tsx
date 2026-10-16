@@ -1,16 +1,40 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Background, Logo, F } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore } from '../src/store';
+import { cloudMode, needsMfa, useCloud } from '../src/backend/cloud';
 
-/** Opening screen. Auto-advances after 2.2s or on tap. First launch → Consent (PRIVACY.md §3). */
+const MIN_MS = 2200;
+
+/** Opening screen. Auto-advances after 2.2s (once the account state is known) or on tap. First launch → Consent (PRIVACY.md §3). */
 export default function Splash() {
   const onboarded = useStore((s) => s.onboarded);
+  const consentAt = useStore((s) => s.consentAt);
   const role = useStore((s) => s.role);
-  const next = () => router.replace(!onboarded ? '/consent' : role === 'psych' ? '/psych' : '/home');
-  useEffect(() => { const t = setTimeout(next, 2200); return () => clearTimeout(t); }, [onboarded, role]); // eslint-disable-line react-hooks/exhaustive-deps
+  const ready = useCloud((c) => c.ready);
+  const session = useCloud((c) => c.session);
+  const profile = useCloud((c) => c.profile);
+  const link = useCloud((c) => c.link);
+  const known = !cloudMode() || ready;
+  const mounted = useRef(Date.now());
+
+  const dest = (): Parameters<typeof router.replace>[0] => {
+    if (!cloudMode()) return !onboarded ? '/consent' : role === 'psych' ? '/psych' : '/home';
+    if (!session || !profile) return consentAt ? '/account' : '/consent';
+    if (profile.role === 'psych') return needsMfa() ? '/mfa' : '/psych';
+    if (onboarded) return '/home';
+    return link ? '/applock' : '/link';
+  };
+  const next = () => { if (known) router.replace(dest()); };
+
+  useEffect(() => {
+    if (!known) return;
+    const t = setTimeout(next, Math.max(0, MIN_MS - (Date.now() - mounted.current)));
+    return () => clearTimeout(t);
+  }, [known, onboarded, role, session, profile, link]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <Background splash>
       <Pressable onPress={next} accessibilityRole="button" accessibilityLabel="Open Righto" style={{ flex: 1 }}>

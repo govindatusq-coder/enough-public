@@ -7,6 +7,7 @@ import { Background, Glass, Kicker, PrimaryButton, SecondaryButton, TextButton, 
 import { colors } from '../src/theme';
 import { useStore } from '../src/store';
 import { toast } from '../src/toast';
+import { cloudMode } from '../src/backend/cloud';
 
 /** Step 3 of 4 — app lock, on by default (PRIVACY.md APP 11). */
 export default function AppLock() {
@@ -47,7 +48,7 @@ export default function AppLock() {
     <Background>
       <ScrollView contentContainerStyle={{ paddingTop: top + 19, paddingHorizontal: 22, paddingBottom: 16, gap: 22 }}>
         <View>
-          <Kicker>Step 3 of 4</Kicker>
+          <Kicker>{cloudMode() ? 'Step 4 of 5' : 'Step 3 of 4'}</Kicker>
           <Text style={[T.h1, { marginVertical: 8 }]}>Keep Righto private</Text>
           <Text style={T.muted}>Lock the app so no one else who picks up your phone can read your homework or notes.</Text>
         </View>

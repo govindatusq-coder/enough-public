@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Background, Kicker, PrimaryButton, TextButton, BottomBar, CheckRow, T, F, useTop } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore } from '../src/store';
+import { cloudMode } from '../src/backend/cloud';
 import { requestPermission } from '../src/notifications';
 
 /** Small lock-screen notification preview, used here and in Privacy & data. */
@@ -40,7 +41,7 @@ export default function Notifs() {
     <Background>
       <ScrollView contentContainerStyle={{ paddingTop: top + 19, paddingHorizontal: 22, paddingBottom: 16, gap: 18 }}>
         <View>
-          <Kicker>Step 4 of 4</Kicker>
+          <Kicker>{cloudMode() ? 'Step 5 of 5' : 'Step 4 of 4'}</Kicker>
           <Text style={[T.h1, { marginVertical: 8 }]}>Gentle reminders</Text>
           <Text style={T.muted}>We’ll remind you at the times you choose. On your lock screen they won’t say what the task is.</Text>
         </View>

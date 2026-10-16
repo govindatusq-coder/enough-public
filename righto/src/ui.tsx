@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, ImageBackground, StyleSheet, TextInput, Switch, type ViewStyle, type TextStyle, Linking, Platform } from 'react-native';
+import { View, Text, Pressable, ImageBackground, StyleSheet, TextInput, Switch, type ViewStyle, type TextStyle, type TextInputProps, Linking, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -7,6 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lifebuoy, Check, CaretLeft, Coffee, ForkKnife, Moon, X, House, BookOpen, Users, type IconProps } from 'phosphor-react-native';
 import { colors } from './theme';
 import type { Outcome, Look, RoutineId } from './logic';
+import { useStore } from './store';
+
+/** Where the righto logo and a fallback Back go: the psychologist's Clients list or the client's Home. */
+export const homeRoute = () => (useStore.getState().role === 'psych' ? '/psych' : '/home') as '/psych' | '/home';
 
 export const F = { serif: 'Newsreader_400Regular', serifMed: 'Newsreader_500Medium', serifIt: 'Newsreader_400Regular_Italic', sans: 'DMSans_500Medium', script: 'MsMadi_400Regular' };
 export const bgImage = require('../assets/background-coast.webp');
@@ -137,7 +141,7 @@ export function Chip({ label, selected, onPress, style }: { label: string; selec
 /** The righto wordmark as a button: always returns to the start of Home (Home resets its picker on focus). */
 export function HomeLogo({ size = 26, style }: { size?: number; style?: ViewStyle }) {
   return (
-    <Pressable onPress={() => router.dismissTo('/home')} accessibilityRole="button" accessibilityLabel="Righto. Go to Home" hitSlop={10}
+    <Pressable onPress={() => router.dismissTo(homeRoute())} accessibilityRole="button" accessibilityLabel="Righto. Go to Home" hitSlop={10}
       style={[{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 6 }, style]}>
       <Logo size={size} />
     </Pressable>
@@ -148,7 +152,7 @@ export function BackRow({ label = 'Back', onPress, right, style, logo = true }: 
   const top = useTop();
   return (
     <View style={[{ paddingTop: top + 5, paddingHorizontal: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, style]}>
-      <Pressable onPress={onPress ?? (() => (router.canGoBack() ? router.back() : router.dismissTo('/home')))} accessibilityRole="button" accessibilityLabel={label === 'Back' ? 'Back' : 'Back to ' + label}
+      <Pressable onPress={onPress ?? (() => (router.canGoBack() ? router.back() : router.dismissTo(homeRoute())))} accessibilityRole="button" accessibilityLabel={label === 'Back' ? 'Back' : 'Back to ' + label}
         style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 44, paddingHorizontal: 10, borderRadius: 30, backgroundColor: pressed ? '#fbf8f160' : 'transparent' })}>
         <CaretLeft size={18} weight="light" color={colors.navy} />
         <Text style={{ fontFamily: F.serif, fontSize: 16, color: colors.navy }}>{label}</Text>
@@ -254,12 +258,12 @@ export function TabBar({ active }: { active: 'home' | 'journal' | 'clients' }) {
   );
 }
 
-export function Field({ label, value, onChangeText, placeholder, multiline, hint, optional, labelStyle }: { label: string; value: string; onChangeText: (v: string) => void; placeholder?: string; multiline?: boolean; hint?: string; optional?: boolean; labelStyle?: TextStyle }) {
+export function Field({ label, value, onChangeText, placeholder, multiline, hint, optional, labelStyle, inputProps }: { label: string; value: string; onChangeText: (v: string) => void; placeholder?: string; multiline?: boolean; hint?: string; optional?: boolean; labelStyle?: TextStyle; inputProps?: TextInputProps }) {
   return (
     <View style={{ gap: 8 }}>
       {label ? <Text style={[T.body, { fontSize: 17, lineHeight: 22 }, labelStyle]}>{label}{optional ? <Text style={{ fontFamily: F.serif, color: colors.slateLight }}>  Optional</Text> : null}</Text> : null}
       {hint ? <Text style={[T.meta, { color: colors.slateLight, marginTop: -4 }]}>{hint}</Text> : null}
-      <TextInput value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={colors.placeholder} multiline={multiline} accessibilityLabel={label}
+      <TextInput value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={colors.placeholder} multiline={multiline} accessibilityLabel={label} {...inputProps}
         style={{ minHeight: multiline ? 84 : 46, paddingHorizontal: 14, paddingVertical: 12, borderRadius: 14, borderWidth: 1, borderColor: '#ffffffc4', backgroundColor: '#ffffff4d', fontFamily: F.serif, fontSize: 16, lineHeight: 22, color: colors.navy, textAlignVertical: multiline ? 'top' : 'center' }} />
     </View>
   );

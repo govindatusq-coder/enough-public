@@ -8,13 +8,16 @@ import { useStore } from '../../src/store';
 import { type Tag, type RoutineId, type Suggestion, type GoalAnswers, ROUTINES, MINS, GOALQ, emptyGoal, mkTask, uniq, lc, CLIENT } from '../../src/logic';
 import { notifyNewTask } from '../../src/notifications';
 import { toast } from '../../src/toast';
+import { cloudActive, assignTask } from '../../src/backend/cloud';
 
 type Start = 'client' | 'commitment' | 'goal';
 
 /** Assign homework. The clinician authors everything; Righto shows their words as written and never generates advice (INTENDED_PURPOSE.md rule 1). */
 export default function Assign() {
-  const { client = CLIENT.name } = useLocalSearchParams<{ client?: string }>();
+  const { client = CLIENT.name, id = '' } = useLocalSearchParams<{ client?: string; id?: string }>();
   const first = client.split(' ')[0];
+  const cloud = cloudActive() && !!id;
+  const [busy, setBusy] = useState(false);
   const addTask = useStore((s) => s.addTask);
   const notifDetail = useStore((s) => s.notifDetail);
   const [title, setTitle] = useState('');
@@ -31,6 +34,15 @@ export default function Assign() {
   const empty = !title.trim() || !why.trim();
 
   const send = async () => {
+    if (cloud) {
+      setBusy(true);
+      try {
+        await assignTask(id, { title, detail, why, mins, needs, tags, start, routine, where, how, goal });
+        toast('Sent. ' + first + ' will see it the next time Righto opens.');
+        router.back();
+      } catch (e) { toast((e as Error).message); } finally { setBusy(false); }
+      return;
+    }
     let suggestion: Suggestion | null = null;
     if (start === 'commitment' && where.trim() && how.trim()) suggestion = { kind: 'commitment', plan: { routine, where: where.trim(), how: how.trim(), prep: '' } };
     if (start === 'goal' && GOALQ.some((f) => goal[f.k].trim())) suggestion = { kind: 'goal', goal: { ...goal } };
@@ -104,7 +116,7 @@ export default function Assign() {
           </View>
         </ScrollView>
         <BottomBar>
-          <PrimaryButton label={'Send to ' + first} iconRight={<PaperPlaneTilt size={18} weight="light" color={colors.cream} />} disabled={empty} onPress={send} />
+          <PrimaryButton label={busy ? 'Sending…' : 'Send to ' + first} iconRight={<PaperPlaneTilt size={18} weight="light" color={colors.cream} />} disabled={empty || busy} onPress={send} />
         </BottomBar>
       </KeyboardAvoidingView>
     </Background>

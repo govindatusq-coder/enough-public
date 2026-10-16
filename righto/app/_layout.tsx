@@ -16,6 +16,7 @@ import { ToastHost, toast } from '../src/toast';
 import { useStore } from '../src/store';
 import { ACTION, setupNotifications } from '../src/notifications';
 import { colors } from '../src/theme';
+import { bootstrapCloud, cloudActive, isPsych, pullClient, refreshLink } from '../src/backend/cloud';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -39,6 +40,7 @@ export default function Layout() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <DayRoller />
+      <CloudSync />
       <NotificationResponses />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream }, animation: 'fade', animationDuration: 380, gestureEnabled: true, fullScreenGestureEnabled: true }}>
         <Stack.Screen name="index" options={{ animation: 'fade' }} />
@@ -53,6 +55,18 @@ export default function Layout() {
       <LockGate />
     </SafeAreaProvider>
   );
+}
+
+/** Restores the account on launch and keeps a client's homework in step with the project while the app is open. */
+function CloudSync() {
+  useEffect(() => {
+    bootstrapCloud().catch(() => undefined);
+    const sync = () => { if (cloudActive() && !isPsych()) { pullClient().catch(() => undefined); refreshLink().catch(() => undefined); } };
+    const sub = AppState.addEventListener('change', (st) => { if (st === 'active') sync(); });
+    const iv = setInterval(() => { if (AppState.currentState === 'active') sync(); }, 45000);
+    return () => { sub.remove(); clearInterval(iv); };
+  }, []);
+  return null;
 }
 
 /** Clears each task's "today" outcome at local midnight (README: reset at local midnight). */

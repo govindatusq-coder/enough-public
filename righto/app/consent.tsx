@@ -6,6 +6,7 @@ import { Background, Glass, Kicker, Logo, PrimaryButton, TextButton, BottomBar, 
 import { colors } from '../src/theme';
 import { useStore, CONSENT_VERSION } from '../src/store';
 import { toast } from '../src/toast';
+import { cloudMode, cloudActive, updateConsent } from '../src/backend/cloud';
 
 const rows = [
   [LockSimple, 'Locked with Face ID or a passcode.'],
@@ -26,7 +27,7 @@ export default function Consent() {
       <ScrollView contentContainerStyle={{ paddingTop: top + 19, paddingHorizontal: 22, paddingBottom: 16, gap: 16 }} keyboardShouldPersistTaps="handled">
         <Logo size={34} />
         <View>
-          <Kicker>Step 1 of 4 · Before you start</Kicker>
+          <Kicker>Step 1 of {cloudMode() ? 5 : 4} · Before you start</Kicker>
           <Text style={[T.h1, { marginVertical: 8 }]}>Your privacy</Text>
           <Text style={T.muted}>Righto keeps your homework, notes and check-ins private. Only you, and the psychologist you link with, can see what you choose to share.</Text>
         </View>
@@ -50,7 +51,7 @@ export default function Consent() {
       </ScrollView>
       <BottomBar style={{ paddingTop: 10, gap: 4, alignItems: 'center' }}>
         <PrimaryButton label="Agree and continue" disabled={!ok} style={{ alignSelf: 'stretch' }}
-          onPress={() => { set({ consentAt: new Date().toISOString(), consentVersion: CONSENT_VERSION }); router.push('/link'); }} />
+          onPress={() => { set({ consentAt: new Date().toISOString(), consentVersion: CONSENT_VERSION }); if (cloudActive()) updateConsent().catch(() => undefined); router.push(cloudMode() ? '/account' : '/link'); }} />
         <TextButton label="Not now" onPress={() => { toast('Nothing has been saved. Come back when you’re ready.'); router.replace('/'); }} />
       </BottomBar>
     </Background>
