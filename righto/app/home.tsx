@@ -47,7 +47,7 @@ export default function Home() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Text style={{ fontFamily: F.serif, fontSize: 15, color: colors.slate }}>{DAYS[(now.getDay() + 6) % 7]}</Text>
           <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Settings" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: -12 }}>
-            <GearSix size={20} weight="light" color={colors.slate} />
+            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#fbf8f1a0', borderWidth: 1, borderColor: '#0F274633', alignItems: 'center', justifyContent: 'center' }}><GearSix size={20} weight="light" color={colors.navy} /></View>
           </Pressable>
         </View>
       </View>

@@ -25,7 +25,7 @@ export default function Clients() {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
           <HomeLogo size={34} style={{ marginLeft: -6 }} />
           <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Settings" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: -12 }}>
-            <GearSix size={20} weight="light" color={colors.slate} />
+            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#fbf8f1a0', borderWidth: 1, borderColor: '#0F274633', alignItems: 'center', justifyContent: 'center' }}><GearSix size={20} weight="light" color={colors.navy} /></View>
           </Pressable>
         </View>
         <Kicker>{PSYCH.name}</Kicker>
