@@ -56,7 +56,7 @@ src/notifications.ts  local reminder scheduling + categories
 src/time-picker.tsx   "pick your own time" pill (compact picker on iOS, clock dialog on Android)
 src/utils/time.ts     to12 / to24 / Date converters
 tests/          node --test
-docs/handoff/   DESIGN_SPEC.md, INTENDED_PURPOSE.md, PRIVACY.md, COMPLIANCE_REVIEW.md, PROMPT_update_1.md, PROMPT_update_2.md, reference/
+docs/handoff/   DESIGN_SPEC.md, INTENDED_PURPOSE.md, PRIVACY.md, COMPLIANCE_REVIEW.md, PROMPT_update_1.md, PROMPT_update_2.md, PROMPT_SYNC_ALL.md, START_HERE.md, reference/
 ```
 
 ## Guardrails followed (INTENDED_PURPOSE.md)
