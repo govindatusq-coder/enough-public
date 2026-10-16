@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Supabase keys for this phone build (see docs/BACKEND.md)
+.env
+.env.*
+!.env.example

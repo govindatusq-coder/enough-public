@@ -65,8 +65,14 @@ No scoring, no mood storage, no generated advice. The Home picker is a sort over
 clinician-tagged quiet, longest, next) and is never stored, shown to the clinician or charted. Progress is counts of
 records only. Crisis information is static. Free-text fields carry the "not monitored in real time" note.
 
+## Backend
+
+The Supabase schema (tables, row-level security, logged psychologist reads, single-use invites, MFA requirement),
+the app-side client and the cross-tenant isolation tests are in place; see [docs/BACKEND.md](docs/BACKEND.md) for the
+one-time project setup. Without a `.env` the app keeps running on local sample data.
+
 ## Not in this phase
 
-Backend (Supabase, Sydney; RLS; audit log; single-use invites; psychologist MFA), remote push, real accounts,
+Wiring the screens to the backend (sign-in, invite entry, cloud sync), remote push, real accounts,
 EAS builds and store listings — see Prompts 4 and 5 in the handoff's START_HERE. Sample data, dates and the
 psychologist/client names are mocks. The privacy policy and collection notice texts are drafts for legal review.
