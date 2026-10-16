@@ -45,7 +45,7 @@ export default function Clients() {
                   <Text style={T.meta}>{c.line}</Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <View style={{ flex: 1, height: 5, borderRadius: 3, backgroundColor: '#0f27461a', overflow: 'hidden' }}>
-                      <View style={{ width: pct + '%', height: '100%', borderRadius: 3, backgroundColor: colors.navy }} />
+                      <View style={{ width: `${pct}%` as `${number}%`, height: '100%', borderRadius: 3, backgroundColor: colors.navy }} />
                     </View>
                     <Text style={T.small}>{c.of ? c.done + ' of ' + c.of + ' done' : 'No check-ins yet'}</Text>
                   </View>
