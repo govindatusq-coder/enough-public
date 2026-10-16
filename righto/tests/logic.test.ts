@@ -106,3 +106,19 @@ test('reminder time: own time wins over the routine time', async () => {
   assert.equal(formatTime(new Date(2026, 9, 16, 15, 5)), '3:05 pm');
   assert.ok(seedTasks().some((t) => t.status === 'finished' && t.title === 'Notice three things you can hear'));
 });
+
+test('goal questions offer three task-based answers each', async () => {
+  const { goalOptions, seedTasks } = await import('../src/logic.ts');
+  const [t2, t1, t0] = seedTasks();
+  const o = goalOptions(t1, 'Tue 20 Oct');
+  for (const k of ['s', 'm', 'a', 'r', 't'] as const) {
+    assert.equal(o[k].length, 3, k);
+    assert.equal(new Set(o[k]).size, 3, k + ' unique');
+  }
+  assert.ok(o.s[0].startsWith('Walk for 10 minutes, around the block near work'));
+  assert.ok(o.a[0].includes('10 minutes'));
+  assert.ok(o.a[1].includes('comfortable shoes'));
+  assert.ok(o.t[0].includes('Tue 20 Oct'));
+  assert.equal(goalOptions(t0, 'Tue 20 Oct').s[0], 'Five slow breaths, sitting on my bed'); // clinician suggestion first... when present
+  assert.ok(goalOptions(t2, 'Tue 20 Oct').a[1].startsWith('I already have your phone'));
+});

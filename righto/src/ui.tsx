@@ -257,7 +257,7 @@ export function TabBar({ active }: { active: 'home' | 'journal' | 'clients' }) {
 export function Field({ label, value, onChangeText, placeholder, multiline, hint, optional, labelStyle }: { label: string; value: string; onChangeText: (v: string) => void; placeholder?: string; multiline?: boolean; hint?: string; optional?: boolean; labelStyle?: TextStyle }) {
   return (
     <View style={{ gap: 8 }}>
-      <Text style={[T.body, { fontSize: 17, lineHeight: 22 }, labelStyle]}>{label}{optional ? <Text style={{ fontFamily: F.serif, color: colors.slateLight }}>  Optional</Text> : null}</Text>
+      {label ? <Text style={[T.body, { fontSize: 17, lineHeight: 22 }, labelStyle]}>{label}{optional ? <Text style={{ fontFamily: F.serif, color: colors.slateLight }}>  Optional</Text> : null}</Text> : null}
       {hint ? <Text style={[T.meta, { color: colors.slateLight, marginTop: -4 }]}>{hint}</Text> : null}
       <TextInput value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={colors.placeholder} multiline={multiline} accessibilityLabel={label}
         style={{ minHeight: multiline ? 84 : 46, paddingHorizontal: 14, paddingVertical: 12, borderRadius: 14, borderWidth: 1, borderColor: '#ffffffc4', backgroundColor: '#ffffff4d', fontFamily: F.serif, fontSize: 16, lineHeight: 22, color: colors.navy, textAlignVertical: multiline ? 'top' : 'center' }} />

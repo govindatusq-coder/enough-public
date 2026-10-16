@@ -121,6 +121,23 @@ export const defaultGoal = (t: Task): Goal => {
   return { ...sg, rem: { time: '8:30 pm', days: weekdays() } };
 };
 
+/** Three ready-made answers per goal question, built from the clinician's task (never generated advice).
+ *  The client can always write their own instead. */
+export const goalOptions = (t: Task, sessionLabel: string): Record<keyof GoalAnswers, string[]> => {
+  const sg: GoalAnswers | null = t.goal ? t.goal : t.suggestion && t.suggestion.kind === 'goal' ? t.suggestion.goal : null; // the client's own answers, else the clinician's suggestion, come first
+  const cap = (s: string) => s.replace(/^./, (c) => c.toUpperCase());
+  const combos: string[] = [];
+  for (const how of t.howOpts) for (const where of t.whereOpts) combos.push(cap(how) + ', ' + where);
+  const pick = (first: string | undefined, rest: string[]) => uniq([first || '', ...rest]).slice(0, 3);
+  return {
+    s: pick(sg?.s, combos.length ? combos : [cap(lc(t.title))]),
+    m: pick(sg?.m, ['I’ve set a timer for ' + t.mins + ' minutes and finished', 'I’ve done it once, start to end', 'I’ve written down that I did it']),
+    a: pick(sg?.a, ['It only takes about ' + t.mins + ' minutes', t.needs && t.needs !== 'Nothing' ? 'I already have ' + lc(t.needs) : 'I don’t need anything for it', 'I can fit it around something I already do']),
+    r: pick(sg?.r, ['We talked about it in session and it made sense', 'I want to see whether it makes a difference', 'I want to feel more in charge of my day']),
+    t: pick(sg?.t, ['Every day until my next session on ' + sessionLabel, 'Weekdays until my next session on ' + sessionLabel, 'Three times this week']),
+  };
+};
+
 // ---- Dates -------------------------------------------------------------------------------------
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

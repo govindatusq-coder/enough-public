@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, Text, View, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Target, ClockCountdown } from 'phosphor-react-native';
-import { Background, Glass, Kicker, BackRow, Field, PrimaryButton, BottomBar, NotMonitored, T, F } from '../../src/ui';
+import { Background, Glass, Kicker, BackRow, Field, Chip, PrimaryButton, BottomBar, NotMonitored, T, F } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
-import { type Goal, GOALQ, TIMES, DAYS, allDays, daysLine, defaultGoal, PSYCH } from '../../src/logic';
+import { type Goal, type GoalAnswers, GOALQ, TIMES, DAYS, allDays, daysLine, defaultGoal, goalOptions, dayLabel, PSYCH } from '../../src/logic';
 import { scheduleGoal } from '../../src/notifications';
 import { TimePill } from '../../src/time-picker';
 import { toast } from '../../src/toast';
@@ -16,13 +16,16 @@ export default function GoalScreen() {
   const task = useTask(id);
   const notifDetail = useStore((s) => s.notifDetail);
   const patchTask = useStore((s) => s.patchTask);
+  const nextSession = useStore((s) => s.nextSession);
+  const [own, setOwn] = useState<Partial<Record<keyof GoalAnswers, boolean>>>({});
   const [g, setG] = useState<Goal | null>(() => {
     if (!task) return null;
     const d = defaultGoal(task);
     if (daily) d.rem.days = allDays();
     return d;
   });
-  if (!task || !g) return <Background><BackRow /></Background>;
+  const options = useMemo(() => (task ? goalOptions(task, dayLabel(new Date(nextSession.iso))) : null), [task, nextSession.iso]);
+  if (!task || !g || !options) return <Background><BackRow /></Background>;
 
   const incomplete = GOALQ.some((f) => !(g[f.k] || '').trim()) || !g.rem.days.some(Boolean);
   const suggested = task.suggestion?.kind === 'goal';
@@ -50,7 +53,21 @@ export default function GoalScreen() {
             <Text style={T.muted}>{suggested ? PSYCH.short + '’s suggestions from your session are filled in. Change anything that doesn’t fit.' : 'A few words for each is enough.'}</Text>
           </View>
           <Glass style={{ padding: 18, gap: 16 }}>
-            {GOALQ.map((f) => <Field key={f.k} label={f.q} placeholder={f.ph} value={g[f.k]} onChangeText={(v) => setG({ ...g, [f.k]: v })} />)}
+            {GOALQ.map((f) => {
+              const opts = options[f.k];
+              const value = g[f.k];
+              const isOwn = own[f.k] || (!!value && !opts.includes(value));
+              return (
+                <View key={f.k} style={{ gap: 8 }}>
+                  <Text style={[T.body, { fontSize: 17, lineHeight: 22 }]}>{f.q}</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    {opts.map((o) => <Chip key={o} label={o} selected={!isOwn && value === o} onPress={() => { setOwn({ ...own, [f.k]: false }); setG({ ...g, [f.k]: o }); }} />)}
+                    <Chip label="Something else…" selected={isOwn} onPress={() => { setOwn({ ...own, [f.k]: true }); if (opts.includes(value)) setG({ ...g, [f.k]: '' }); }} />
+                  </View>
+                  {isOwn && <Field label="" placeholder={f.ph} value={value} onChangeText={(v) => setG({ ...g, [f.k]: v })} />}
+                </View>
+              );
+            })}
             <NotMonitored Icon={ClockCountdown} />
           </Glass>
           <Glass style={{ padding: 18, gap: 12 }}>
