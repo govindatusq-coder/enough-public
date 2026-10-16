@@ -64,3 +64,10 @@ Vercel can run the normal pnpm build command. vercel.json selects Next.js and Sy
 
 ## Privacy
 Keep profile exports, authentication cookies, native signing files, .env.local, .vercel and credentials out of uploaded source. The saved package excludes them. No public deployment has been created yet.
+
+## Righto (Expo app in `righto/`)
+
+`righto/` holds a separate React Native + Expo application: the Righto homework companion for psychologists and their
+clients, built from the design handoff in `righto/docs/handoff/`. It runs in Expo Go with local sample data and has no
+backend yet. It is excluded from this Next.js project's TypeScript build. See [righto/README.md](righto/README.md) for
+how to run it on a phone (`cd righto && npm install && npx expo start`).
