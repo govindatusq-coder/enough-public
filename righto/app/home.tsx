@@ -45,10 +45,10 @@ export default function Home() {
       <View style={{ paddingTop: top + 11, paddingHorizontal: 26, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Pressable onPress={restart} accessibilityRole="button" accessibilityLabel="Righto. Back to the start of Home" hitSlop={8}><Logo size={30} /></Pressable>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Text style={{ fontFamily: F.serif, fontSize: 15, color: colors.slate }}>{DAYS[(now.getDay() + 6) % 7]}</Text>
-          <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Settings" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: -12 }}>
+          <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Settings" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
             <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#fbf8f1a0', borderWidth: 1, borderColor: '#0F274633', alignItems: 'center', justifyContent: 'center' }}><GearSix size={20} weight="light" color={colors.navy} /></View>
           </Pressable>
+          <Text style={{ fontFamily: F.serif, fontSize: 15, color: colors.slate, marginLeft: 4 }}>{DAYS[(now.getDay() + 6) % 7]}</Text>
         </View>
       </View>
       <ScrollView ref={scroll} contentContainerStyle={{ flexGrow: 1, paddingTop: 36, paddingHorizontal: 26, paddingBottom: 120, gap: 30 }}>
