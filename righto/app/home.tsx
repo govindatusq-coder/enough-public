@@ -84,9 +84,9 @@ export default function Home() {
               <Text style={[T.h2, { lineHeight: 32 }]}>{stepT.title}</Text>
               <Text style={T.italic}>{subOf(stepT)}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                <PrimaryButton style={{ flex: 1, minHeight: 52, shadowOpacity: 0, elevation: 0 }} icon={<Play size={18} weight="light" color={colors.cream} />}
+                <PrimaryButton style={{ flex: 1, minHeight: 52, paddingHorizontal: 10, shadowOpacity: 0, elevation: 0 }} icon={<Play size={18} weight="light" color={colors.cream} />}
                   label={stepT.status === 'new' ? 'Have a look' : 'Start'} onPress={() => openTask(stepT)} />
-                <TextButton label="Something else" onPress={() => (homePrompt ? setPref(null) : skip(stepT.id, live.map((x) => x.id)))} style={{ minHeight: 52, paddingHorizontal: 18 }} />
+                <TextButton label="Something else" onPress={() => (homePrompt ? setPref(null) : skip(stepT.id, live.map((x) => x.id)))} style={{ minHeight: 52, paddingHorizontal: 12 }} />
               </View>
             </Glass>
           )}

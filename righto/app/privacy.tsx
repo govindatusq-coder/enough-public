@@ -29,7 +29,8 @@ function Row({ title, sub, right, onPress, first }: { title: string; sub?: strin
 export default function Privacy() {
   const s = useStore();
   const sample = s.tasks.find((t) => t.status === 'planned' && t.kind === 'commitment') || s.tasks[0];
-  const preview = sample ? notifCopy('commitment', sample, s.notifDetail) : { title: 'Righto', body: '' };
+  const copy = sample ? notifCopy('commitment', sample, s.notifDetail) : { title: 'Righto', body: 'Time for your routine.' };
+  const preview = s.notifDetail ? copy : { title: copy.body, body: 'Details hidden until you unlock' };
 
   const setDetail = async (v: boolean) => {
     s.set({ notifDetail: v });

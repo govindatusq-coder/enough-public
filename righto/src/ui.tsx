@@ -128,8 +128,8 @@ export function TextButton({ label, onPress, color = colors.slate, style, italic
 export function Chip({ label, selected, onPress, style }: { label: string; selected?: boolean; onPress?: () => void; style?: ViewStyle }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityState={{ selected: !!selected }}
-      style={[{ minHeight: 44, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 8, justifyContent: 'center', backgroundColor: selected ? colors.navy : '#fbf8f170', borderWidth: 1, borderColor: selected ? colors.navy : '#0F274633' }, style]}>
-      <Text style={{ fontFamily: F.serif, fontSize: 16, lineHeight: 20, color: selected ? colors.cream : colors.navy }}>{label}</Text>
+      style={[{ minHeight: 44, maxWidth: '100%', flexShrink: 1, borderRadius: 24, paddingHorizontal: 16, paddingVertical: 8, justifyContent: 'center', backgroundColor: selected ? colors.navy : '#fbf8f170', borderWidth: 1, borderColor: selected ? colors.navy : '#0F274633' }, style]}>
+      <Text style={{ fontFamily: F.serif, fontSize: 16, lineHeight: 20, color: selected ? colors.cream : colors.navy, flexShrink: 1 }}>{label}</Text>
     </Pressable>
   );
 }
@@ -262,7 +262,7 @@ export function CheckRow({ on, onPress, label, size = 22 }: { on: boolean; onPre
 }
 
 export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
-  return <Switch value={on} onValueChange={onChange} accessibilityLabel={label} trackColor={{ true: colors.navy, false: '#0f274633' }} thumbColor={Platform.OS === 'android' ? colors.cream : undefined} ios_backgroundColor="#0f274633" />;
+  return <Switch value={on} onValueChange={onChange} accessibilityLabel={label} trackColor={{ true: colors.navy, false: '#0f274633' }} thumbColor={colors.cream} ios_backgroundColor="#0f274633" />;
 }
 
 export function SupportLink({ style }: { style?: ViewStyle }) {
