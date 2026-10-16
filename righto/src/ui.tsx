@@ -148,7 +148,7 @@ export function BackRow({ label = 'Back', onPress, right, style, logo = true }: 
   const top = useTop();
   return (
     <View style={[{ paddingTop: top + 5, paddingHorizontal: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, style]}>
-      <Pressable onPress={onPress ?? (() => router.back())} accessibilityRole="button" accessibilityLabel={'Back to ' + label}
+      <Pressable onPress={onPress ?? (() => (router.canGoBack() ? router.back() : router.dismissTo('/home')))} accessibilityRole="button" accessibilityLabel={label === 'Back' ? 'Back' : 'Back to ' + label}
         style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 2, minHeight: 44, paddingHorizontal: 10, borderRadius: 30, backgroundColor: pressed ? '#fbf8f160' : 'transparent' })}>
         <CaretLeft size={18} weight="light" color={colors.navy} />
         <Text style={{ fontFamily: F.serif, fontSize: 16, color: colors.navy }}>{label}</Text>

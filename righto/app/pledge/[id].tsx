@@ -17,7 +17,7 @@ export default function Pledge() {
   const notifDetail = useStore((s) => s.notifDetail);
   const patchTask = useStore((s) => s.patchTask);
   const [share, setShare] = useState(shareDefault);
-  if (!task) return <Background><BackRow label="Home" onPress={() => router.dismissTo('/home')} /></Background>;
+  if (!task) return <Background><BackRow /></Background>;
 
   const plan: Plan = { routine: q.routine, how: q.how, where: q.where, prep: q.prep, time: q.time || null };
   const r = routineOf(plan.routine);
@@ -35,7 +35,7 @@ export default function Pledge() {
 
   return (
     <Background>
-      <BackRow label="Home" onPress={() => router.dismissTo('/home')} />
+      <BackRow />
       <ScrollView contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 24, gap: 16 }}>
         <View style={{ paddingHorizontal: 4 }}>
           <Kicker>Commitment</Kicker>

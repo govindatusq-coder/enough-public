@@ -27,7 +27,7 @@ export default function NewTask() {
   const scroll = useRef<ScrollView>(null);
   const toggleLater = () => setOpen((o) => { if (!o) setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 60); return !o; });
   const closeLater = () => { setOpen(false); setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 60); };
-  if (!task) return <Background><BackRow label="Home" onPress={() => router.dismissTo('/home')} /></Background>;
+  if (!task) return <Background><BackRow /></Background>;
 
   const sg = task.suggestion;
   const p = { id: task.id, ...(daily ? { daily } : {}) };
@@ -56,7 +56,7 @@ export default function NewTask() {
 
   return (
     <Background>
-      <BackRow label="Home" onPress={() => router.dismissTo('/home')} right={<InfoButtons taskId={task.id} />} />
+      <BackRow onPress={open ? closeLater : undefined} right={<InfoButtons taskId={task.id} />} />
       <ScrollView ref={scroll} contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 24, gap: 14 }}>
         <View style={{ paddingHorizontal: 4, gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>

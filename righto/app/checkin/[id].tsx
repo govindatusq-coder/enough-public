@@ -24,7 +24,7 @@ export default function CheckIn() {
   const [helped, setHelped] = useState('');
   const [next, setNext] = useState('');
   const [share, setShare] = useState(shareDefault);
-  if (!task) return <Background><BackRow label="Home" onPress={() => router.dismissTo('/home')} /></Background>;
+  if (!task) return <Background><BackRow /></Background>;
 
   const save = () => {
     if (!outcome) return;
@@ -35,7 +35,7 @@ export default function CheckIn() {
   return (
     <Background>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <BackRow label="Home" onPress={() => router.dismissTo('/home')} />
+        <BackRow />
         <ScrollView contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 24, gap: 16 }} keyboardShouldPersistTaps="handled">
           <View style={{ paddingHorizontal: 4 }}>
             <Kicker>{task.title}</Kicker>

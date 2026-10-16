@@ -22,7 +22,7 @@ export default function GoalScreen() {
     if (daily) d.rem.days = allDays();
     return d;
   });
-  if (!task || !g) return <Background><BackRow label="Home" onPress={() => router.dismissTo('/home')} /></Background>;
+  if (!task || !g) return <Background><BackRow /></Background>;
 
   const incomplete = GOALQ.some((f) => !(g[f.k] || '').trim()) || !g.rem.days.some(Boolean);
   const suggested = task.suggestion?.kind === 'goal';
@@ -42,7 +42,7 @@ export default function GoalScreen() {
   return (
     <Background>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <BackRow label="Home" onPress={() => router.dismissTo('/home')} />
+        <BackRow />
         <ScrollView contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 24, gap: 16 }} keyboardShouldPersistTaps="handled">
           <View style={{ paddingHorizontal: 4 }}>
             <Kicker>Set a goal</Kicker>

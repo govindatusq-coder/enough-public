@@ -60,7 +60,7 @@ export default function Commit() {
   const sand = { color: colors.sand };
   return (
     <Background>
-      <BackRow label="Home" onPress={() => router.dismissTo('/home')} right={<Kicker style={{ paddingRight: 14 }}>When · Where · How</Kicker>} />
+      <BackRow right={<Kicker style={{ paddingRight: 14 }}>When · Where · How</Kicker>} />
       <View style={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 10 }}>
         <NavyCard variant="soft" style={{ paddingVertical: 16 }}>
           <Kicker style={{ color: colors.sand }}>Your plan{willBeDaily ? ' · every day' : ''}</Kicker>
