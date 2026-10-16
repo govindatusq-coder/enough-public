@@ -1,7 +1,7 @@
 import { ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SunHorizon, ArrowClockwise, Pause } from 'phosphor-react-native';
-import { Background, NavyCard, Kicker, PrimaryButton, SecondaryButton, TextButton, BottomBar, T, F, useTop } from '../../src/ui';
+import { Background, NavyCard, Kicker, PrimaryButton, SecondaryButton, TextButton, BottomBar, HomeLogo, T, F, useTop } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
 import { type Outcome, lineOf, routineOf, allDays } from '../../src/logic';
@@ -55,7 +55,9 @@ export default function Again() {
 
   return (
     <Background>
-      <View style={{ paddingTop: top + 5, paddingHorizontal: 10, flexDirection: 'row', justifyContent: 'flex-end' }}>
+      <View style={{ paddingTop: top + 5, paddingHorizontal: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={{ width: 60 }} />
+        <HomeLogo />
         <TextButton label="Skip" color={colors.navy} onPress={home} style={{ paddingHorizontal: 12 }} />
       </View>
       <ScrollView contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 24, gap: 16 }}>

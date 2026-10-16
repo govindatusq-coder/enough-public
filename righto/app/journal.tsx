@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowCounterClockwise } from 'phosphor-react-native';
-import { Background, Glass, Kicker, SupportLink, TabBar, SegBar, Seg, Pill, SecondaryButton, T, F, useTop } from '../src/ui';
+import { Background, Glass, Kicker, SupportLink, TabBar, SegBar, Seg, Pill, SecondaryButton, HomeLogo, T, F, useTop } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore } from '../src/store';
 import { journalStats, learningOf, monthName, lineOf, OUT, PSYCH } from '../src/logic';
@@ -19,7 +19,10 @@ export default function Journal() {
   return (
     <Background>
       <View style={{ paddingTop: top + 13, paddingHorizontal: 22, paddingBottom: 14 }}>
-        <Kicker>Journal</Kicker>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Kicker>Journal</Kicker>
+          <HomeLogo size={30} style={{ marginRight: -6, marginTop: -8 }} />
+        </View>
         <Text style={[T.h1, { fontSize: 36, lineHeight: 40, marginTop: 6 }]}>What you’ve learned</Text>
         <SupportLink style={{ marginTop: 6 }} />
       </View>

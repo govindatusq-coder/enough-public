@@ -134,7 +134,17 @@ export function Chip({ label, selected, onPress, style }: { label: string; selec
   );
 }
 
-export function BackRow({ label = 'Back', onPress, right, style }: { label?: string; onPress?: () => void; right?: React.ReactNode; style?: ViewStyle }) {
+/** The righto wordmark as a button: always returns to the start of Home (Home resets its picker on focus). */
+export function HomeLogo({ size = 26, style }: { size?: number; style?: ViewStyle }) {
+  return (
+    <Pressable onPress={() => router.dismissTo('/home')} accessibilityRole="button" accessibilityLabel="Righto. Go to Home" hitSlop={10}
+      style={[{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 6 }, style]}>
+      <Logo size={size} />
+    </Pressable>
+  );
+}
+
+export function BackRow({ label = 'Back', onPress, right, style, logo = true }: { label?: string; onPress?: () => void; right?: React.ReactNode; style?: ViewStyle; logo?: boolean }) {
   const top = useTop();
   return (
     <View style={[{ paddingTop: top + 5, paddingHorizontal: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, style]}>
@@ -143,6 +153,11 @@ export function BackRow({ label = 'Back', onPress, right, style }: { label?: str
         <CaretLeft size={18} weight="light" color={colors.navy} />
         <Text style={{ fontFamily: F.serif, fontSize: 16, color: colors.navy }}>{label}</Text>
       </Pressable>
+      {logo && (
+        <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, top: top + 5, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+          <HomeLogo />
+        </View>
+      )}
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>{right}</View>
     </View>
   );

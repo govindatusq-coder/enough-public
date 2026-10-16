@@ -1,7 +1,7 @@
 import { ScrollView, Text, View, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { CaretRight, GearSix } from 'phosphor-react-native';
-import { Background, Glass, Kicker, Logo, TabBar, T, F, useTop } from '../../src/ui';
+import { Background, Glass, Kicker, HomeLogo, TabBar, T, F, useTop } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore } from '../../src/store';
 import { CLIENT, PSYCH, OTHER_CLIENTS } from '../../src/logic';
@@ -23,7 +23,7 @@ export default function Clients() {
     <Background>
       <View style={{ paddingTop: top + 9, paddingHorizontal: 22, paddingBottom: 14 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
-          <Logo size={34} />
+          <HomeLogo size={34} style={{ marginLeft: -6 }} />
           <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Settings" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: -12 }}>
             <GearSix size={20} weight="light" color={colors.slate} />
           </Pressable>
