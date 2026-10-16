@@ -4,7 +4,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowRight, CheckCircle, CircleIcon as Circle } from 'phosphor-react-native';
 import { Background, Glass, NavyCard, Kicker, BackRow, Chip, PrimaryButton, BottomBar, RoutineIcon, T, F } from '../../src/ui';
 import { colors } from '../../src/theme';
-import { useTask } from '../../src/store';
+import { useStore, useTask } from '../../src/store';
+import { useTimePicker } from '../../src/time-picker';
 import { type Plan, ROUTINES, NOPREP, uniq, defaultPlan, routineOf } from '../../src/logic';
 
 /** Set a commitment — When · Where · How · Make it easy, with a live navy preview. */
@@ -12,10 +13,13 @@ export default function Commit() {
   const { id, daily } = useLocalSearchParams<{ id: string; daily?: string }>();
   const task = useTask(id);
   const [plan, setPlan] = useState<Plan | null>(() => (task ? defaultPlan(task) : null));
+  const routineTimes = useStore((s) => s.routineTimes);
+  const set = useStore((s) => s.set);
+  const picker = useTimePicker();
   if (!task || !plan) return <Background><BackRow /></Background>;
 
   const willBeDaily = !!daily || (task.status === 'planned' && task.daily);
-  const r = routineOf(plan.routine);
+  const r = routineOf(plan.routine, routineTimes);
   const hasPrep = !!plan.prep && plan.prep !== NOPREP;
   const pills = (opts: string[], key: 'where' | 'how' | 'prep') => uniq([plan[key], ...opts]).map((o) => (
     <Chip key={o} label={o} selected={plan[key] === o} onPress={() => setPlan({ ...plan, [key]: o })} />
@@ -24,7 +28,8 @@ export default function Commit() {
   const sections: { title: string; q: string; body: React.ReactNode }[] = [
     { title: 'When', q: 'Link it to something you already do', body: (
       <Glass style={{ paddingVertical: 2, paddingHorizontal: 14 }}>
-        {ROUTINES.map((x, i) => {
+        {ROUTINES.map((x0, i) => {
+          const x = routineOf(x0.id, routineTimes);
           const on = plan.routine === x.id;
           return (
             <Pressable key={x.id} onPress={() => setPlan({ ...plan, routine: x.id })} accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={x.anchor + ', ' + x.name + ' routine, around ' + x.time}
@@ -32,7 +37,12 @@ export default function Commit() {
               <View style={{ width: 24 }}><RoutineIcon id={x.id} /></View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: F.serif, fontSize: 17, lineHeight: 21, color: colors.navy }}>{x.anchor}</Text>
-                <Text style={T.small}>{x.name} routine · around {x.time}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                  <Text style={T.small}>{x.name} routine · around {x.time}</Text>
+                  <Pressable onPress={() => picker.open(x.time, (t) => set({ routineTimes: { ...routineTimes, [x.id]: t } }))} accessibilityRole="button" accessibilityLabel={'Change the time of your ' + x.name.toLowerCase() + ' routine'} hitSlop={8}>
+                    <Text style={[T.small, { color: colors.steel, textDecorationLine: 'underline', textDecorationColor: '#5E7C9680' }]}>Change</Text>
+                  </Pressable>
+                </View>
               </View>
               {on ? <CheckCircle size={22} weight="fill" color={colors.navy} /> : <Circle size={22} weight="light" color={colors.navy} />}
             </Pressable>
@@ -73,6 +83,7 @@ export default function Commit() {
         <PrimaryButton label="Next: make your commitment" iconRight={<ArrowRight size={18} weight="light" color={colors.cream} />}
           onPress={() => router.push({ pathname: '/pledge/[id]', params: { id: task.id, routine: plan.routine, how: plan.how, where: plan.where, prep: plan.prep, ...(willBeDaily ? { daily: '1' } : {}) } })} />
       </BottomBar>
+      {picker.element}
     </Background>
   );
 }

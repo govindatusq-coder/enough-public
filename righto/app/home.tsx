@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { ScrollView, Text, View, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { Feather, Wind, ArrowRight, Clock, Play, CalendarBlank, GearSix, HourglassMedium } from 'phosphor-react-native';
-import { Background, Glass, Kicker, Logo, PrimaryButton, TextButton, SupportLink, TabBar, T, F, useTop } from '../src/ui';
+import { Feather, Wind, ArrowRight, Clock, Play, CalendarBlank, GearSix, HourglassMedium, ArrowClockwise } from 'phosphor-react-native';
+import { Background, Glass, Kicker, Logo, PrimaryButton, TextButton, SupportLink, TabBar, StatusDot, T, F, useTop } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore, useEphemeral } from '../src/store';
 import { type Preference, type Task, liveTasks, orderedTasks, pickByPreference, PREF_KICKER, subOf, greeting, currentRoutine, longDayLabel, DAYS, CLIENT, PSYCH } from '../src/logic';
@@ -24,6 +24,8 @@ export default function Home() {
   const { pref, skipped, setPref, skip } = useEphemeral();
   const top = useTop();
   const now = new Date();
+  const scroll = useRef<ScrollView>(null);
+  const restart = () => { setPref(null); scroll.current?.scrollTo({ y: 0, animated: true }); };
 
   const live = useMemo(() => liveTasks(tasks), [tasks]);
   const ordered = useMemo(() => orderedTasks(tasks, skipped, currentRoutine(now.getHours())), [tasks, skipped]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -32,6 +34,8 @@ export default function Home() {
   const stepT = effPref ? (effPref === 'skip' || effPref === 'next' ? nextT : pickByPreference(tasks, effPref, nextT)) : undefined;
   const newTasks = tasks.filter((t) => t.status === 'new');
   const laterTasks = tasks.filter((t) => t.status === 'later');
+  const doneToday = tasks.filter((t) => t.today && t.status !== 'finished');
+  const setAside = tasks.filter((t) => t.status === 'finished');
   const showNewNote = newTasks.length > 0 && !(stepT && stepT.status === 'new');
   const allDone = !live.length;
   const calmLine = homePrompt && !pref ? 'Take a breath. There’s nothing you need to do this second.' : 'Take a breath. One small step is enough today.';
@@ -39,7 +43,7 @@ export default function Home() {
   return (
     <Background>
       <View style={{ paddingTop: top + 11, paddingHorizontal: 26, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Logo size={30} />
+        <Pressable onPress={restart} accessibilityRole="button" accessibilityLabel="Righto. Back to the start of Home" hitSlop={8}><Logo size={30} /></Pressable>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Text style={{ fontFamily: F.serif, fontSize: 15, color: colors.slate }}>{DAYS[(now.getDay() + 6) % 7]}</Text>
           <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Settings" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: -12 }}>
@@ -47,7 +51,7 @@ export default function Home() {
           </Pressable>
         </View>
       </View>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: 36, paddingHorizontal: 26, paddingBottom: 120, gap: 30 }}>
+      <ScrollView ref={scroll} contentContainerStyle={{ flexGrow: 1, paddingTop: 36, paddingHorizontal: 26, paddingBottom: 120, gap: 30 }}>
         <View>
           <Text style={T.h2}>{greeting(now.getHours())}</Text>
           <Text style={{ fontFamily: F.script, fontSize: 66, lineHeight: 76, color: colors.navy, marginLeft: -2 }}>{CLIENT.first}.</Text>
@@ -104,6 +108,26 @@ export default function Home() {
               <Text style={[T.muted, { flex: 1 }]}>{PSYCH.short} sent you something new. <Text style={{ color: colors.navy, textDecorationLine: 'underline', textDecorationColor: '#0F274640' }}>Have a look when you’re ready.</Text></Text>
             </Pressable>
           )}
+
+          {doneToday.length > 0 && (
+            <View style={{ gap: 2 }}>
+              <Kicker style={{ marginBottom: 8 }}>Done today</Kicker>
+              {doneToday.map((t) => (
+                <View key={t.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 48, borderTopWidth: 1, borderTopColor: '#0f274612', paddingVertical: 6 }}>
+                  <StatusDot outcome={t.today} />
+                  <Text style={[T.body16, { flex: 1 }]} numberOfLines={2}>{t.title}</Text>
+                  <TextButton label="Do it again" color={colors.navy} size={15} icon={<ArrowClockwise size={15} weight="light" color={colors.navy} />} onPress={() => router.push({ pathname: '/now/[id]', params: { id: t.id } })} style={{ paddingHorizontal: 8, minHeight: 40 }} />
+                </View>
+              ))}
+            </View>
+          )}
+
+          {setAside.map((t) => (
+            <Pressable key={t.id} onPress={() => router.push({ pathname: '/task/[id]', params: { id: t.id } })} accessibilityRole="button" style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingVertical: 4, minHeight: 44 }}>
+              <ArrowClockwise size={16} weight="light" color={colors.steel} style={{ marginTop: 4 }} />
+              <Text style={[T.muted, { flex: 1 }]}>Set aside: {t.title}. <Text style={{ color: colors.navy, textDecorationLine: 'underline', textDecorationColor: '#0F274640' }}>Try it again.</Text></Text>
+            </Pressable>
+          ))}
 
           {laterTasks.map((t) => (
             <Pressable key={t.id} onPress={() => openTask(t)} accessibilityRole="button" style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingVertical: 4, minHeight: 44 }}>

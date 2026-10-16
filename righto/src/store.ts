@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { encryptedStorage } from './storage';
-import { type Task, type CheckIn, type Outcome, type Preference, seedTasks, seedHistory, dayKey, dayLabel } from './logic';
+import { type Task, type CheckIn, type Outcome, type Preference, type RoutineTimes, DEFAULT_ROUTINE_TIMES, seedTasks, seedHistory, dayKey, dayLabel } from './logic';
 
 export const STORE_NAME = 'righto.v1';
 export const CONSENT_VERSION = '2026-10-15';
@@ -20,6 +20,7 @@ export type State = {
   appLock: boolean;
   lockAfter: LockAfter;
   homePrompt: boolean; // psychologist's "Ask ‘What feels doable?’ on Home" switch (default on)
+  routineTimes: RoutineTimes; // the client's own times for the three routines
   tasks: Task[];
   history: CheckIn[];
   nextSession: { when: string; iso: string };
@@ -45,6 +46,7 @@ const base = () => ({
   appLock: true,
   lockAfter: 5 as LockAfter,
   homePrompt: true,
+  routineTimes: { ...DEFAULT_ROUTINE_TIMES },
   tasks: seedTasks(),
   history: seedHistory(),
   nextSession: { when: 'Monday 20 Oct', iso: '2026-10-20T10:00:00' },
@@ -66,7 +68,7 @@ export const useStore = create<State>()(
           const entry: CheckIn = { id: 'c' + now.getTime(), taskId, title: t.title, date: now.toISOString(), label: dayLabel(now), outcome, helped: helped.trim(), next: next.trim(), shared };
           return {
             history: [entry, ...s.history],
-            tasks: s.tasks.map((x) => (x.id === taskId ? { ...x, today: outcome, status: x.status === 'new' || x.status === 'later' ? 'tried' : x.status } : x)),
+            tasks: s.tasks.map((x) => (x.id === taskId ? { ...x, today: outcome, status: x.status === 'new' || x.status === 'later' || x.status === 'finished' ? 'tried' : x.status } : x)),
           };
         }),
       rollDay: () =>
@@ -75,7 +77,7 @@ export const useStore = create<State>()(
           if (s.todayDate === today) return {};
           return { todayDate: today, tasks: s.tasks.map((t) => ({ ...t, today: null })) };
         }),
-      resetDemo: () => set((s) => ({ ...base(), role: s.role, onboarded: s.onboarded, consentAt: s.consentAt, consentVersion: s.consentVersion, linked: s.linked, appLock: s.appLock, lockAfter: s.lockAfter, notifDetail: s.notifDetail, notifsAllowed: s.notifsAllowed, shareDefault: s.shareDefault })),
+      resetDemo: () => set((s) => ({ ...base(), role: s.role, onboarded: s.onboarded, consentAt: s.consentAt, consentVersion: s.consentVersion, linked: s.linked, appLock: s.appLock, lockAfter: s.lockAfter, notifDetail: s.notifDetail, notifsAllowed: s.notifsAllowed, shareDefault: s.shareDefault, routineTimes: s.routineTimes })),
       wipe: () => set({ ...base() }),
     }),
     {

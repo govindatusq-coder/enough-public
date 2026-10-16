@@ -35,7 +35,7 @@ export default function Privacy() {
   const setDetail = async (v: boolean) => {
     s.set({ notifDetail: v });
     for (const t of s.tasks.filter((x) => x.status === 'planned')) {
-      const ids = t.kind === 'goal' ? await scheduleGoal(t, v) : await scheduleCommitment(t, v);
+      const ids = t.kind === 'goal' ? await scheduleGoal(t, v) : await scheduleCommitment(t, v, s.routineTimes);
       s.patchTask(t.id, { notifIds: ids });
     }
   };

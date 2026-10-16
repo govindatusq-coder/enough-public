@@ -7,6 +7,7 @@ import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
 import { type Goal, GOALQ, TIMES, DAYS, allDays, daysLine, defaultGoal, PSYCH } from '../../src/logic';
 import { scheduleGoal } from '../../src/notifications';
+import { useTimePicker } from '../../src/time-picker';
 import { toast } from '../../src/toast';
 
 /** Set a goal — five plain-language questions plus the client's own reminder time and days. */
@@ -15,6 +16,7 @@ export default function GoalScreen() {
   const task = useTask(id);
   const notifDetail = useStore((s) => s.notifDetail);
   const patchTask = useStore((s) => s.patchTask);
+  const picker = useTimePicker();
   const [g, setG] = useState<Goal | null>(() => {
     if (!task) return null;
     const d = defaultGoal(task);
@@ -67,6 +69,16 @@ export default function GoalScreen() {
                   </Pressable>
                 );
               })}
+              {(() => {
+                const custom = !TIMES.includes(g.rem.time);
+                const s = sel(custom);
+                return (
+                  <Pressable onPress={() => picker.open(g.rem.time, (t) => setG({ ...g, rem: { ...g.rem, time: t } }))} accessibilityRole="button" accessibilityLabel="Choose your own time"
+                    style={{ width: '100%', minHeight: 46, borderRadius: 40, borderWidth: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: s.backgroundColor, borderColor: s.borderColor }}>
+                    <Text style={{ fontFamily: F.serif, fontSize: 16, color: s.color }}>{custom ? g.rem.time + ' · change' : 'Another time…'}</Text>
+                  </Pressable>
+                );
+              })()}
             </View>
             <View style={{ flexDirection: 'row', gap: 6 }}>
               {DAYS.map((d, i) => {
@@ -86,6 +98,7 @@ export default function GoalScreen() {
           <PrimaryButton label="Set this goal" icon={<Target size={20} weight="light" color={colors.cream} />} disabled={incomplete} onPress={save} />
         </BottomBar>
       </KeyboardAvoidingView>
+      {picker.element}
     </Background>
   );
 }

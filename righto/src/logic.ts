@@ -97,7 +97,19 @@ export const lc = (s: string) => (s ? s.replace(/^./, (c) => c.toLowerCase()) : 
 export const trim = (s: string | undefined) => (s || '').replace(/[.\s]+$/, '');
 export const fmt = (n: number) => Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
 
-export const routineOf = (id: RoutineId | string | undefined) => ROUTINES.find((r) => r.id === id) || ROUTINES[0];
+export type RoutineTimes = Record<RoutineId, string>;
+export const DEFAULT_ROUTINE_TIMES: RoutineTimes = { coffee: '7:30 am', lunch: '12:30 pm', wind: '9:30 pm' };
+/** A routine, with the client's own time for it when they have changed it. */
+export const routineOf = (id: RoutineId | string | undefined, times?: Partial<RoutineTimes>): Routine => {
+  const r = ROUTINES.find((x) => x.id === id) || ROUTINES[0];
+  const t = times?.[r.id];
+  return t ? { ...r, time: t } : r;
+};
+/** Date → "3:05 pm" */
+export const formatTime = (d: Date) => {
+  const h = d.getHours();
+  return (h % 12 || 12) + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + (h < 12 ? 'am' : 'pm');
+};
 export const sentence = (p: Plan | null | undefined) => (p ? routineOf(p.routine).anchor + ', I will ' + p.how + ', ' + p.where + '.' : '');
 export const goalLine = (g: GoalAnswers | null | undefined) => (g ? trim(g.s) + '. ' + trim(g.t) + '.' : '');
 export const lineOf = (t: Task) => (t.kind === 'goal' ? goalLine(t.goal) : sentence(t.plan));

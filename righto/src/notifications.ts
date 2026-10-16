@@ -1,7 +1,7 @@
 // Local reminders via expo-notifications. Nothing leaves the device; copy is private by default (PRIVACY.md §4).
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { type Task, notifCopy, parseTime, nextOccurrence, expoWeekday, routineOf } from './logic';
+import { type Task, type RoutineTimes, notifCopy, parseTime, nextOccurrence, expoWeekday, routineOf } from './logic';
 
 export const CATEGORY = { routine: 'righto.routine', new: 'righto.new', nudge: 'righto.nudge' } as const;
 export const ACTION = { done: 'done', missed: 'missed', start: 'start', now: 'now', options: 'options' } as const;
@@ -67,14 +67,15 @@ const content = (kind: 'new' | 'commitment' | 'goal' | 'nudge', t: Task, detail:
 });
 
 /** Commitment: at the routine time, every day if daily, otherwise the next occurrence only. Returns new notification ids. */
-export async function scheduleCommitment(task: Task, detail: boolean): Promise<string[]> {
+export async function scheduleCommitment(task: Task, detail: boolean, times?: Partial<RoutineTimes>): Promise<string[]> {
   await setupNotifications();
   await cancelFor(task);
   if (!task.plan || !(await allowed())) return [];
-  const { hour, minute } = parseTime(routineOf(task.plan.routine).time);
+  const time = routineOf(task.plan.routine, times).time;
+  const { hour, minute } = parseTime(time);
   const trigger: Notifications.NotificationTriggerInput = task.daily
     ? { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute, channelId: CHANNEL }
-    : { type: Notifications.SchedulableTriggerInputTypes.DATE, date: nextOccurrence(routineOf(task.plan.routine).time, new Date()), channelId: CHANNEL };
+    : { type: Notifications.SchedulableTriggerInputTypes.DATE, date: nextOccurrence(time, new Date()), channelId: CHANNEL };
   try {
     const id = await Notifications.scheduleNotificationAsync({ content: content('commitment', task, detail, CATEGORY.routine), trigger });
     return [id];

@@ -15,19 +15,20 @@ export default function Pledge() {
   const task = useTask(q.id);
   const shareDefault = useStore((s) => s.shareDefault);
   const notifDetail = useStore((s) => s.notifDetail);
+  const routineTimes = useStore((s) => s.routineTimes);
   const patchTask = useStore((s) => s.patchTask);
   const [share, setShare] = useState(shareDefault);
   if (!task) return <Background><BackRow label="Edit plan" /></Background>;
 
   const plan: Plan = { routine: q.routine, how: q.how, where: q.where, prep: q.prep };
-  const r = routineOf(plan.routine);
+  const r = routineOf(plan.routine, routineTimes);
   const daily = q.daily === '1';
   const hasPrep = !!plan.prep && plan.prep !== NOPREP;
 
   const commit = async () => {
     const next = { ...task, status: 'planned' as const, kind: 'commitment' as const, plan, daily, today: null, shared: share };
     patchTask(task.id, { status: 'planned', kind: 'commitment', plan, daily, today: null, shared: share });
-    const notifIds = await scheduleCommitment(next, notifDetail);
+    const notifIds = await scheduleCommitment(next, notifDetail, routineTimes);
     patchTask(task.id, { notifIds });
     toast('Committed. Added to your ' + r.name.toLowerCase() + ' routine' + (daily ? ', every day.' : ' for next time.'));
     router.dismissTo('/home');
