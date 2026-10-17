@@ -18,6 +18,27 @@ Reminders → Home. Psychologists create an account with "A psychologist", pass 
 
 Other commands: `npm run typecheck` (TypeScript), `npm test` (pure-logic unit tests with Node's test runner).
 
+## Share a preview (EAS Update)
+
+A published update opens in Expo Go anywhere, without your Mac running. One-time setup, signed in as your Expo account:
+
+```bash
+cd righto
+npx eas-cli@latest login
+npx eas-cli@latest init            # creates the project on expo.dev and writes extra.eas.projectId
+npx eas-cli@latest update:configure   # writes updates.url; keep runtimeVersion policy "sdkVersion" for Expo Go
+```
+
+Then, every time you want to share the current code:
+
+```bash
+npx eas-cli@latest update --branch preview --message "what changed"
+```
+
+The command prints a link and QR code for the update. Opening it in Expo Go (SDK 57) loads the app. Google sign-in
+is not reliable in a published Expo Go preview (Expo cannot promise a stable return address there); email and
+password sign-in works. A development build (`eas build --profile development`) removes that limit.
+
 ## What is built
 
 **Client:** Splash · Consent (express consent, collection notice, share default) · Confirm psychologist (mock invite) ·

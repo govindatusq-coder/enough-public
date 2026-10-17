@@ -36,8 +36,24 @@
       "expo-router",
       "expo-font",
       "expo-secure-store",
-      ["expo-local-authentication", { "faceIDPermission": "Righto uses Face ID to keep your homework and notes private." }],
-      ["expo-notifications", { "color": "#0F2746" }]
-    ]
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Righto uses Face ID to keep your homework and notes private."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#0F2746"
+        }
+      ]
+    ],
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    }
   }
 }
