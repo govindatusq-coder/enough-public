@@ -21,7 +21,7 @@ type CloudState = {
   aal: 'aal1' | 'aal2' | null;
   hasFactor: boolean;        // a verified TOTP factor exists
   link: PsychLink | null;    // client side: the psychologist they are linked with
-  pendingProfile: { role: Role; display_name: string; practice?: string; ahpra?: string } | null; // kept until the first sign-in when email confirmation is on
+  pendingProfile: { email: string; role: Role; display_name: string; practice?: string; ahpra?: string } | null; // kept until that email's first sign-in (email confirmation on); never applied to another account
   set: (p: Partial<CloudState>) => void;
 };
 
@@ -72,7 +72,8 @@ export async function loadProfile() {
   if (!s.session) return null;
   let { data: profile } = await sb.from('righto_profiles').select('*').eq('user_id', s.session.user.id).maybeSingle();
   const pending = useCloud.getState().pendingProfile;
-  if (!profile && pending) {
+  const sameAccount = !!pending && pending.email.trim().toLowerCase() === (s.session.user.email ?? '').toLowerCase();
+  if (!profile && pending && sameAccount) {
     const consent = useStore.getState();
     await sb.from('righto_profiles').insert({ user_id: s.session.user.id, role: pending.role, display_name: pending.display_name, consent_version: consent.consentVersion, consent_at: consent.consentAt });
     if (pending.role === 'psych') await sb.from('righto_psychologists').insert({ user_id: s.session.user.id, practice: pending.practice ?? '', ahpra: pending.ahpra ?? '', consent_attested_at: new Date().toISOString() });
@@ -105,9 +106,9 @@ export async function refreshMfa() {
 
 export async function signUp(p: { email: string; password: string; role: Role; display_name: string; practice?: string; ahpra?: string }) {
   const sb = supabase();
-  useCloud.getState().set({ pendingProfile: { role: p.role, display_name: p.display_name, practice: p.practice, ahpra: p.ahpra } });
+  useCloud.getState().set({ pendingProfile: { email: p.email, role: p.role, display_name: p.display_name, practice: p.practice, ahpra: p.ahpra } });
   const { data, error } = await sb.auth.signUp({ email: p.email.trim(), password: p.password, options: { data: { display_name: p.display_name, role: p.role } } });
-  if (error) throw error;
+  if (error) { useCloud.getState().set({ pendingProfile: null }); throw error; }
   if (!data.session) return 'confirm' as const; // email confirmation is on: profile is created at the first sign-in
   await loadProfile();
   return 'ready' as const;
@@ -126,6 +127,7 @@ export async function signIn(email: string, password: string) {
  */
 export async function signInWithGoogle(): Promise<Profile | null | 'cancelled'> {
   const sb = supabase();
+  useCloud.getState().set({ pendingProfile: null });
   const redirectTo = Linking.createURL('auth'); // exp://…/--/auth in Expo Go, righto://auth in a build
   const { data, error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo, skipBrowserRedirect: true, queryParams: { prompt: 'select_account' } } });
   if (error) throw error;
@@ -149,7 +151,8 @@ export const suggestedName = () => {
 
 /** First sign-in through Google: the person picks a role and name, and the profile row is created. */
 export async function completeProfile(p: { role: Role; display_name: string; practice?: string; ahpra?: string }) {
-  useCloud.getState().set({ pendingProfile: { role: p.role, display_name: p.display_name, practice: p.practice, ahpra: p.ahpra } });
+  const email = useCloud.getState().session?.user.email ?? '';
+  useCloud.getState().set({ pendingProfile: { email, role: p.role, display_name: p.display_name, practice: p.practice, ahpra: p.ahpra } });
   return loadProfile();
 }
 
