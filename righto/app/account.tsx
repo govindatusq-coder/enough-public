@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { ScrollView, Text, View, KeyboardAvoidingView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { EnvelopeSimple, SignIn, UserPlus, GoogleLogo, Check } from 'phosphor-react-native';
@@ -86,7 +87,10 @@ export default function Account() {
           </View>
 
           {!finishing && (
-            <SecondaryButton label={busy ? 'Opening Google…' : 'Continue with Google'} disabled={busy} icon={<GoogleLogo size={20} weight="bold" color={colors.navy} />} onPress={google} />
+            <>
+              <SecondaryButton label={busy ? 'Opening Google…' : 'Continue with Google'} disabled={busy} icon={<GoogleLogo size={20} weight="bold" color={colors.navy} />} onPress={google} />
+              {__DEV__ && <Text selectable style={[T.small, { fontFamily: F.serif, paddingHorizontal: 4 }]}>Hand-back address (add to Supabase → URL Configuration): {Linking.createURL('auth')}</Text>}
+            </>
           )}
           {!finishing && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 4 }}>
