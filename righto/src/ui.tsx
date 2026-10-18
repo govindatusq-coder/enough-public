@@ -142,7 +142,8 @@ export function TextButton({ label, onPress, color = colors.slate, style, italic
   return (
     <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [{ minHeight: 44, paddingHorizontal: 16, borderRadius: 30, flexDirection: 'row', gap: 8, justifyContent: 'center', alignItems: 'center', backgroundColor: pressed ? '#fbf8f160' : 'transparent' }, style]}>
       {icon}
-      <Text style={{ fontFamily: italic ? F.serifIt : weight ? F.serifMed : F.serif, fontSize: size, lineHeight: size + 6, color }}>{label}</Text>
+      {/* Android measures italic glyphs slightly narrow and clips the last letter; a little trailing room avoids that. */}
+      <Text style={{ fontFamily: italic ? F.serifIt : weight ? F.serifMed : F.serif, fontSize: size, lineHeight: size + 6, color, flexShrink: 1, paddingRight: italic && FLAT ? 6 : 0 }}>{label}</Text>
     </Pressable>
   );
 }

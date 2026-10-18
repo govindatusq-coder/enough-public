@@ -84,7 +84,7 @@ export default function Home() {
                   </Pressable>
                 ))}
               </View>
-              <TextButton label="Just show me what’s next" italic size={15} onPress={() => setPref('skip')} style={{ alignSelf: 'flex-start', paddingHorizontal: 0, minHeight: 36 }} />
+              <TextButton label="Just show me what’s next" italic size={15} onPress={() => setPref('skip')} style={{ alignSelf: 'stretch', justifyContent: 'flex-start', paddingHorizontal: 0, minHeight: 36 }} />
             </Glass>
           )}
 

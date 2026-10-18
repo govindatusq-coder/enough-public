@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowCounterClockwise } from 'phosphor-react-native';
+import { ArrowCounterClockwise, Target, LinkSimple, CaretRight } from 'phosphor-react-native';
+import { Pressable } from 'react-native';
 import { Background, Glass, Kicker, SupportLink, TabBar, SegBar, Seg, Pill, SecondaryButton, HomeLogo, T, F, useTop } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore } from '../src/store';
-import { journalStats, learningOf, monthName, lineOf, OUT, PSYCH } from '../src/logic';
+import { journalStats, learningOf, monthName, lineOf, daysLine, reminderTime, OUT, PSYCH } from '../src/logic';
 
 /** Journal — counts of what was recorded, never interpreted (INTENDED_PURPOSE.md rule 4). */
 export default function Journal() {
@@ -13,6 +14,7 @@ export default function Journal() {
   const history = useStore((s) => s.history);
   const tryAgain = useStore((s) => s.tryAgain);
   const finished = tasks.filter((t) => t.status === 'finished');
+  const plans = tasks.filter((t) => t.status === 'planned' && t.kind);
   const top = useTop();
   const { doneCount, taskTotal, segs, legend } = useMemo(() => journalStats(history, tasks), [history, tasks]);
 
@@ -45,6 +47,30 @@ export default function Journal() {
             ))}
           </View>
         </Glass>
+        {plans.length > 0 && (
+          <Glass style={{ paddingTop: 16, paddingHorizontal: 18, paddingBottom: 6, gap: 8 }}>
+            <View>
+              <Kicker>Your goals and commitments</Kicker>
+              <Text style={[T.meta, { lineHeight: 20, marginTop: 4 }]}>What you’ve set up, in your own words. Tap one to open it.</Text>
+            </View>
+            {plans.map((t, i) => {
+              const goal = t.kind === 'goal';
+              const when = goal && t.goal ? t.goal.rem.time + ', ' + daysLine(t.goal.rem.days) : reminderTime(t.plan) + (t.daily ? ', every day' : ', once');
+              return (
+                <Pressable key={t.id} onPress={() => router.push({ pathname: '/task/[id]', params: { id: t.id } })} accessibilityRole="button" accessibilityLabel={t.title + '. ' + lineOf(t)}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderTopColor: '#0f274614' }}>
+                  {goal ? <Target size={20} weight="light" color={colors.steel} /> : <LinkSimple size={20} weight="light" color={colors.steel} />}
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text style={{ fontFamily: F.serif, fontSize: 17, lineHeight: 22, color: colors.navy }}>{t.title}</Text>
+                    <Text style={[T.italic, { fontSize: 15, lineHeight: 21 }]}>“{lineOf(t)}”</Text>
+                    <Text style={T.small}>{goal ? 'Goal' : 'Commitment'} · reminder {when}{t.author === 'client' ? ' · your own idea' : ''}</Text>
+                  </View>
+                  <CaretRight size={18} weight="light" color={colors.navy} />
+                </Pressable>
+              );
+            })}
+          </Glass>
+        )}
         {finished.length > 0 && (
           <Glass style={{ paddingTop: 16, paddingHorizontal: 18, paddingBottom: 6, gap: 8 }}>
             <View>
@@ -64,7 +90,7 @@ export default function Journal() {
           </Glass>
         )}
         <Glass style={{ paddingVertical: 4, paddingHorizontal: 18 }}>
-          {history.length === 0 && <Text style={[T.muted, { paddingVertical: 16 }]}>Your check-ins will appear here.</Text>}
+          {history.length === 0 && <Text style={[T.muted, { paddingVertical: 16 }]}>{plans.length ? 'Your check-ins will appear here once you’ve had a go.' : 'Nothing recorded yet. Set something up on Home and it will show here.'}</Text>}
           {history.map((h, i) => (
             <View key={h.id} style={{ gap: 6, paddingVertical: 16, borderBottomWidth: i < history.length - 1 ? 1 : 0, borderBottomColor: '#0f274614' }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
