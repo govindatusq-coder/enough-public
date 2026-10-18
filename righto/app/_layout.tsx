@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AppState, type AppStateStatus, View, Text } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack, router, type ErrorBoundaryProps } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -19,6 +19,29 @@ import { colors } from '../src/theme';
 import { bootstrapCloud, cloudActive, isPsych, pullClient, refreshLink } from '../src/backend/cloud';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
+
+/**
+ * A screen that throws no longer leaves a blank page: the message is shown so it can be reported, with a way back.
+ * expo-router renders this for any error thrown by a route below the root layout.
+ */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  const stack = (error.stack || '').split('\n').slice(0, 6).join('\n');
+  return (
+    <Background>
+      <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 90, gap: 14 }}>
+        <Logo size={34} />
+        <Text style={T.h1}>Something went wrong</Text>
+        <Text style={T.muted}>This screen hit a problem. Nothing you saved is lost. Screenshot this and send it to us.</Text>
+        <View style={{ padding: 14, borderRadius: 16, backgroundColor: '#ffffff80', borderWidth: 1, borderColor: '#0F274633' }}>
+          <Text selectable style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, lineHeight: 17, color: colors.navy }}>{String(error.message || error)}</Text>
+          {stack ? <Text selectable style={{ fontFamily: 'DMSans_500Medium', fontSize: 10, lineHeight: 14, color: colors.slate, marginTop: 8 }}>{stack}</Text> : null}
+        </View>
+        <PrimaryButton label="Try again" onPress={retry} />
+        <PrimaryButton label="Go to Home" onPress={() => { if (router.canDismiss()) router.dismissAll(); router.replace('/home'); }} style={{ backgroundColor: colors.slate }} />
+      </View>
+    </Background>
+  );
+}
 
 export default function Layout() {
   const [fontsOk] = useFonts({ Newsreader_400Regular, Newsreader_500Medium, Newsreader_400Regular_Italic, DMSans_500Medium, MsMadi_400Regular });
