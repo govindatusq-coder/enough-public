@@ -86,6 +86,13 @@ export async function loadProfile() {
     const st = useStore.getState();
     // Signed in: the local sample homework (ids t1, t2, …) makes way for the account's real rows.
     st.set({ role: p.role, ...(st.tasks.some((t) => /^t\d+$/.test(t.id)) ? { tasks: [], history: [], nextSession: { when: '', iso: '' } } : {}) });
+    if (st.guest && p.role === 'client') {
+      // A guest becoming an account holder: what they did on this phone moves into the account first.
+      const own = st.tasks.filter((t) => t.author === 'client');
+      await Promise.all(own.map((t) => pushOwnTask(t)));
+      await Promise.all(st.history.filter((c) => own.some((t) => t.id === c.taskId)).map((c) => pushCheckIn(c)));
+      useStore.getState().set({ guest: false });
+    }
     await refreshMfa();
     if (p.role === 'client') await refreshLink();
     applyNames(p, useCloud.getState().link);
@@ -252,20 +259,21 @@ export function pushTaskPatch(id: string, patch: Partial<Task>) {
 }
 
 /** A client's own small thing to try. Stored with no psychologist, so it never appears in a psychologist's view. */
-export function pushOwnTask(t: Task) {
+export async function pushOwnTask(t: Task) {
   if (!cloudActive() || isPsych() || t.author !== 'client') return;
   const uid = useCloud.getState().session?.user.id;
-  supabase().from('righto_tasks').insert({
+  const { error } = await supabase().from('righto_tasks').upsert({
     id: t.id, client_id: uid, psych_id: null, title: t.title, detail: t.detail, why: t.why, mins: t.mins, needs: t.needs, tags: t.tags, suggestion: null, suggest: t.suggest,
-    where_opts: t.whereOpts, how_opts: t.howOpts, prep_opts: t.prepOpts, status: 'new',
-  }).then(({ error }) => { if (error) console.warn('[righto] own task sync', error.message); });
+    where_opts: t.whereOpts, how_opts: t.howOpts, prep_opts: t.prepOpts, status: t.status, kind: t.kind, daily: t.daily, plan: t.plan, goal: t.goal, shared: t.shared,
+  });
+  if (error) console.warn('[righto] own task sync', error.message);
 }
 
-export function pushCheckIn(c: CheckIn) {
+export async function pushCheckIn(c: CheckIn) {
   if (!cloudActive() || isPsych()) return;
   const uid = useCloud.getState().session?.user.id;
-  supabase().from('righto_checkins').insert({ task_id: c.taskId, client_id: uid, outcome: c.outcome, helped: c.helped, next: c.next, shared: c.shared })
-    .then(({ error }) => { if (error) console.warn('[righto] check-in sync', error.message); else pullClient().catch(() => undefined); });
+  const { error } = await supabase().from('righto_checkins').insert({ task_id: c.taskId, client_id: uid, outcome: c.outcome, helped: c.helped, next: c.next, shared: c.shared, created_at: c.date });
+  if (error) console.warn('[righto] check-in sync', error.message); else pullClient().catch(() => undefined);
 }
 
 export async function updateConsent() {

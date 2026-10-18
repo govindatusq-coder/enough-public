@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { ScrollView, Text, View, KeyboardAvoidingView, Platform } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { EnvelopeSimple, SignIn, UserPlus, GoogleLogo, Check } from 'phosphor-react-native';
 import { Background, Glass, Kicker, Logo, Field, Chip, PrimaryButton, SecondaryButton, TextButton, BottomBar, T, F, useTop } from '../src/ui';
 import { colors } from '../src/theme';
@@ -18,6 +18,7 @@ const AHPRA = /^PSY\d{10}$/i;
 export function afterAuth(p: Profile | null) {
   if (!p) { toast('No Righto account found for that sign-in. Create one below.'); return; }
   const st = useStore.getState();
+  if (router.canDismiss()) router.dismissAll();
   if (p.role === 'psych') { router.replace(needsMfa() ? '/mfa' : '/psych'); if (!needsMfa()) st.set({ onboarded: true }); return; }
   if (st.onboarded) router.replace('/home');
   else router.replace(useCloud.getState().link ? '/applock' : '/link');
@@ -26,6 +27,15 @@ export function afterAuth(p: Profile | null) {
 /** Sign in or create an account. Email + password go to the Supabase project in Sydney; the profile row sets the role. */
 export default function Account() {
   const top = useTop();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const fromSettings = from === 'settings';
+  /** No account: straight to Home. Everything stays on this phone until they choose to create an account in Settings. */
+  const continueWithout = () => {
+    const st = useStore.getState();
+    st.set({ guest: true, onboarded: true, ...(st.tasks.some((t) => /^t\d+$/.test(t.id)) ? { tasks: [], history: [], nextSession: { when: '', iso: '' } } : {}) });
+    if (router.canDismiss()) router.dismissAll();
+    router.replace('/home');
+  };
   const [mode, setMode] = useState<'in' | 'up'>('up');
   const [role, setRole] = useState<Role>('client');
   const [name, setName] = useState('');
@@ -81,9 +91,9 @@ export default function Account() {
         <ScrollView contentContainerStyle={{ paddingTop: top + 19, paddingHorizontal: 22, paddingBottom: 16, gap: 16 }} keyboardShouldPersistTaps="handled">
           <Logo size={34} />
           <View>
-            <Kicker>{finishing ? 'Step 2 of 5 · Almost there' : mode === 'up' ? 'Step 2 of 5 · Your account' : 'Welcome back'}</Kicker>
+            <Kicker>{finishing ? 'Almost there' : fromSettings ? 'Your account' : mode === 'up' ? 'Step 2 of 5 · Your account' : 'Welcome back'}</Kicker>
             <Text style={[T.h1, { marginVertical: 8 }]}>{finishing ? 'About you' : mode === 'up' ? 'Create your account' : 'Sign in'}</Text>
-            <Text style={T.muted}>{finishing ? 'You’re signed in with Google as ' + (session?.user.email ?? 'your account') + '. Google only confirms who you are; your homework never goes to Google.' : mode === 'up' ? 'Your homework and check-ins are stored in Australia and only you, and the psychologist you link with, can see them.' : 'Your details are stored in Australia. Only you and the psychologist you link with can see them.'}</Text>
+            <Text style={T.muted}>{finishing ? 'You’re signed in with Google as ' + (session?.user.email ?? 'your account') + '. Google only confirms who you are; your homework never goes to Google.' : mode === 'up' ? 'An account keeps your homework safe if you change phones and lets a psychologist send you homework. Or skip it and use Righto on this phone only.' : 'Your details are stored in Australia. Only you and the psychologist you link with can see them.'}</Text>
           </View>
 
           {!finishing && (
@@ -146,7 +156,7 @@ export default function Account() {
         <BottomBar style={{ paddingTop: 10, gap: 4, alignItems: 'center' }}>
           <PrimaryButton label={busy ? 'One moment…' : finishing ? 'Finish setting up' : mode === 'up' ? 'Create account' : 'Sign in'} disabled={busy || (finishing ? !profileOk : mode === 'up' ? !canUp : !canIn)} style={{ alignSelf: 'stretch' }}
             icon={finishing ? <Check size={20} weight="light" color={colors.cream} /> : mode === 'up' ? <UserPlus size={20} weight="light" color={colors.cream} /> : <SignIn size={20} weight="light" color={colors.cream} />} onPress={go} />
-          {finishing ? <TextButton label="Use a different account" onPress={async () => { await signOut(); }} /> : <TextButton label="Not now" onPress={() => router.replace('/')} />}
+          {finishing ? <TextButton label="Use a different account" onPress={async () => { await signOut(); }} /> : fromSettings ? <TextButton label="Cancel" onPress={() => router.back()} /> : <TextButton label="Not now, just let me in" onPress={continueWithout} />}
         </BottomBar>
       </KeyboardAvoidingView>
     </Background>

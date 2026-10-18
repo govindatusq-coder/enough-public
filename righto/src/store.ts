@@ -17,6 +17,7 @@ export type State = {
   consentAt: string | null;
   consentVersion: string | null;
   linked: boolean;
+  guest: boolean; // using Righto without an account: everything stays on this phone
   shareDefault: boolean;
   notifDetail: boolean;
   notifsAllowed: boolean;
@@ -43,6 +44,7 @@ const base = () => ({
   consentAt: null,
   consentVersion: null,
   linked: false,
+  guest: false,
   shareDefault: true,
   notifDetail: false,
   notifsAllowed: false,
@@ -61,14 +63,14 @@ export const useStore = create<State>()(
       ...base(),
       set: (p) => set(p),
       patchTask: (id, p) => { set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...p } : t)) })); cloud().pushTaskPatch(id, p); },
-      addTask: (t) => { set((s) => ({ tasks: [t, ...s.tasks] })); cloud().pushOwnTask(t); },
+      addTask: (t) => { set((s) => ({ tasks: [t, ...s.tasks] })); cloud().pushOwnTask(t).catch(() => undefined); },
       record: (taskId, outcome, helped, next, shared) =>
         set((s) => {
           const t = s.tasks.find((x) => x.id === taskId);
           if (!t) return {};
           const now = new Date();
           const entry: CheckIn = { id: 'c' + now.getTime(), taskId, title: t.title, date: now.toISOString(), label: dayLabel(now), outcome, helped: helped.trim(), next: next.trim(), shared };
-          cloud().pushCheckIn(entry);
+          cloud().pushCheckIn(entry).catch(() => undefined);
           cloud().pushTaskPatch(taskId, { today: outcome, status: t.status === 'new' || t.status === 'later' || t.status === 'finished' ? 'tried' : t.status });
           return {
             history: [entry, ...s.history],

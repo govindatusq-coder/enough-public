@@ -6,7 +6,7 @@ import { colors } from '../src/theme';
 import { useStore } from '../src/store';
 import { cancelAll } from '../src/notifications';
 import { toast } from '../src/toast';
-import { cloudActive, cloudEmail, signOut, useCloud } from '../src/backend/cloud';
+import { cloudActive, cloudMode, cloudEmail, signOut, useCloud } from '../src/backend/cloud';
 
 const PURPOSE = 'Righto lets psychologists and psychiatrists send homework to their clients. Clients plan when to do it, get reminders, and record what they did and learned. Clinicians can view what clients choose to share. Righto does not assess, diagnose, monitor, predict or treat any condition, and it is not monitored in real time.';
 
@@ -16,6 +16,7 @@ export default function Settings() {
   const resetDemo = useStore((s) => s.resetDemo);
   const profile = useCloud((c) => c.profile);
   const cloud = cloudActive();
+  const guest = cloudMode() && !cloud; // backend available, but using Righto without an account
   const doSignOut = () => Alert.alert('Sign out?', 'Your homework stays safely in your account. Reminders on this phone are cancelled until you sign in again.',
     [{ text: 'Cancel', style: 'cancel' }, { text: 'Sign out', style: 'destructive', onPress: async () => { await cancelAll(); await signOut(); if (router.canDismiss()) router.dismissAll(); router.replace('/account'); } }]);
 
@@ -43,6 +44,14 @@ export default function Settings() {
                 <Text style={T.meta}>{cloudEmail()} · {profile?.role === 'psych' ? 'Psychologist' : 'Client'} · stored in Sydney</Text>
               </View>
             </View>
+          ) : guest ? (
+            <Pressable onPress={() => router.push({ pathname: '/account', params: { from: 'settings' } })} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 60, paddingVertical: 10 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={T.body}>Create an account or sign in</Text>
+                <Text style={T.meta}>Keeps your homework if you change phones, and lets a psychologist send you homework. What you’ve done here comes with you.</Text>
+              </View>
+              <CaretRight size={18} weight="light" color={colors.navy} />
+            </Pressable>
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 60, paddingVertical: 10 }}>
               <View style={{ flex: 1 }}>
@@ -66,7 +75,7 @@ export default function Settings() {
                 <Text style={T.meta}>Removes your homework from this phone. It stays in your account.</Text>
               </View>
             </Pressable>
-          ) : (
+          ) : guest ? null : (
             <Pressable onPress={reset} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 60, paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#0f274612' }}>
               <View style={{ flex: 1 }}>
                 <Text style={T.body}>Reset demo data</Text>
@@ -78,7 +87,7 @@ export default function Settings() {
         <View style={{ paddingHorizontal: 4, gap: 6 }}>
           <Kicker>About Righto</Kicker>
           <Text style={T.muted}>{PURPOSE}</Text>
-          <Text style={[T.small, { fontFamily: F.serif }]}>Version 0.2.0 · {cloud ? 'Connected to the Righto project in Sydney.' : 'Prototype with sample data. Not for real clients yet.'}</Text>
+          <Text style={[T.small, { fontFamily: F.serif }]}>Version 0.2.0 · {cloud ? 'Connected to the Righto project in Sydney.' : guest ? 'Using Righto on this phone only.' : 'Prototype with sample data. Not for real clients yet.'}</Text>
         </View>
       </ScrollView>
     </Background>

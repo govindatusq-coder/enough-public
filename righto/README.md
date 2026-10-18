@@ -14,7 +14,8 @@ npx expo start          # add --tunnel if your Wi-Fi blocks the connection
 ```
 
 Scan the QR code (iPhone: Camera app · Android: Expo Go app). Splash → Consent → Create account → Invite code → App lock →
-Reminders → Home. Psychologists create an account with "A psychologist", pass two-step sign-in, then **Invite a client** to get a code.
+Reminders → Home. "Not now, just let me in" on the account screen skips everything and opens Home with no account; the
+person can create one later from Settings and what they did on the phone moves into it. Psychologists create an account with "A psychologist", pass two-step sign-in, then **Invite a client** to get a code.
 
 Other commands: `npm run typecheck` (TypeScript), `npm test` (pure-logic unit tests with Node's test runner).
 

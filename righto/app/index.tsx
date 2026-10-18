@@ -12,6 +12,7 @@ const MIN_MS = 2200;
 export default function Splash() {
   const onboarded = useStore((s) => s.onboarded);
   const consentAt = useStore((s) => s.consentAt);
+  const guest = useStore((s) => s.guest);
   const role = useStore((s) => s.role);
   const ready = useCloud((c) => c.ready);
   const session = useCloud((c) => c.session);
@@ -22,7 +23,8 @@ export default function Splash() {
 
   const dest = (): Parameters<typeof router.replace>[0] => {
     if (!cloudMode()) return !onboarded ? '/consent' : role === 'psych' ? '/psych' : '/home';
-    if (!session || !profile) return consentAt ? '/account' : '/consent';
+    if (session && !profile) return '/account'; // signed in through Google, role and name still to come
+    if (!session || !profile) return guest && onboarded ? '/home' : consentAt ? '/account' : '/consent';
     if (profile.role === 'psych') return needsMfa() ? '/mfa' : '/psych';
     if (onboarded) return '/home';
     return link ? '/applock' : '/link';
@@ -33,7 +35,7 @@ export default function Splash() {
     if (!known) return;
     const t = setTimeout(next, Math.max(0, MIN_MS - (Date.now() - mounted.current)));
     return () => clearTimeout(t);
-  }, [known, onboarded, role, session, profile, link]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [known, onboarded, role, session, profile, link, guest]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Background splash>

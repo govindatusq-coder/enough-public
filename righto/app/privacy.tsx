@@ -10,7 +10,7 @@ import { NotifPreview } from './notifs';
 import { scheduleCommitment, scheduleGoal, cancelAll } from '../src/notifications';
 import { wipeLocalData } from '../src/storage';
 import { toast } from '../src/toast';
-import { cloudActive, isPsych, refreshLink, signOut, useCloud } from '../src/backend/cloud';
+import { cloudActive, cloudMode, isPsych, refreshLink, signOut, useCloud } from '../src/backend/cloud';
 import { api } from '../src/backend/supabase';
 
 function Row({ title, sub, right, onPress, first }: { title: string; sub?: string; right?: React.ReactNode; onPress?: () => void; first?: boolean }) {
@@ -32,6 +32,7 @@ export default function Privacy() {
   const s = useStore();
   const link = useCloud((c) => c.link);
   const cloud = cloudActive();
+  const guest = cloudMode() && !cloud;
   const psych = isPsych();
   const sample = s.tasks.find((t) => t.status === 'planned' && t.kind === 'commitment') || s.tasks[0];
   const copy = sample ? notifCopy('commitment', sample, s.notifDetail) : { title: 'Righto', body: 'Time for your routine.' };
@@ -99,9 +100,9 @@ export default function Privacy() {
 
         {!psych && (
           <Glass style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
-            <Row first title={s.linked ? PSYCH.name + ' · ' + PSYCH.title : cloud ? 'Link with a psychologist' : 'No psychologist linked'} sub={s.linked ? (PSYCH.practice ? PSYCH.practice + ' · ' : '') + 'Ahpra ' + (PSYCH.ahpra || 'not provided') : cloud ? 'Enter the invite code your psychologist gave you.' : 'Ask your psychologist for an invite link.'}
-              onPress={!s.linked && cloud ? () => router.push({ pathname: '/link', params: { from: 'settings' } }) : undefined}
-              right={s.linked ? <SecondaryButton label="Unlink" size={15} icon={<LinkBreak size={16} weight="light" color={colors.navy} />} onPress={unlink} style={{ minHeight: 40, paddingHorizontal: 14 }} /> : !s.linked && cloud ? <CaretRight size={18} weight="light" color={colors.navy} /> : undefined} />
+            <Row first title={s.linked ? PSYCH.name + ' · ' + PSYCH.title : cloud || guest ? 'Link with a psychologist' : 'No psychologist linked'} sub={s.linked ? (PSYCH.practice ? PSYCH.practice + ' · ' : '') + 'Ahpra ' + (PSYCH.ahpra || 'not provided') : guest ? 'Create an account first, then enter the invite code your psychologist gives you.' : cloud ? 'Enter the invite code your psychologist gave you.' : 'Ask your psychologist for an invite link.'}
+              onPress={!s.linked && cloud ? () => router.push({ pathname: '/link', params: { from: 'settings' } }) : !s.linked && guest ? () => router.push({ pathname: '/account', params: { from: 'settings' } }) : undefined}
+              right={s.linked ? <SecondaryButton label="Unlink" size={15} icon={<LinkBreak size={16} weight="light" color={colors.navy} />} onPress={unlink} style={{ minHeight: 40, paddingHorizontal: 14 }} /> : !s.linked && (cloud || guest) ? <CaretRight size={18} weight="light" color={colors.navy} /> : undefined} />
           </Glass>
         )}
 
