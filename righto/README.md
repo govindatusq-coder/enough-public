@@ -35,6 +35,21 @@ Then, every time you want to share the current code:
 npx eas-cli@latest update --branch preview --message "what changed"
 ```
 
+## Android build for testers (APK)
+
+A real Android app anyone can install from a link, no Expo account needed. Also fixes Google sign-in (it returns to
+`righto://auth`) and lets reminders arrive as proper notifications.
+
+```bash
+cd righto
+npx eas-cli@latest build --platform android --profile preview
+```
+
+EAS builds in the cloud (free tier queues; 10–25 minutes). When it finishes it prints an install link and QR code;
+testers open the link on their Android phone, allow "install from this source", and install. Later code changes
+reach the same APK without a rebuild: `npx eas-cli@latest update --branch preview --message "…"` (the preview
+profile is on the `preview` channel). Rebuild only when native modules or app.json change.
+
 The command prints a link and QR code for the update. Opening it in Expo Go (SDK 57) loads the app. Google sign-in
 is not reliable in a published Expo Go preview (Expo cannot promise a stable return address there); email and
 password sign-in works. A development build (`eas build --profile development`) removes that limit.
