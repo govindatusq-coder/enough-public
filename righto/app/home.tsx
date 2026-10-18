@@ -62,10 +62,12 @@ export default function Home() {
           <Text style={T.h2}>{greeting(now.getHours())}</Text>
           <Text style={{ fontFamily: F.script, fontSize: 66, lineHeight: 92, color: colors.navy, marginLeft: -14, paddingLeft: 12, paddingRight: 8, marginVertical: -6 }}>{cap(CLIENT.first)}.</Text>
           <Text style={[T.italic, { fontSize: 17, lineHeight: 25, marginTop: 16 }]}>{calmLine}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 }}>
-            <CalendarBlank size={17} weight="light" color={colors.slate} />
-            {hasSession(nextSession.iso) ? <Text style={{ fontFamily: F.serif, fontSize: 15, color: colors.slate }}>Your next session is {longDayLabel(new Date(nextSession.iso))}.</Text> : null}
-          </View>
+          {hasSession(nextSession.iso) && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 }}>
+              <CalendarBlank size={17} weight="light" color={colors.slate} />
+              <Text style={{ fontFamily: F.serif, fontSize: 15, color: colors.slate }}>Your next session is {longDayLabel(new Date(nextSession.iso))}.</Text>
+            </View>
+          )}
         </View>
 
         <View style={{ gap: 18 }}>
