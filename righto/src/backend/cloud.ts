@@ -236,9 +236,17 @@ export async function pullClient() {
   if (nextIso) st.set({ nextSession: { when: dayLabel(new Date(nextIso)), iso: nextIso } });
   const prevById = new Map(st.tasks.map((t) => [t.id, t]));
   const mapped = (tasks as TaskRow[]).map((r) => rowToTask(r, prevById.get(r.id)));
-  const titles = new Map(mapped.map((t) => [t.id, t.title]));
+  // A task the client made on this phone that the server does not have yet (insert still in flight, or refused) must
+  // not vanish from under an open screen: keep it, and send it again.
+  const serverIds = new Set(mapped.map((t) => t.id));
+  const localOnly = st.tasks.filter((t) => t.author === 'client' && !serverIds.has(t.id));
+  const all = [...mapped, ...localOnly];
+  const titles = new Map(all.map((t) => [t.id, t.title]));
   const history: CheckIn[] = (checkins as CheckInRow[]).map((c) => ({ id: c.id, taskId: c.task_id, title: titles.get(c.task_id) ?? '', date: c.created_at, label: dayLabel(new Date(c.created_at)), outcome: c.outcome, helped: c.helped, next: c.next, shared: c.shared }));
-  st.set({ tasks: mapped, history });
+  const serverCheckIns = new Set(history.map((h) => h.id));
+  const localHistory = st.history.filter((h) => !serverCheckIns.has(h.id) && localOnly.some((t) => t.id === h.taskId));
+  st.set({ tasks: all, history: [...history, ...localHistory].sort((a, b) => b.date.localeCompare(a.date)) });
+  for (const t of localOnly) pushOwnTask(t).catch(() => undefined);
   for (const t of mapped) if (t.status === 'new' && t.author !== 'client' && !prevById.has(t.id) && st.tasks.length) notifyNewTask(t, st.notifDetail).catch(() => undefined);
 }
 

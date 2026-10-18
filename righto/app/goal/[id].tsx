@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, View, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Target, ClockCountdown } from 'phosphor-react-native';
@@ -18,13 +18,22 @@ export default function GoalScreen() {
   const patchTask = useStore((s) => s.patchTask);
   const nextSession = useStore((s) => s.nextSession);
   const [own, setOwn] = useState<Partial<Record<keyof GoalAnswers, boolean>>>({});
-  const [g, setG] = useState<Goal | null>(() => {
+  const initial = (): Goal | null => {
     if (!task) return null;
-    const d = defaultGoal(task);
-    if (daily) d.rem.days = allDays();
-    return d;
-  });
-  const options = useMemo(() => (task ? goalOptions(task, hasSession(nextSession.iso) ? dayLabel(new Date(nextSession.iso)) : '') : null), [task, nextSession.iso]);
+    try {
+      const d = defaultGoal(task);
+      if (daily) d.rem.days = allDays();
+      return d;
+    } catch (e) { console.warn('[righto] goal defaults', (e as Error).message); return { s: '', m: '', a: '', r: '', t: '', rem: { time: '8:30 pm', days: allDays() } }; }
+  };
+  const [g, setG] = useState<Goal | null>(initial);
+  useEffect(() => { if (!g && task) setG(initial()); }, [task]); // eslint-disable-line react-hooks/exhaustive-deps
+  const sessionIso = nextSession?.iso ?? '';
+  const options = useMemo(() => {
+    if (!task) return null;
+    try { return goalOptions(task, hasSession(sessionIso) ? dayLabel(new Date(sessionIso)) : ''); }
+    catch (e) { console.warn('[righto] goal options', (e as Error).message); return { s: [], m: [], a: [], r: [], t: [] }; }
+  }, [task, sessionIso]);
   if (!task || !g || !options) return <Background><BackRow /></Background>;
 
   const incomplete = GOALQ.some((f) => !(g[f.k] || '').trim()) || !g.rem.days.some(Boolean);

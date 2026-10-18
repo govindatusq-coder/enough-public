@@ -121,7 +121,7 @@ export const defaultPlan = (t: Task): Plan => {
   return sp ? { ...sp, prep: sp.prep || t.prepOpts[0] || NOPREP, time: null } : { routine: t.suggest || 'coffee', how: t.howOpts[0] || '', where: t.whereOpts[0] || '', prep: t.prepOpts[0] || NOPREP, time: null };
 };
 export const defaultGoal = (t: Task): Goal => {
-  if (t.goal) return { ...t.goal, rem: { ...t.goal.rem, days: [...t.goal.rem.days] } };
+  if (t.goal) return { ...emptyGoal(), ...t.goal, rem: { time: t.goal.rem?.time || '8:30 pm', days: Array.isArray(t.goal.rem?.days) && t.goal.rem.days.length === 7 ? [...t.goal.rem.days] : weekdays() } };
   const sg = t.suggestion && t.suggestion.kind === 'goal' ? t.suggestion.goal : emptyGoal();
   return { ...sg, rem: { time: '8:30 pm', days: weekdays() } };
 };
@@ -132,7 +132,7 @@ export const goalOptions = (t: Task, sessionLabel: string): Record<keyof GoalAns
   const sg: GoalAnswers | null = t.goal ? t.goal : t.suggestion && t.suggestion.kind === 'goal' ? t.suggestion.goal : null; // the client's own answers, else the clinician's suggestion, come first
   const cap = (s: string) => s.replace(/^./, (c) => c.toUpperCase());
   const combos: string[] = [];
-  for (const how of t.howOpts) for (const where of t.whereOpts) combos.push(cap(how) + ', ' + where);
+  for (const how of t.howOpts ?? []) for (const where of t.whereOpts ?? []) combos.push(cap(how) + ', ' + where);
   const pick = (first: string | undefined, rest: string[]) => uniq([first || '', ...rest]).slice(0, 3);
   return {
     s: pick(sg?.s, combos.length ? combos : [cap(lc(t.title))]),
