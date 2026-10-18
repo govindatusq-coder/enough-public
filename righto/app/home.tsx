@@ -60,7 +60,7 @@ export default function Home() {
       <ScrollView ref={scroll} contentContainerStyle={{ flexGrow: 1, paddingTop: 36, paddingHorizontal: 26, paddingBottom: 120, gap: 30 }}>
         <View>
           <Text style={T.h2}>{greeting(now.getHours())}</Text>
-          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={{ fontFamily: F.script, fontSize: 66, lineHeight: 100, color: colors.navy, marginLeft: 0, paddingLeft: 12, paddingRight: 24, paddingTop: 4, paddingBottom: 16, marginVertical: -10 }}>{cap(CLIENT.first)}.</Text>
+          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={{ fontFamily: F.script, fontSize: 66, lineHeight: 100, color: colors.navy, marginLeft: -8, paddingRight: 24, paddingTop: 4, paddingBottom: 16, marginVertical: -10 }}>{'\u00A0' + cap(CLIENT.first)}.</Text>
           <Text style={[T.italic, { fontSize: 17, lineHeight: 25, marginTop: 16 }]}>{calmLine}</Text>
           {hasSession(nextSession.iso) && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 }}>
