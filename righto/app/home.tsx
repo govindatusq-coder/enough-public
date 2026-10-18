@@ -1,11 +1,12 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import * as Crypto from 'expo-crypto';
 import { ScrollView, Text, View, Pressable } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Feather, Wind, ArrowRight, Clock, Play, CalendarBlank, GearSix } from 'phosphor-react-native';
-import { Background, Glass, Kicker, Logo, PrimaryButton, TextButton, SupportLink, TabBar, T, F, useTop } from '../src/ui';
+import { Feather, Wind, ArrowRight, Clock, Play, CalendarBlank, GearSix, Target } from 'phosphor-react-native';
+import { Background, Glass, Kicker, Logo, PrimaryButton, TextButton, SupportLink, TabBar, Field, Chip, T, F, useTop } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore, useEphemeral } from '../src/store';
-import { type Preference, type Task, liveTasks, orderedTasks, pickByPreference, PREF_KICKER, subOf, greeting, currentRoutine, longDayLabel, DAYS, CLIENT, PSYCH } from '../src/logic';
+import { type Preference, type Task, liveTasks, orderedTasks, pickByPreference, prefKicker, subOf, greeting, currentRoutine, longDayLabel, hasSession, mkTask, MINS, DAYS, CLIENT, PSYCH } from '../src/logic';
 
 const PICKS: { k: Preference; label: string; Icon: typeof Feather }[] = [
   { k: 'tiny', label: 'Something quick', Icon: Feather },
@@ -20,7 +21,10 @@ const openTask = (t: Task) => router.push({ pathname: '/task/[id]', params: { id
 /** Home — "mindful" variant from the v3 reference. The picker is a sort over clinician tasks; nothing is scored or stored. */
 export default function Home() {
   const tasks = useStore((s) => s.tasks);
+  const role = useStore((s) => s.role);
+  const linked = useStore((s) => s.linked);
   const homePrompt = useStore((s) => s.homePrompt);
+  const [ownOpen, setOwnOpen] = useState(false);
   const nextSession = useStore((s) => s.nextSession);
   const { pref, skipped, setPref, skip } = useEphemeral();
   const top = useTop();
@@ -28,7 +32,7 @@ export default function Home() {
   const scroll = useRef<ScrollView>(null);
   const restart = () => { setPref(null); scroll.current?.scrollTo({ y: 0, animated: true }); };
   // Every time the user lands on Home the pick resets, so the "What feels doable right now?" card shows first.
-  useFocusEffect(useCallback(() => { setPref(null); }, [setPref]));
+  useFocusEffect(useCallback(() => { setPref(null); setOwnOpen(false); if (role === 'psych') router.replace('/psych'); }, [setPref, role]));
 
   const live = useMemo(() => liveTasks(tasks), [tasks]);
   const ordered = useMemo(() => orderedTasks(tasks, skipped, currentRoutine(now.getHours())), [tasks, skipped]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -38,6 +42,8 @@ export default function Home() {
   const newTasks = tasks.filter((t) => t.status === 'new');
   const showNewNote = newTasks.length > 0 && !(stepT && stepT.status === 'new');
   const allDone = !live.length;
+  const noTasks = tasks.length === 0; // nothing assigned and nothing of their own yet: still check in, then help them set something up
+  const showOwn = noTasks ? !!effPref : allDone && ownOpen;
   const calmLine = homePrompt && !pref ? 'Take a breath. There’s nothing you need to do this second.' : 'Take a breath. One small step is enough today.';
 
   return (
@@ -58,16 +64,16 @@ export default function Home() {
           <Text style={[T.italic, { fontSize: 17, lineHeight: 25, marginTop: 16 }]}>{calmLine}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 }}>
             <CalendarBlank size={17} weight="light" color={colors.slate} />
-            {new Date(nextSession.iso).getTime() > now.getTime() ? <Text style={{ fontFamily: F.serif, fontSize: 15, color: colors.slate }}>Your next session is {longDayLabel(new Date(nextSession.iso))}.</Text> : null}
+            {hasSession(nextSession.iso) ? <Text style={{ fontFamily: F.serif, fontSize: 15, color: colors.slate }}>Your next session is {longDayLabel(new Date(nextSession.iso))}.</Text> : null}
           </View>
         </View>
 
         <View style={{ gap: 18 }}>
-          {!allDone && homePrompt && !pref && (
+          {(!allDone || noTasks) && homePrompt && !pref && (
             <Glass radius={26} style={{ padding: 24, gap: 16 }}>
               <View>
                 <Text style={T.title}>What feels doable right now?</Text>
-                <Text style={[T.meta, { marginTop: 4 }]}>Picks from the tasks {PSYCH.short} gave you.</Text>
+                <Text style={[T.meta, { marginTop: 4 }]}>{noTasks ? 'Nothing to pick from yet. Say what feels right and we’ll set something small up together.' : linked ? 'Picks from the tasks ' + PSYCH.short + ' gave you.' : 'Picks from your tasks.'}</Text>
               </View>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {PICKS.map(({ k, label, Icon }) => (
@@ -84,7 +90,7 @@ export default function Home() {
 
           {!allDone && effPref && stepT && (
             <Glass radius={26} style={{ paddingTop: 26, paddingHorizontal: 24, paddingBottom: 22, gap: 12 }}>
-              {pref ? <Kicker>{PREF_KICKER[pref]}</Kicker> : null}
+              {pref ? <Kicker>{prefKicker(pref)}</Kicker> : null}
               <Text style={[T.h2, { lineHeight: 32 }]}>{stepT.title}</Text>
               <Text style={T.italic}>{subOf(stepT)}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
@@ -95,10 +101,13 @@ export default function Home() {
             </Glass>
           )}
 
-          {allDone && (
+          {showOwn && <OwnTaskCard pref={pref} linked={linked} onBack={noTasks && homePrompt ? () => setPref(null) : allDone && !noTasks ? () => setOwnOpen(false) : undefined} />}
+
+          {allDone && !noTasks && !ownOpen && (
             <View style={{ gap: 8, paddingVertical: 12 }}>
               <Text style={{ fontFamily: F.script, fontSize: 46, lineHeight: 50, color: colors.navy }}>You’ve done enough for today.</Text>
               <Text style={T.muted}>Rest, or look back over your journal.</Text>
+              <TextButton label="Or try something of your own" italic size={15} onPress={() => setOwnOpen(true)} style={{ alignSelf: 'flex-start', paddingHorizontal: 0, minHeight: 36 }} />
             </View>
           )}
 
@@ -115,5 +124,41 @@ export default function Home() {
       </ScrollView>
       <TabBar active="home" />
     </Background>
+  );
+}
+
+/**
+ * No homework yet (or all done): the client names one small thing they would like to try. It becomes their own task,
+ * so the usual Do it now / commitment / goal steps apply. Nothing here is advice, scored, or shown to the psychologist.
+ */
+function OwnTaskCard({ pref, linked, onBack }: { pref: Preference | null; linked: boolean; onBack?: () => void }) {
+  const addTask = useStore((s) => s.addTask);
+  const [title, setTitle] = useState('');
+  const [mins, setMins] = useState(pref === 'tiny' ? 5 : pref === 'time' ? 20 : 10);
+  const go = () => {
+    const t = mkTask({
+      id: Crypto.randomUUID(), title: title.trim(), detail: title.trim(), mins, author: 'client', sent: 'Today', status: 'new', tags: pref === 'quiet' ? ['quiet'] : [],
+      why: 'Something you chose to try. Keeping it small makes it more likely to happen, and your psychologist can build on it with you next session.',
+    });
+    addTask(t);
+    router.push({ pathname: '/task/[id]', params: { id: t.id } });
+  };
+  return (
+    <Glass radius={26} style={{ paddingTop: 26, paddingHorizontal: 24, paddingBottom: 22, gap: 14 }}>
+      <Kicker>{pref ? prefKicker(pref) : 'Your own idea'}</Kicker>
+      <Text style={[T.h2, { lineHeight: 32 }]}>What’s one small thing you’d like to try?</Text>
+      <Text style={T.italic}>{linked ? 'Nothing from ' + PSYCH.short + ' yet. ' : ''}Your own ideas count. Keep it small enough to actually happen.</Text>
+      <Field label="" value={title} onChangeText={setTitle} placeholder="e.g. A short walk after lunch" inputProps={{ autoCapitalize: 'sentences', returnKeyType: 'done' }} />
+      <View style={{ gap: 8 }}>
+        <Text style={T.meta}>Takes about</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {MINS.map((m) => <Chip key={m} label={m + ' min'} selected={mins === m} onPress={() => setMins(m)} style={{ borderRadius: 40, paddingVertical: 0 }} />)}
+        </View>
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+        <PrimaryButton style={{ flex: 1, minHeight: 52, paddingHorizontal: 10, shadowOpacity: 0, elevation: 0 }} icon={<Target size={18} weight="light" color={colors.cream} />} label="Set it up" disabled={!title.trim()} onPress={go} />
+        {onBack ? <TextButton label="Something else" onPress={onBack} style={{ minHeight: 52, paddingHorizontal: 12 }} /> : null}
+      </View>
+    </Glass>
   );
 }

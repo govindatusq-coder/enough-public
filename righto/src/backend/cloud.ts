@@ -85,7 +85,7 @@ export async function loadProfile() {
   if (p) {
     const st = useStore.getState();
     // Signed in: the local sample homework (ids t1, t2, …) makes way for the account's real rows.
-    st.set({ role: p.role, ...(st.tasks.some((t) => /^t\d+$/.test(t.id)) ? { tasks: [], history: [] } : {}) });
+    st.set({ role: p.role, ...(st.tasks.some((t) => /^t\d+$/.test(t.id)) ? { tasks: [], history: [], nextSession: { when: '', iso: '' } } : {}) });
     await refreshMfa();
     if (p.role === 'client') await refreshLink();
     applyNames(p, useCloud.getState().link);
@@ -197,7 +197,7 @@ export async function refreshLink() {
 }
 
 type TaskRow = {
-  id: string; title: string; detail: string; why: string; mins: number; needs: string; tags: string[]; suggestion: Task['suggestion']; suggest: Task['suggest'];
+  id: string; psych_id: string | null; title: string; detail: string; why: string; mins: number; needs: string; tags: string[]; suggestion: Task['suggestion']; suggest: Task['suggest'];
   where_opts: string[]; how_opts: string[]; prep_opts: string[]; sent_at: string; status: Task['status']; kind: Task['kind']; daily: boolean;
   plan: Task['plan']; goal: Task['goal']; later_until: string | null; today_outcome: Outcome | null; today_date: string | null; shared: boolean;
 };
@@ -210,7 +210,7 @@ export function rowToTask(r: TaskRow, prev?: Task): Task {
     id: r.id, title: r.title, detail: r.detail, why: r.why, mins: r.mins, needs: r.needs, tags: (r.tags ?? []) as Task['tags'], suggestion: r.suggestion ?? null, suggest: r.suggest ?? 'coffee',
     whereOpts: r.where_opts ?? [], howOpts: r.how_opts ?? [], prepOpts: r.prep_opts ?? [], sent: sentLabel(r.sent_at), status: r.status, kind: r.kind ?? null, daily: !!r.daily,
     plan: r.plan ?? null, goal: r.goal ?? null, laterUntil: r.later_until ? dayLabel(new Date(r.later_until + 'T12:00:00')) : undefined,
-    today: r.today_date === dayKey(new Date()) ? r.today_outcome : null, shared: r.shared, notifIds: prev?.notifIds ?? [],
+    today: r.today_date === dayKey(new Date()) ? r.today_outcome : null, shared: r.shared, notifIds: prev?.notifIds ?? [], author: r.psych_id ? 'psych' : 'client',
   });
 }
 
@@ -232,7 +232,7 @@ export async function pullClient() {
   const titles = new Map(mapped.map((t) => [t.id, t.title]));
   const history: CheckIn[] = (checkins as CheckInRow[]).map((c) => ({ id: c.id, taskId: c.task_id, title: titles.get(c.task_id) ?? '', date: c.created_at, label: dayLabel(new Date(c.created_at)), outcome: c.outcome, helped: c.helped, next: c.next, shared: c.shared }));
   st.set({ tasks: mapped, history });
-  for (const t of mapped) if (t.status === 'new' && !prevById.has(t.id) && st.tasks.length) notifyNewTask(t, st.notifDetail).catch(() => undefined);
+  for (const t of mapped) if (t.status === 'new' && t.author !== 'client' && !prevById.has(t.id) && st.tasks.length) notifyNewTask(t, st.notifDetail).catch(() => undefined);
 }
 
 /** Mirror a local task change to the project. Fire-and-forget; the local store stays the source for the UI. */
@@ -249,6 +249,16 @@ export function pushTaskPatch(id: string, patch: Partial<Task>) {
   if (patch.status === 'later') row.later_until = dayKey(plusDays(new Date(), 3));
   if (!Object.keys(row).length) return;
   supabase().from('righto_tasks').update(row).eq('id', id).then(({ error }) => { if (error) console.warn('[righto] task sync', error.message); });
+}
+
+/** A client's own small thing to try. Stored with no psychologist, so it never appears in a psychologist's view. */
+export function pushOwnTask(t: Task) {
+  if (!cloudActive() || isPsych() || t.author !== 'client') return;
+  const uid = useCloud.getState().session?.user.id;
+  supabase().from('righto_tasks').insert({
+    id: t.id, client_id: uid, psych_id: null, title: t.title, detail: t.detail, why: t.why, mins: t.mins, needs: t.needs, tags: t.tags, suggestion: null, suggest: t.suggest,
+    where_opts: t.whereOpts, how_opts: t.howOpts, prep_opts: t.prepOpts, status: 'new',
+  }).then(({ error }) => { if (error) console.warn('[righto] own task sync', error.message); });
 }
 
 export function pushCheckIn(c: CheckIn) {

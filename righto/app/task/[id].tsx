@@ -6,7 +6,7 @@ import { CalendarBlank, CaretRight, CaretDown, CaretUp, Play, CalendarPlus, Shuf
 import { Background, Glass, NavyCard, Kicker, BackRow, InfoButtons, IconCircle, SupportLink, BottomBar, TextButton, T, F } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
-import { suggestionLine, plusDays, dayLabel, DAYS, PSYCH, longDayLabel } from '../../src/logic';
+import { suggestionLine, plusDays, dayLabel, DAYS, PSYCH, longDayLabel, hasSession } from '../../src/logic';
 import { cancelFor, scheduleNudge } from '../../src/notifications';
 import { toast } from '../../src/toast';
 
@@ -52,7 +52,7 @@ export default function NewTask() {
     { k: 'goal', label: 'At a time I choose', sub: 'Say what you’ll do and when, and pick your reminder.', Icon: Target, go: () => router.push({ pathname: '/goal/[id]', params: p }) },
   ];
 
-  const sessionDay = longDayLabel(new Date(nextSession.iso)).split(' ')[0];
+  const sessionDay = hasSession(nextSession.iso) ? longDayLabel(new Date(nextSession.iso)).split(' ')[0] + '’s' : 'your next';
 
   return (
     <Background>
@@ -61,13 +61,13 @@ export default function NewTask() {
         <View style={{ paddingHorizontal: 4, gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.champagne }} />
-            <Kicker>From {PSYCH.name} ({PSYCH.title}) · {task.sent}</Kicker>
+            <Kicker>{task.author === 'client' ? 'Your own idea' : 'From ' + PSYCH.name + ' (' + PSYCH.title + ')'} · {task.sent}</Kicker>
           </View>
           <Text style={T.h1}>{task.title}</Text>
           <Text style={{ fontFamily: F.serif, fontSize: 15, color: colors.slate }}>About {task.mins} min · {task.needs}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <CalendarBlank size={16} weight="light" color={colors.slate} />
-            <Text style={[T.italic, { fontSize: 15, lineHeight: 20 }]}>Before {sessionDay}’s session</Text>
+            <Text style={[T.italic, { fontSize: 15, lineHeight: 20 }]}>Before {sessionDay} session</Text>
           </View>
         </View>
 

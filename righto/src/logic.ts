@@ -37,6 +37,7 @@ export type Task = {
   prepOpts: string[];
   notifIds: string[];
   shared: boolean;
+  author?: 'psych' | 'client'; // a client's own small thing to try (never shown to the psychologist)
 };
 
 export type CheckIn = {
@@ -134,7 +135,7 @@ export const goalOptions = (t: Task, sessionLabel: string): Record<keyof GoalAns
     m: pick(sg?.m, ['I’ve set a timer for ' + t.mins + ' minutes and finished', 'I’ve done it once, start to end', 'I’ve written down that I did it']),
     a: pick(sg?.a, ['It only takes about ' + t.mins + ' minutes', t.needs && t.needs !== 'Nothing' ? 'I already have ' + lc(t.needs) : 'I don’t need anything for it', 'I can fit it around something I already do']),
     r: pick(sg?.r, ['We talked about it in session and it made sense', 'I want to see whether it makes a difference', 'I want to feel more in charge of my day']),
-    t: pick(sg?.t, ['Every day until my next session on ' + sessionLabel, 'Weekdays until my next session on ' + sessionLabel, 'Three times this week']),
+    t: pick(sg?.t, ['Every day until my next session' + (sessionLabel ? ' on ' + sessionLabel : ''), 'Weekdays until my next session' + (sessionLabel ? ' on ' + sessionLabel : ''), 'Three times this week']),
   };
 };
 
@@ -212,19 +213,22 @@ export const pickByPreference = (tasks: Task[], pref: Preference, next: Task | u
   return next;
 };
 
-export const PREF_KICKER: Record<Preference, string> = {
+export const prefKicker = (p: Preference) => ({
   tiny: 'Your quickest task',
-  quiet: 'A quiet one Dr Chen picked',
+  quiet: 'A quiet one',
   next: 'Your next small step',
   time: 'You’ve got time for this',
   skip: 'Your next small step',
-};
+}[p]);
+
+/** True when a session date is known and still ahead. Cloud accounts start with none. */
+export const hasSession = (iso: string | null | undefined) => !!iso && !isNaN(Date.parse(iso)) && Date.parse(iso) > Date.now();
 
 export const subOf = (x: Task) => {
-  const base = x.status === 'new' ? 'New from Dr Chen · about ' + x.mins + ' min'
-    : !x.kind ? 'From Dr Chen · about ' + x.mins + ' min'
-      : x.kind === 'goal' ? 'Your goal · ' + trim(x.goal?.s)
-        : routineOf(x.plan?.routine).anchor + ', ' + (x.plan?.where || '');
+  const from = x.author === 'client' ? 'Your own idea' : (x.status === 'new' ? 'New from ' : 'From ') + PSYCH.short;
+  const base = x.status === 'new' || !x.kind ? from + ' · about ' + x.mins + ' min'
+    : x.kind === 'goal' ? 'Your goal · ' + trim(x.goal?.s)
+      : routineOf(x.plan?.routine).anchor + ', ' + (x.plan?.where || '');
   return x.today ? 'Done today · ' + base : base;
 };
 

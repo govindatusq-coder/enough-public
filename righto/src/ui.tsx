@@ -16,6 +16,16 @@ export const F = { serif: 'Newsreader_400Regular', serifMed: 'Newsreader_500Medi
 export const bgImage = require('../assets/background-coast.webp');
 const fill = StyleSheet.absoluteFill;
 
+const LAYOUT_KEYS = ['padding', 'paddingHorizontal', 'paddingVertical', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'paddingStart', 'paddingEnd', 'gap', 'rowGap', 'columnGap', 'flexDirection', 'alignItems', 'justifyContent', 'flexWrap'];
+/** Absolute overlays (blur, gradient, photo) must sit on a box without padding: on Android they are inset by it. So padding and inner layout move to a content View. */
+function splitLayout(style?: ViewStyle | ViewStyle[]): [ViewStyle, ViewStyle] {
+  const flat = (StyleSheet.flatten(style) || {}) as Record<string, unknown>;
+  const outer: Record<string, unknown> = {};
+  const inner: Record<string, unknown> = {};
+  for (const k of Object.keys(flat)) (LAYOUT_KEYS.includes(k) ? inner : outer)[k] = flat[k];
+  return [outer as ViewStyle, inner as ViewStyle];
+}
+
 // ---- Layout helpers ------------------------------------------------------------------------------
 
 /** Reference designs assume a 47pt status bar; offsets are relative to the real safe-area inset. */
@@ -40,13 +50,14 @@ export function Background({ children, splash }: { children?: React.ReactNode; s
 }
 
 export function Glass({ children, style, radius = 22, intensity = 40, tint }: { children?: React.ReactNode; style?: ViewStyle | ViewStyle[]; radius?: number; intensity?: number; tint?: string }) {
+  const [outer, inner] = splitLayout(style);
   return (
-    <View style={[{ borderRadius: radius, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.08, shadowRadius: 35, shadowOffset: { width: 0, height: 8 }, elevation: 2 }, style]}>
+    <View style={[{ borderRadius: radius, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.08, shadowRadius: 35, shadowOffset: { width: 0, height: 8 }, elevation: 2 }, outer]}>
       <BlurView intensity={intensity} tint="light" blurMethod="dimezisBlurView" style={fill} />
       <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.6 }} colors={['#fbf8f142', '#f6e7d61f', '#fbf8f133']} locations={[0, 0.6, 1]} style={fill} />
       {tint ? <View style={[fill, { backgroundColor: tint }]} /> : null}
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, backgroundColor: '#ffffffe0' }} />
-      {children}
+      <View style={[{ flexGrow: 1 }, inner]}>{children}</View>
     </View>
   );
 }
@@ -58,11 +69,12 @@ const NAVY = {
 };
 export function NavyCard({ children, style, variant = 'default' }: { children: React.ReactNode; style?: ViewStyle; variant?: keyof typeof NAVY }) {
   const v = NAVY[variant];
+  const [outer, inner] = splitLayout(style);
   return (
-    <View style={[{ borderRadius: v.radius, overflow: 'hidden', padding: v.padding, shadowColor: colors.navy, shadowOpacity: 0.19, shadowRadius: 30, shadowOffset: { width: 0, height: 10 }, elevation: 4 }, style]}>
+    <View style={[{ borderRadius: v.radius, overflow: 'hidden', shadowColor: colors.navy, shadowOpacity: 0.19, shadowRadius: 30, shadowOffset: { width: 0, height: 10 }, elevation: 4 }, outer]}>
       <ImageBackground source={bgImage} resizeMode="cover" style={fill} />
       <LinearGradient start={{ x: 0, y: 0 }} end={v.end} colors={v.colors} style={fill} />
-      {children}
+      <View style={[{ flexGrow: 1, padding: v.padding }, inner]}>{children}</View>
     </View>
   );
 }

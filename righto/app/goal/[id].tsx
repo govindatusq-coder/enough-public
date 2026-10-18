@@ -5,7 +5,7 @@ import { Target, ClockCountdown } from 'phosphor-react-native';
 import { Background, Glass, Kicker, BackRow, Field, Chip, PrimaryButton, BottomBar, NotMonitored, T, F } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
-import { type Goal, type GoalAnswers, GOALQ, TIMES, DAYS, allDays, daysLine, defaultGoal, goalOptions, dayLabel, PSYCH } from '../../src/logic';
+import { type Goal, type GoalAnswers, GOALQ, TIMES, DAYS, allDays, daysLine, defaultGoal, goalOptions, dayLabel, PSYCH, hasSession } from '../../src/logic';
 import { scheduleGoal } from '../../src/notifications';
 import { TimePill } from '../../src/time-picker';
 import { toast } from '../../src/toast';
@@ -24,7 +24,7 @@ export default function GoalScreen() {
     if (daily) d.rem.days = allDays();
     return d;
   });
-  const options = useMemo(() => (task ? goalOptions(task, dayLabel(new Date(nextSession.iso))) : null), [task, nextSession.iso]);
+  const options = useMemo(() => (task ? goalOptions(task, hasSession(nextSession.iso) ? dayLabel(new Date(nextSession.iso)) : '') : null), [task, nextSession.iso]);
   if (!task || !g || !options) return <Background><BackRow /></Background>;
 
   const incomplete = GOALQ.some((f) => !(g[f.k] || '').trim()) || !g.rem.days.some(Boolean);

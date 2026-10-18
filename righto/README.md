@@ -62,7 +62,8 @@ lock-screen preview · Home ("What feels doable right now?" picker, next-step ca
 (Why "?" and About "i" sheets, suggested commitment/goal, Do it now / Do it later with a routine or at a chosen time / Something else)
 · Set a commitment (When · Where · How · Make it easy · Reminder with the routine or at a time you choose, live navy
 preview) · Your commitment · Set a goal (5 questions, reminder chips or your own time, days) · Do it now (SVG + Reanimated timer ring) · Check-in (Done / Some of it / Not today, what you
-learned, per-check-in share toggle) · Keep it going · Journal (progress tile, segmented bar, legend, Finished homework with Try again, entries) · Settings
+learned, per-check-in share toggle) · Keep it going · Journal (progress tile, segmented bar, legend, Finished homework with Try again, entries) · Own ideas: with no homework yet (or everything done) Home still asks what feels doable, then "What's one small thing you'd like to
+try?" and sets it up through the same Do it now / commitment / goal steps; own tasks stay private to the client · Settings
 · Privacy & data (notification detail, share default, app lock + lock-after, unlink, download my data, delete account,
 policy/notice/privacy officer). "Need support now?" (000, Lifeline, Beyond Blue, About Righto) is reachable from Home,
 New task, Do it now, Check-in and Journal.

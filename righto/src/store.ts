@@ -61,7 +61,7 @@ export const useStore = create<State>()(
       ...base(),
       set: (p) => set(p),
       patchTask: (id, p) => { set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, ...p } : t)) })); cloud().pushTaskPatch(id, p); },
-      addTask: (t) => set((s) => ({ tasks: [t, ...s.tasks] })),
+      addTask: (t) => { set((s) => ({ tasks: [t, ...s.tasks] })); cloud().pushOwnTask(t); },
       record: (taskId, outcome, helped, next, shared) =>
         set((s) => {
           const t = s.tasks.find((x) => x.id === taskId);

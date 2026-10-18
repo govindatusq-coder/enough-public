@@ -5,7 +5,7 @@ import { Plus, CalendarDots, ShieldCheck, FilePdf, LinkBreak, HandHeart } from '
 import { Background, Glass, Kicker, BackRow, PrimaryButton, SecondaryButton, SegBar, Seg, Pill, Toggle, T, F } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore } from '../../src/store';
-import { CLIENT, OUT, LOOK, lineOf, suggestionLine, statusTag, perTaskRows, daysUntil, dLabel, learningOf, dayLabel, PSYCH } from '../../src/logic';
+import { CLIENT, OUT, LOOK, lineOf, suggestionLine, statusTag, perTaskRows, daysUntil, dLabel, learningOf, dayLabel, PSYCH, hasSession } from '../../src/logic';
 import { toast } from '../../src/toast';
 import { cloudActive, clientRecord, setHomePrompt, type RecordView } from '../../src/backend/cloud';
 import { api } from '../../src/backend/supabase';
@@ -32,7 +32,7 @@ export default function ClientReview() {
   const tasks = cloud ? rec?.tasks ?? [] : isSam ? allTasks : [];
   const history = cloud ? rec?.checkins ?? [] : isSam ? allHistory.filter((h) => h.shared) : [];
   const homePrompt = cloud ? rec?.client.home_prompt ?? true : localPrompt;
-  const nextIso = cloud ? rec?.sessions.find((x) => new Date(x.starts_at).getTime() > Date.now())?.starts_at ?? null : localSession.iso;
+  const nextIso = cloud ? rec?.sessions.find((x) => new Date(x.starts_at).getTime() > Date.now())?.starts_at ?? null : hasSession(localSession.iso) ? localSession.iso : null;
   const togglePrompt = async (v: boolean) => {
     if (!cloud) { set({ homePrompt: v }); return; }
     setRec((r) => (r ? { ...r, client: { ...r.client, home_prompt: v } } : r));

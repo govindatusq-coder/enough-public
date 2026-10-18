@@ -23,7 +23,8 @@ Nothing on the server scores, flags or interprets. Counts shown to the psycholog
 
 1. Create a project at https://supabase.com. Region **Sydney (ap-southeast-2)**. Give it a strong database password and keep it in a password manager.
 2. Open **SQL Editor → New query**, paste the whole of `supabase/migrations/20261016120000_righto_core.sql`, run it, then do the same with
-   `supabase/migrations/20261016130000_righto_home_prompt.sql`. Each should finish with "Success. No rows returned".
+   `supabase/migrations/20261016130000_righto_home_prompt.sql`, then `supabase/migrations/20261018090000_righto_own_tasks.sql`.
+   Each should finish with "Success. No rows returned".
 3. **Authentication → Multi-Factor**: enable **TOTP**. Psychologist accounts are refused any client data until the session has passed a second
    factor, so without this psychologists cannot get past the two-step screen. While testing you can switch the requirement off with
    `update public.righto_settings set value = 'false'::jsonb where key = 'require_psych_mfa';` (set it back to `'true'` before real use).
