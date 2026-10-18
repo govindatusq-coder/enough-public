@@ -24,7 +24,6 @@ export default function Home() {
   const role = useStore((s) => s.role);
   const linked = useStore((s) => s.linked);
   const homePrompt = useStore((s) => s.homePrompt);
-  const [ownOpen, setOwnOpen] = useState(false);
   const nextSession = useStore((s) => s.nextSession);
   const { pref, skipped, setPref, skip } = useEphemeral();
   const top = useTop();
@@ -32,7 +31,7 @@ export default function Home() {
   const scroll = useRef<ScrollView>(null);
   const restart = () => { setPref(null); scroll.current?.scrollTo({ y: 0, animated: true }); };
   // Every time the user lands on Home the pick resets, so the "What feels doable right now?" card shows first.
-  useFocusEffect(useCallback(() => { setPref(null); setOwnOpen(false); if (role === 'psych') router.replace('/psych'); }, [setPref, role]));
+  useFocusEffect(useCallback(() => { setPref(null); if (role === 'psych') router.replace('/psych'); }, [setPref, role]));
 
   const live = useMemo(() => liveTasks(tasks), [tasks]);
   const ordered = useMemo(() => orderedTasks(tasks, skipped, currentRoutine(now.getHours())), [tasks, skipped]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -41,10 +40,11 @@ export default function Home() {
   const stepT = effPref ? (effPref === 'skip' || effPref === 'next' ? nextT : pickByPreference(tasks, effPref, nextT)) : undefined;
   const newTasks = tasks.filter((t) => t.status === 'new');
   const showNewNote = newTasks.length > 0 && !(stepT && stepT.status === 'new');
-  const allDone = !live.length;
-  const noTasks = tasks.length === 0; // nothing assigned and nothing of their own yet: still check in, then help them set something up
-  const showOwn = noTasks ? !!effPref : allDone && ownOpen;
+  // Home always asks what feels doable. When no task fits (nothing assigned, or everything done today) the pick leads to the
+  // client's own idea instead of a rest screen.
+  const showOwn = !!effPref && !stepT;
   const calmLine = homePrompt && !pref ? 'Take a breath. There’s nothing you need to do this second.' : 'Take a breath. One small step is enough today.';
+  const noneToPick = !live.length;
 
   return (
     <Background>
@@ -69,11 +69,11 @@ export default function Home() {
         </View>
 
         <View style={{ gap: 18 }}>
-          {(!allDone || noTasks) && homePrompt && !pref && (
+          {homePrompt && !pref && (
             <Glass radius={26} style={{ padding: 24, gap: 16 }}>
               <View>
                 <Text style={T.title}>What feels doable right now?</Text>
-                <Text style={[T.meta, { marginTop: 4 }]}>{noTasks ? 'Nothing to pick from yet. Say what feels right and we’ll set something small up together.' : linked ? 'Picks from the tasks ' + PSYCH.short + ' gave you.' : 'Picks from your tasks.'}</Text>
+                <Text style={[T.meta, { marginTop: 4 }]}>{noneToPick ? 'Say what feels right and we’ll set something small up together.' : linked ? 'Picks from the tasks ' + PSYCH.short + ' gave you.' : 'Picks from your tasks.'}</Text>
               </View>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {PICKS.map(({ k, label, Icon }) => (
@@ -88,7 +88,7 @@ export default function Home() {
             </Glass>
           )}
 
-          {!allDone && effPref && stepT && (
+          {effPref && stepT && (
             <Glass radius={26} style={{ paddingTop: 26, paddingHorizontal: 24, paddingBottom: 22, gap: 12 }}>
               {pref ? <Kicker>{prefKicker(pref)}</Kicker> : null}
               <Text style={[T.h2, { lineHeight: 32 }]}>{stepT.title}</Text>
@@ -101,15 +101,7 @@ export default function Home() {
             </Glass>
           )}
 
-          {showOwn && <OwnTaskCard pref={pref} linked={linked} onBack={noTasks && homePrompt ? () => setPref(null) : allDone && !noTasks ? () => setOwnOpen(false) : undefined} />}
-
-          {allDone && !noTasks && !ownOpen && (
-            <View style={{ gap: 8, paddingVertical: 12 }}>
-              <Text style={{ fontFamily: F.script, fontSize: 46, lineHeight: 50, color: colors.navy }}>You’ve done enough for today.</Text>
-              <Text style={T.muted}>Rest, or look back over your journal.</Text>
-              <TextButton label="Or try something of your own" italic size={15} onPress={() => setOwnOpen(true)} style={{ alignSelf: 'flex-start', paddingHorizontal: 0, minHeight: 36 }} />
-            </View>
-          )}
+          {showOwn && <OwnTaskCard pref={pref} linked={linked} allDone={tasks.length > 0} onBack={homePrompt ? () => setPref(null) : undefined} />}
 
           {showNewNote && (
             <Pressable onPress={() => openTask(newTasks[0])} accessibilityRole="button" style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingVertical: 4, minHeight: 44 }}>
@@ -131,7 +123,7 @@ export default function Home() {
  * No homework yet (or all done): the client names one small thing they would like to try. It becomes their own task,
  * so the usual Do it now / commitment / goal steps apply. Nothing here is advice, scored, or shown to the psychologist.
  */
-function OwnTaskCard({ pref, linked, onBack }: { pref: Preference | null; linked: boolean; onBack?: () => void }) {
+function OwnTaskCard({ pref, linked, allDone, onBack }: { pref: Preference | null; linked: boolean; allDone: boolean; onBack?: () => void }) {
   const addTask = useStore((s) => s.addTask);
   const [title, setTitle] = useState('');
   const [mins, setMins] = useState(pref === 'tiny' ? 5 : pref === 'time' ? 20 : 10);
@@ -147,7 +139,7 @@ function OwnTaskCard({ pref, linked, onBack }: { pref: Preference | null; linked
     <Glass radius={26} style={{ paddingTop: 26, paddingHorizontal: 24, paddingBottom: 22, gap: 14 }}>
       <Kicker>{pref ? prefKicker(pref) : 'Your own idea'}</Kicker>
       <Text style={[T.h2, { lineHeight: 32 }]}>What’s one small thing you’d like to try?</Text>
-      <Text style={T.italic}>{linked ? 'Nothing from ' + PSYCH.short + ' yet. ' : ''}Your own ideas count. Keep it small enough to actually happen.</Text>
+      <Text style={T.italic}>{allDone ? 'Everything on your list is done today. ' : linked ? 'Nothing from ' + PSYCH.short + ' yet. ' : ''}Your own ideas count. Keep it small enough to actually happen.</Text>
       <Field label="" value={title} onChangeText={setTitle} placeholder="e.g. A short walk after lunch" inputProps={{ autoCapitalize: 'sentences', returnKeyType: 'done' }} />
       <View style={{ gap: 8 }}>
         <Text style={T.meta}>Takes about</Text>
