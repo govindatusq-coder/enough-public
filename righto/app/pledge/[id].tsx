@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Bell, HandHeart } from 'phosphor-react-native';
-import { Background, NavyCard, Kicker, BackRow, PrimaryButton, BottomBar, CheckRow, T, F } from '../../src/ui';
+import { Background, NavyCard, Kicker, BackRow, PrimaryButton, BottomBar, CheckRow, T, F, MissingTask } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
 import { type Plan, type RoutineId, NOPREP, sentence, routineOf, dateStamp, CLIENT, PSYCH, cap } from '../../src/logic';
@@ -17,7 +17,7 @@ export default function Pledge() {
   const notifDetail = useStore((s) => s.notifDetail);
   const patchTask = useStore((s) => s.patchTask);
   const [share, setShare] = useState(shareDefault);
-  if (!task) return <Background><BackRow /></Background>;
+  if (!task) return <MissingTask />;
 
   const plan: Plan = { routine: q.routine, how: q.how, where: q.where, prep: q.prep, time: q.time || null };
   const r = routineOf(plan.routine);

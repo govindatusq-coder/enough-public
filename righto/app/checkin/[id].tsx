@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ScrollView, Text, View, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Check, CircleHalf, Leaf, ClockCountdown } from 'phosphor-react-native';
-import { Background, Glass, Kicker, BackRow, Field, PrimaryButton, BottomBar, CheckRow, NotMonitored, SupportLink, IconCircle, T, F } from '../../src/ui';
+import { Background, Glass, Kicker, BackRow, Field, PrimaryButton, BottomBar, CheckRow, NotMonitored, SupportLink, IconCircle, T, F, MissingTask } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
 import type { Outcome } from '../../src/logic';
@@ -24,7 +24,7 @@ export default function CheckIn() {
   const [helped, setHelped] = useState('');
   const [next, setNext] = useState('');
   const [share, setShare] = useState(shareDefault);
-  if (!task) return <Background><BackRow /></Background>;
+  if (!task) return <MissingTask />;
 
   const save = () => {
     if (!outcome) return;

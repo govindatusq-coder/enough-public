@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import Svg, { Circle } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing } from 'react-native-reanimated';
 import { Check, Play, Pause } from 'phosphor-react-native';
-import { Background, Glass, Kicker, BackRow, InfoButtons, PrimaryButton, SecondaryButton, TextButton, SupportLink, BottomBar, T, F } from '../../src/ui';
+import { Background, Glass, Kicker, BackRow, InfoButtons, PrimaryButton, SecondaryButton, TextButton, SupportLink, BottomBar, T, F, MissingTask } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useTask } from '../../src/store';
 import { fmt, trim, lc } from '../../src/logic';
@@ -50,7 +50,7 @@ export default function Now() {
     return () => clearInterval(i);
   }, [running]);
 
-  if (!task) return <Background><BackRow /></Background>;
+  if (!task) return <MissingTask />;
 
   const toggle = () => {
     if (running) { setRunning(false); return; }

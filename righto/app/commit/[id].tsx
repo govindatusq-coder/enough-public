@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, Text, View, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowRight, CheckCircle, CircleIcon as Circle } from 'phosphor-react-native';
-import { Background, Glass, NavyCard, Kicker, BackRow, Chip, PrimaryButton, BottomBar, RoutineIcon, T, F } from '../../src/ui';
+import { Background, Glass, NavyCard, Kicker, BackRow, Chip, PrimaryButton, BottomBar, RoutineIcon, T, F, MissingTask } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useTask } from '../../src/store';
 import { TimePill } from '../../src/time-picker';
@@ -13,7 +13,8 @@ export default function Commit() {
   const { id, daily } = useLocalSearchParams<{ id: string; daily?: string }>();
   const task = useTask(id);
   const [plan, setPlan] = useState<Plan | null>(() => (task ? defaultPlan(task) : null));
-  if (!task || !plan) return <Background><BackRow /></Background>;
+  useEffect(() => { if (!plan && task) setPlan(defaultPlan(task)); }, [task]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!task || !plan) return <MissingTask />;
 
   const willBeDaily = !!daily || (task.status === 'planned' && task.daily);
   const r = routineOf(plan.routine);

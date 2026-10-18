@@ -3,7 +3,7 @@ import { ScrollView, Text, View, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { CalendarBlank, CaretRight, CaretDown, CaretUp, Play, CalendarPlus, Shuffle, LinkSimple, Target, type IconProps } from 'phosphor-react-native';
-import { Background, Glass, NavyCard, Kicker, BackRow, InfoButtons, IconCircle, SupportLink, BottomBar, TextButton, T, F } from '../../src/ui';
+import { Background, Glass, NavyCard, Kicker, BackRow, InfoButtons, IconCircle, SupportLink, BottomBar, TextButton, T, F, MissingTask } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
 import { suggestionLine, plusDays, dayLabel, DAYS, PSYCH, longDayLabel, hasSession } from '../../src/logic';
@@ -27,7 +27,7 @@ export default function NewTask() {
   const scroll = useRef<ScrollView>(null);
   const toggleLater = () => setOpen((o) => { if (!o) setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 60); return !o; });
   const closeLater = () => { setOpen(false); setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 60); };
-  if (!task) return <Background><BackRow /></Background>;
+  if (!task) return <MissingTask />;
 
   const sg = task.suggestion;
   const p = { id: task.id, ...(daily ? { daily } : {}) };

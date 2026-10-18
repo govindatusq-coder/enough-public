@@ -186,6 +186,20 @@ export function BackRow({ label = 'Back', onPress, right, style, logo = true }: 
   );
 }
 
+/** Shown when a task route cannot find its task (removed, or not saved yet). Never a blank page. */
+export function MissingTask() {
+  return (
+    <Background>
+      <BackRow />
+      <View style={{ paddingHorizontal: 22, paddingTop: 12, gap: 12 }}>
+        <Text style={T.h2}>This task isn’t here any more</Text>
+        <Text style={T.muted}>It may have been removed, or it hasn’t finished saving yet. Go back to Home and try again in a moment.</Text>
+        <PrimaryButton label="Go to Home" onPress={() => { if (router.canDismiss()) router.dismissAll(); router.replace(homeRoute()); }} style={{ alignSelf: 'flex-start', paddingHorizontal: 28 }} />
+      </View>
+    </Background>
+  );
+}
+
 /** The "?" (Why) and "i" (About) buttons. 22pt visual, 44pt hit area. */
 export function InfoButtons({ taskId, onNavy }: { taskId: string; onNavy?: boolean }) {
   const open = (kind: 'why' | 'info') => router.push({ pathname: '/sheet', params: { id: taskId, kind } });

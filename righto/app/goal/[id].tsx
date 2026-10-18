@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, View, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Target, ClockCountdown } from 'phosphor-react-native';
-import { Background, Glass, Kicker, BackRow, Field, Chip, PrimaryButton, BottomBar, NotMonitored, T, F } from '../../src/ui';
+import { Background, Glass, Kicker, BackRow, Field, Chip, PrimaryButton, BottomBar, NotMonitored, T, F, MissingTask } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
 import { type Goal, type GoalAnswers, GOALQ, TIMES, DAYS, allDays, daysLine, defaultGoal, goalOptions, dayLabel, PSYCH, hasSession } from '../../src/logic';
@@ -34,7 +34,7 @@ export default function GoalScreen() {
     try { return goalOptions(task, hasSession(sessionIso) ? dayLabel(new Date(sessionIso)) : ''); }
     catch (e) { console.warn('[righto] goal options', (e as Error).message); return { s: [], m: [], a: [], r: [], t: [] }; }
   }, [task, sessionIso]);
-  if (!task || !g || !options) return <Background><BackRow /></Background>;
+  if (!task || !g || !options) return <MissingTask />;
 
   const incomplete = GOALQ.some((f) => !(g[f.k] || '').trim()) || !g.rem.days.some(Boolean);
   const suggested = task.suggestion?.kind === 'goal';

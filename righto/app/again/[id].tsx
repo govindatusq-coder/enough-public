@@ -1,7 +1,7 @@
 import { ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SunHorizon, ArrowClockwise, Pause } from 'phosphor-react-native';
-import { Background, NavyCard, Kicker, PrimaryButton, SecondaryButton, TextButton, BottomBar, HomeLogo, T, F, useTop } from '../../src/ui';
+import { Background, NavyCard, Kicker, PrimaryButton, SecondaryButton, TextButton, BottomBar, HomeLogo, T, F, useTop, MissingTask } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
 import { type Outcome, lineOf, routineOf, allDays } from '../../src/logic';
@@ -15,7 +15,7 @@ export default function Again() {
   const patchTask = useStore((s) => s.patchTask);
   const notifDetail = useStore((s) => s.notifDetail);
   const top = useTop();
-  if (!task) return <Background />;
+  if (!task) return <MissingTask />;
 
   const hasPlan = task.status === 'planned';
   const isGoal = task.kind === 'goal';

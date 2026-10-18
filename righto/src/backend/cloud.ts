@@ -263,7 +263,13 @@ export function pushTaskPatch(id: string, patch: Partial<Task>) {
   if ('today' in patch) { row.today_outcome = patch.today ?? null; row.today_date = patch.today ? dayKey(new Date()) : null; }
   if (patch.status === 'later') row.later_until = dayKey(plusDays(new Date(), 3));
   if (!Object.keys(row).length) return;
-  supabase().from('righto_tasks').update(row).eq('id', id).then(({ error }) => { if (error) console.warn('[righto] task sync', error.message); });
+  supabase().from('righto_tasks').update(row).eq('id', id).select('id').then(({ data, error }) => {
+    if (error) { console.warn('[righto] task sync', error.message); return; }
+    if (!data?.length) { // nothing matched: a client's own task the server does not have yet is sent whole
+      const t = useStore.getState().tasks.find((x) => x.id === id);
+      if (t?.author === 'client') pushOwnTask(t).catch(() => undefined);
+    }
+  });
 }
 
 /** A client's own small thing to try. Stored with no psychologist, so it never appears in a psychologist's view. */
