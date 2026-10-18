@@ -96,6 +96,8 @@ export const daysLine = (d: boolean[]) => {
 export const uniq = (a: string[]) => [...new Set(a.filter(Boolean))];
 /** First letter up, the rest as typed: names people enter in lower case still read as names. */
 export const cap = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+/** Each word capitalised: "govind krishnamoorthy" → "Govind Krishnamoorthy". */
+export const capWords = (s: string) => s.split(/\s+/).filter(Boolean).map(cap).join(' ');
 export const lc = (s: string) => (s ? s.replace(/^./, (c) => c.toLowerCase()) : s);
 export const trim = (s: string | undefined) => (s || '').replace(/[.\s]+$/, '');
 export const fmt = (n: number) => Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');

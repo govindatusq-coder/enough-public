@@ -5,6 +5,7 @@ import { CaretRight } from 'phosphor-react-native';
 import { Background, Glass, Kicker, BackRow, Toggle, T, F } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore } from '../src/store';
+import { capWords } from '../src/logic';
 import { cancelAll } from '../src/notifications';
 import { toast } from '../src/toast';
 import * as Updates from 'expo-updates';
@@ -57,7 +58,7 @@ export default function Settings() {
           {cloud ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 60, paddingVertical: 10 }}>
               <View style={{ flex: 1 }}>
-                <Text style={T.body}>{profile?.display_name}</Text>
+                <Text style={T.body}>{capWords(profile?.display_name ?? '')}</Text>
                 <Text style={T.meta}>{cloudEmail()} · {profile?.role === 'psych' ? 'Psychologist' : 'Client'} · stored in Sydney</Text>
               </View>
             </View>

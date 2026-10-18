@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import type { Session } from '@supabase/supabase-js';
 import { api, backendConfigured, supabase } from './supabase';
 import { useStore } from '../store';
-import { type Task, type CheckIn, type Outcome, type GoalAnswers, PSYCH, CLIENT, dayLabel, dayKey, plusDays, mkTask, lc, uniq } from '../logic';
+import { type Task, type CheckIn, type Outcome, type GoalAnswers, PSYCH, CLIENT, dayLabel, dayKey, plusDays, mkTask, lc, uniq, cap, capWords } from '../logic';
 import { notifyNewTask } from '../notifications';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
@@ -40,7 +40,7 @@ const shortName = (name: string) => { const parts = name.trim().split(/\s+/); re
 /** Point the shared copy ("Dr Chen", "Sam") at the real people. */
 function applyNames(profile: Profile | null, link: PsychLink | null) {
   if (profile?.role === 'client') {
-    Object.assign(CLIENT, { name: profile.display_name, first: profile.display_name.split(/\s+/)[0], initials: initials(profile.display_name) });
+    Object.assign(CLIENT, { name: capWords(profile.display_name), first: cap(profile.display_name.split(/\s+/)[0]), initials: initials(profile.display_name) });
   }
   const psych = profile?.role === 'psych' ? { name: profile.display_name, practice: '', ahpra: '' } : link ? { name: link.display_name, practice: link.practice, ahpra: link.ahpra } : null;
   if (psych) Object.assign(PSYCH, { name: psych.name, short: shortName(psych.name), initials: initials(psych.name), practice: psych.practice, ahpra: psych.ahpra });
