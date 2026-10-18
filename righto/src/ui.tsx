@@ -138,12 +138,12 @@ export function SecondaryButton({ label, onPress, icon, disabled, style, accessi
   );
 }
 
-export function TextButton({ label, onPress, color = colors.slate, style, italic, size = 16, weight, icon }: BtnProps & { color?: string; italic?: boolean; size?: number; weight?: 'medium' }) {
+export function TextButton({ label, onPress, color = colors.slate, style, italic, size = 16, weight, icon, textStyle }: BtnProps & { color?: string; italic?: boolean; size?: number; weight?: 'medium'; textStyle?: TextStyle }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [{ minHeight: 44, paddingHorizontal: 16, borderRadius: 30, flexDirection: 'row', gap: 8, justifyContent: 'center', alignItems: 'center', backgroundColor: pressed ? '#fbf8f160' : 'transparent' }, style]}>
       {icon}
       {/* Android measures italic glyphs slightly narrow and clips the last letter; a little trailing room avoids that. */}
-      <Text style={{ fontFamily: italic ? F.serifIt : weight ? F.serifMed : F.serif, fontSize: size, lineHeight: size + 6, color, flexShrink: 1, paddingRight: italic && FLAT ? 6 : 0 }}>{label}</Text>
+      <Text style={[{ fontFamily: italic ? F.serifIt : weight ? F.serifMed : F.serif, fontSize: size, lineHeight: size + 6, color, flexShrink: 1, paddingRight: italic && FLAT ? 6 : 0 }, textStyle]}>{label}</Text>
     </Pressable>
   );
 }
