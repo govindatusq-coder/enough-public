@@ -15,6 +15,12 @@ export const homeRoute = () => (useStore.getState().role === 'psych' ? '/psych' 
 export const F = { serif: 'Newsreader_400Regular', serifMed: 'Newsreader_500Medium', serifIt: 'Newsreader_400Regular_Italic', sans: 'DMSans_500Medium', script: 'MsMadi_400Regular' };
 export const bgImage = require('../assets/background-coast.webp');
 const fill = StyleSheet.absoluteFill;
+/** Android gets flat translucent surfaces: expo-blur does not blur there without a blur target, and absolutely
+ *  positioned overlay layers were being inset by the card's padding, which showed as a ring inside every card.
+ *  A backgroundColor on the card itself covers its whole box, so it cannot be inset. iOS keeps the frosted glass. */
+export const FLAT = Platform.OS === 'android';
+const FLAT_GLASS = '#fbf8f1c4';
+const FLAT_NAVY = '#0f2746e8';
 
 const LAYOUT_KEYS = ['padding', 'paddingHorizontal', 'paddingVertical', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'paddingStart', 'paddingEnd', 'gap', 'rowGap', 'columnGap', 'flexDirection', 'alignItems', 'justifyContent', 'flexWrap'];
 /** Absolute overlays (blur, gradient, photo) must sit on a box without padding: on Android they are inset by it. So padding and inner layout move to a content View. */
@@ -52,11 +58,11 @@ export function Background({ children, splash }: { children?: React.ReactNode; s
 export function Glass({ children, style, radius = 22, intensity = 40, tint }: { children?: React.ReactNode; style?: ViewStyle | ViewStyle[]; radius?: number; intensity?: number; tint?: string }) {
   const [outer, inner] = splitLayout(style);
   return (
-    <View style={[{ borderRadius: radius, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.08, shadowRadius: 35, shadowOffset: { width: 0, height: 8 }, elevation: 0 }, outer]}>
-      <BlurView intensity={intensity} tint="light" blurMethod="dimezisBlurView" style={fill} />
-      <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.6 }} colors={['#fbf8f142', '#f6e7d61f', '#fbf8f133']} locations={[0, 0.6, 1]} style={fill} />
-      {tint ? <View style={[fill, { backgroundColor: tint }]} /> : null}
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, backgroundColor: '#ffffffe0' }} />
+    <View style={[{ borderRadius: radius, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.08, shadowRadius: 35, shadowOffset: { width: 0, height: 8 }, elevation: 0 }, FLAT ? { backgroundColor: tint ?? FLAT_GLASS } : null, outer]}>
+      {!FLAT && <BlurView intensity={intensity} tint="light" blurMethod="dimezisBlurView" style={fill} />}
+      {!FLAT && <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.6 }} colors={['#fbf8f142', '#f6e7d61f', '#fbf8f133']} locations={[0, 0.6, 1]} style={fill} />}
+      {!FLAT && tint ? <View style={[fill, { backgroundColor: tint }]} /> : null}
+      {!FLAT && <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, backgroundColor: '#ffffffe0' }} />}
       <View style={[{ flexGrow: 1 }, inner]}>{children}</View>
     </View>
   );
@@ -71,9 +77,9 @@ export function NavyCard({ children, style, variant = 'default' }: { children: R
   const v = NAVY[variant];
   const [outer, inner] = splitLayout(style);
   return (
-    <View style={[{ borderRadius: v.radius, overflow: 'hidden', shadowColor: colors.navy, shadowOpacity: 0.19, shadowRadius: 30, shadowOffset: { width: 0, height: 10 }, elevation: 0 }, outer]}>
-      <ImageBackground source={bgImage} resizeMode="cover" style={fill} />
-      <LinearGradient start={{ x: 0, y: 0 }} end={v.end} colors={v.colors} style={fill} />
+    <View style={[{ borderRadius: v.radius, overflow: 'hidden', shadowColor: colors.navy, shadowOpacity: 0.19, shadowRadius: 30, shadowOffset: { width: 0, height: 10 }, elevation: 0 }, FLAT ? { backgroundColor: FLAT_NAVY } : null, outer]}>
+      {!FLAT && <ImageBackground source={bgImage} resizeMode="cover" style={fill} />}
+      {!FLAT && <LinearGradient start={{ x: 0, y: 0 }} end={v.end} colors={v.colors} style={fill} />}
       <View style={[{ flexGrow: 1, padding: v.padding }, inner]}>{children}</View>
     </View>
   );
@@ -250,9 +256,9 @@ export function TabBar({ active }: { active: 'home' | 'journal' | 'clients' }) {
     : [{ k: 'home' as const, label: 'Home', Icon: House, href: '/home' }, { k: 'journal' as const, label: 'Journal', Icon: BookOpen, href: '/journal' }];
   return (
     <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: insets.bottom > 0 ? insets.bottom - 6 : 16, alignItems: 'center' }}>
-      <View style={{ borderRadius: 60, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.1, shadowRadius: 25, shadowOffset: { width: 0, height: 4 }, elevation: 0 }}>
-        <BlurView intensity={30} tint="light" blurMethod="dimezisBlurView" style={fill} />
-        <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.4 }} colors={['#fbf8f170', '#f6e7d638']} style={fill} />
+      <View style={[{ borderRadius: 60, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.1, shadowRadius: 25, shadowOffset: { width: 0, height: 4 }, elevation: 0 }, FLAT ? { backgroundColor: '#fbf8f1d9' } : null]}>
+        {!FLAT && <BlurView intensity={30} tint="light" blurMethod="dimezisBlurView" style={fill} />}
+        {!FLAT && <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.4 }} colors={['#fbf8f170', '#f6e7d638']} style={fill} />}
         <View style={{ flexDirection: 'row', gap: 3, padding: 5 }} accessibilityRole="tablist">
           {tabs.map(({ k, label, Icon, href }) => {
             const on = k === active;
@@ -329,9 +335,9 @@ export function IconCircle({ children, size = 42, bg = '#fbf8f1a0' }: { children
 export function SheetFrame({ kicker, title, children, onClose, got = 'Got it' }: { kicker: string; title?: string; children: React.ReactNode; onClose: () => void; got?: string | null }) {
   const bottom = useBottom();
   return (
-    <View style={{ marginHorizontal: 10, marginBottom: 10, borderRadius: 30, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.15, shadowRadius: 40, shadowOffset: { width: 0, height: -8 }, elevation: 0 }}>
-      <BlurView intensity={30} tint="light" blurMethod="dimezisBlurView" style={fill} />
-      <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.6 }} colors={['#fbf8f1f4', '#f6e7d6f0']} style={fill} />
+    <View style={[{ marginHorizontal: 10, marginBottom: 10, borderRadius: 30, overflow: 'hidden', borderWidth: 1, borderColor: '#ffffffa8', shadowColor: colors.navy, shadowOpacity: 0.15, shadowRadius: 40, shadowOffset: { width: 0, height: -8 }, elevation: 0 }, FLAT ? { backgroundColor: '#fbf8f1f4' } : null]}>
+      {!FLAT && <BlurView intensity={30} tint="light" blurMethod="dimezisBlurView" style={fill} />}
+      {!FLAT && <LinearGradient start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.6 }} colors={['#fbf8f1f4', '#f6e7d6f0']} style={fill} />}
       <View style={{ padding: 22, paddingBottom: Math.max(28, bottom - 6), gap: 12 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Kicker>{kicker}</Kicker>
