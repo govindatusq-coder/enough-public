@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ScrollView, Text, View, Pressable, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { CaretRight } from 'phosphor-react-native';
@@ -6,6 +7,7 @@ import { colors } from '../src/theme';
 import { useStore } from '../src/store';
 import { cancelAll } from '../src/notifications';
 import { toast } from '../src/toast';
+import * as Updates from 'expo-updates';
 import { cloudActive, cloudMode, cloudEmail, signOut, useCloud } from '../src/backend/cloud';
 
 const PURPOSE = 'Righto lets psychologists and psychiatrists send homework to their clients. Clients plan when to do it, get reminders, and record what they did and learned. Clinicians can view what clients choose to share. Righto does not assess, diagnose, monitor, predict or treat any condition, and it is not monitored in real time.';
@@ -25,6 +27,21 @@ export default function Settings() {
     if (router.canDismiss()) router.dismissAll();
     router.replace(psych ? '/psych' : '/home');
   };
+  const [checking, setChecking] = useState(false);
+  /** Over-the-air updates: show what is running and let the person fetch the latest now, with the real reason if it fails. */
+  const checkUpdates = async () => {
+    if (!Updates.isEnabled) { toast('Updates are off in this build (development mode).'); return; }
+    setChecking(true);
+    try {
+      const r = await Updates.checkForUpdateAsync();
+      if (!r.isAvailable) { toast('You already have the latest version.'); return; }
+      await Updates.fetchUpdateAsync();
+      toast('Update downloaded. Restarting…');
+      setTimeout(() => Updates.reloadAsync().catch((e: Error) => toast('Restart failed: ' + e.message)), 600);
+    } catch (e) { Alert.alert('Couldn’t check for updates', (e as Error).message); }
+    finally { setChecking(false); }
+  };
+  const running = Updates.updateId ? 'update ' + Updates.updateId.slice(0, 8) + (Updates.createdAt ? ' · ' + Updates.createdAt.toLocaleString('en-AU', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '') : 'built-in version';
   const reset = () => Alert.alert('Reset demo data?', 'Restores the sample tasks and check-ins. Your settings stay as they are.',
     [{ text: 'Cancel', style: 'cancel' }, { text: 'Reset', style: 'destructive', onPress: async () => { await cancelAll(); resetDemo(); toast('Demo data reset.'); } }]);
 
@@ -83,6 +100,15 @@ export default function Settings() {
               </View>
             </Pressable>
           )}
+        </Glass>
+        <Glass style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
+          <Pressable onPress={checkUpdates} disabled={checking} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 60, paddingVertical: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={T.body}>{checking ? 'Checking…' : 'Check for updates'}</Text>
+              <Text style={T.meta}>Running {running} · channel {Updates.channel || 'none'} · runtime {Updates.runtimeVersion || '?'}</Text>
+            </View>
+            <CaretRight size={18} weight="light" color={colors.navy} />
+          </Pressable>
         </Glass>
         <View style={{ paddingHorizontal: 4, gap: 6 }}>
           <Kicker>About Righto</Kicker>
