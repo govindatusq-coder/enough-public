@@ -42,11 +42,11 @@ export default function Pledge() {
           <Text style={[T.h1, { marginTop: 8 }]}>Make your commitment</Text>
         </View>
         <NavyCard variant="pledge" style={{ gap: 12 }}>
-          <Text style={{ fontFamily: F.script, fontSize: 46, lineHeight: 66, color: colors.sand, marginLeft: -8, paddingLeft: 8, paddingRight: 6, marginVertical: -4 }}>I commit,</Text>
+          <Text style={{ fontFamily: F.script, fontSize: 46, lineHeight: 66, color: colors.sand, paddingLeft: 8, paddingRight: 6, marginVertical: -4 }}>I commit,</Text>
           <Text style={{ fontFamily: F.serif, fontSize: 23, lineHeight: 30, letterSpacing: -0.3, color: colors.cream }}>{sentence(plan)}</Text>
           {hasPrep && <Text style={{ fontFamily: F.serifIt, fontSize: 16, lineHeight: 23, color: colors.cardOnNavy }}>To make it easier, I’ll {plan.prep}.</Text>}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#FBF8F133' }}>
-            <Text style={{ fontFamily: F.script, fontSize: 30, lineHeight: 44, color: colors.cream, marginLeft: -6, paddingLeft: 6, paddingRight: 6 }}>{cap(CLIENT.name)}</Text>
+            <Text style={{ fontFamily: F.script, fontSize: 30, lineHeight: 44, color: colors.cream, paddingLeft: 6, paddingRight: 6 }}>{cap(CLIENT.name)}</Text>
             <Kicker style={{ color: colors.cardOnNavy }}>{dateStamp(new Date())}</Kicker>
           </View>
         </NavyCard>
