@@ -6,7 +6,7 @@ import { Feather, Wind, ArrowRight, Clock, Play, CalendarBlank, GearSix, Target 
 import { Background, Glass, Kicker, Logo, PrimaryButton, TextButton, SupportLink, TabBar, Field, Chip, T, F, useTop } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore, useEphemeral } from '../src/store';
-import { type Preference, type Task, liveTasks, orderedTasks, pickByPreference, prefKicker, subOf, greeting, currentRoutine, longDayLabel, hasSession, mkTask, MINS, DAYS, CLIENT, PSYCH } from '../src/logic';
+import { cap, type Preference, type Task, liveTasks, orderedTasks, pickByPreference, prefKicker, subOf, greeting, currentRoutine, longDayLabel, hasSession, mkTask, MINS, DAYS, CLIENT, PSYCH } from '../src/logic';
 
 const PICKS: { k: Preference; label: string; Icon: typeof Feather }[] = [
   { k: 'tiny', label: 'Something quick', Icon: Feather },
@@ -60,7 +60,7 @@ export default function Home() {
       <ScrollView ref={scroll} contentContainerStyle={{ flexGrow: 1, paddingTop: 36, paddingHorizontal: 26, paddingBottom: 120, gap: 30 }}>
         <View>
           <Text style={T.h2}>{greeting(now.getHours())}</Text>
-          <Text style={{ fontFamily: F.script, fontSize: 66, lineHeight: 76, color: colors.navy, marginLeft: -2 }}>{CLIENT.first}.</Text>
+          <Text style={{ fontFamily: F.script, fontSize: 66, lineHeight: 78, color: colors.navy, marginLeft: -14, paddingLeft: 12, paddingRight: 8, includeFontPadding: false }}>{cap(CLIENT.first)}.</Text>
           <Text style={[T.italic, { fontSize: 17, lineHeight: 25, marginTop: 16 }]}>{calmLine}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 }}>
             <CalendarBlank size={17} weight="light" color={colors.slate} />

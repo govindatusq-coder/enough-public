@@ -63,7 +63,7 @@ export default function Again() {
       <ScrollView contentContainerStyle={{ paddingTop: 4, paddingHorizontal: 18, paddingBottom: 24, gap: 16 }}>
         <View style={{ paddingHorizontal: 4 }}>
           <Kicker>Check-in saved</Kicker>
-          <Text style={{ fontFamily: F.script, fontSize: 50, lineHeight: 54, color: colors.navy, marginTop: 10 }}>{wasDone ? 'Nice work.' : 'That’s okay.'}</Text>
+          <Text style={{ fontFamily: F.script, fontSize: 50, lineHeight: 56, color: colors.navy, marginTop: 10, marginLeft: -8, paddingLeft: 8, paddingRight: 6, includeFontPadding: false }}>{wasDone ? 'Nice work.' : 'That’s okay.'}</Text>
           <Text style={[T.h1, { fontSize: 32, lineHeight: 35, marginTop: 4, marginBottom: 8 }]}>{wasDone ? 'Want to keep it going?' : 'Want to try it again?'}</Text>
           <Text style={T.muted}>{hasPlan ? (isGoal ? 'You can repeat it once more, or get a reminder every day so it becomes part of your routine.' : 'You can repeat it once more, or make it part of your ' + rName + ' routine so it happens every day.') : 'You can repeat it once more, or make it part of a daily routine. We’ll help you set it up.'}</Text>
         </View>

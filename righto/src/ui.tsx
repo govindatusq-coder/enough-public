@@ -107,7 +107,7 @@ export function Logo({ size = 30, onNavy }: { size?: number; onNavy?: boolean })
   const dot = Math.max(4, Math.round(size / 8.7));
   return (
     <View style={{ flexDirection: 'row', alignItems: 'flex-end' }} accessible accessibilityLabel="Righto">
-      <Text style={{ fontFamily: F.script, fontSize: size, lineHeight: Math.round(size * 1.15), color: onNavy ? colors.cream : colors.navy, letterSpacing: size > 60 ? -1 : 0 }}>righto</Text>
+      <Text style={{ fontFamily: F.script, fontSize: size, lineHeight: Math.round(size * 1.15), color: onNavy ? colors.cream : colors.navy, letterSpacing: size > 60 ? -1 : 0, paddingLeft: Math.round(size * 0.12), marginLeft: -Math.round(size * 0.12), includeFontPadding: false }}>righto</Text>
       <View style={{ width: dot, height: dot, borderRadius: 99, backgroundColor: onNavy ? colors.champagneLight : colors.champagne, marginLeft: size > 60 ? 6 : 3, marginBottom: Math.round(size * 0.3) }} />
     </View>
   );
