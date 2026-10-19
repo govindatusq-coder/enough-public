@@ -2,17 +2,17 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import * as Crypto from 'expo-crypto';
 import { ScrollView, Text, View, Pressable } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Play, CalendarBlank, GearSix, Target, CaretLeft } from 'phosphor-react-native';
+import { Feather, Wind, ArrowRight, Clock, Play, CalendarBlank, GearSix, Target, CaretLeft } from 'phosphor-react-native';
 import { Background, Glass, Kicker, Logo, PrimaryButton, TextButton, SupportLink, TabBar, Field, Chip, T, F, useTop } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore, useEphemeral } from '../src/store';
 import { cap, type Preference, type Task, liveTasks, orderedTasks, pickByPreference, prefKicker, subOf, greeting, currentRoutine, longDayLabel, hasSession, mkTask, MINS, DAYS, CLIENT, PSYCH } from '../src/logic';
 
-const PICKS: { k: Preference; label: string }[] = [
-  { k: 'tiny', label: 'Something quick' },
-  { k: 'quiet', label: 'Something quiet' },
-  { k: 'next', label: 'Whatever’s next' },
-  { k: 'time', label: 'I’ve got time' },
+const PICKS: { k: Preference; label: string; Icon: typeof Feather }[] = [
+  { k: 'tiny', label: 'Something quick', Icon: Feather },
+  { k: 'quiet', label: 'Something quiet', Icon: Wind },
+  { k: 'next', label: 'What’s next', Icon: ArrowRight },
+  { k: 'time', label: 'I’ve got time', Icon: Clock },
 ];
 
 /** Every task opens on the task screen (Do it now / Do it later / Something else), whatever its state. */
@@ -25,7 +25,7 @@ export default function Home() {
   const linked = useStore((s) => s.linked);
   const homePrompt = useStore((s) => s.homePrompt);
   const nextSession = useStore((s) => s.nextSession);
-  const { pref, skipped, setPref, skip } = useEphemeral();
+  const { pref, skipped, setPref } = useEphemeral();
   // After a pick, the client can set aside the psychologist's task and name their own small thing instead.
   const [ownMode, setOwnMode] = useState(false);
   const pick = useCallback((p: Preference | null) => { setOwnMode(false); setPref(p); }, [setPref]);
@@ -81,7 +81,7 @@ export default function Home() {
                 <Text style={[T.meta, { marginTop: 4 }]}>{noneToPick ? 'Say what feels right and we’ll set something small up together.' : linked ? 'Picks from the tasks ' + PSYCH.short + ' gave you, or something else.' : 'Picks from your tasks, or something else.'}</Text>
               </View>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-                {PICKS.map(({ k, label }) => <PickTile key={k} label={label} onPress={() => pick(k)} />)}
+                {PICKS.map(({ k, label, Icon }) => <PickTile key={k} label={label} Icon={Icon} onPress={() => pick(k)} />)}
               </View>
               <TextButton label="Just show me what’s next" italic size={15} onPress={() => pick('skip')} style={{ alignSelf: 'stretch', justifyContent: 'flex-start', paddingHorizontal: 0, minHeight: 36 }} textStyle={{ flexGrow: 1 }} />
             </Glass>
@@ -96,9 +96,8 @@ export default function Home() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
                 <PrimaryButton style={{ flex: 1, minHeight: 52, paddingHorizontal: 10, shadowOpacity: 0, elevation: 0 }} icon={<Play size={18} weight="light" color={colors.cream} />}
                   label="Have a look" onPress={() => openTask(stepT)} />
-                {live.length > 1 ? <TextButton label="Something else" onPress={() => skip(stepT.id, live.map((x) => x.id))} style={{ minHeight: 52, paddingHorizontal: 12 }} /> : null}
+                <TextButton label="Something else" onPress={() => setOwnMode(true)} accessibilityLabel="Something else: set up something of your own" style={{ minHeight: 52, paddingHorizontal: 12 }} />
               </View>
-              <TextButton label="Or set up something of your own" italic size={15} onPress={() => setOwnMode(true)} style={{ alignSelf: 'stretch', justifyContent: 'flex-start', paddingHorizontal: 0, minHeight: 36, marginTop: -2 }} textStyle={{ flexGrow: 1 }} />
             </Glass>
           )}
 
@@ -157,18 +156,23 @@ function OwnTaskCard({ pref, linked, allDone, hasPick, onBack }: { pref: Prefere
 }
 
 /**
- * One of the four picks: a navy-tinted glass tile with a hairline navy border and the label alone, centred, with the
- * full tile width so a word never breaks. Pressing inverts it to solid navy with cream text.
+ * One of the four picks: a navy-tinted glass tile with a hairline navy border, a small icon above the label and the
+ * label stretched across the tile (so it measures at its final width and never clips). Pressing inverts it to navy.
  */
-function PickTile({ label, onPress }: { label: string; onPress: () => void }) {
+function PickTile({ label, Icon, onPress }: { label: string; Icon: typeof Feather; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label}
       style={({ pressed }) => ({
-        width: '47%', flexGrow: 1, minHeight: 62, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 14, paddingHorizontal: 12,
+        width: '47%', flexGrow: 1, minHeight: 78, borderRadius: 20, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, paddingHorizontal: 10,
         backgroundColor: pressed ? colors.navy : '#0F274614', borderColor: pressed ? colors.navy : '#0F274640',
         shadowColor: colors.navy, shadowOpacity: pressed ? 0 : 0.1, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 0,
       })}>
-      {({ pressed }) => <Text style={{ fontFamily: F.serif, fontSize: 17, lineHeight: 22, textAlign: 'center', color: pressed ? colors.cream : colors.navy }}>{label}</Text>}
+      {({ pressed }) => (
+        <>
+          <Icon size={20} weight="light" color={pressed ? colors.cream : colors.steel} />
+          <Text style={{ fontFamily: F.serif, fontSize: 16, lineHeight: 21, textAlign: 'center', alignSelf: 'stretch', color: pressed ? colors.cream : colors.navy }}>{label}</Text>
+        </>
+      )}
     </Pressable>
   );
 }
