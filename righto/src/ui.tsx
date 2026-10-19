@@ -4,7 +4,7 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Lifebuoy, Check, CaretLeft, Coffee, ForkKnife, Moon, PencilSimpleLine, X, House, BookOpen, Users, type IconProps } from 'phosphor-react-native';
+import { Check, CaretLeft, Coffee, ForkKnife, Moon, PencilSimpleLine, X, House, BookOpen, Users, type IconProps } from 'phosphor-react-native';
 import { colors } from './theme';
 import type { Outcome, Look, RoutineId } from './logic';
 import { useStore } from './store';
@@ -320,13 +320,8 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
 export function SupportLink({ style }: { style?: ViewStyle }) {
   return (
     <Pressable onPress={() => router.push('/support')} accessibilityRole="button" accessibilityLabel="Need support now? Crisis lines and about Righto"
-      style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 50, alignSelf: 'flex-start', paddingLeft: 16, paddingRight: 18, borderRadius: 20, borderWidth: 1, borderColor: pressed ? colors.navy : '#0F274640', backgroundColor: pressed ? colors.navy : '#0F274614' }, style]}>
-      {({ pressed }) => (
-        <>
-          <Lifebuoy size={20} weight="light" color={pressed ? colors.cream : colors.steel} />
-          <Text style={{ fontFamily: F.serif, fontSize: 16, lineHeight: 21, color: pressed ? colors.cream : colors.navy }}>Need support now?</Text>
-        </>
-      )}
+      style={({ pressed }) => [{ alignItems: 'center', justifyContent: 'center', minHeight: 50, alignSelf: 'flex-start', paddingHorizontal: 20, borderRadius: 20, borderWidth: 1, borderColor: pressed ? colors.navy : '#0F274640', backgroundColor: pressed ? colors.navy : '#0F274614' }, style]}>
+      {({ pressed }) => <Text style={{ fontFamily: F.serif, fontSize: 16, lineHeight: 21, color: pressed ? colors.cream : colors.navy }}>Need support now?</Text>}
     </Pressable>
   );
 }
