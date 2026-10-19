@@ -4,7 +4,7 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Lifebuoy, Check, CaretLeft, Coffee, ForkKnife, Moon, X, House, BookOpen, Users, type IconProps } from 'phosphor-react-native';
+import { Lifebuoy, Check, CaretLeft, Coffee, ForkKnife, Moon, PencilSimpleLine, X, House, BookOpen, Users, type IconProps } from 'phosphor-react-native';
 import { colors } from './theme';
 import type { Outcome, Look, RoutineId } from './logic';
 import { useStore } from './store';
@@ -338,7 +338,7 @@ export function NotMonitored({ Icon }: { Icon: React.ComponentType<IconProps> })
 }
 
 export function RoutineIcon({ id, size = 22, color = colors.steel }: { id: RoutineId | string; size?: number; color?: string }) {
-  const Icon = id === 'coffee' ? Coffee : id === 'lunch' ? ForkKnife : Moon;
+  const Icon = id === 'coffee' ? Coffee : id === 'lunch' ? ForkKnife : id === 'own' ? PencilSimpleLine : Moon;
   return <Icon size={size} weight="light" color={color} />;
 }
 

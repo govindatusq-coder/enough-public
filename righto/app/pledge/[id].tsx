@@ -5,13 +5,13 @@ import { Bell, HandHeart } from 'phosphor-react-native';
 import { Background, NavyCard, Kicker, BackRow, PrimaryButton, BottomBar, CheckRow, T, F, MissingTask } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
-import { type Plan, type RoutineId, NOPREP, sentence, routineOf, dateStamp, CLIENT, PSYCH, cap } from '../../src/logic';
+import { type Plan, type PlanRoutine, NOPREP, sentence, routineFor, dateStamp, CLIENT, PSYCH, cap } from '../../src/logic';
 import { scheduleCommitment } from '../../src/notifications';
 import { toast } from '../../src/toast';
 
 /** Your commitment — a simple tap seals it; reminders are scheduled locally at the routine time. */
 export default function Pledge() {
-  const q = useLocalSearchParams<{ id: string; routine: RoutineId; how: string; where: string; prep: string; time?: string; daily?: string }>();
+  const q = useLocalSearchParams<{ id: string; routine: PlanRoutine; anchor?: string; how: string; where: string; prep: string; time?: string; daily?: string }>();
   const task = useTask(q.id);
   const shareDefault = useStore((s) => s.shareDefault);
   const notifDetail = useStore((s) => s.notifDetail);
@@ -19,8 +19,8 @@ export default function Pledge() {
   const [share, setShare] = useState(shareDefault);
   if (!task) return <MissingTask />;
 
-  const plan: Plan = { routine: q.routine, how: q.how, where: q.where, prep: q.prep, time: q.time || null };
-  const r = routineOf(plan.routine);
+  const plan: Plan = { routine: q.routine, ...(q.routine === 'own' ? { anchor: q.anchor || '' } : {}), how: q.how, where: q.where, prep: q.prep, time: q.time || null };
+  const r = routineFor(plan);
   const daily = q.daily === '1';
   const hasPrep = !!plan.prep && plan.prep !== NOPREP;
 

@@ -26,12 +26,15 @@ export default function Home() {
   const homePrompt = useStore((s) => s.homePrompt);
   const nextSession = useStore((s) => s.nextSession);
   const { pref, skipped, setPref, skip } = useEphemeral();
+  // After a pick, the client can set aside the psychologist's task and name their own small thing instead.
+  const [ownMode, setOwnMode] = useState(false);
+  const pick = useCallback((p: Preference | null) => { setOwnMode(false); setPref(p); }, [setPref]);
   const top = useTop();
   const now = new Date();
   const scroll = useRef<ScrollView>(null);
-  const restart = () => { setPref(null); scroll.current?.scrollTo({ y: 0, animated: true }); };
+  const restart = () => { pick(null); scroll.current?.scrollTo({ y: 0, animated: true }); };
   // Every time the user lands on Home the pick resets, so the "What feels doable right now?" card shows first.
-  useFocusEffect(useCallback(() => { setPref(null); if (role === 'psych') router.replace('/psych'); }, [setPref, role]));
+  useFocusEffect(useCallback(() => { pick(null); if (role === 'psych') router.replace('/psych'); }, [pick, role]));
 
   const live = useMemo(() => liveTasks(tasks), [tasks]);
   const ordered = useMemo(() => orderedTasks(tasks, skipped, currentRoutine(now.getHours())), [tasks, skipped]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -40,9 +43,9 @@ export default function Home() {
   const stepT = effPref ? (effPref === 'skip' || effPref === 'next' ? nextT : pickByPreference(tasks, effPref, nextT)) : undefined;
   const newTasks = tasks.filter((t) => t.status === 'new');
   const showNewNote = newTasks.length > 0 && !(stepT && stepT.status === 'new');
-  // Home always asks what feels doable. When no task fits (nothing assigned, or everything done today) the pick leads to the
-  // client's own idea instead of a rest screen.
-  const showOwn = !!effPref && !stepT;
+  // Home always asks what feels doable. Every pick offers the psychologist's task and the client's own idea; when no task
+  // fits (nothing assigned, or everything done today) the pick leads straight to their own idea instead of a rest screen.
+  const showOwn = !!effPref && (!stepT || ownMode);
   const calmLine = homePrompt && !pref ? 'Take a breath. There’s nothing you need to do this second.' : 'Take a breath. One small step is enough today.';
   const noneToPick = !live.length;
 
@@ -75,24 +78,18 @@ export default function Home() {
             <Glass radius={26} style={{ padding: 24, gap: 16 }}>
               <View>
                 <Text style={T.title}>What feels doable right now?</Text>
-                <Text style={[T.meta, { marginTop: 4 }]}>{noneToPick ? 'Say what feels right and we’ll set something small up together.' : linked ? 'Picks from the tasks ' + PSYCH.short + ' gave you.' : 'Picks from your tasks.'}</Text>
+                <Text style={[T.meta, { marginTop: 4 }]}>{noneToPick ? 'Say what feels right and we’ll set something small up together.' : linked ? 'Picks from the tasks ' + PSYCH.short + ' gave you, or something else.' : 'Picks from your tasks, or something else.'}</Text>
               </View>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {PICKS.map(({ k, label, Icon }) => (
-                  <Pressable key={k} onPress={() => setPref(k)} accessibilityRole="button"
-                    style={({ pressed }) => ({ width: '48%', flexGrow: 1, minHeight: 60, borderRadius: 20, borderWidth: 1, borderColor: '#ffffffa8', backgroundColor: pressed ? '#fbf8f1a0' : '#fbf8f150', flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 14 })}>
-                    <Icon size={24} weight="light" color={colors.steel} />
-                    <Text style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 19, color: colors.navy, flex: 1 }}>{label}</Text>
-                  </Pressable>
-                ))}
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+                {PICKS.map(({ k, label, Icon }) => <PickTile key={k} label={label} Icon={Icon} onPress={() => pick(k)} />)}
               </View>
-              <TextButton label="Just show me what’s next" italic size={15} onPress={() => setPref('skip')} style={{ alignSelf: 'stretch', justifyContent: 'flex-start', paddingHorizontal: 0, minHeight: 36 }} textStyle={{ flexGrow: 1 }} />
+              <TextButton label="Just show me what’s next" italic size={15} onPress={() => pick('skip')} style={{ alignSelf: 'stretch', justifyContent: 'flex-start', paddingHorizontal: 0, minHeight: 36 }} textStyle={{ flexGrow: 1 }} />
             </Glass>
           )}
 
-          {effPref && stepT && (
+          {effPref && stepT && !ownMode && (
             <Glass radius={26} style={{ paddingTop: 16, paddingHorizontal: 24, paddingBottom: 22, gap: 12 }}>
-              {homePrompt ? <BackLink onPress={() => setPref(null)} /> : null}
+              {homePrompt ? <BackLink onPress={() => pick(null)} /> : null}
               {pref ? <Kicker>{prefKicker(pref)}</Kicker> : null}
               <Text style={[T.h2, { lineHeight: 32 }]}>{stepT.title}</Text>
               <Text style={T.italic}>{subOf(stepT)}</Text>
@@ -101,10 +98,11 @@ export default function Home() {
                   label="Have a look" onPress={() => openTask(stepT)} />
                 {live.length > 1 ? <TextButton label="Something else" onPress={() => skip(stepT.id, live.map((x) => x.id))} style={{ minHeight: 52, paddingHorizontal: 12 }} /> : null}
               </View>
+              <TextButton label="Or set up something of your own" italic size={15} onPress={() => setOwnMode(true)} style={{ alignSelf: 'stretch', justifyContent: 'flex-start', paddingHorizontal: 0, minHeight: 36, marginTop: -2 }} textStyle={{ flexGrow: 1 }} />
             </Glass>
           )}
 
-          {showOwn && <OwnTaskCard pref={pref} linked={linked} allDone={tasks.length > 0} onBack={homePrompt ? () => setPref(null) : undefined} />}
+          {showOwn && <OwnTaskCard pref={pref} linked={linked} allDone={!stepT && tasks.length > 0} hasPick={!!stepT} onBack={stepT ? () => setOwnMode(false) : homePrompt ? () => pick(null) : undefined} />}
 
           {showNewNote && (
             <Pressable onPress={() => openTask(newTasks[0])} accessibilityRole="button" style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingVertical: 4, minHeight: 44 }}>
@@ -126,7 +124,7 @@ export default function Home() {
  * No homework yet (or all done): the client names one small thing they would like to try. It becomes their own task,
  * so the usual Do it now / commitment / goal steps apply. Nothing here is advice, scored, or shown to the psychologist.
  */
-function OwnTaskCard({ pref, linked, allDone, onBack }: { pref: Preference | null; linked: boolean; allDone: boolean; onBack?: () => void }) {
+function OwnTaskCard({ pref, linked, allDone, hasPick, onBack }: { pref: Preference | null; linked: boolean; allDone: boolean; hasPick: boolean; onBack?: () => void }) {
   const addTask = useStore((s) => s.addTask);
   const [title, setTitle] = useState('');
   const [mins, setMins] = useState(pref === 'tiny' ? 5 : pref === 'time' ? 20 : 10);
@@ -143,7 +141,7 @@ function OwnTaskCard({ pref, linked, allDone, onBack }: { pref: Preference | nul
       {onBack ? <BackLink onPress={onBack} /> : null}
       <Kicker>{pref ? prefKicker(pref) : 'Your own idea'}</Kicker>
       <Text style={[T.h2, { lineHeight: 32 }]}>What’s one small thing you’d like to try?</Text>
-      <Text style={T.italic}>{allDone ? 'Everything on your list is done today. ' : linked ? 'Nothing from ' + PSYCH.short + ' yet. ' : ''}Your own ideas count. Keep it small enough to actually happen.</Text>
+      <Text style={T.italic}>{hasPick ? '' : allDone ? 'Everything on your list is done today. ' : linked ? 'Nothing from ' + PSYCH.short + ' yet. ' : ''}Your own ideas count. Keep it small enough to actually happen.</Text>
       <Field label="" value={title} onChangeText={setTitle} placeholder="e.g. A short walk after lunch" inputProps={{ autoCapitalize: 'sentences', returnKeyType: 'done' }} />
       <View style={{ gap: 8 }}>
         <Text style={T.meta}>Takes about</Text>
@@ -155,6 +153,30 @@ function OwnTaskCard({ pref, linked, allDone, onBack }: { pref: Preference | nul
         <PrimaryButton style={{ flex: 1, minHeight: 52, paddingHorizontal: 10, shadowOpacity: 0, elevation: 0 }} icon={<Target size={18} weight="light" color={colors.cream} />} label="Set it up" disabled={!title.trim()} onPress={go} />
       </View>
     </Glass>
+  );
+}
+
+/**
+ * One of the four picks: a navy-tinted glass tile with a navy icon disc and a hairline navy border, so the four read as
+ * distinct, premium tiles on the cream card. Pressing inverts it to solid navy with cream text and icon.
+ */
+function PickTile({ label, Icon, onPress }: { label: string; Icon: typeof Feather; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label}
+      style={({ pressed }) => ({
+        width: '47%', flexGrow: 1, minHeight: 66, borderRadius: 20, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingLeft: 12, paddingRight: 14,
+        backgroundColor: pressed ? colors.navy : '#0F274614', borderColor: pressed ? colors.navy : '#0F274640',
+        shadowColor: colors.navy, shadowOpacity: pressed ? 0 : 0.1, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 0,
+      })}>
+      {({ pressed }) => (
+        <>
+          <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: pressed ? colors.cream : colors.navy, borderWidth: 1, borderColor: pressed ? colors.cream : '#ffffff40', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon size={21} weight="light" color={pressed ? colors.navy : colors.cream} />
+          </View>
+          <Text style={{ fontFamily: F.serif, fontSize: 16, lineHeight: 20, color: pressed ? colors.cream : colors.navy, flex: 1 }}>{label}</Text>
+        </>
+      )}
+    </Pressable>
   );
 }
 

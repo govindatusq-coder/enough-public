@@ -4,11 +4,14 @@
 export type Outcome = 'done' | 'partial' | 'missed';
 export type Status = 'new' | 'planned' | 'tried' | 'later' | 'finished';
 export type RoutineId = 'coffee' | 'lunch' | 'wind';
+/** A plan hangs off one of the three routines, or off something the client already does ('own', with their own anchor). */
+export type PlanRoutine = RoutineId | 'own';
 export type Tag = 'quick' | 'quiet';
 export type Kind = 'commitment' | 'goal';
 export type Preference = 'tiny' | 'quiet' | 'next' | 'time' | 'skip';
 
-export type Plan = { routine: RoutineId; how: string; where: string; prep: string; time?: string | null }; // time: own reminder time, null = routine time
+// anchor: the client's own "After I feed the dog" when routine is 'own'. time: own reminder time, null = routine time (always set for 'own').
+export type Plan = { routine: PlanRoutine; anchor?: string; how: string; where: string; prep: string; time?: string | null };
 export type GoalAnswers = { s: string; m: string; a: string; r: string; t: string };
 export type Reminder = { time: string; days: boolean[] };
 export type Goal = GoalAnswers & { rem: Reminder };
@@ -52,9 +55,9 @@ export type CheckIn = {
   shared: boolean;
 };
 
-export type Routine = { id: RoutineId; name: string; anchor: string; time: string };
+export type Routine = { id: PlanRoutine; name: string; anchor: string; time: string };
 
-export const ROUTINES: Routine[] = [
+export const ROUTINES: (Routine & { id: RoutineId })[] = [
   { id: 'coffee', name: 'Morning coffee', anchor: 'While my coffee brews', time: '7:30 am' },
   { id: 'lunch', name: 'Lunch break', anchor: 'After I finish lunch', time: '12:30 pm' },
   { id: 'wind', name: 'Evening wind-down', anchor: 'After I brush my teeth', time: '9:30 pm' },
@@ -103,14 +106,24 @@ export const trim = (s: string | undefined) => (s || '').replace(/[.\s]+$/, '');
 export const fmt = (n: number) => Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
 
 export const routineOf = (id: RoutineId | string | undefined): Routine => ROUTINES.find((x) => x.id === id) || ROUTINES[0];
+export const OWN_TIME = '8:00 am';
+export const OWN_ANCHOR = 'At the time I chose';
+/** The routine a plan hangs off. The client's own anchor ("After I feed the dog") is a routine of its own, at the time they picked. */
+export const routineFor = (p: Plan | null | undefined): Routine => {
+  if (p?.routine !== 'own') return routineOf(p?.routine);
+  const a = (p.anchor || '').trim();
+  return { id: 'own', name: 'own', anchor: a ? cap(a) : OWN_ANCHOR, time: p.time || OWN_TIME };
+};
+/** "Morning coffee" for the three routines; "Own routine" for the client's own anchor. */
+export const routineLabel = (r: Routine) => (r.id === 'own' ? 'Own routine' : r.name);
 /** When a commitment's reminder fires: the client's own time if they chose one, otherwise the routine time. */
-export const reminderTime = (p: Plan | null | undefined) => (p?.time ? p.time : routineOf(p?.routine).time);
+export const reminderTime = (p: Plan | null | undefined) => (p?.time ? p.time : routineFor(p).time);
 /** Date → "3:05 pm" */
 export const formatTime = (d: Date) => {
   const h = d.getHours();
   return (h % 12 || 12) + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + (h < 12 ? 'am' : 'pm');
 };
-export const sentence = (p: Plan | null | undefined) => (p ? routineOf(p.routine).anchor + ', I will ' + p.how + ', ' + p.where + '.' : '');
+export const sentence = (p: Plan | null | undefined) => (p ? routineFor(p).anchor + ', I will ' + p.how + ', ' + p.where + '.' : '');
 export const goalLine = (g: GoalAnswers | null | undefined) => (g ? trim(g.s) + '. ' + trim(g.t) + '.' : '');
 export const lineOf = (t: Task) => (t.kind === 'goal' ? goalLine(t.goal) : sentence(t.plan));
 export const suggestionLine = (s: Suggestion | null) => (s ? (s.kind === 'goal' ? goalLine(s.goal) : sentence(s.plan)) : '');
@@ -232,7 +245,7 @@ export const subOf = (x: Task) => {
   const from = x.author === 'client' ? 'Your own idea' : (x.status === 'new' ? 'New from ' : 'From ') + PSYCH.short;
   const base = x.status === 'new' || !x.kind ? from + ' · about ' + x.mins + ' min'
     : x.kind === 'goal' ? 'Your goal · ' + trim(x.goal?.s)
-      : routineOf(x.plan?.routine).anchor + ', ' + (x.plan?.where || '');
+      : routineFor(x.plan).anchor + ', ' + (x.plan?.where || '');
   return x.today ? 'Done today · ' + base : base;
 };
 
@@ -275,7 +288,7 @@ export const statusTag = (x: Task) =>
   x.status === 'new' ? { label: 'Not started', bg: '#F6E7D6', fg: '#7a5a36' }
     : x.status === 'later' ? { label: 'Later · ' + (x.laterUntil || ''), bg: '#F6E7D6', fg: '#7a5a36' }
       : x.status === 'planned'
-        ? (x.kind === 'goal' ? { label: 'Goal · ' + (x.goal?.rem.time || ''), bg: '#e3eaf0', fg: '#0F2746' } : { label: (x.daily ? 'Daily · ' : 'Commitment · ') + routineOf(x.plan?.routine).name, bg: '#e3eaf0', fg: '#0F2746' })
+        ? (x.kind === 'goal' ? { label: 'Goal · ' + (x.goal?.rem.time || ''), bg: '#e3eaf0', fg: '#0F2746' } : { label: (x.daily ? 'Daily · ' : 'Commitment · ') + routineLabel(routineFor(x.plan)), bg: '#e3eaf0', fg: '#0F2746' })
         : { label: x.status === 'tried' ? 'Done once' : 'Paused', bg: '#ffffff80', fg: '#4B5B70' };
 
 // ---- Notification copy (PRIVACY.md §4). Private by default; detail only when the client opts in. ----
@@ -285,7 +298,7 @@ export const notifCopy = (kind: 'new' | 'commitment' | 'goal' | 'nudge', t: Task
     return {
       title: 'Righto',
       body: kind === 'new' ? 'You have something new from your psychologist.'
-        : kind === 'commitment' ? 'Time for your ' + routineOf(t.plan?.routine).name.toLowerCase() + ' routine.'
+        : kind === 'commitment' ? 'Time for your ' + routineFor(t.plan).name.toLowerCase() + ' routine.'
           : kind === 'goal' ? 'A gentle reminder for today.'
             : 'Ready to have another look?',
     };
@@ -293,7 +306,7 @@ export const notifCopy = (kind: 'new' | 'commitment' | 'goal' | 'nudge', t: Task
   return {
     title: kind === 'new' ? 'New homework from ' + PSYCH.short : kind === 'nudge' ? 'Righto' : 'Righto · ' + t.title,
     body: kind === 'new' ? t.title
-      : kind === 'commitment' ? (routineOf(t.plan?.routine).anchor + '? ' + (t.plan ? t.plan.how.replace(/^./, (c) => c.toUpperCase()) + ', ' + t.plan.where + '.' : t.title))
+      : kind === 'commitment' ? (routineFor(t.plan).anchor + '? ' + (t.plan ? t.plan.how.replace(/^./, (c) => c.toUpperCase()) + ', ' + t.plan.where + '.' : t.title))
         : kind === 'goal' ? trim(t.goal?.s) + '.'
           : 'Ready to have another look at “' + t.title + '”?',
   };

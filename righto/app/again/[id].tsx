@@ -4,7 +4,7 @@ import { SunHorizon, ArrowClockwise, Pause } from 'phosphor-react-native';
 import { Background, NavyCard, Kicker, PrimaryButton, SecondaryButton, TextButton, BottomBar, HomeLogo, T, F, useTop, MissingTask } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
-import { type Outcome, lineOf, routineOf, allDays } from '../../src/logic';
+import { type Outcome, lineOf, routineFor, allDays } from '../../src/logic';
 import { cancelFor, scheduleCommitment, scheduleGoal } from '../../src/notifications';
 import { toast } from '../../src/toast';
 
@@ -19,7 +19,7 @@ export default function Again() {
 
   const hasPlan = task.status === 'planned';
   const isGoal = task.kind === 'goal';
-  const rName = hasPlan && !isGoal ? routineOf(task.plan?.routine).name.toLowerCase() : '';
+  const rName = hasPlan && !isGoal ? routineFor(task.plan).name.toLowerCase() : '';
   const wasDone = (outcome ?? task.today) === 'done';
   const home = () => router.dismissTo('/home');
 

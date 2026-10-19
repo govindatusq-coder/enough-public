@@ -91,6 +91,20 @@ test('status tags for the psychologist view', () => {
   assert.equal(statusTag(mkTask({ id: 'x', title: 'X', status: 'tried' })).label, 'Done once');
 });
 
+test('own routine: the client’s anchor and time stand in for a routine', async () => {
+  const { routineFor, routineLabel, reminderTime, sentence, notifCopy, statusTag, mkTask } = await import('../src/logic.ts');
+  const own = { routine: 'own' as const, anchor: 'after I feed the dog', how: 'stretch for two minutes', where: 'in the kitchen', prep: '', time: '6:45 am' };
+  assert.equal(sentence(own), 'After I feed the dog, I will stretch for two minutes, in the kitchen.');
+  assert.equal(reminderTime(own), '6:45 am');
+  assert.equal(reminderTime({ ...own, time: null }), '8:00 am');
+  assert.equal(routineFor({ ...own, anchor: '' }).anchor, 'At the time I chose');
+  assert.equal(routineLabel(routineFor(own)), 'Own routine');
+  const t = mkTask({ id: 'o', title: 'Stretch', status: 'planned', kind: 'commitment', plan: own });
+  assert.equal(statusTag(t).label, 'Commitment · Own routine');
+  assert.equal(notifCopy('commitment', t, false).body, 'Time for your own routine.');
+  assert.equal(notifCopy('commitment', t, true).body, 'After I feed the dog? Stretch for two minutes, in the kitchen.');
+});
+
 test('reminder time: own time wins over the routine time', async () => {
   const { reminderTime, formatTime, seedTasks } = await import('../src/logic.ts');
   const { to12, to24, dateToTime, timeToDate } = await import('../src/utils/time.ts');
