@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import * as Crypto from 'expo-crypto';
 import { ScrollView, Text, View, Pressable } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Feather, Wind, ArrowRight, Clock, Play, CalendarBlank, GearSix, Target } from 'phosphor-react-native';
+import { Feather, Wind, ArrowRight, Clock, Play, CalendarBlank, GearSix, Target, CaretLeft } from 'phosphor-react-native';
 import { Background, Glass, Kicker, Logo, PrimaryButton, TextButton, SupportLink, TabBar, Field, Chip, T, F, useTop } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore, useEphemeral } from '../src/store';
@@ -91,14 +91,15 @@ export default function Home() {
           )}
 
           {effPref && stepT && (
-            <Glass radius={26} style={{ paddingTop: 26, paddingHorizontal: 24, paddingBottom: 22, gap: 12 }}>
+            <Glass radius={26} style={{ paddingTop: 16, paddingHorizontal: 24, paddingBottom: 22, gap: 12 }}>
+              {homePrompt ? <BackLink onPress={() => setPref(null)} /> : null}
               {pref ? <Kicker>{prefKicker(pref)}</Kicker> : null}
               <Text style={[T.h2, { lineHeight: 32 }]}>{stepT.title}</Text>
               <Text style={T.italic}>{subOf(stepT)}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
                 <PrimaryButton style={{ flex: 1, minHeight: 52, paddingHorizontal: 10, shadowOpacity: 0, elevation: 0 }} icon={<Play size={18} weight="light" color={colors.cream} />}
                   label="Have a look" onPress={() => openTask(stepT)} />
-                <TextButton label="Something else" onPress={() => (homePrompt ? setPref(null) : skip(stepT.id, live.map((x) => x.id)))} style={{ minHeight: 52, paddingHorizontal: 12 }} />
+                {live.length > 1 ? <TextButton label="Something else" onPress={() => skip(stepT.id, live.map((x) => x.id))} style={{ minHeight: 52, paddingHorizontal: 12 }} /> : null}
               </View>
             </Glass>
           )}
@@ -138,7 +139,8 @@ function OwnTaskCard({ pref, linked, allDone, onBack }: { pref: Preference | nul
     router.push({ pathname: '/task/[id]', params: { id: t.id } });
   };
   return (
-    <Glass radius={26} style={{ paddingTop: 26, paddingHorizontal: 24, paddingBottom: 22, gap: 14 }}>
+    <Glass radius={26} style={{ paddingTop: onBack ? 16 : 26, paddingHorizontal: 24, paddingBottom: 22, gap: 14 }}>
+      {onBack ? <BackLink onPress={onBack} /> : null}
       <Kicker>{pref ? prefKicker(pref) : 'Your own idea'}</Kicker>
       <Text style={[T.h2, { lineHeight: 32 }]}>What’s one small thing you’d like to try?</Text>
       <Text style={T.italic}>{allDone ? 'Everything on your list is done today. ' : linked ? 'Nothing from ' + PSYCH.short + ' yet. ' : ''}Your own ideas count. Keep it small enough to actually happen.</Text>
@@ -151,8 +153,18 @@ function OwnTaskCard({ pref, linked, allDone, onBack }: { pref: Preference | nul
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
         <PrimaryButton style={{ flex: 1, minHeight: 52, paddingHorizontal: 10, shadowOpacity: 0, elevation: 0 }} icon={<Target size={18} weight="light" color={colors.cream} />} label="Set it up" disabled={!title.trim()} onPress={go} />
-        {onBack ? <TextButton label="Something else" onPress={onBack} style={{ minHeight: 52, paddingHorizontal: 12 }} /> : null}
       </View>
     </Glass>
+  );
+}
+
+/** "‹ Back to the four options" at the top of a card that followed a pick. */
+function BackLink({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="Back to the four options" hitSlop={8}
+      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 2, alignSelf: 'flex-start', minHeight: 36, marginLeft: -6, paddingHorizontal: 6, borderRadius: 20, backgroundColor: pressed ? '#fbf8f160' : 'transparent' })}>
+      <CaretLeft size={16} weight="light" color={colors.slate} />
+      <Text style={{ fontFamily: F.serif, fontSize: 15, color: colors.slate }}>Back</Text>
+    </Pressable>
   );
 }

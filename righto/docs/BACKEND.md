@@ -49,6 +49,13 @@ Nothing on the server scores, flags or interprets. Counts shown to the psycholog
    unshared plans and check-ins stay hidden, that invites are single-use, and that ending a link cuts access, then
    delete the users.
 
+## Demo psychologist (optional)
+
+`supabase/seed_demo_psychologist.sql` creates a psychologist account **Dr Anita Pillai** (`drpillai@righto.demo` /
+`Righto-demo-2026!`) with one invite code **DRPILLAI22** valid for 30 days. Run it in the SQL editor, then enter the code on a
+client's phone to link. Sign in as Dr Pillai in the app to see that client and assign homework (two-step sign-in applies if
+MFA is required). Delete the user from Authentication → Users when done.
+
 ## How the app uses it
 
 `src/backend/cloud.ts` is the only place the screens talk to the project.
