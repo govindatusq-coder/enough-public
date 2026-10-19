@@ -320,7 +320,7 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
 export function SupportLink({ style }: { style?: ViewStyle }) {
   return (
     <Pressable onPress={() => router.push('/support')} accessibilityRole="button" accessibilityLabel="Need support now? Crisis lines and about Righto"
-      style={({ pressed }) => [{ alignItems: 'center', justifyContent: 'center', minHeight: 50, alignSelf: 'flex-start', paddingHorizontal: 20, borderRadius: 20, borderWidth: 1, borderColor: pressed ? colors.navy : '#0F274640', backgroundColor: pressed ? colors.navy : '#0F274614' }, style]}>
+      style={({ pressed }) => [{ alignItems: 'center', justifyContent: 'center', minHeight: 50, alignSelf: 'center', paddingHorizontal: 20, borderRadius: 20, borderWidth: 1, borderColor: pressed ? colors.navy : '#0F274640', backgroundColor: pressed ? colors.navy : '#0F274614' }, style]}>
       {({ pressed }) => <Text style={{ fontFamily: F.serif, fontSize: 16, lineHeight: 21, color: pressed ? colors.cream : colors.navy }}>Need support now?</Text>}
     </Pressable>
   );
