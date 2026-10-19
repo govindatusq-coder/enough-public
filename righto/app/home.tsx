@@ -83,7 +83,7 @@ export default function Home() {
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
                 {PICKS.map(({ k, label, Icon }) => <PickTile key={k} label={label} Icon={Icon} onPress={() => pick(k)} />)}
               </View>
-              <TextButton label="Just show me what’s next" italic size={15} onPress={() => pick('skip')} style={{ alignSelf: 'stretch', justifyContent: 'flex-start', paddingHorizontal: 0, minHeight: 36 }} textStyle={{ flexGrow: 1 }} />
+              {newTasks.length > 0 ? <NewNote task={newTasks[0]} /> : null}
             </Glass>
           )}
 
@@ -103,12 +103,7 @@ export default function Home() {
 
           {showOwn && <OwnTaskCard pref={pref} linked={linked} allDone={!stepT && tasks.length > 0} hasPick={!!stepT} onBack={stepT ? () => setOwnMode(false) : homePrompt ? () => pick(null) : undefined} />}
 
-          {showNewNote && (
-            <Pressable onPress={() => openTask(newTasks[0])} accessibilityRole="button" style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingVertical: 4, minHeight: 44 }}>
-              <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.champagne, marginTop: 9 }} />
-              <Text style={[T.muted, { flex: 1 }]}>{PSYCH.short} sent you something new. <Text style={{ color: colors.navy, textDecorationLine: 'underline', textDecorationColor: '#0F274640' }}>Have a look when you’re ready.</Text></Text>
-            </Pressable>
-          )}
+          {showNewNote && !!pref && <NewNote task={newTasks[0]} />}
 
         </View>
 
@@ -173,6 +168,17 @@ function PickTile({ label, Icon, onPress }: { label: string; Icon: typeof Feathe
           <Text style={{ fontFamily: F.serif, fontSize: 16, lineHeight: 21, textAlign: 'center', alignSelf: 'stretch', color: pressed ? colors.cream : colors.navy }}>{label}</Text>
         </>
       )}
+    </Pressable>
+  );
+}
+
+/** "Dr Pillai sent you something new. Have a look when you’re ready." Inside the picker card, or under the card after a pick. */
+function NewNote({ task }: { task: Task }) {
+  return (
+    <Pressable onPress={() => openTask(task)} accessibilityRole="button" accessibilityLabel={PSYCH.short + ' sent you something new. Have a look when you’re ready.'}
+      style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start', paddingVertical: 4, minHeight: 44 }}>
+      <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.champagne, marginTop: 9 }} />
+      <Text style={[T.muted, { flex: 1 }]}>{PSYCH.short} sent you something new. <Text style={{ color: colors.navy, textDecorationLine: 'underline', textDecorationColor: '#0F274640' }}>Have a look when you’re ready.</Text></Text>
     </Pressable>
   );
 }
