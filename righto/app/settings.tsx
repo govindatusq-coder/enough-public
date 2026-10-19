@@ -5,7 +5,7 @@ import { CaretRight } from 'phosphor-react-native';
 import { Background, Glass, Kicker, BackRow, Toggle, T, F } from '../src/ui';
 import { colors } from '../src/theme';
 import { useStore } from '../src/store';
-import { capWords } from '../src/logic';
+import { capWords, PSYCH } from '../src/logic';
 import { cancelAll } from '../src/notifications';
 import { toast } from '../src/toast';
 import * as Updates from 'expo-updates';
@@ -20,6 +20,10 @@ export default function Settings() {
   const profile = useCloud((c) => c.profile);
   const cloud = cloudActive();
   const guest = cloudMode() && !cloud; // backend available, but using Righto without an account
+  const linked = useStore((s) => s.linked);
+  const psychRole = cloud && profile?.role === 'psych';
+  // Clients: who they are linked with, or where to link. Linking needs an account; the code is entered on the invite screen.
+  const goLink = () => router.push(guest ? { pathname: '/account', params: { from: 'settings' } } : { pathname: '/link', params: { from: 'settings' } });
   const doSignOut = () => Alert.alert('Sign out?', 'Your homework stays safely in your account. Reminders on this phone are cancelled until you sign in again.',
     [{ text: 'Cancel', style: 'cancel' }, { text: 'Sign out', style: 'destructive', onPress: async () => { await cancelAll(); await signOut(); if (router.canDismiss()) router.dismissAll(); router.replace('/account'); } }]);
 
@@ -78,6 +82,15 @@ export default function Settings() {
               </View>
               <Toggle on={role === 'psych'} onChange={switchRole} label="View as psychologist" />
             </View>
+          )}
+          {!psychRole && (
+            <Pressable onPress={linked ? () => router.push('/privacy') : goLink} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 60, paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#0f274612' }}>
+              <View style={{ flex: 1 }}>
+                <Text style={T.body}>{linked ? 'Your psychologist' : 'Link with a psychologist or psychiatrist'}</Text>
+                <Text style={T.meta}>{linked ? PSYCH.name + ' · ' + PSYCH.title + (PSYCH.practice ? ' · ' + PSYCH.practice : '') : guest ? 'Create an account first, then enter the invite code they give you.' : 'Enter the invite code they give you in session.'}</Text>
+              </View>
+              <CaretRight size={18} weight="light" color={colors.navy} />
+            </Pressable>
           )}
           <Pressable onPress={() => router.push('/privacy')} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 60, paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#0f274612' }}>
             <View style={{ flex: 1 }}>
