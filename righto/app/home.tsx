@@ -107,7 +107,7 @@ export default function Home() {
 
         </View>
 
-        <SupportLink style={{ marginTop: 'auto', paddingHorizontal: 0 }} />
+        <SupportLink style={{ marginTop: 'auto' }} />
       </ScrollView>
       <TabBar active="home" />
     </Background>

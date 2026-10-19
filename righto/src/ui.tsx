@@ -320,9 +320,13 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
 export function SupportLink({ style }: { style?: ViewStyle }) {
   return (
     <Pressable onPress={() => router.push('/support')} accessibilityRole="button" accessibilityLabel="Need support now? Crisis lines and about Righto"
-      style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 44, alignSelf: 'flex-start', paddingHorizontal: 14, borderRadius: 30, borderWidth: 1, borderColor: '#0F274640', backgroundColor: pressed ? '#fbf8f1d0' : '#fbf8f1a0' }, style]}>
-      <Lifebuoy size={18} weight="regular" color={colors.navy} />
-      <Text style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 20, color: colors.navy }}>Need support now?</Text>
+      style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 50, alignSelf: 'flex-start', paddingLeft: 16, paddingRight: 18, borderRadius: 20, borderWidth: 1, borderColor: pressed ? colors.navy : '#0F274640', backgroundColor: pressed ? colors.navy : '#0F274614' }, style]}>
+      {({ pressed }) => (
+        <>
+          <Lifebuoy size={20} weight="light" color={pressed ? colors.cream : colors.steel} />
+          <Text style={{ fontFamily: F.serif, fontSize: 16, lineHeight: 21, color: pressed ? colors.cream : colors.navy }}>Need support now?</Text>
+        </>
+      )}
     </Pressable>
   );
 }
