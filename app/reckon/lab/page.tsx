@@ -9,6 +9,8 @@ import {classify} from '@/lib/reckon/reflection';
 import {Card, PageHeader} from '@/components/reckon/ui';
 
 type Tab = 'ingestion' | 'ai' | 'os' | 'experiments';
+/** Bumped with each client change so a stale tab can be recognised. */
+const CLIENT_BUILD = '3';
 
 export default function LabPage() {
   const {state, ready, update, reset, status} = useReckon();
@@ -26,6 +28,7 @@ export default function LabPage() {
 
       <Card tone="plain">
         <table><tbody>
+          <tr><td>Build</td><td>{status.checked ? `${status.build ?? 'unknown'} · ${status.env ?? ''} · client ${CLIENT_BUILD}` : 'checking…'}</td></tr>
           {status.error && <tr><td>Server</td><td className="bad">{status.error} — Reckon API calls are failing on this deployment</td></tr>}
           <tr><td>AI</td><td className={status.ai ? 'ok' : 'bad'}>{status.ai ? `available · ${status.model}` : 'no ANTHROPIC_API_KEY — deterministic fallbacks in use'}</td></tr>
           <tr><td>Instagram oEmbed token</td><td className={status.instagramOembed ? 'ok' : 'bad'}>{status.instagramOembed ? 'configured' : 'not configured'}</td></tr>

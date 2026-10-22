@@ -18,7 +18,7 @@ interface StoreValue {
   ready: boolean;
   update: (fn: Updater) => ReckonState;
   reset: () => void;
-  status: {ai: boolean; model: string | null; instagramOembed: boolean; devTools: boolean; checked: boolean; error?: string};
+  status: {ai: boolean; model: string | null; instagramOembed: boolean; devTools: boolean; checked: boolean; error?: string; build?: string; env?: string};
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
