@@ -1,4 +1,4 @@
-// Supabase client for Rightyo. Dormant until EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY are set
+// Supabase client for Best of You. Dormant until EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY are set
 // (see docs/BACKEND.md); the app keeps running on its local sample data without them.
 import 'react-native-url-polyfill/auto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
@@ -16,7 +16,7 @@ let client: SupabaseClient | null = null;
 
 /** The shared client. Auth tokens are kept in the same encrypted store as the rest of the app (key in the Keychain / Keystore). */
 export function supabase(): SupabaseClient {
-  if (!backendConfigured()) throw new Error('Rightyo backend is not configured on this build.');
+  if (!backendConfigured()) throw new Error('Best of You backend is not configured on this build.');
   if (!client) {
     client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {

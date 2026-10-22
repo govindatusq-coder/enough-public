@@ -17,7 +17,7 @@ export type State = {
   consentAt: string | null;
   consentVersion: string | null;
   linked: boolean;
-  guest: boolean; // using Rightyo without an account: everything stays on this phone
+  guest: boolean; // using Best of You without an account: everything stays on this phone
   shareDefault: boolean;
   notifDetail: boolean;
   notifsAllowed: boolean;

@@ -16,7 +16,7 @@ const AHPRA = /^PSY\d{10}$/i;
 
 /** Where a signed-in person goes next. Psychologists must pass MFA before any client data is reachable. */
 export function afterAuth(p: Profile | null) {
-  if (!p) { toast('No Rightyo account found for that sign-in. Create one below.'); return; }
+  if (!p) { toast('No Best of You account found for that sign-in. Create one below.'); return; }
   const st = useStore.getState();
   if (router.canDismiss()) router.dismissAll();
   if (p.role === 'psych') { router.replace(needsMfa() ? '/mfa' : '/psych'); if (!needsMfa()) st.set({ onboarded: true }); return; }
@@ -46,7 +46,7 @@ export default function Account() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [confirmSent, setConfirmSent] = useState(false);
-  // Signed in through Google but no Rightyo profile yet: just the role and name are needed.
+  // Signed in through Google but no Best of You profile yet: just the role and name are needed.
   const session = useCloud((c) => c.session);
   const profile = useCloud((c) => c.profile);
   const finishing = !!session && !profile;
@@ -93,7 +93,7 @@ export default function Account() {
           <View>
             <Kicker>{finishing ? 'Almost there' : fromSettings ? 'Your account' : mode === 'up' ? 'Step 2 of 5 · Your account' : 'Welcome back'}</Kicker>
             <Text style={[T.h1, { marginVertical: 8 }]}>{finishing ? 'About you' : mode === 'up' ? 'Create your account' : 'Sign in'}</Text>
-            <Text style={T.muted}>{finishing ? 'You’re signed in with Google as ' + (session?.user.email ?? 'your account') + '. Google only confirms who you are; your homework never goes to Google.' : mode === 'up' ? 'An account keeps your homework safe if you change phones and lets a psychologist send you homework. Or skip it and use Rightyo on this phone only.' : 'Your details are stored in Australia. Only you and the psychologist you link with can see them.'}</Text>
+            <Text style={T.muted}>{finishing ? 'You’re signed in with Google as ' + (session?.user.email ?? 'your account') + '. Google only confirms who you are; your homework never goes to Google.' : mode === 'up' ? 'An account keeps your homework safe if you change phones and lets a psychologist send you homework. Or skip it and use Best of You on this phone only.' : 'Your details are stored in Australia. Only you and the psychologist you link with can see them.'}</Text>
           </View>
 
           {!finishing && (

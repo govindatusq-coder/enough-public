@@ -39,8 +39,8 @@ export default function Clients() {
     try {
       const { code, expires_at } = await api.createInvite();
       const hrs = Math.round((new Date(expires_at).getTime() - Date.now()) / 3600000);
-      Alert.alert('Invite code: ' + code, 'Give this to your client in session. It works once and expires in ' + hrs + ' hours. In Rightyo they tap Settings → Privacy & data → Link with a psychologist, or enter it when they first set up.',
-        [{ text: 'Done' }, { text: 'Share…', onPress: () => Share.share({ message: 'Your Rightyo invite code is ' + code + '. It works once and expires in ' + hrs + ' hours. Install Rightyo, create an account, then enter the code.' }).catch(() => undefined) }]);
+      Alert.alert('Invite code: ' + code, 'Give this to your client in session. It works once and expires in ' + hrs + ' hours. In Best of You they tap Settings → Privacy & data → Link with a psychologist, or enter it when they first set up.',
+        [{ text: 'Done' }, { text: 'Share…', onPress: () => Share.share({ message: 'Your Best of You invite code is ' + code + '. It works once and expires in ' + hrs + ' hours. Install Best of You, create an account, then enter the code.' }).catch(() => undefined) }]);
     } catch (e) { toast((e as Error).message); }
   };
 

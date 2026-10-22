@@ -74,7 +74,7 @@ test('default plan and goal honour the clinician suggestion', () => {
 test('lock-screen copy is private by default', () => {
   const [t2, t1] = seedTasks();
   const priv = notifCopy('commitment', t1, false);
-  assert.equal(priv.title, 'Rightyo');
+  assert.equal(priv.title, 'Best of You');
   assert.equal(priv.body, 'Time for your lunch break routine.');
   assert.ok(!priv.body.includes('walk'));
   assert.equal(notifCopy('new', t2, false).body, 'You have something new from your psychologist.');

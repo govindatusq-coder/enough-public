@@ -52,7 +52,7 @@ export default function Home() {
   return (
     <Background>
       <View style={{ paddingTop: top + 11, paddingHorizontal: 26, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Pressable onPress={restart} accessibilityRole="button" accessibilityLabel="Rightyo. Back to the start of Home" hitSlop={8}><Logo size={30} /></Pressable>
+        <Pressable onPress={restart} accessibilityRole="button" accessibilityLabel="Best of You. Back to the start of Home" hitSlop={8}><Logo size={30} /></Pressable>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Settings" style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
             <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#fbf8f1a0', borderWidth: 1, borderColor: '#0F274633', alignItems: 'center', justifyContent: 'center' }}><GearSix size={20} weight="light" color={colors.navy} /></View>

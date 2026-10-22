@@ -11,7 +11,7 @@ import { toast } from '../src/toast';
 import * as Updates from 'expo-updates';
 import { cloudActive, cloudMode, cloudEmail, signOut, useCloud } from '../src/backend/cloud';
 
-const PURPOSE = 'Rightyo lets psychologists and psychiatrists send homework to their clients. Clients plan when to do it, get reminders, and record what they did and learned. Clinicians can view what clients choose to share. Rightyo does not assess, diagnose, monitor, predict or treat any condition, and it is not monitored in real time.';
+const PURPOSE = 'Best of You lets psychologists and psychiatrists send homework to their clients. Clients plan when to do it, get reminders, and record what they did and learned. Clinicians can view what clients choose to share. Best of You does not assess, diagnose, monitor, predict or treat any condition, and it is not monitored in real time.';
 
 export default function Settings() {
   const role = useStore((s) => s.role);
@@ -19,7 +19,7 @@ export default function Settings() {
   const resetDemo = useStore((s) => s.resetDemo);
   const profile = useCloud((c) => c.profile);
   const cloud = cloudActive();
-  const guest = cloudMode() && !cloud; // backend available, but using Rightyo without an account
+  const guest = cloudMode() && !cloud; // backend available, but using Best of You without an account
   const linked = useStore((s) => s.linked);
   const psychRole = cloud && profile?.role === 'psych';
   // Clients: who they are linked with, or where to link. Linking needs an account; the code is entered on the invite screen.
@@ -125,9 +125,9 @@ export default function Settings() {
           </Pressable>
         </Glass>
         <View style={{ paddingHorizontal: 4, gap: 6 }}>
-          <Kicker>About Rightyo</Kicker>
+          <Kicker>About Best of You</Kicker>
           <Text style={T.muted}>{PURPOSE}</Text>
-          <Text style={[T.small, { fontFamily: F.serif }]}>Version 0.2.0 · {cloud ? 'Connected to the Rightyo project in Sydney.' : guest ? 'Using Rightyo on this phone only.' : 'Prototype with sample data. Not for real clients yet.'}</Text>
+          <Text style={[T.small, { fontFamily: F.serif }]}>Version 0.2.0 · {cloud ? 'Connected to the Best of You project in Sydney.' : guest ? 'Using Best of You on this phone only.' : 'Prototype with sample data. Not for real clients yet.'}</Text>
         </View>
       </ScrollView>
     </Background>

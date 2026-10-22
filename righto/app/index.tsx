@@ -39,10 +39,10 @@ export default function Splash() {
 
   return (
     <Background splash>
-      <Pressable onPress={next} accessibilityRole="button" accessibilityLabel="Open Rightyo" style={{ flex: 1 }}>
+      <Pressable onPress={next} accessibilityRole="button" accessibilityLabel="Open Best of You" style={{ flex: 1 }}>
         <View style={{ flex: 1 }} />
         <View style={{ alignItems: 'center', gap: 22, transform: [{ translateY: -60 }] }}>
-          <Logo size={104} />
+          <Logo size={64} />
           <Text style={{ fontFamily: F.sans, fontSize: 12, letterSpacing: 4, lineHeight: 24, textAlign: 'center', color: colors.navy }}>YOUR WAY{'\n'}FORWARD.</Text>
         </View>
         <View style={{ flex: 1.3 }} />

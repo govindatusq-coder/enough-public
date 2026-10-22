@@ -175,7 +175,7 @@ export async function mfaEnroll() {
   const sb = supabase();
   const { data: factors } = await sb.auth.mfa.listFactors();
   for (const f of factors?.totp ?? []) if (f.status !== 'verified') await sb.auth.mfa.unenroll({ factorId: f.id }).catch(() => undefined);
-  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Rightyo' });
+  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Best of You' });
   if (error) throw error;
   return { factorId: data.id, secret: data.totp.secret, uri: data.totp.uri };
 }

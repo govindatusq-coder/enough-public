@@ -178,7 +178,7 @@ function LockGate() {
       const enrolled = await LocalAuthentication.isEnrolledAsync();
       const level = await LocalAuthentication.getEnrolledLevelAsync();
       if (!enrolled && level === LocalAuthentication.SecurityLevel.NONE) { setLocked(false); return; } // no device security → nothing to check against
-      const res = await LocalAuthentication.authenticateAsync({ promptMessage: 'Unlock Rightyo', cancelLabel: 'Cancel' });
+      const res = await LocalAuthentication.authenticateAsync({ promptMessage: 'Unlock Best of You', cancelLabel: 'Cancel' });
       if (res.success) setLocked(false); else setFailed(true);
     } catch {
       setFailed(true);

@@ -1,4 +1,4 @@
-// Rightyo design tokens — lifted exactly from reference/Rightyo App v2.dc.html
+// Best of You design tokens — lifted exactly from reference/Best of You App v2.dc.html
 // Hex with 8 digits = #RRGGBBAA.
 
 export const colors = {

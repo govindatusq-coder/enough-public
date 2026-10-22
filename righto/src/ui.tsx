@@ -106,8 +106,8 @@ export const Kicker = ({ children, style }: { children: React.ReactNode; style?:
 export function Logo({ size = 30, onNavy }: { size?: number; onNavy?: boolean }) {
   const dot = Math.max(4, Math.round(size / 8.7));
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-end' }} accessible accessibilityLabel="Rightyo">
-      <Text style={{ fontFamily: F.script, fontSize: size, lineHeight: Math.round(size * 1.5), color: onNavy ? colors.cream : colors.navy, letterSpacing: size > 60 ? -1 : 0, marginLeft: -Math.round(size * 0.1), marginVertical: -Math.round(size * 0.15) }}>{'\u00A0'}rightyo</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end' }} accessible accessibilityLabel="Best of You">
+      <Text style={{ fontFamily: F.script, fontSize: size, lineHeight: Math.round(size * 1.5), color: onNavy ? colors.cream : colors.navy, letterSpacing: size > 60 ? -1 : 0, marginLeft: -Math.round(size * 0.1), marginVertical: -Math.round(size * 0.15) }}>{'\u00A0'}best of you</Text>
       <View style={{ width: dot, height: dot, borderRadius: 99, backgroundColor: onNavy ? colors.champagneLight : colors.champagne, marginLeft: size > 60 ? 6 : 3, marginBottom: Math.round(size * 0.3) }} />
     </View>
   );
@@ -160,7 +160,7 @@ export function Chip({ label, selected, onPress, style }: { label: string; selec
 /** The righto wordmark as a button: always returns to the start of Home (Home resets its picker on focus). */
 export function HomeLogo({ size = 26, style }: { size?: number; style?: ViewStyle }) {
   return (
-    <Pressable onPress={() => router.dismissTo(homeRoute())} accessibilityRole="button" accessibilityLabel="Rightyo. Go to Home" hitSlop={10}
+    <Pressable onPress={() => router.dismissTo(homeRoute())} accessibilityRole="button" accessibilityLabel="Best of You. Go to Home" hitSlop={10}
       style={[{ minHeight: 44, justifyContent: 'center', paddingHorizontal: 6 }, style]}>
       <Logo size={size} />
     </Pressable>
@@ -319,14 +319,14 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
 
 export function SupportLink({ style }: { style?: ViewStyle }) {
   return (
-    <Pressable onPress={() => router.push('/support')} accessibilityRole="button" accessibilityLabel="Need support now? Crisis lines and about Rightyo"
+    <Pressable onPress={() => router.push('/support')} accessibilityRole="button" accessibilityLabel="Need support now? Crisis lines and about Best of You"
       style={({ pressed }) => [{ alignItems: 'center', justifyContent: 'center', minHeight: 50, alignSelf: 'center', paddingHorizontal: 20, borderRadius: 20, borderWidth: 1, borderColor: pressed ? colors.navy : '#0F274640', backgroundColor: pressed ? colors.navy : '#0F274614' }, style]}>
       {({ pressed }) => <Text style={{ fontFamily: F.serif, fontSize: 16, lineHeight: 21, color: pressed ? colors.cream : colors.navy }}>Need support now?</Text>}
     </Pressable>
   );
 }
 
-/** Under every free-text field (COMPLIANCE_REVIEW C1): Rightyo is not monitored in real time. */
+/** Under every free-text field (COMPLIANCE_REVIEW C1): Best of You is not monitored in real time. */
 export function NotMonitored({ Icon }: { Icon: React.ComponentType<IconProps> }) {
   return (
     <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start', paddingTop: 12, borderTopWidth: 1, borderTopColor: '#0f274614' }}>

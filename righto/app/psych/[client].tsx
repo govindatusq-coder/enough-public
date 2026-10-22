@@ -46,7 +46,7 @@ export default function ClientReview() {
 
   const exportNotes = async () => {
     const lines = [
-      'Rightyo · homework summary for ' + client + ' · exported ' + dayLabel(new Date()),
+      'Best of You · homework summary for ' + client + ' · exported ' + dayLabel(new Date()),
       'Prepared by ' + PSYCH.name + ' (' + PSYCH.title + '). Contains only items ' + first + ' chose to share.',
       '',
       ...tasks.map((t) => '• ' + t.title + ' — ' + statusTag(t).label + (t.shared && t.status === 'planned' ? ' — “' + lineOf(t) + '”' : '')),
@@ -55,7 +55,7 @@ export default function ClientReview() {
       ...history.map((h) => '• ' + h.label + ' · ' + h.title + ' · ' + OUT[h.outcome].label + ' · ' + learningOf(h)),
     ];
     if (cloud) api.logAccess(id, 'export_record').catch(() => undefined);
-    try { await Share.share({ message: lines.join('\n'), title: 'Rightyo summary · ' + client }); toast('Summary ready to add to your clinical notes.'); } catch { /* cancelled */ }
+    try { await Share.share({ message: lines.join('\n'), title: 'Best of You summary · ' + client }); toast('Summary ready to add to your clinical notes.'); } catch { /* cancelled */ }
   };
   const endSharing = () => Alert.alert('End sharing with ' + first + '?', cloud ? 'Sharing stops now: no new homework can be sent and this record closes. Your own clinical record is unaffected.' : first + ' will be asked to confirm. Sharing stops for new entries; your own clinical record is unaffected.',
     [{ text: 'Cancel', style: 'cancel' }, { text: 'End sharing', style: 'destructive', onPress: async () => {

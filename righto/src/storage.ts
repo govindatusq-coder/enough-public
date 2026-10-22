@@ -59,7 +59,7 @@ export const encryptedStorage: StateStorage = {
   },
 };
 
-/** Wipe everything Rightyo keeps on this device (sign-out / delete account). */
+/** Wipe everything Best of You keeps on this device (sign-out / delete account). */
 export async function wipeLocalData(storeName: string) {
   await AsyncStorage.removeItem(storeName);
   try { await SecureStore.deleteItemAsync(KEY_NAME); } catch { /* ignore */ }

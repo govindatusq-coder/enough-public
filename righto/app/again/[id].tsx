@@ -43,7 +43,7 @@ export default function Again() {
       patchTask(task.id, { daily: false });
       patchTask(task.id, { notifIds: await scheduleCommitment({ ...task, daily: false }, notifDetail) });
     }
-    toast(isGoal ? 'Rightyo. We’ll remind you next time.' : 'Rightyo. It’s in your ' + rName + ' routine for next time.');
+    toast(isGoal ? 'Done. We’ll remind you next time.' : 'Done. It’s in your ' + rName + ' routine for next time.');
     home();
   };
   const notNow = async () => {
