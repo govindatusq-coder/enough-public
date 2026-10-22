@@ -1,5 +1,9 @@
 # ENOUGH public-hosting migration
 
+## Reckon (prototype at `/reckon`)
+
+Reckon — *Ideas, lived.* — is a mobile-first personal-OS prototype that lives alongside ENOUGH at `/reckon`. It turns deliberately saved social content into user-confirmed takeaways, finds threads across them, and turns conversations into small real-life experiments with honest reflection. See [docs/reckon/README.md](docs/reckon/README.md) for architecture and environment variables, and [the 22 October 2026 verification record](docs/reckon/verification-2026-10-22.md) for what works, what Instagram actually returned, and what to test next. Development view: `/reckon/lab`.
+
 ## Privacy and AI permission
 
 Fresh OpenAI ideas and pictures require an explicit, versioned account choice. My Pins → AI and privacy offers full context, approved non-health context, or Not now. Legacy accounts and previews have no automatic permission. Reduced context still uses all needs for ENOUGH’s own fit checks. Collection notices appear at sign-in and before the first cloud save; `/privacy` is a draft for legal review. See [PR2 verification](docs/verification/pr2-privacy-consent.md).
