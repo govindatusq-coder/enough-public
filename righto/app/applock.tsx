@@ -30,11 +30,11 @@ export default function AppLock() {
       const enrolled = await LocalAuthentication.isEnrolledAsync();
       const level = await LocalAuthentication.getEnrolledLevelAsync();
       if (!enrolled && level === LocalAuthentication.SecurityLevel.NONE) {
-        Alert.alert('Set a device passcode first', 'Righto uses your phone’s own lock. Add a passcode or Face ID in your phone’s Settings, then turn on app lock in Righto’s Privacy & data.',
+        Alert.alert('Set a device passcode first', 'Rightyo uses your phone’s own lock. Add a passcode or Face ID in your phone’s Settings, then turn on app lock in Rightyo’s Privacy & data.',
           [{ text: 'Continue without lock', onPress: () => { set({ appLock: false }); router.push('/notifs'); } }, { text: 'OK' }]);
         return;
       }
-      const res = await LocalAuthentication.authenticateAsync({ promptMessage: 'Lock Righto with this', disableDeviceFallback: false, ...(passcodeOnly ? { biometricsSecurityLevel: 'weak' as const } : {}) });
+      const res = await LocalAuthentication.authenticateAsync({ promptMessage: 'Lock Rightyo with this', disableDeviceFallback: false, ...(passcodeOnly ? { biometricsSecurityLevel: 'weak' as const } : {}) });
       if (res.success) { set({ appLock: true, lockAfter: 5 }); toast('App lock is on.'); router.push('/notifs'); }
     } catch {
       toast('Couldn’t set up app lock. You can try again in Settings.');
@@ -49,7 +49,7 @@ export default function AppLock() {
       <ScrollView contentContainerStyle={{ paddingTop: top + 19, paddingHorizontal: 22, paddingBottom: 16, gap: 22 }}>
         <View>
           <Kicker>{cloudMode() ? 'Step 4 of 5' : 'Step 3 of 4'}</Kicker>
-          <Text style={[T.h1, { marginVertical: 8 }]}>Keep Righto private</Text>
+          <Text style={[T.h1, { marginVertical: 8 }]}>Keep Rightyo private</Text>
           <Text style={T.muted}>Lock the app so no one else who picks up your phone can read your homework or notes.</Text>
         </View>
         <Glass style={{ alignSelf: 'center', width: 120, height: 120, alignItems: 'center', justifyContent: 'center' }}>
@@ -57,7 +57,7 @@ export default function AppLock() {
         </Glass>
         <View style={{ gap: 2, paddingHorizontal: 4 }}>
           <Text style={[T.meta, { lineHeight: 20 }]}>Locks again after 5 minutes in the background.</Text>
-          <Text style={[T.meta, { lineHeight: 20 }]}>Righto is hidden in the app switcher.</Text>
+          <Text style={[T.meta, { lineHeight: 20 }]}>Rightyo is hidden in the app switcher.</Text>
         </View>
       </ScrollView>
       <BottomBar style={{ paddingTop: 10, gap: 10, alignItems: 'center' }}>

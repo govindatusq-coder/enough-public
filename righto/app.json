@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Righto",
+    "name": "Rightyo",
     "slug": "righto",
     "version": "0.1.0",
     "scheme": "righto",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
-        "NSFaceIDUsageDescription": "Righto uses Face ID to keep your homework and notes private."
+        "NSFaceIDUsageDescription": "Rightyo uses Face ID to keep your homework and notes private."
       },
       "bundleIdentifier": "app.righto.mobile"
     },
@@ -48,7 +48,7 @@
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Righto uses Face ID to keep your homework and notes private."
+          "faceIDPermission": "Rightyo uses Face ID to keep your homework and notes private."
         }
       ],
       [

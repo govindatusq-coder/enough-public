@@ -12,7 +12,7 @@ import { cloudActive, assignTask } from '../../src/backend/cloud';
 
 type Start = 'client' | 'commitment' | 'goal';
 
-/** Assign homework. The clinician authors everything; Righto shows their words as written and never generates advice (INTENDED_PURPOSE.md rule 1). */
+/** Assign homework. The clinician authors everything; Rightyo shows their words as written and never generates advice (INTENDED_PURPOSE.md rule 1). */
 export default function Assign() {
   const { client = CLIENT.name, id = '' } = useLocalSearchParams<{ client?: string; id?: string }>();
   const first = client.split(' ')[0];
@@ -38,7 +38,7 @@ export default function Assign() {
       setBusy(true);
       try {
         await assignTask(id, { title, detail, why, mins, needs, tags, start, routine, where, how, goal });
-        toast('Sent. ' + first + ' will see it the next time Righto opens.');
+        toast('Sent. ' + first + ' will see it the next time Rightyo opens.');
         router.back();
       } catch (e) { toast((e as Error).message); } finally { setBusy(false); }
       return;
@@ -69,7 +69,7 @@ export default function Assign() {
           <Glass style={{ padding: 18, gap: 16 }}>
             <Field label="Task" labelStyle={T.label} placeholder="e.g. Take a 10-minute walk after lunch" value={title} onChangeText={setTitle} />
             <Field label="Instructions" labelStyle={T.label} placeholder="What should they do and notice?" value={detail} onChangeText={setDetail} multiline />
-            <Field label="Why this helps" labelStyle={T.label} hint={first + ' sees this when they tap “?”. Righto shows your words as written and never generates advice.'} placeholder="e.g. A short walk adds light and movement when your mood usually dips." value={why} onChangeText={setWhy} multiline />
+            <Field label="Why this helps" labelStyle={T.label} hint={first + ' sees this when they tap “?”. Rightyo shows your words as written and never generates advice.'} placeholder="e.g. A short walk adds light and movement when your mood usually dips." value={why} onChangeText={setWhy} multiline />
             <View style={{ gap: 8 }}>
               <Text style={T.label}>Takes about</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>

@@ -1,5 +1,5 @@
-// Pure data model + rules for Righto. No React Native imports so it can be unit-tested with Node.
-// Copy, selection rules and seed data follow reference/Righto App v3.dc.html.
+// Pure data model + rules for Rightyo. No React Native imports so it can be unit-tested with Node.
+// Copy, selection rules and seed data follow reference/Rightyo App v3.dc.html.
 
 export type Outcome = 'done' | 'partial' | 'missed';
 export type Status = 'new' | 'planned' | 'tried' | 'later' | 'finished';
@@ -297,7 +297,7 @@ export const statusTag = (x: Task) =>
 export const notifCopy = (kind: 'new' | 'commitment' | 'goal' | 'nudge', t: Task, detail: boolean) => {
   if (!detail) {
     return {
-      title: 'Righto',
+      title: 'Rightyo',
       body: kind === 'new' ? 'You have something new from your psychologist.'
         : kind === 'commitment' ? 'Time for your ' + routineFor(t.plan).name.toLowerCase() + ' routine.'
           : kind === 'goal' ? 'A gentle reminder for today.'
@@ -305,7 +305,7 @@ export const notifCopy = (kind: 'new' | 'commitment' | 'goal' | 'nudge', t: Task
     };
   }
   return {
-    title: kind === 'new' ? 'New homework from ' + PSYCH.short : kind === 'nudge' ? 'Righto' : 'Righto · ' + t.title,
+    title: kind === 'new' ? 'New homework from ' + PSYCH.short : kind === 'nudge' ? 'Rightyo' : 'Rightyo · ' + t.title,
     body: kind === 'new' ? t.title
       : kind === 'commitment' ? (routineFor(t.plan).anchor + '? ' + (t.plan ? t.plan.how.replace(/^./, (c) => c.toUpperCase()) + ', ' + t.plan.where + '.' : t.title))
         : kind === 'goal' ? trim(t.goal?.s) + '.'

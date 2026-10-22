@@ -52,7 +52,7 @@ export default function Mfa() {
           <View>
             <Kicker>Psychologists · Two-step sign-in</Kicker>
             <Text style={[T.h1, { marginVertical: 8 }]}>{enrolling ? 'Add an authenticator' : 'Enter your code'}</Text>
-            <Text style={T.muted}>{enrolling ? 'Client records open only after a second step. Use any authenticator app (Google Authenticator, Microsoft Authenticator, 1Password, Authy).' : 'Open your authenticator app and enter the six-digit code for Righto.'}</Text>
+            <Text style={T.muted}>{enrolling ? 'Client records open only after a second step. Use any authenticator app (Google Authenticator, Microsoft Authenticator, 1Password, Authy).' : 'Open your authenticator app and enter the six-digit code for Rightyo.'}</Text>
           </View>
           {enrolling && (
             <Glass style={{ padding: 18, gap: 14 }}>

@@ -5,7 +5,7 @@ import { Phone } from 'phosphor-react-native';
 import { SheetFrame, PrimaryButton, SecondaryButton, T, call000, callLifeline, callBeyondBlue } from '../src/ui';
 import { colors } from '../src/theme';
 
-/** "Need support now?" — static crisis lines plus the About Righto statement (INTENDED_PURPOSE.md rule 6). Reachable from every screen. */
+/** "Need support now?" — static crisis lines plus the About Rightyo statement (INTENDED_PURPOSE.md rule 6). Reachable from every screen. */
 export default function Support() {
   const close = () => router.back();
   return (
@@ -28,8 +28,8 @@ export default function Support() {
             <SecondaryButton label="1300 22 4636" icon={<Phone size={20} weight="light" color={colors.navy} />} onPress={callBeyondBlue} style={{ marginTop: 8, minHeight: 48 }} size={16} accessibilityLabel="Call Beyond Blue 1300 22 4636" />
           </View>
           <View>
-            <Text style={T.small}>About Righto</Text>
-            <Text style={T.body16}>Righto shares homework from your psychologist, reminds you and keeps your notes. It doesn’t assess, diagnose or treat, and no one is watching it in real time. For anything urgent, use the services above or contact your psychologist.</Text>
+            <Text style={T.small}>About Rightyo</Text>
+            <Text style={T.body16}>Rightyo shares homework from your psychologist, reminds you and keeps your notes. It doesn’t assess, diagnose or treat, and no one is watching it in real time. For anything urgent, use the services above or contact your psychologist.</Text>
           </View>
         </SheetFrame>
       </Animated.View>

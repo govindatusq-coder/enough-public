@@ -35,7 +35,7 @@ export default function Privacy() {
   const guest = cloudMode() && !cloud;
   const psych = isPsych();
   const sample = s.tasks.find((t) => t.status === 'planned' && t.kind === 'commitment') || s.tasks[0];
-  const copy = sample ? notifCopy('commitment', sample, s.notifDetail) : { title: 'Righto', body: 'Time for your routine.' };
+  const copy = sample ? notifCopy('commitment', sample, s.notifDetail) : { title: 'Rightyo', body: 'Time for your routine.' };
   const preview = s.notifDetail ? copy : { title: copy.body, body: 'Details hidden until you unlock' };
 
   const setDetail = async (v: boolean) => {
@@ -48,7 +48,7 @@ export default function Privacy() {
   const setLock = async (v: boolean) => {
     if (!v) { s.set({ appLock: false }); return; }
     try {
-      const res = await LocalAuthentication.authenticateAsync({ promptMessage: 'Lock Righto with this' });
+      const res = await LocalAuthentication.authenticateAsync({ promptMessage: 'Lock Rightyo with this' });
       if (res.success) s.set({ appLock: true }); else toast('App lock stays off.');
     } catch { toast('App lock isn’t available on this device.'); }
   };
@@ -61,9 +61,9 @@ export default function Privacy() {
     const { set: _a, patchTask: _b, addTask: _c, record: _d, tryAgain: _t, rollDay: _e, resetDemo: _f, wipe: _g, ...data } = s;
     let server: Record<string, unknown> | null = null;
     if (cloud) { try { server = await api.exportMe(); } catch (e) { toast('Couldn’t reach your account: ' + (e as Error).message); } }
-    try { await Share.share({ message: JSON.stringify({ exportedAt: new Date().toISOString(), account: server, thisPhone: data }, null, 2), title: 'My Righto data' }); } catch { /* cancelled */ }
+    try { await Share.share({ message: JSON.stringify({ exportedAt: new Date().toISOString(), account: server, thisPhone: data }, null, 2), title: 'My Rightyo data' }); } catch { /* cancelled */ }
   };
-  const del = () => Alert.alert('Delete my account?', 'Your homework, plans and check-ins are deleted from this device now and from Righto’s servers within 30 days (backups within 35 days). Your psychologist keeps their own clinical record.',
+  const del = () => Alert.alert('Delete my account?', 'Your homework, plans and check-ins are deleted from this device now and from Rightyo’s servers within 30 days (backups within 35 days). Your psychologist keeps their own clinical record.',
     [{ text: 'Cancel', style: 'cancel' }, { text: 'Continue', style: 'destructive', onPress: () => Alert.alert('This can’t be undone', 'Delete everything?',
       [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: async () => {
         if (cloud) { try { await api.deleteMe(); } catch (e) { toast('Couldn’t delete your account: ' + (e as Error).message); return; } await signOut(); }
@@ -107,14 +107,14 @@ export default function Privacy() {
         )}
 
         <Glass style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
-          <Row first title="Download my data" sub={cloud ? 'Everything in your account and on this phone, as JSON, via the share sheet.' : 'Everything Righto holds about you, as JSON, via the share sheet.'} onPress={download} right={<DownloadSimple size={20} weight="light" color={colors.navy} />} />
+          <Row first title="Download my data" sub={cloud ? 'Everything in your account and on this phone, as JSON, via the share sheet.' : 'Everything Rightyo holds about you, as JSON, via the share sheet.'} onPress={download} right={<DownloadSimple size={20} weight="light" color={colors.navy} />} />
           <Row title="Delete my account" sub="Two steps. Explains what is kept and for how long." onPress={del} right={<Trash size={20} weight="light" color={colors.navy} />} />
         </Glass>
 
         <Glass style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
           <Row first title="Privacy policy" onPress={() => router.push({ pathname: '/legal', params: { kind: 'policy' } })} right={<CaretRight size={18} weight="light" color={colors.navy} />} />
           <Row title="Collection notice" onPress={() => router.push({ pathname: '/legal', params: { kind: 'notice' } })} right={<CaretRight size={18} weight="light" color={colors.navy} />} />
-          <Row title="Contact privacy officer" sub="privacy@righto.app" onPress={() => Linking.openURL('mailto:privacy@righto.app?subject=Righto%20privacy')} right={<CaretRight size={18} weight="light" color={colors.navy} />} />
+          <Row title="Contact privacy officer" sub="privacy@righto.app" onPress={() => Linking.openURL('mailto:privacy@righto.app?subject=Rightyo%20privacy')} right={<CaretRight size={18} weight="light" color={colors.navy} />} />
         </Glass>
         <Text style={[T.small, { paddingHorizontal: 4, fontFamily: F.serif }]}>Consent {s.consentVersion ? 'v' + s.consentVersion : 'not yet given'}{s.consentAt ? ' · ' + new Date(s.consentAt).toLocaleDateString('en-AU') : ''}</Text>
       </ScrollView>

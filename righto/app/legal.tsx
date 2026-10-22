@@ -8,10 +8,10 @@ const POLICY = [
   ['Why', 'Only to deliver homework between you and your linked psychologist. No advertising, no sale of data, no marketing use of health information.'],
   ['Where it is stored', 'In Australia. Reminders are scheduled on your phone and carry no health content on the lock screen unless you turn that on.'],
   ['Who can see it', 'You, and your psychologist for the items you mark as shared. Every time they view your record it is logged. You can end sharing at any time.'],
-  ['Your rights', 'Download or correct your information and delete your account from Settings → Privacy & data. Complaints: first to Righto’s privacy officer, then to the OAIC.'],
+  ['Your rights', 'Download or correct your information and delete your account from Settings → Privacy & data. Complaints: first to Rightyo’s privacy officer, then to the OAIC.'],
 ];
 const NOTICE = [
-  ['Collection notice', 'Righto (ABN pending) collects your health information to deliver homework set by your psychologist and to let you share your plans and check-ins with them. Information is stored in Australia and is not disclosed overseas. You can access, correct or delete it at any time. Privacy officer: privacy@righto.app.'],
+  ['Collection notice', 'Rightyo (ABN pending) collects your health information to deliver homework set by your psychologist and to let you share your plans and check-ins with them. Information is stored in Australia and is not disclosed overseas. You can access, correct or delete it at any time. Privacy officer: privacy@righto.app.'],
   ['Draft for legal review', 'This notice is a placeholder prepared for the privacy lawyer’s review and a Privacy Impact Assessment before launch.'],
 ];
 
@@ -25,7 +25,7 @@ export default function Legal() {
         <Pressable style={{ flex: 1, backgroundColor: '#0F274640' }} onPress={close} accessibilityLabel="Close" accessibilityRole="button" />
       </Animated.View>
       <Animated.View entering={SlideInDown.duration(250)} style={{ maxHeight: '85%' }}>
-        <SheetFrame kicker={kind === 'notice' ? 'Collection notice' : 'Privacy policy · draft'} title={kind === 'notice' ? 'Before you share anything' : 'How Righto handles your information'} onClose={close}>
+        <SheetFrame kicker={kind === 'notice' ? 'Collection notice' : 'Privacy policy · draft'} title={kind === 'notice' ? 'Before you share anything' : 'How Rightyo handles your information'} onClose={close}>
           <ScrollView style={{ maxHeight: 380 }} contentContainerStyle={{ gap: 12 }}>
             {rows.map(([k, v]) => (
               <View key={k}>

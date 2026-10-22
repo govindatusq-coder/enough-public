@@ -39,7 +39,7 @@ export default function Splash() {
 
   return (
     <Background splash>
-      <Pressable onPress={next} accessibilityRole="button" accessibilityLabel="Open Righto" style={{ flex: 1 }}>
+      <Pressable onPress={next} accessibilityRole="button" accessibilityLabel="Open Rightyo" style={{ flex: 1 }}>
         <View style={{ flex: 1 }} />
         <View style={{ alignItems: 'center', gap: 22, transform: [{ translateY: -60 }] }}>
           <Logo size={104} />
