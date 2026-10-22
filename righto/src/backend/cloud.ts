@@ -255,6 +255,7 @@ export function pushTaskPatch(id: string, patch: Partial<Task>) {
   if (!cloudActive() || isPsych()) return;
   const row: Record<string, unknown> = {};
   if ('status' in patch) row.status = patch.status;
+  if ('mins' in patch && typeof patch.mins === 'number') row.mins = Math.min(180, Math.max(1, Math.round(patch.mins)));
   if ('kind' in patch) row.kind = patch.kind ?? null;
   if ('daily' in patch) row.daily = !!patch.daily;
   if ('plan' in patch) row.plan = patch.plan ?? null;

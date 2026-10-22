@@ -41,6 +41,7 @@ export type Task = {
   notifIds: string[];
   shared: boolean;
   author?: 'psych' | 'client'; // a client's own small thing to try (never shown to the psychologist)
+  startTime?: string | null; // the client's preferred start time, picked on the task screen; seeds the commitment or goal reminder
 };
 
 export type CheckIn = {
@@ -131,12 +132,12 @@ export const suggestionLine = (s: Suggestion | null) => (s ? (s.kind === 'goal' 
 export const defaultPlan = (t: Task): Plan => {
   if (t.plan) return { ...t.plan, time: t.plan.time ?? null };
   const sp = t.suggestion && t.suggestion.kind === 'commitment' ? t.suggestion.plan : null;
-  return sp ? { ...sp, prep: sp.prep || t.prepOpts[0] || NOPREP, time: sp.time || null } : { routine: t.suggest || 'coffee', how: t.howOpts[0] || '', where: t.whereOpts[0] || '', prep: t.prepOpts[0] || NOPREP, time: null };
+  return sp ? { ...sp, prep: sp.prep || t.prepOpts[0] || NOPREP, time: t.startTime || sp.time || null } : { routine: t.suggest || 'coffee', how: t.howOpts[0] || '', where: t.whereOpts[0] || '', prep: t.prepOpts[0] || NOPREP, time: t.startTime || null };
 };
 export const defaultGoal = (t: Task): Goal => {
   if (t.goal) return { ...emptyGoal(), ...t.goal, rem: { time: t.goal.rem?.time || '8:30 pm', days: Array.isArray(t.goal.rem?.days) && t.goal.rem.days.length === 7 ? [...t.goal.rem.days] : weekdays() } };
   const sg = t.suggestion && t.suggestion.kind === 'goal' ? t.suggestion.goal : emptyGoal();
-  return { ...sg, rem: { time: '8:30 pm', days: weekdays() } };
+  return { ...sg, rem: { time: t.startTime || '8:30 pm', days: weekdays() } };
 };
 
 /** Three ready-made answers per goal question, built from the clinician's task (never generated advice).

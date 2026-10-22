@@ -3,10 +3,11 @@ import { ScrollView, Text, View, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { CalendarBlank, CaretRight, CaretDown, CaretUp, Play, CalendarPlus, Shuffle, LinkSimple, Target, type IconProps } from 'phosphor-react-native';
-import { Background, Glass, NavyCard, Kicker, BackRow, InfoButtons, IconCircle, SupportLink, BottomBar, TextButton, T, F, MissingTask } from '../../src/ui';
+import { Background, Glass, NavyCard, Kicker, BackRow, InfoButtons, IconCircle, SupportLink, BottomBar, TextButton, Chip, Field, T, F, MissingTask } from '../../src/ui';
 import { colors } from '../../src/theme';
 import { useStore, useTask } from '../../src/store';
-import { suggestionLine, plusDays, dayLabel, DAYS, PSYCH, longDayLabel, hasSession } from '../../src/logic';
+import { suggestionLine, plusDays, dayLabel, DAYS, MINS, PSYCH, longDayLabel, hasSession } from '../../src/logic';
+import { TimePill } from '../../src/time-picker';
 import { cancelFor, scheduleNudge } from '../../src/notifications';
 import { toast } from '../../src/toast';
 
@@ -84,6 +85,8 @@ export default function NewTask() {
           </NavyCard>
         )}
 
+        {task.author !== 'client' && <MakeItYours task={task} onMins={(m) => patchTask(task.id, { mins: m })} onTime={(t) => patchTask(task.id, { startTime: t })} />}
+
         <Text style={{ fontFamily: F.serif, fontSize: 21, lineHeight: 26, color: colors.navy, paddingTop: 4, paddingHorizontal: 6 }}>How would you like to do it?</Text>
         <Animated.View layout={LinearTransition.duration(200)} style={{ gap: 14 }}>
           <Glass style={{ paddingVertical: 2, paddingHorizontal: 14 }}>
@@ -138,5 +141,42 @@ export default function NewTask() {
         <SupportLink style={{ alignSelf: 'center' }} />
       </BottomBar>
     </Background>
+  );
+}
+
+/**
+ * Make it yours: the client adjusts how long the task takes and when they would like to start, so it fits their day.
+ * The psychologist's words (what to do and why) stay exactly as written; only the fit changes.
+ */
+function MakeItYours({ task, onMins, onTime }: { task: NonNullable<ReturnType<typeof useTask>>; onMins: (m: number) => void; onTime: (t: string | null) => void }) {
+  const preset = MINS.includes(task.mins);
+  const [own, setOwn] = useState(!preset);
+  const [text, setText] = useState(preset ? '' : String(task.mins));
+  const typed = (v: string) => {
+    const digits = v.replace(/[^0-9]/g, '').slice(0, 3);
+    setText(digits);
+    const n = Number(digits);
+    if (n >= 1 && n <= 180) onMins(n);
+  };
+  return (
+    <Glass style={{ padding: 18, gap: 12 }}>
+      <View style={{ gap: 4 }}>
+        <Kicker>Make it yours</Kicker>
+        <Text style={[T.meta, { lineHeight: 20 }]}>{PSYCH.short}’s task stays as written. Change how long it takes and when you’d like to start so it fits your day. Where and how are yours to set on the next step.</Text>
+      </View>
+      <View style={{ gap: 8 }}>
+        <Text style={T.body16}>Takes about</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {MINS.map((m) => <Chip key={m} label={m + ' min'} selected={!own && task.mins === m} onPress={() => { setOwn(false); onMins(m); }} style={{ borderRadius: 40, paddingVertical: 0 }} />)}
+          <Chip label="Other…" selected={own} onPress={() => setOwn(true)} style={{ borderRadius: 40, paddingVertical: 0 }} />
+        </View>
+        {own ? <Field label="" value={text} onChangeText={typed} placeholder="Minutes, e.g. 15" inputProps={{ keyboardType: 'number-pad', returnKeyType: 'done', autoFocus: !text }} /> : null}
+      </View>
+      <View style={{ gap: 8 }}>
+        <Text style={T.body16}>Start time</Text>
+        <TimePill label={task.startTime ? 'Start at' : 'Pick a start time'} value={task.startTime ?? null} selected={!!task.startTime} onChange={onTime} />
+        {task.startTime ? <TextButton label="Clear the start time" size={15} onPress={() => onTime(null)} style={{ alignSelf: 'flex-start', paddingHorizontal: 2, minHeight: 40 }} /> : null}
+      </View>
+    </Glass>
   );
 }
