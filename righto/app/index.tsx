@@ -43,7 +43,7 @@ export default function Splash() {
         <View style={{ flex: 1 }} />
         <View style={{ alignItems: 'center', gap: 22, transform: [{ translateY: -60 }] }}>
           <Logo size={64} />
-          <Text style={{ fontFamily: F.sans, fontSize: 12, letterSpacing: 4, lineHeight: 24, textAlign: 'center', color: colors.navy }}>YOUR WAY{'\n'}FORWARD.</Text>
+          <Text style={{ fontFamily: F.sans, fontSize: 12, letterSpacing: 4, lineHeight: 24, textAlign: 'center', color: colors.navy }}>WHAT COULD{'\n'}BE DIFFERENT?</Text>
         </View>
         <View style={{ flex: 1.3 }} />
       </Pressable>
