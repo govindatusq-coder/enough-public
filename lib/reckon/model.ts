@@ -49,6 +49,11 @@ export function manualRecord(method: 'manual' | 'upload'): IngestionRecord {
     contentAvailableToAi: true, notes: [method === 'manual' ? 'Entered by the user; nothing to retrieve.' : 'Uploaded by the user.']};
 }
 
+/** A record for a retrieval that could not even be attempted properly (server error, unreachable API). */
+export function failedRecord(error: string, at = now()): IngestionRecord {
+  return {status: 'failed', method: 'none', attempts: [], startedAt: at, finishedAt: at, fieldsRetrieved: [], transcriptAvailable: false, contentAvailableToAi: false, error, notes: ['Retrieval did not complete; the user supplies the meaning.']};
+}
+
 export function addSource(state: ReckonState, source: Omit<Source, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): {state: ReckonState; source: Source} {
   const full: Source = {...base('src'), ...source};
   return {state: {...state, sources: [...state.sources, full]}, source: full};

@@ -26,6 +26,7 @@ export default function LabPage() {
 
       <Card tone="plain">
         <table><tbody>
+          {status.error && <tr><td>Server</td><td className="bad">{status.error} — Reckon API calls are failing on this deployment</td></tr>}
           <tr><td>AI</td><td className={status.ai ? 'ok' : 'bad'}>{status.ai ? `available · ${status.model}` : 'no ANTHROPIC_API_KEY — deterministic fallbacks in use'}</td></tr>
           <tr><td>Instagram oEmbed token</td><td className={status.instagramOembed ? 'ok' : 'bad'}>{status.instagramOembed ? 'configured' : 'not configured'}</td></tr>
           <tr><td>Storage</td><td>localStorage “{STORAGE_KEY}” · {Math.round(JSON.stringify(state).length / 1024)} KB</td></tr>

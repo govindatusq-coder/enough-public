@@ -6,7 +6,7 @@ import {Sparkles, Mic, MicOff, PenLine, Bookmark, Link2, Type, ImageUp, Check} f
 import type {Source, ReckonItem, RouteFunction, CaptureMode} from '@/lib/reckon/types';
 import {detectSource, looksLikeUrl} from '@/lib/reckon/platform';
 import {useReckon} from '@/lib/reckon/store';
-import {addSource, addItem, confirmTakeaway, setDistilled, setRoute, setSemantic, manualRecord, updateItem, dequeueUrl, logAi} from '@/lib/reckon/model';
+import {addSource, addItem, confirmTakeaway, setDistilled, setRoute, setSemantic, manualRecord, failedRecord, updateItem, dequeueUrl, logAi} from '@/lib/reckon/model';
 import {api} from '@/lib/reckon/client';
 import {ROUTE_LABELS, ROUTE_ORDER} from '@/lib/reckon/labels';
 import {Card, Eyebrow, Thinking, Ripple} from './ui';
@@ -57,8 +57,18 @@ export function AddFlow({initialUrl, queueId}: {initialUrl?: string; queueId?: s
       void created;
       setStep('caught');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Reckon could not add that just now.');
-      setStep('input');
+      // The server could not be reached or crashed. Capture must not fail: keep the link with an
+      // honest failed record (visible in the Lab) and go straight to "What caught you?".
+      const message = err instanceof Error ? err.message : String(err);
+      update(s => {
+        const a = addSource(s, {platform: detected.platform, type: detected.type, url: detected.url, canonicalUrl: detected.canonicalUrl, externalId: detected.externalId, embedUrl: detected.embedUrl, retrieval: failedRecord(`Ingestion API unavailable: ${message}`)});
+        const b = addItem(a.state, a.source.id, 'kept');
+        let next = b.state;
+        if (queueId) next = dequeueUrl(next, queueId);
+        setSource(a.source); setItem(b.item);
+        return next;
+      });
+      setStep('caught');
     }
   }, [update, queueId]);
 

@@ -92,3 +92,22 @@ test('the fallback distiller refuses to invent an insight from thin sources', ()
   assert.equal(withCaption.enoughContent, true);
   assert.equal(withCaption.insight, 'Starting smaller can be more useful than waiting to feel motivated.');
 });
+
+test('the ingest route always answers JSON, even when retrieval throws', async () => {
+  const {handleIngest: POST} = await import('../lib/reckon/ingest/handler.ts');
+  const bad = await POST(new Request('http://x/api/reckon/ingest', {method: 'POST', body: 'not json'}));
+  assert.equal(bad.status, 400);
+  const notUrl = await POST(new Request('http://x/api/reckon/ingest', {method: 'POST', body: JSON.stringify({url: 'a thought'})}));
+  assert.equal(notUrl.status, 400);
+  const original = globalThis.fetch;
+  globalThis.fetch = () => { throw new TypeError('synchronous explosion'); };
+  try {
+    const res = await POST(new Request('http://x/api/reckon/ingest', {method: 'POST', body: JSON.stringify({url: 'https://www.instagram.com/p/DcqQ7sMgBjE/'})}));
+    assert.equal(res.status, 200);
+    const json = await res.json();
+    assert.equal(json.record.status, 'failed');
+    assert.equal(json.record.contentAvailableToAi, false);
+    assert.equal(json.detected.externalId, 'DcqQ7sMgBjE');
+    assert.equal(json.content.caption, undefined);
+  } finally { globalThis.fetch = original; }
+});

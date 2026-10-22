@@ -18,7 +18,7 @@ interface StoreValue {
   ready: boolean;
   update: (fn: Updater) => ReckonState;
   reset: () => void;
-  status: {ai: boolean; model: string | null; instagramOembed: boolean; devTools: boolean; checked: boolean};
+  status: {ai: boolean; model: string | null; instagramOembed: boolean; devTools: boolean; checked: boolean; error?: string};
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -46,7 +46,7 @@ export function ReckonStoreProvider({children}: {children: ReactNode}) {
     // One-time hydration from localStorage after mount, so server and first client render match.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState(loaded); setReady(true);
-    fetch('/api/reckon/status', {cache: 'no-store'}).then(r => r.json()).then(s => setStatus({...s, checked: true})).catch(() => setStatus(s => ({...s, checked: true})));
+    fetch('/api/reckon/status', {cache: 'no-store'}).then(async r => { if (!r.ok) throw new Error(`status endpoint answered ${r.status}`); return r.json(); }).then(s => setStatus({...s, checked: true})).catch(err => setStatus(s => ({...s, checked: true, error: err instanceof Error ? err.message : String(err)})));
   }, []);
 
   useEffect(() => {

@@ -52,6 +52,15 @@ What this means for the experiment:
 * **All AI functions** ran on the deterministic fallbacks because no `ANTHROPIC_API_KEY` exists in this environment. The model path (`@anthropic-ai/sdk`, structured outputs via `zodOutputFormat`, `claude-opus-5-5`, server-side refusal fallbacks) compiles and is wired, but has **not been exercised against the live API**. The Lab's AI tab shows `provider: fallback` for every call and will show `anthropic` once a key is set. Expect the scripted conversation to be noticeably more generic than the model-driven one.
 * Embeddings: the provider has no embeddings endpoint, so `embeddingStatus` is `features_only`; clustering compares structured facets + tokens. Recorded in the Lab.
 
+## Addendum, same day: first preview deployment
+
+Vercel's GitHub integration built the PR automatically (preview `enough-public-git-claude-epic-thompson-9gl5vu-govindatusq-5192.vercel.app`). The first manual attempt to add a Reel there showed *Bad response*: the ingest API returned a non-JSON body. Changes made in response:
+
+* `/api/reckon/*` is now excluded from the Supabase session middleware in `proxy.ts`; Reckon's API is stateless and must not depend on ENOUGH's Supabase env vars being present on preview deployments.
+* The ingest handler (`lib/reckon/ingest/handler.ts`, unit-tested) always answers JSON; an unexpected server error becomes an honest `failed` IngestionRecord.
+* The capture flow no longer stops on a server failure: the link is kept with a `failed` record that names the HTTP status and body (visible in the Lab) and the user goes straight to *What caught you?*.
+* The Lab shows when the status endpoint itself is failing on a deployment.
+
 ## Known limitations
 
 * Live Instagram behaviour unverified from this sandbox (see above). The first deployed run of the test batch is the real experiment.

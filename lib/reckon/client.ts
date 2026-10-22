@@ -12,9 +12,11 @@ export type AiResult<T> = {output: T; meta: AiMeta};
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(path, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
-  const json = await res.json().catch(() => ({error: 'Bad response'}));
+  const text = await res.text();
+  let json: {error?: string} & T;
+  try { json = JSON.parse(text); } catch { throw new Error(`Reckon's server answered ${res.status} with ${text.trim().slice(0, 120).replace(/<[^>]+>/g, ' ').trim() || 'an empty body'}`); }
   if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
-  return json as T;
+  return json;
 }
 
 export const api = {
