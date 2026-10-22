@@ -10,7 +10,7 @@
  */
 import type {IngestionAttempt, IngestionRecord, IngestionMethod} from '../types.ts';
 import type {DetectedSource} from '../platform.ts';
-import {parsePageMeta, parseInstagramEmbed, looksBlocked} from './parse.ts';
+import {parsePageMeta, parseInstagramEmbed, parseInstagramOg, looksBlocked} from './parse.ts';
 
 export interface RetrievedContent {
   title?: string;
@@ -18,6 +18,7 @@ export interface RetrievedContent {
   transcript?: string;
   thumbnailUrl?: string;
   author?: string;
+  publishedAt?: string;
   embedUrl?: string;
 }
 
@@ -70,16 +71,24 @@ const instagramOembed = (canonical: string): AttemptFn => async () => {
   return {fields: {caption: j.title, author: j.author_name, thumbnailUrl: j.thumbnail_url}, httpStatus: r.status};
 };
 
-const openGraph = (url: string, readable = false): AttemptFn => async () => {
+const openGraph = (url: string, readable = false, instagram = false): AttemptFn => async () => {
   const r = await get(url);
   const blocked = looksBlocked(r.body, r.finalUrl);
   const meta = parsePageMeta(r.body, {readableText: readable});
   if (r.status >= 400) return {fields: {}, httpStatus: r.status, finalUrl: r.finalUrl, note: 'HTTP ' + r.status};
-  const fields: Partial<RetrievedContent> = {title: meta.title, caption: meta.description ?? meta.text, thumbnailUrl: meta.image, author: meta.author};
+  let fields: Partial<RetrievedContent> = {title: meta.title, caption: meta.description ?? meta.text, thumbnailUrl: meta.image, author: meta.author};
+  let note = blocked;
+  if (instagram) {
+    // Split "13K likes, 19 comments - user on Date: "caption"" into its parts; counts are not meaning.
+    const ig = parseInstagramOg(meta);
+    fields = {caption: ig.caption, author: ig.author, publishedAt: ig.publishedAt, thumbnailUrl: meta.image};
+    const stats = [ig.likes !== undefined ? `${ig.likes} likes` : '', ig.comments !== undefined ? `${ig.comments} comments` : ''].filter(Boolean).join(', ');
+    note = [blocked, stats ? `Open Graph carried ${stats}` : '', ig.captionTruncated ? 'Caption truncated by Instagram in og:description' : ''].filter(Boolean).join('; ') || undefined;
+  }
   // Instagram's generic title ("Instagram") is not content.
   if (fields.title && /^instagram$/i.test(fields.title)) delete fields.title;
   if (blocked && !fields.caption) return {fields: {}, httpStatus: r.status, finalUrl: r.finalUrl, note: blocked};
-  return {fields, httpStatus: r.status, finalUrl: r.finalUrl, note: blocked};
+  return {fields, httpStatus: r.status, finalUrl: r.finalUrl, note};
 };
 
 const instagramEmbed = (code: string): AttemptFn => async () => {
@@ -103,7 +112,7 @@ export async function retrieveSource(src: DetectedSource): Promise<RetrievalResu
   const code = src.externalId;
   if (src.platform === 'instagram' && code) {
     plan.push({method: 'oembed', url: src.canonicalUrl, fn: instagramOembed(src.canonicalUrl)});
-    plan.push({method: 'open_graph', url: src.canonicalUrl, fn: openGraph(src.canonicalUrl)});
+    plan.push({method: 'open_graph', url: src.canonicalUrl, fn: openGraph(src.canonicalUrl, false, true)});
     plan.push({method: 'embed_page', url: `https://www.instagram.com/p/${code}/embed/captioned/`, fn: instagramEmbed(code)});
   } else if (src.platform === 'youtube') {
     plan.push({method: 'oembed', url: src.canonicalUrl, fn: publicOembed('https://www.youtube.com/oembed', src.canonicalUrl)});
@@ -122,10 +131,12 @@ export async function retrieveSource(src: DetectedSource): Promise<RetrievalResu
     const {attempt: a, fields} = await attempt(step.method, step.url, step.fn);
     attempts.push(a);
     for (const [k, v] of Object.entries(fields) as [keyof RetrievedContent, string][]) {
-      if (!content[k]) { content[k] = v; if (keptMethod === 'none') keptMethod = step.method; }
+      // A later method may carry the full caption where an earlier one was truncated.
+      const longerCaption = k === 'caption' && content.caption && /(…|\.\.\.)$/.test(content.caption) && v.length > content.caption.length;
+      if (!content[k] || longerCaption) { content[k] = v; if (keptMethod === 'none' || longerCaption) keptMethod = step.method; }
     }
-    // Stop once we have a caption/description; thumbnails alone are not enough.
-    if (content.caption && content.caption.length > 40) break;
+    // Stop once we have a complete caption; thumbnails alone are not enough.
+    if (content.caption && content.caption.length > 40 && !/(…|\.\.\.)$/.test(content.caption)) break;
   }
   if (src.embedUrl) content.embedUrl = src.embedUrl;
 
@@ -137,6 +148,7 @@ export async function retrieveSource(src: DetectedSource): Promise<RetrievalResu
   const status: IngestionRecord['status'] = meaningful ? 'retrieved' : fieldsRetrieved.length ? 'partial' : (anyNetwork ? 'unavailable' : allErrored ? 'failed' : 'unavailable');
   const notes: string[] = [];
   if (src.platform === 'instagram') notes.push('Instagram offers no transcript through any legitimate endpoint; audio was not transcribed.');
+  if (content.caption && /(…|\.\.\.)$/.test(content.caption)) notes.push('The caption appears truncated by the platform; Reckon only has the beginning.');
   if (src.platform === 'youtube' || src.platform === 'tiktok') notes.push('Captions/transcripts are not fetched; only oEmbed metadata is used.');
   if (!process.env.INSTAGRAM_OEMBED_TOKEN && src.platform === 'instagram') notes.push('Official Instagram oEmbed requires a Facebook app token (INSTAGRAM_OEMBED_TOKEN).');
   if (status !== 'retrieved') notes.push(meaningful ? '' : 'Not enough content for Reckon to interpret on its own; the user supplies the meaning.');

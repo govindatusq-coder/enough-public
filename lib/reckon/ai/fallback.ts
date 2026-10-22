@@ -15,7 +15,9 @@ import type * as S from './schemas.ts';
 
 const firstSentence = (text: string, max = 160): string => {
   const clean = text.replace(/\s+/g, ' ').replace(/#[\w]+/g, '').replace(/@[\w.]+/g, '').trim();
-  const s = clean.split(/(?<=[.!?])\s+/)[0] ?? clean;
+  const sentences = clean.split(/(?<=[.!?])\s+/);
+  // Prefer the first real sentence over a short title-like fragment such as "Episode 4 / Side quest".
+  const s = sentences.find(x => x.length >= 40 && !/[\/|]/.test(x.slice(0, 40))) ?? sentences[0] ?? clean;
   return s.length > max ? s.slice(0, max - 1).replace(/\s\S*$/, '') + '…' : s;
 };
 

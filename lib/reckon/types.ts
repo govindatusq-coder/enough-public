@@ -103,6 +103,7 @@ export interface Source extends Entity {
   thumbnailUrl?: string;
   embedUrl?: string;
   author?: string;
+  publishedAt?: string;
   /** Text the user pasted (manual) or an image data URL (upload). */
   manualText?: string;
   imageDataUrl?: string;

@@ -61,6 +61,22 @@ Vercel's GitHub integration built the PR automatically (preview `enough-public-g
 * The capture flow no longer stops on a server failure: the link is kept with a `failed` record that names the HTTP status and body (visible in the Lab) and the user goes straight to *What caught you?*.
 * The Lab shows when the status endpoint itself is failing on a deployment.
 
+## Addendum: what Instagram actually returned to Vercel
+
+On the deployed preview (build `f4438f8`), adding `https://www.instagram.com/p/DcqQ7sMgBjE/` produced a *Reckon it for me* proposal, which means the **Open Graph fetch from Vercel's network succeeded**. Instagram served `og:description` in its usual shape:
+
+```
+13K likes, 19 comments - justinxiao_ on August 30, 2026: "Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement,…"
+```
+
+So for public posts, a Vercel function can legitimately obtain the account, date, engagement counts, a thumbnail and the **beginning of the caption** (Instagram truncates it with an ellipsis). The first build quoted that whole string as the takeaway; it now:
+
+* parses the description into caption / author / date / counts (`parseInstagramOg`), keeping counts as attempt notes rather than meaning;
+* flags a truncated caption and continues to the public embed page, keeping the longer caption if that page serves one;
+* records "caption truncated by the platform" on the source when nothing longer was found.
+
+Still unknown: whether the embed page serves full captions from Vercel (the next test batch run will show it per URL in the Lab), and whether the other four URLs behave the same.
+
 ## Known limitations
 
 * Live Instagram behaviour unverified from this sandbox (see above). The first deployed run of the test batch is the real experiment.

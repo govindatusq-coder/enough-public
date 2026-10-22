@@ -47,7 +47,7 @@ export function AddFlow({initialUrl, queueId}: {initialUrl?: string; queueId?: s
     try {
       const res = await api.ingest(url);
       const created = update(s => {
-        const a = addSource(s, {platform: res.detected.platform, type: res.detected.type, url: res.detected.url, canonicalUrl: res.detected.canonicalUrl, externalId: res.detected.externalId, retrieval: res.record, title: res.content.title, caption: res.content.caption, transcript: res.content.transcript, thumbnailUrl: res.content.thumbnailUrl, author: res.content.author, embedUrl: res.content.embedUrl});
+        const a = addSource(s, {platform: res.detected.platform, type: res.detected.type, url: res.detected.url, canonicalUrl: res.detected.canonicalUrl, externalId: res.detected.externalId, retrieval: res.record, title: res.content.title, caption: res.content.caption, transcript: res.content.transcript, thumbnailUrl: res.content.thumbnailUrl, author: res.content.author, publishedAt: res.content.publishedAt, embedUrl: res.content.embedUrl});
         const b = addItem(a.state, a.source.id, 'kept');
         let next = b.state;
         if (queueId) next = dequeueUrl(next, queueId);

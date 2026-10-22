@@ -25,7 +25,7 @@ export function SourceCard({source, compact = false}: {source: Source; compact?:
       ) : source.manualText ? (
         <div className="text">{source.manualText}</div>
       ) : null}
-      {(source.title || source.author) && !source.manualText && <div className="caption" style={{paddingTop: 12}}><strong>{source.title}</strong>{source.author ? <span className="rk-muted"> · {source.author}</span> : null}</div>}
+      {(source.title || source.author) && !source.manualText && <div className="caption" style={{paddingTop: 12}}><strong>{source.title}</strong>{source.author ? <span className="rk-muted"> · {source.author}</span> : null}{source.publishedAt ? <span className="rk-muted"> · {source.publishedAt}</span> : null}</div>}
       {source.caption && !compact && <div className="caption">{source.caption.length > 600 ? source.caption.slice(0, 600) + '…' : source.caption}</div>}
       <div className="meta">
         <span>{platformLabel[source.platform]}{source.type !== 'page' && source.type !== 'text' ? ` ${source.type}` : ''}</span>

@@ -111,3 +111,43 @@ test('the ingest route always answers JSON, even when retrieval throws', async (
     assert.equal(json.content.caption, undefined);
   } finally { globalThis.fetch = original; }
 });
+
+test('Instagram Open Graph description is split into caption, author, date and counts', async () => {
+  const {parseInstagramOg} = await import('../lib/reckon/ingest/parse.ts');
+  const ig = parseInstagramOg({description: '13K likes, 19 comments - justinxiao_ on August 30, 2026: "Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement,…"', title: 'Justin Xiao on Instagram: "Qi Gong / Side Quest Sunday…"'});
+  assert.equal(ig.author, 'justinxiao_');
+  assert.equal(ig.likes, 13000); assert.equal(ig.comments, 19);
+  assert.equal(ig.publishedAt, '2026-08-30');
+  assert.equal(ig.caption, 'Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement,…');
+  assert.equal(ig.captionTruncated, true);
+  const plain = parseInstagramOg({description: 'Some other description', title: 'Instagram'});
+  assert.equal(plain.caption, 'Some other description'); assert.equal(plain.author, undefined);
+  assert.equal(parseInstagramOg({}).caption, undefined);
+});
+
+test('a truncated Open Graph caption is completed by the embed page when it carries more', async () => {
+  const full = 'Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement, breath and attention. Ten minutes most mornings changed how I start the day.';
+  const restore = mockFetch(url => url.includes('/embed/') ? {body: `<div class="Caption">${full}</div>`} : {body: '<html><head><meta property="og:description" content="13K likes, 19 comments - justinxiao_ on August 30, 2026: &quot;Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement,…&quot;"><meta property="og:image" content="https://cdn.example/t.jpg"></head></html>'});
+  try {
+    const result = await retrieveSource(detectSource('https://www.instagram.com/p/DcqQ7sMgBjE/'));
+    assert.deepEqual(result.record.attempts.map(a => a.method), ['oembed', 'open_graph', 'embed_page']);
+    assert.equal(result.content.caption, full);
+    assert.equal(result.record.method, 'embed_page');
+    assert.equal(result.content.author, 'justinxiao_');
+    assert.equal(result.content.publishedAt, '2026-08-30');
+    assert.ok(result.record.attempts[1].note.includes('13000 likes'));
+    assert.ok(!result.record.notes.some(n => n.includes('truncated')));
+  } finally { restore(); }
+  const restore2 = mockFetch(url => url.includes('/embed/') ? {body: '<html>login</html>'} : {body: '<html><head><meta property="og:description" content="1 likes, 0 comments - someone on May 1, 2026: &quot;Start before you feel ready, because the feeling arrives late and…&quot;"></head></html>'});
+  try {
+    const result = await retrieveSource(detectSource('https://www.instagram.com/p/DcqQ7sMgBjE/'));
+    assert.equal(result.record.status, 'retrieved');
+    assert.ok(result.record.notes.some(n => n.includes('truncated')));
+    assert.equal(result.content.caption, 'Start before you feel ready, because the feeling arrives late and…');
+  } finally { restore2(); }
+});
+
+test('the fallback distiller skips a title-like fragment and strips engagement text', () => {
+  const out = fallback.distil({id: 's', userId: 'u', createdAt: '', updatedAt: '', platform: 'instagram', type: 'post', retrieval: {...manualRecord('manual'), status: 'retrieved', fieldsRetrieved: ['caption']}, caption: 'Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement, breath and attention. Ten minutes most mornings changed how I start the day.'});
+  assert.equal(out.insight, 'Ten minutes most mornings changed how I start the day.');
+});

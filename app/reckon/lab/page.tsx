@@ -10,7 +10,7 @@ import {Card, PageHeader} from '@/components/reckon/ui';
 
 type Tab = 'ingestion' | 'ai' | 'os' | 'experiments';
 /** Bumped with each client change so a stale tab can be recognised. */
-const CLIENT_BUILD = '3';
+const CLIENT_BUILD = '4';
 
 export default function LabPage() {
   const {state, ready, update, reset, status} = useReckon();
