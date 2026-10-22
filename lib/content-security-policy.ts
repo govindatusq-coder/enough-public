@@ -9,9 +9,12 @@ export function contentSecurityPolicy({development=false,supabaseUrl}:{developme
   "script-src 'self' 'unsafe-inline'"+(development?" 'unsafe-eval'":''),
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
-  "img-src 'self' data: blob: https://upload.wikimedia.org https://live.staticflickr.com https://images.unsplash.com https://cdn.stocksnap.io",
+  // Reckon shows provider thumbnails that oEmbed / Open Graph legitimately return.
+  "img-src 'self' data: blob: https://upload.wikimedia.org https://live.staticflickr.com https://images.unsplash.com https://cdn.stocksnap.io https://*.cdninstagram.com https://*.fbcdn.net https://i.ytimg.com https://*.tiktokcdn.com https://*.tiktokcdn-us.com",
   'connect-src '+connections.join(' '),
-  "media-src 'self' blob:","worker-src 'self' blob:","object-src 'none'","base-uri 'self'","form-action 'self'","frame-src 'none'","frame-ancestors 'none'",
+  "media-src 'self' blob:","worker-src 'self' blob:","object-src 'none'","base-uri 'self'","form-action 'self'",
+  // Reckon embeds the original post via each provider's official embed endpoint only.
+  "frame-src https://www.instagram.com https://www.youtube-nocookie.com https://www.tiktok.com","frame-ancestors 'none'",
   ...(!development?['upgrade-insecure-requests']:[])
  ].join('; ');
 }
