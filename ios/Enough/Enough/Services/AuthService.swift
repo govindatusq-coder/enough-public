@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import AuthenticationServices
 import CryptoKit
 
@@ -189,7 +190,7 @@ final class WebAuthSession: NSObject, ASWebAuthenticationPresentationContextProv
         try await withCheckedThrowingContinuation { continuation in
             let session = ASWebAuthenticationSession(url: url, callbackURLScheme: scheme) { callback, error in
                 if let callback { continuation.resume(returning: callback) }
-                else if let error as? ASWebAuthenticationSessionError, error.code == .canceledLogin { continuation.resume(throwing: EnoughError.message("Sign-in was cancelled.")) }
+                else if let failure = error as? ASWebAuthenticationSessionError, failure.code == .canceledLogin { continuation.resume(throwing: EnoughError.message("Sign-in was cancelled.")) }
                 else { continuation.resume(throwing: EnoughError.message("Sign-in did not complete. Try again or use your email.")) }
             }
             session.presentationContextProvider = self
