@@ -1,0 +1,3 @@
+export const formatAUD=(cents:number|null|undefined,opts:{sign?:boolean}={})=>{if(cents===null||cents===undefined)return '';const abs=Math.abs(cents);const s='$'+(abs/100).toLocaleString('en-AU',{minimumFractionDigits:abs%100===0&&abs>=100000?0:2,maximumFractionDigits:2});return (cents<0?'-':opts.sign&&cents>0?'+':'')+s;};
+export function parseAUD(text:string):number|null{const m=/-?\$?\s*(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?/.exec(text.replace(/\s/g,''));if(!m)return null;const whole=+m[1].replace(/,/g,''),frac=m[2]?+(m[2].padEnd(2,'0')):0;if(!Number.isFinite(whole))return null;return whole*100+frac;}
+export const MONEY_SPAN=/\$\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\b\d{1,3}(?:,\d{3})*\.\d{2}\b/g;

@@ -1,0 +1,72 @@
+import {z} from 'zod';
+import {areaKeys,dayModes,emptyMomentOptions,leadTimeOptions,nudgeToleranceOptions,personRoles,planningDetailOptions,proactiveOptions,rhythmKinds,toneOptions,weekdays,type Area,type DayMode,type Person,type Profile,type RhythmBlock} from '../domain/types.ts';
+import {AU_TIMEZONE} from '../domain/dates.ts';
+import {stamp,type BearStore} from '../store/store.ts';
+import {recordBehaviour} from './behaviour.ts';
+
+export const areaLabels:Record<string,string>={work:'Work',family:'Family',home:'Home',money:'Money',health:'Health',me:'Me'};
+// Default rhythm blocks a user can switch on. Minutes from midnight; capacity is Bear's
+// prior for how much room there usually is during that block.
+export const rhythmPresets:Omit<RhythmBlock,'id'>[]=[
+ {kind:'morning_rush',label:'Morning rush',days:['mon','tue','wed','thu','fri'],startMinute:6*60+30,endMinute:8*60+30,capacity:'none'},
+ {kind:'commute',label:'Commute',days:['mon','tue','wed','thu','fri'],startMinute:8*60+30,endMinute:9*60+15,capacity:'low'},
+ {kind:'work',label:'Work',days:['mon','tue','wed','thu','fri'],startMinute:9*60,endMinute:17*60,capacity:'low'},
+ {kind:'school_run',label:'School run',days:['mon','tue','wed','thu','fri'],startMinute:15*60,endMinute:15*60+45,capacity:'none'},
+ {kind:'after_school',label:'After-school activities',days:['mon','tue','wed','thu','fri'],startMinute:15*60+45,endMinute:17*60+30,capacity:'none'},
+ {kind:'dinner',label:'Dinner',days:[...weekdays],startMinute:17*60+30,endMinute:19*60,capacity:'none'},
+ {kind:'bedtime',label:'Bedtime',days:[...weekdays],startMinute:19*60,endMinute:20*60,capacity:'none'},
+ {kind:'admin',label:'Admin time',days:['tue','thu'],startMinute:20*60,endMinute:21*60,capacity:'good'},
+ {kind:'my_time',label:'My time',days:['wed','sat'],startMinute:20*60,endMinute:21*60+30,capacity:'good'},
+ {kind:'sleep',label:'Sleep',days:[...weekdays],startMinute:22*60,endMinute:6*60+30,capacity:'none'},
+ {kind:'weekend',label:'Weekend activities',days:['sat','sun'],startMinute:9*60,endMinute:13*60,capacity:'low'},
+];
+export function defaultProfile(userId:string):Profile{
+ return stamp<Profile>(userId,{name:'',onboardingComplete:false,onboardingStep:0,areas:[],people:[],
+  pins:{preferences:{reminderLeadTime:'few_days',nudgeTolerance:'gentle',planningDetail:'a_few_steps',proactiveSuggestions:'sometimes',tone:'warm'},interests:[],needs:[],strengths:[]},
+  lifeRhythm:{timezone:AU_TIMEZONE,blocks:[]},emptyMoments:[],notification:{pushEnabled:false,quietStartMinute:21*60+30,quietEndMinute:7*60,permission:'unknown'},
+  dayMode:null,dayModeSetAt:null,demoOffered:false,revision:1});
+}
+export async function loadProfile(store:BearStore){const rows=await store.list('profiles',{limit:1});return rows[0]||null;}
+export async function ensureProfile(store:BearStore){const existing=await loadProfile(store);if(existing)return existing;return store.insert('profiles',defaultProfile(store.userId));}
+
+const block=z.object({id:z.string().min(1).max(60),kind:z.enum(rhythmKinds),label:z.string().trim().min(1).max(40),days:z.array(z.enum(weekdays)).max(7),startMinute:z.number().int().min(0).max(1439),endMinute:z.number().int().min(0).max(1439),capacity:z.enum(['none','low','some','good'])}).strict();
+export const profilePatchSchema=z.object({
+ name:z.string().trim().max(40).optional(),
+ onboardingComplete:z.boolean().optional(),onboardingStep:z.number().int().min(0).max(20).optional(),
+ areas:z.array(z.enum(areaKeys)).max(6).optional(),
+ people:z.array(z.object({role:z.enum(personRoles),name:z.string().trim().max(40)}).strict()).max(20).optional(),
+ pins:z.object({preferences:z.object({reminderLeadTime:z.enum(leadTimeOptions),nudgeTolerance:z.enum(nudgeToleranceOptions),planningDetail:z.enum(planningDetailOptions),proactiveSuggestions:z.enum(proactiveOptions),tone:z.enum(toneOptions)}).strict(),interests:z.array(z.string().max(60)).max(20),needs:z.array(z.string().max(60)).max(20),strengths:z.array(z.string().max(60)).max(20)}).strict().optional(),
+ lifeRhythm:z.object({timezone:z.string().max(60),blocks:z.array(block).max(40)}).strict().optional(),
+ emptyMoments:z.array(z.enum(emptyMomentOptions)).max(7).optional(),
+ notification:z.object({pushEnabled:z.boolean(),quietStartMinute:z.number().int().min(0).max(1439),quietEndMinute:z.number().int().min(0).max(1439),permission:z.enum(['unknown','granted','denied'])}).strict().optional(),
+ demoOffered:z.boolean().optional(),
+}).strict();
+export type ProfilePatch=z.infer<typeof profilePatchSchema>;
+
+export async function saveProfile(store:BearStore,patch:ProfilePatch){
+ const profile=await ensureProfile(store);
+ const changedRhythm=patch.lifeRhythm&&JSON.stringify(patch.lifeRhythm)!==JSON.stringify(profile.lifeRhythm);
+ const next=await store.update('profiles',profile.id,{...patch,revision:profile.revision+1});
+ if(patch.areas)await syncAreas(store,patch.areas);
+ if(patch.people)await syncPeople(store,patch.people);
+ if(changedRhythm)await recordBehaviour(store,'rhythm_changed',{blocks:patch.lifeRhythm!.blocks.length});
+ return next;
+}
+async function syncAreas(store:BearStore,keys:Profile['areas']){
+ const existing=await store.list('areas');
+ for(const key of keys){const row=existing.find(a=>a.key===key);if(!row)await store.insert('areas',stamp<Area>(store.userId,{key,label:areaLabels[key],archived:false}));else if(row.archived)await store.update('areas',row.id,{archived:false});}
+ for(const row of existing)if(!keys.includes(row.key)&&!row.archived&&row.key!=='money')await store.update('areas',row.id,{archived:true});
+}
+async function syncPeople(store:BearStore,people:Profile['people']){
+ const existing=await store.list('people');
+ for(const p of people){const row=existing.find(e=>e.role===p.role&&e.name===p.name);if(!row)await store.insert('people',stamp<Person>(store.userId,{role:p.role,name:p.name,archived:false}));else if(row.archived)await store.update('people',row.id,{archived:false});}
+ for(const row of existing)if(!people.some(p=>p.role===row.role&&p.name===row.name)&&!row.archived)await store.update('people',row.id,{archived:true});
+}
+export async function setDayMode(store:BearStore,mode:DayMode|null){
+ const profile=await ensureProfile(store);
+ const next=await store.update('profiles',profile.id,{dayMode:mode,dayModeSetAt:mode?new Date().toISOString():null});
+ await recordBehaviour(store,'day_mode_set',{mode});return next;
+}
+export const dayModeSchema=z.object({mode:z.enum(dayModes).nullable()}).strict();
+// Day mode is only trusted for the day it was set on.
+export function activeDayMode(profile:Profile,todayIso:string):DayMode|null{if(!profile.dayMode||!profile.dayModeSetAt)return null;return profile.dayModeSetAt.slice(0,10)===todayIso?profile.dayMode:null;}
