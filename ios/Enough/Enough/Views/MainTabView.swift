@@ -36,19 +36,20 @@ struct MainTabView: View {
     private func tabPage<Content: View>(_ content: Content, title: String, icon: String, tag: AppNavigation.Tab) -> some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 24) {
                     StatusStrip()
                     DueReminders(now: clock)
                     content
                 }
-                .padding(.bottom, 32)
+                .padding(.top, 4)
+                .padding(.bottom, 48)
             }
             .background(Theme.paper)
             .scrollDismissesKeyboard(.interactively)
+            .navigationTitle(title)
             .toolbar {
-                ToolbarItem(placement: .principal) { LogoView(height: 20) }
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("How it works") { navigation.sheet = .help }.font(Theme.body(13, weight: .semibold))
+                    Button { navigation.sheet = .help } label: { Image(systemName: "questionmark.circle") }.accessibilityLabel("How it works")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { navigation.sheet = .account(pending: nil) } label: {
@@ -59,7 +60,7 @@ struct MainTabView: View {
                     }
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
         }
         .tabItem { Label(title, systemImage: icon) }
         .tag(tag)

@@ -46,7 +46,6 @@ struct MovesTabView: View {
     private var heading: some View {
         VStack(alignment: .leading, spacing: 4) {
             Eyebrow("Life first. Movement fits.")
-            Text("My Moves").font(Theme.display(34)).foregroundStyle(Theme.ink)
             Text("A little possibility in what you’re already doing.").font(Theme.body(15)).foregroundStyle(Theme.muted)
         }
         .pageGutter()
@@ -96,7 +95,7 @@ struct MovesDiscoveryView: View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 10) {
                 Eyebrow("My Moves · Life first")
-                Text("What could you do\nwith the time you have?").font(Theme.display(32)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+                Text("What could you do with the time you have?").font(Theme.display(24)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
                 Text("Ideas for more movement inside an ordinary day. Choose what fits.").font(Theme.body(15)).foregroundStyle(Theme.muted)
                 if !personal {
                     Note("These are examples. Your PINS and routines make them personal.")
@@ -258,7 +257,7 @@ struct MovesDiscoveryView: View {
     private var surprisePanel: some View {
         ZStack(alignment: .bottomLeading) {
             SceneImage(name: "welcome-coast").frame(height: 240).clipped()
-            LinearGradient(colors: [.clear, Theme.deepInk.opacity(0.85)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [.clear, Theme.deepInk.opacity(0.6)], startPoint: .top, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 6) {
                 Image(systemName: "sparkles").foregroundStyle(.white)
                 Eyebrow("A different possibility", color: .white.opacity(0.9))

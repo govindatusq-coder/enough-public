@@ -62,17 +62,24 @@ final class AppNavigation: ObservableObject {
 struct RootView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var navigation: AppNavigation
+    @AppStorage("enough.onboarded.v1") private var onboarded = false
 
     var body: some View {
         ZStack {
             Theme.paper.ignoresSafeArea()
-            if navigation.opened {
+            if navigation.opened || onboarded {
                 MainTabView().transition(.opacity)
             } else {
-                WelcomeView().transition(.opacity)
+                OnboardingView { startSetup in
+                    onboarded = true
+                    navigation.go(startSetup ? .moves : .enough)
+                    navigation.opened = true
+                    if startSetup { navigation.sheet = .setup }
+                }
+                .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: navigation.opened)
+        .animation(.easeInOut(duration: 0.25), value: navigation.opened || onboarded)
         .preferredColorScheme(.light)
     }
 }

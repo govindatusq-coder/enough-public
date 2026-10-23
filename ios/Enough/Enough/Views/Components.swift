@@ -4,6 +4,20 @@ import UIKit
 /// Bundled WebP scenes from the website's `public/images` folder.
 enum BundledImages {
     private static var cache: [String: UIImage] = [:]
+    /// A watercolour illustration dropped into `Resources/Illustrations`.
+    static func illustration(_ name: String) -> UIImage? {
+        let key = "illustration:" + name
+        if let cached = cache[key] { return cached }
+        for ext in ["webp", "png", "jpg"] {
+            // Files are named `<scene>-illustration.<ext>` because Xcode flattens resource folders into the bundle, where a plain name would collide with the photograph.
+            if let url = Bundle.main.url(forResource: name + "-illustration", withExtension: ext) ?? Bundle.main.url(forResource: name + "-illustration", withExtension: ext, subdirectory: "Illustrations"), let image = UIImage(contentsOfFile: url.path) {
+                cache[key] = image
+                return image
+            }
+        }
+        return nil
+    }
+
     static func image(_ name: String) -> UIImage? {
         if let cached = cache[name] { return cached }
         guard let url = Bundle.main.url(forResource: name, withExtension: "webp") ?? Bundle.main.url(forResource: name, withExtension: "webp", subdirectory: "Images"), let image = UIImage(contentsOfFile: url.path) else { return nil }
@@ -12,14 +26,27 @@ enum BundledImages {
     }
 }
 
+/// An illustration slot. It shows `Resources/Illustrations/<name>-illustration.webp` (a
+/// watercolour painting) when that file exists; until then the matching
+/// photograph is softened into a wash so the app reads as one quiet whole.
+/// It fills whatever frame it is given without ever widening its container.
 struct SceneImage: View {
     let name: String
     var body: some View {
-        if let image = BundledImages.image(name) {
-            Image(uiImage: image).resizable().scaledToFill()
-        } else {
-            LinearGradient(colors: [Theme.sky, Theme.accent, Theme.deepInk], startPoint: .topLeading, endPoint: .bottomTrailing)
-        }
+        Color.clear
+            .overlay {
+                if let painting = BundledImages.illustration(name) {
+                    Image(uiImage: painting).resizable().scaledToFill()
+                } else if let image = BundledImages.image(name) {
+                    Image(uiImage: image).resizable().scaledToFill()
+                        .saturation(0.55).contrast(0.9).brightness(0.04)
+                        .overlay(Theme.paper.opacity(0.18))
+                        .overlay(LinearGradient(colors: [.clear, Theme.paper.opacity(0.35)], startPoint: .center, endPoint: .bottom))
+                } else {
+                    LinearGradient(colors: [Theme.sky, Theme.panel, Theme.paper], startPoint: .topLeading, endPoint: .bottomTrailing)
+                }
+            }
+            .clipped()
     }
 }
 
@@ -60,6 +87,7 @@ struct ChoiceArtwork: View {
                     .resizable()
                     .frame(width: geo.size.width * 4, height: geo.size.height * 4)
                     .offset(x: -column * geo.size.width, y: -row * geo.size.height)
+                    .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
             } else {
                 Theme.mist
             }
@@ -88,15 +116,15 @@ struct ChoiceTiles: View {
                             Text(option).font(Theme.body(13, weight: .semibold)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 4)
                             ZStack {
-                                Circle().fill(selected ? Theme.accent : Color.white).frame(width: 22, height: 22).overlay(Circle().stroke(selected ? Theme.accent : Theme.border, lineWidth: 1))
+                                Circle().fill(selected ? Theme.ink : Color.clear).frame(width: 22, height: 22).overlay(Circle().stroke(selected ? Theme.ink : Theme.border, lineWidth: 0.8))
                                 if selected { Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(.white) }
                             }
                         }
                         .padding(10)
                         .frame(minHeight: 56, alignment: .top)
                     }
-                    .background(Color.white)
-                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(selected ? Theme.accent : Theme.border, lineWidth: selected ? 2 : 1))
+                    .background(Color.white.opacity(0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(selected ? Theme.ink : Theme.border, lineWidth: selected ? 1.5 : 0.8))
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
                 .buttonStyle(.plain)
@@ -186,11 +214,13 @@ struct RemoteImage: View {
     @EnvironmentObject private var store: AppStore
     @StateObject private var loader = RemoteImageLoader()
     var body: some View {
-        ZStack {
-            if let image = loader.image { Image(uiImage: image).resizable().scaledToFill() }
-            else if loader.failed { Theme.mist.overlay(Image(systemName: "photo").foregroundStyle(Theme.muted)) }
-            else { Theme.mist.overlay(ProgressView()) }
-        }
+        Color.clear
+            .overlay {
+                if let image = loader.image { Image(uiImage: image).resizable().scaledToFill() }
+                else if loader.failed { Theme.mist.overlay(Image(systemName: "photo").foregroundStyle(Theme.muted)) }
+                else { Theme.mist.overlay(ProgressView()) }
+            }
+            .clipped()
         .onAppear { loader.load(path, api: store.api) }
         .onChange(of: path) { _, next in loader.load(next, api: store.api) }
     }
@@ -268,7 +298,7 @@ struct ActivityDaysView: View {
             ForEach(days) { d in
                 VStack(spacing: 4) {
                     ZStack {
-                        Circle().fill(d.count > 0 ? Theme.accent : Theme.mist).frame(width: 28, height: 28)
+                        Circle().fill(d.count > 0 ? Theme.moss : Theme.mist).frame(width: 28, height: 28)
                             .overlay(Circle().stroke(d.today ? Theme.ink : Color.clear, lineWidth: 1.5))
                         if d.count > 0 { Image(systemName: "checkmark").font(.system(size: 12, weight: .bold)).foregroundStyle(.white) }
                         else { Circle().fill(Theme.border).frame(width: 6, height: 6) }
@@ -298,5 +328,30 @@ struct LabeledPicker<Value: Hashable>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .fieldBox()
         }
+    }
+}
+
+/// The wordmark: a soft wave over the letters, as in `public/logo.svg`.
+struct LogoView: View {
+    var height: CGFloat = 26
+    var body: some View {
+        VStack(spacing: 2) {
+            WavePath().stroke(LinearGradient(colors: [Theme.ink, Theme.accent, Theme.sky], startPoint: .leading, endPoint: .trailing), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                .frame(width: height * 2.4, height: height * 0.5)
+            Text("ENOUGH").font(.system(size: height * 0.55, weight: .regular)).kerning(height * 0.14).foregroundStyle(Theme.ink)
+        }
+        .accessibilityLabel("ENOUGH")
+    }
+}
+
+struct WavePath: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width, h = rect.height
+        path.move(to: CGPoint(x: 0, y: h * 0.8))
+        path.addCurve(to: CGPoint(x: w * 0.43, y: h * 0.2), control1: CGPoint(x: w * 0.15, y: h * 0.45), control2: CGPoint(x: w * 0.3, y: h * 0))
+        path.addCurve(to: CGPoint(x: w * 0.69, y: h * 0.85), control1: CGPoint(x: w * 0.54, y: h * 0.4), control2: CGPoint(x: w * 0.55, y: h * 0.85))
+        path.addCurve(to: CGPoint(x: w, y: h * 0.25), control1: CGPoint(x: w * 0.8, y: h * 0.85), control2: CGPoint(x: w * 0.9, y: h * 0.55))
+        return path
     }
 }

@@ -2,7 +2,7 @@
 
 A native SwiftUI app built from the ENOUGH website in this repository. It keeps the same journey (Welcome → PINS and routines → My Moves → support plan → confirm → My Wins), the same copy, the same idea library and matching rules, and the same account format, so a profile saved from the website opens in the app and vice versa.
 
-The earlier `native/` folder is a Capacitor shell that loads the website remotely; Capacitor documents that architecture as a live-reload feature, not a production one. This app replaces it with bundled native screens. The shell is kept for reference and is not needed to build this app.
+The app opens with a three-card onboarding and then the tabs (the website's long landing page is not reproduced). The earlier `native/` folder is a Capacitor shell that loads the website remotely; Capacitor documents that architecture as a live-reload feature, not a production one. This app replaces it with bundled native screens. The shell is kept for reference and is not needed to build this app.
 
 ## What is in the app
 
@@ -21,6 +21,12 @@ Idea matching (`Logic/Recommendations.swift`), discovery filters, wins and dashb
 - Once attached, every change is saved through the website's own `/api/account` route with a bearer token, so the server keeps validating the state, checking revisions and archiving generated ideas exactly as it does for the browser. Photos use `/api/photos`; fresh ideas use `/api/ideas`, `/api/ideas/history` and `/api/idea-image`.
 - Bearer-token support for those routes lives in `lib/public-auth.ts` and `lib/supabase/server.ts` in this branch. **The website must be deployed with that change before the app's account features work.** Until then, sign-in succeeds but saving returns "Request origin is not allowed."
 - The OpenAI key stays on the server. The app only asks the website for a batch after the user has chosen an AI and privacy option.
+
+## Look and feel
+
+The design follows the seven Japanese aesthetic principles: kanso (nothing that is not needed), fukinsei (asymmetry, left-aligned and off-centre), shibui (a muted palette with one accent), shizen (natural, unforced copy and scenes), yugen (suggestion over display, images fading into paper), datsuzoku (small surprises such as "Surprise me") and seijaku (stillness, no streaks or targets). Surfaces are thin glass over washi-coloured paper.
+
+Every image slot is an illustration slot: drop watercolour paintings into `Enough/Resources/Illustrations/` as `<scene>-illustration.webp` using the names and prompts in `docs/illustration-prompts.md` and the app uses them automatically. Until then the website's photographs are shown softened into a wash.
 
 ## Building
 

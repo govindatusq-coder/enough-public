@@ -22,6 +22,7 @@ struct WinsTabView: View {
         VStack(alignment: .leading, spacing: 16) {
             summary
             returnsPanel
+            WeeklyReviewCard(now: now).glassPanel()
             WinsGallery(now: now, day: $navigation.winsDay, onAddWin: addWin)
             WinsDetails(now: now, period: period, currency: currency, day: $navigation.winsDay)
             learning
@@ -43,7 +44,7 @@ struct WinsTabView: View {
         let activity = Wins.dashboardActivity(store.state, now: now)
         return VStack(alignment: .leading, spacing: 12) {
             Eyebrow("My Wins · Confirmed by you")
-            Text("More life.\nIn little moments.").font(Theme.display(34)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+            Text("More life. In little moments.").font(Theme.display(24)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
             Text(report.rows.isEmpty ? "A conversation, an errand, a useful pause. Confirm what happened after a move, and your returns will appear here." : "\(report.rows.count) confirmed \(report.rows.count == 1 ? "moment" : "moments") \(period == .allTime ? "so far" : period.rawValue.lowercased()). Here’s what they gave back to you.").font(Theme.body(15)).foregroundStyle(Theme.muted)
             Button { addWin() } label: { Label("Add a win", systemImage: "plus") }.buttonStyle(.primary)
             VStack(alignment: .leading, spacing: 8) {
@@ -105,7 +106,7 @@ struct WinsTabView: View {
     private var nextMove: some View {
         ZStack(alignment: .bottomLeading) {
             SceneImage(name: "welcome-coast").frame(height: 220).clipped()
-            LinearGradient(colors: [.clear, Theme.deepInk.opacity(0.85)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [.clear, Theme.deepInk.opacity(0.6)], startPoint: .top, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 6) {
                 Eyebrow("A little possibility", color: .white.opacity(0.9))
                 Text("More life, when it fits.").font(Theme.display(26)).foregroundStyle(.white)

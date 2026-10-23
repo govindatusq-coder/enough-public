@@ -13,14 +13,9 @@ struct PinsTabView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Eyebrow("A few things that make you, you")
-                    Text("My Pins").font(Theme.display(34)).foregroundStyle(Theme.ink)
-                    Text("Your life is the starting point.").font(Theme.body(15)).foregroundStyle(Theme.muted)
-                }
-                Spacer()
-                Image(systemName: "pin").font(.system(size: 26, weight: .light)).foregroundStyle(Theme.accent)
+            VStack(alignment: .leading, spacing: 4) {
+                Eyebrow("A few things that make you, you")
+                Text("Your life is the starting point.").font(Theme.body(15)).foregroundStyle(Theme.muted)
             }
             Label(store.isComplete ? "Your profile is ready. You can change your answers whenever life changes." : "Complete your PINS and routines before saving or accepting an idea.", systemImage: "slider.horizontal.3").font(Theme.body(14)).foregroundStyle(Theme.ink).glassPanel(padding: 14)
             aiPrivacy
