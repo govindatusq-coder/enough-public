@@ -15,7 +15,7 @@ export function SignInForm(){
   try{const db=browserClient();
    if(create){const {data,error}=await db.auth.signUp({email,password,options:{emailRedirectTo:callback(),data:{name}}});if(error)throw error;if(data.session){router.push('/bear');router.refresh();}else setMessage('Check your email to confirm your account, then come back to Bear.');}
    else{const {error}=await db.auth.signInWithPassword({email,password});if(error)throw error;router.push('/bear');router.refresh();}
-  }catch{setMessage(create?'Your Bear could not be created. Check your details and try again.':'Sign-in failed. Check your email and password.');}finally{setBusy(false);}}
+  }catch(error){const detail=error instanceof Error&&error.message?` (${error.message})`:'';setMessage((create?'Your Bear could not be created.':'Sign-in failed.')+detail);}finally{setBusy(false);}}
  return (
   <main id="main" className="bear-screen flow">
    <TopBar back={{href:'/bear/welcome'}}/>
