@@ -106,8 +106,9 @@ text and manual entry keep working through the rule-based extractor.
   notification through the service worker when permission is granted.
 * Push: Web Push (VAPID) subscriptions stored in `bear_push_subscriptions`;
   `GET /api/bear/cron/reminders` (secured by `BEAR_CRON_SECRET`) delivers due
-  reminders. Scheduled by Vercel cron hourly; a GitHub Actions workflow can
-  run it every 15 minutes if the Vercel plan limits cron frequency.
+  reminders. Scheduled by Vercel cron once a day (the Hobby plan allows only daily
+  schedules); the GitHub Actions workflow runs it every 15 minutes when the
+  `BEAR_REMINDERS_ENABLED` repository variable is `true`.
 * Chaos mode suppresses non-essential reminders inside the decision service,
   not by deleting them.
 
