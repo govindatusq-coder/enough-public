@@ -64,7 +64,8 @@ export function extractBillWithRules(text:string,referenceYear=new Date().getFul
  const earlyDiscountCents:F<number>=discCand?got(discCand.cents,0.8,discCand.evidence):none();
 
  const biller=knownBillers.find(b=>b.match.test(clean));
- const billerField:F<string>=biller?got(biller.name,biller.key===biller.category||['electricity','gas','water','internet','mobile','insurance','subscription','childcare','school-fees','sports-fees','council-rates','strata','vehicle-registration'].includes(biller.key)?0.55:0.9,(clean.match(biller.match)||[''])[0]):none();
+ const firstLine=clean.split('\n').map(l=>l.trim()).find(l=>l&&!/^example bill/i.test(l)&&!MONEY_SPAN.test(l)&&!/\d{2}\/\d{2}/.test(l)&&l.length<=60)||null;
+ const billerField:F<string>=!biller&&firstLine?got(firstLine.replace(/\s+(pty|ltd|limited)\b.*$/i,''),0.5,firstLine):biller?got(biller.name,biller.key===biller.category||['electricity','gas','water','internet','mobile','insurance','subscription','childcare','school-fees','sports-fees','council-rates','strata','vehicle-registration'].includes(biller.key)?0.55:0.9,(clean.match(biller.match)||[''])[0]):none();
  const category:F<BillCategory>=biller?got(biller.category,biller.key===biller.category?0.6:0.85,biller.name):none();
 
  const bpayCode=/biller\s*code\s*:?\s*(\d{4,6})/i.exec(clean);const bpayRef=/\bref(?:erence)?\s*(?:no\.?|number)?\s*:?\s*(\d[\d ]{5,24}\d)/i.exec(clean);

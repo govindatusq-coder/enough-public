@@ -10,7 +10,8 @@ import {slug} from '../ai/rules.ts';
 // TaskInferenceService + DependencyPlanningService. A verified bill becomes
 // Area Money → Project "Pay November electricity bill" → Task "Pay electricity bill"
 // with the original document as the Resource, plus only the dependencies the bill warrants.
-export const categoryLabels:Record<string,string>={electricity:'Electricity',gas:'Gas',water:'Water',internet:'Internet',mobile:'Mobile phone',council_rates:'Council rates',car_registration:'Car registration',insurance:'Insurance',school_fees:'School fees',childcare:'Childcare',sports_fees:'Sports fees',subscription:'Subscription',rent:'Rent',strata:'Strata',medical:'Medical',other:'Bill'};
+import {categoryLabels} from '../domain/labels.ts';
+export {categoryLabels};
 
 const corrections=z.object({
  biller:z.string().trim().min(1).max(120).optional(),category:z.enum(billCategories).optional(),amountDueCents:z.number().int().min(1).max(100000000).optional(),
