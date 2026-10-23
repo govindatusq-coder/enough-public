@@ -59,7 +59,7 @@ struct EnoughTabView: View {
 
     private var header: some View {
         HStack(alignment: .center) {
-            LogoView(height: 24)
+            LogoView(height: 26)
             Spacer()
             Button { navigation.sheet = .account(pending: nil) } label: {
                 Image(systemName: "gearshape").font(.system(size: 17, weight: .light)).foregroundStyle(Theme.ink)
@@ -79,10 +79,10 @@ struct EnoughTabView: View {
                 Text(store.isComplete ? "Pick one, or just have a look." : "Pick one. Nothing here is required.").font(Theme.body(15)).foregroundStyle(Theme.muted)
             }
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
-                tile("Ideas for exercise", icon: "figure.walk") { navigation.go(.moves, moves: .explore) }
-                tile("Record exercise & savings", icon: "checkmark.circle") { navigation.go(.wins); navigation.scrollTarget = "wins-record" }
-                tile("My life", icon: "leaf") { navigation.go(.pins) }
-                tile("My goals", icon: "flag") { navigation.go(.wins); navigation.scrollTarget = "wins-goals" }
+                tile("Ideas for exercise", icon: "search") { navigation.go(.moves, moves: .explore) }
+                tile("Record exercise & savings", icon: "heart") { navigation.go(.wins); navigation.scrollTarget = "wins-record" }
+                tile("My life", icon: "person") { navigation.go(.pins) }
+                tile("My goals", icon: "pin") { navigation.go(.wins); navigation.scrollTarget = "wins-goals" }
             }
             if let notice {
                 Button(action: notice.action) {
@@ -101,7 +101,15 @@ struct EnoughTabView: View {
     private func tile(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 10) {
-                Image(systemName: icon).font(.system(size: 22, weight: .ultraLight)).foregroundStyle(Theme.accent).accessibilityHidden(true)
+                Group {
+                    if let painted = BundledImages.image("tile-" + icon) {
+                        Image(uiImage: painted).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    } else {
+                        Image(systemName: icon == "search" ? "magnifyingglass" : icon == "pin" ? "mappin" : icon).font(.system(size: 22, weight: .ultraLight)).foregroundStyle(Theme.accent)
+                    }
+                }
+                .frame(width: 44, height: 44)
+                .accessibilityHidden(true)
                 Text(title).font(Theme.display(18, weight: .regular)).foregroundStyle(Theme.ink).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, minHeight: 112)

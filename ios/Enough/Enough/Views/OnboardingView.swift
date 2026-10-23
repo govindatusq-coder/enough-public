@@ -55,8 +55,8 @@ struct OnboardingView: View {
             LinearGradient(colors: [Theme.paper.opacity(0.1), Theme.paper.opacity(0.92), Theme.paper], startPoint: .top, endPoint: .bottom)
             VStack(spacing: 14) {
                 Spacer()
-                LogoView(height: 64, tagline: true)
-                Text("Movement in everyday moments.").font(Theme.display(26)).foregroundStyle(Theme.ink).multilineTextAlignment(.center).padding(.top, 10)
+                LogoView(height: 90, tagline: true)
+                Text("Movement in everyday moments.").font(Theme.display(26)).foregroundStyle(Theme.ink).multilineTextAlignment(.center).padding(.top, 6)
                 Text("Simple, real-world ways to be more active inside the life you already have.").font(Theme.body(16)).foregroundStyle(Theme.muted).multilineTextAlignment(.center)
                 Spacer().frame(height: 24)
             }

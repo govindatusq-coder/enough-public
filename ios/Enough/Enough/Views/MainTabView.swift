@@ -11,8 +11,8 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $navigation.tab) {
-            tabPage(EnoughTabView(now: clock), title: "Home", icon: "house", tag: .enough, chrome: false)
-            tabPage(MovesTabView(now: clock), title: "My Moves", icon: "magnifyingglass", tag: .moves)
+            tabPage(EnoughTabView(now: clock), title: "Home", icon: "home", tag: .enough, chrome: false)
+            tabPage(MovesTabView(now: clock), title: "My Moves", icon: "search", tag: .moves)
             tabPage(WinsTabView(now: clock), title: "My Wins", icon: "heart", tag: .wins)
             tabPage(PinsTabView(now: clock), title: "My Pins", icon: "person", tag: .pins)
         }
@@ -73,7 +73,7 @@ struct MainTabView: View {
                 }
             }
         }
-        .tabItem { Label(title, systemImage: icon) }
+        .tabItem { Label { Text(title) } icon: { BundledImages.tabIcon(icon) } }
         .tag(tag)
     }
 

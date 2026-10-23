@@ -24,6 +24,22 @@ enum BundledImages {
         cache[name] = image
         return image
     }
+
+    /// A PNG with transparency from `Resources/Icons` (the wordmark and tab glyphs).
+    static func png(_ name: String, scale: CGFloat = 1) -> UIImage? {
+        let key = "png:\(name)@\(scale)"
+        if let cached = cache[key] { return cached }
+        guard let url = Bundle.main.url(forResource: name, withExtension: "png") ?? Bundle.main.url(forResource: name, withExtension: "png", subdirectory: "Icons"), let data = try? Data(contentsOf: url), let image = UIImage(data: data, scale: scale) else { return nil }
+        cache[key] = image
+        return image
+    }
+
+    /// A tab-bar glyph painted in the style guide, used as a template so the
+    /// bar can tint it for the selected state.
+    static func tabIcon(_ name: String) -> Image {
+        if let glyph = png("tab-" + name, scale: 3) { return Image(uiImage: glyph.withRenderingMode(.alwaysTemplate)) }
+        return Image(systemName: ["home": "house", "search": "magnifyingglass", "heart": "heart", "pin": "mappin", "person": "person"][name] ?? "circle")
+    }
 }
 
 /// An illustration slot. It shows `Resources/Illustrations/<name>-illustration.webp` (a
@@ -339,11 +355,16 @@ struct LogoView: View {
     var height: CGFloat = 26
     var tagline = false
     var body: some View {
-        VStack(spacing: height * 0.18) {
-            Text("Enough").font(Theme.script(height * 1.35)).foregroundStyle(Theme.indigo).lineLimit(1).fixedSize()
-            if tagline {
-                Text("Exercise that fits your vibe.").font(.system(size: max(10, height * 0.22), weight: .medium)).kerning(height * 0.06).textCase(.uppercase).foregroundStyle(Theme.ink)
-                Capsule().fill(Theme.sage.opacity(0.8)).frame(width: height * 1.6, height: max(3, height * 0.08)).rotationEffect(.degrees(-2))
+        Group {
+            if let art = BundledImages.png(tagline ? "wordmark-full" : "wordmark") {
+                Image(uiImage: art).resizable().scaledToFit().frame(height: tagline ? height * 2.2 : height * 1.1)
+            } else {
+                VStack(spacing: height * 0.18) {
+                    Text("Enough").font(Theme.script(height * 1.35)).foregroundStyle(Theme.indigo).lineLimit(1).fixedSize()
+                    if tagline {
+                        Text("Exercise that fits your vibe.").font(.system(size: max(10, height * 0.22), weight: .medium)).kerning(height * 0.06).textCase(.uppercase).foregroundStyle(Theme.ink)
+                    }
+                }
             }
         }
         .accessibilityLabel("Enough. Exercise that fits your vibe.")
