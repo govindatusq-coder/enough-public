@@ -6,3 +6,5 @@ tsconfig.tsbuildinfo
 !.env.example
 .vercel/
 .DS_Store
+.bear-browser-results/
+.idea-image-browser-results/
