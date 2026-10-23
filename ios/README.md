@@ -16,7 +16,7 @@ Idea matching (`Logic/Recommendations.swift`), discovery filters, wins and dashb
 
 ## Accounts, sync and AI
 
-- Sign-in is email and password against the same Supabase project as the website (`Services/AuthService.swift`). Google and Apple sign-in are not offered in the app yet.
+- Sign-in is email and password against the same Supabase project as the website (`Services/AuthService.swift`). Google and Apple sign-in use Supabase's hosted flow in a system web sheet with PKCE and return on the `app.enough.movement://auth-callback` URL. The buttons enable themselves when the provider is switched on in Supabase. To enable: Supabase → Authentication → Providers → turn on Google (client ID and secret from Google Cloud) and Apple (Services ID, team ID, key ID and private key from the Apple developer account); then Authentication → URL Configuration → add `app.enough.movement://auth-callback` to the redirect URLs.
 - Profile and progress are stored on the device until the user chooses to keep them in their account (the same collection notice and import choice as the website).
 - Once attached, every change is saved through the website's own `/api/account` route with a bearer token, so the server keeps validating the state, checking revisions and archiving generated ideas exactly as it does for the browser. Photos use `/api/photos`; fresh ideas use `/api/ideas`, `/api/ideas/history` and `/api/idea-image`.
 - Bearer-token support for those routes lives in `lib/public-auth.ts` and `lib/supabase/server.ts` in this branch. **The website must be deployed with that change before the app's account features work.** Until then, sign-in succeeds but saving returns "Request origin is not allowed."

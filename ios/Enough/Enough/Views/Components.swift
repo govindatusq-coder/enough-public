@@ -111,7 +111,10 @@ struct ChoiceTiles: View {
                 let selected = values.contains(option)
                 Button { pick(option) } label: {
                     VStack(alignment: .leading, spacing: 0) {
-                        ChoiceArtwork(label: option, lifestyle: lifestyle).aspectRatio(3 / 2, contentMode: .fit)
+                        Color.clear
+                            .aspectRatio(3 / 2, contentMode: .fit)
+                            .overlay(ChoiceArtwork(label: option, lifestyle: lifestyle))
+                            .clipped()
                         HStack(alignment: .top) {
                             Text(option).font(Theme.body(13, weight: .semibold)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 4)

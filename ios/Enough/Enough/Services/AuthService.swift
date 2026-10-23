@@ -1,4 +1,6 @@
 import Foundation
+import AuthenticationServices
+import CryptoKit
 
 /// Email and password sign-in against the same Supabase project as the
 /// website, using the GoTrue REST API directly. The session is kept in the
@@ -120,6 +122,30 @@ final class AuthService: ObservableObject {
         Keychain.delete(keychainAccount)
     }
 
+    /// Google or Apple sign-in through Supabase's hosted flow in a system web
+    /// session, with PKCE, returning to the app on its custom URL scheme.
+    func signIn(provider: String) async throws {
+        guard config.supabaseURL != nil else { throw EnoughError.message("Accounts are not configured in this build.") }
+        let verifier = AuthService.randomString(64)
+        let challenge = Data(SHA256.hash(data: Data(verifier.utf8))).base64URL()
+        let callback = "\(AuthService.urlScheme)://auth-callback"
+        let authorize = try endpoint("authorize", query: ["provider": provider, "redirect_to": callback, "code_challenge": challenge, "code_challenge_method": "s256"])
+        let returned = try await WebAuthSession.shared.run(url: authorize, scheme: AuthService.urlScheme)
+        guard let code = URLComponents(url: returned, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "code" })?.value else {
+            let description = URLComponents(url: returned, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "error_description" })?.value
+            throw EnoughError.message(description ?? "Sign-in did not complete. Try again or use your email.")
+        }
+        let (data, http) = try await post("token", query: ["grant_type": "pkce"], body: ["auth_code": code, "code_verifier": verifier])
+        guard http.statusCode == 200 else { throw EnoughError.message(message(data, fallback: "Sign-in did not complete. Try again or use your email.")) }
+        _ = try store(try JSONDecoder().decode(TokenResponse.self, from: data))
+    }
+
+    static let urlScheme = "app.enough.movement"
+    private static func randomString(_ length: Int) -> String {
+        let alphabet = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+        return String((0..<length).map { _ in alphabet.randomElement()! })
+    }
+
     func loadProviders() async {
         guard let url = try? endpoint("settings") else { return }
         var request = URLRequest(url: url)
@@ -146,6 +172,35 @@ final class AuthService: ObservableObject {
         refreshing = task
         defer { refreshing = nil }
         return try await task.value.accessToken
+    }
+}
+
+extension Data {
+    func base64URL() -> String { base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "") }
+}
+
+/// Presents the system sign-in sheet and hands back the callback URL.
+@MainActor
+final class WebAuthSession: NSObject, ASWebAuthenticationPresentationContextProviding {
+    static let shared = WebAuthSession()
+    private var session: ASWebAuthenticationSession?
+
+    func run(url: URL, scheme: String) async throws -> URL {
+        try await withCheckedThrowingContinuation { continuation in
+            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: scheme) { callback, error in
+                if let callback { continuation.resume(returning: callback) }
+                else if let error as? ASWebAuthenticationSessionError, error.code == .canceledLogin { continuation.resume(throwing: EnoughError.message("Sign-in was cancelled.")) }
+                else { continuation.resume(throwing: EnoughError.message("Sign-in did not complete. Try again or use your email.")) }
+            }
+            session.presentationContextProvider = self
+            session.prefersEphemeralWebBrowserSession = false
+            self.session = session
+            if !session.start() { continuation.resume(throwing: EnoughError.message("Sign-in could not open. Try again or use your email.")) }
+        }
+    }
+
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.keyWindow }.first ?? ASPresentationAnchor()
     }
 }
 

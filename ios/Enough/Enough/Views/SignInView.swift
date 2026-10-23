@@ -46,9 +46,9 @@ struct SignInView: View {
                     }
                     .buttonStyle(.text)
                     VStack(alignment: .leading, spacing: 8) {
-                        Button("Continue with Google") {}.buttonStyle(.secondary).disabled(true)
-                        Button("Continue with Apple") {}.buttonStyle(.secondary).disabled(true)
-                        Note(auth.providers.google || auth.providers.apple ? "Google and Apple sign-in are available on the ENOUGH website. Use your email and password here." : "Some sign-in options are not available yet.")
+                        Button { Task { await social("google") } } label: { Label("Continue with Google", systemImage: "globe") }.buttonStyle(.secondary).disabled(busy || !auth.providers.google)
+                        Button { Task { await social("apple") } } label: { Label("Continue with Apple", systemImage: "apple.logo") }.buttonStyle(.secondary).disabled(busy || !auth.providers.apple)
+                        if !auth.providers.google || !auth.providers.apple { Note("Some sign-in options are not available yet.") }
                     }
                     if !message.isEmpty { Text(message).font(Theme.body(14)).foregroundStyle(Theme.ink).padding(12).background(Theme.mist).clipShape(RoundedRectangle(cornerRadius: 12)) }
                     Button("Keep browsing") { dismiss() }.buttonStyle(.text)
@@ -79,6 +79,13 @@ struct SignInView: View {
         } catch {
             message = error.localizedDescription
         }
+    }
+
+    private func social(_ provider: String) async {
+        busy = true; message = ""
+        defer { busy = false }
+        do { try await auth.signIn(provider: provider); await finish() }
+        catch { message = error.localizedDescription }
     }
 
     private func finish() async {
