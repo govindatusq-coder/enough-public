@@ -50,7 +50,6 @@ struct EnoughTabView: View {
     }
 
     private func todayCard(_ idea: Idea) -> some View {
-        let saving = Recommendations.moneyValue(idea, store.state)
         return Button { navigation.openIdea(idea.id) } label: {
             VStack(alignment: .leading, spacing: 0) {
                 SceneImage(name: Discovery.cover(idea)).frame(height: 190).frame(maxWidth: .infinity)
@@ -58,12 +57,7 @@ struct EnoughTabView: View {
                     Eyebrow(store.isComplete ? "One idea for today" : "An example to explore")
                     Text(idea.title).font(Theme.display(24)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                     Text(idea.body).font(Theme.body(14)).foregroundStyle(Theme.muted).multilineTextAlignment(.leading).lineLimit(3)
-                    HStack(spacing: 14) {
-                        Label("\(idea.minutes) min", systemImage: "figure.walk")
-                        if (saving?.cents ?? 0) > 0 { Label(Regions.formatMoney(saving?.cents ?? 0, currency: saving?.currency ?? store.profile.currency, country: store.profile.country) + " kept", systemImage: "wallet.pass") }
-                        Label(idea.extraTimeLabel, systemImage: "clock")
-                    }
-                    .font(Theme.body(12, weight: .semibold)).foregroundStyle(Theme.ink)
+                    ValueStrip(idea: idea, compact: true)
                     Text("Only if it fits. There’s always another day.").font(Theme.body(12)).foregroundStyle(Theme.muted)
                 }
                 .padding(16)
@@ -71,6 +65,7 @@ struct EnoughTabView: View {
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Theme.border))
+            .shadow(color: Theme.ink.opacity(0.08), radius: 20, x: 0, y: 10)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Today’s idea: \(idea.title)")
@@ -121,7 +116,6 @@ struct IdeaTile: View {
     @EnvironmentObject private var navigation: AppNavigation
 
     var body: some View {
-        let saving = Recommendations.moneyValue(idea, store.state)
         Button { navigation.openIdea(idea.id) } label: {
             VStack(alignment: .leading, spacing: 0) {
                 ZStack(alignment: .topLeading) {
@@ -133,12 +127,8 @@ struct IdeaTile: View {
                     Text(idea.title).font(Theme.body(16, weight: .semibold)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading)
                     Text(idea.body).font(Theme.body(13)).foregroundStyle(Theme.muted).multilineTextAlignment(.leading).lineLimit(3)
                     IdeaTagsView(idea: idea)
-                    HStack(spacing: 14) {
-                        Label("\(idea.minutes) min", systemImage: "figure.walk")
-                        Label(Regions.formatMoney(saving?.cents ?? 0, currency: saving?.currency ?? store.profile.currency, country: store.profile.country), systemImage: "wallet.pass")
-                    }
-                    .font(Theme.body(13, weight: .semibold)).foregroundStyle(Theme.ink)
-                    HStack { Label(idea.extraTimeLabel, systemImage: "clock").font(Theme.body(12)).foregroundStyle(Theme.muted); Spacer(); Text("See idea").font(Theme.body(13, weight: .semibold)).foregroundStyle(Theme.accent) }
+                    ValueStrip(idea: idea, compact: true)
+                    HStack { Spacer(); Text("See idea").font(Theme.body(13, weight: .semibold)).foregroundStyle(Theme.accent) }
                 }
                 .padding(12)
             }
@@ -214,7 +204,7 @@ struct RecentLifeWidget: View {
                                     if store.cloud, let photo = photos.first(where: { $0.entry_id == entry.id }) {
                                         RemoteImage(path: "/api/photos?id=\(photo.id)")
                                     } else if let image = idea?.image { SceneImage(name: image) }
-                                    else { ChoiceArtwork(label: Wins.artwork(idea)); Text("Illustration").font(Theme.body(10)).padding(4).background(.ultraThinMaterial).clipShape(Capsule()).padding(6) }
+                                    else { SceneImage(name: idea.map(Discovery.cover) ?? "welcome-coast") }
                                 }
                                 .frame(width: 150, height: 110).clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                                 HStack(spacing: 4) {

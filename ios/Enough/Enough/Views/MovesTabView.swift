@@ -190,7 +190,7 @@ struct MovesDiscoveryView: View {
                 Button(store.historyLoading ? "Loading earlier ideas…" : store.historyError.isEmpty ? "Show earlier ideas" : "Retry earlier ideas") { limit += 32; Task { await store.loadHistory() } }.buttonStyle(.secondary).disabled(store.historyLoading)
                 AlertText(store.historyError)
             }
-            Note("Movement tags, time and savings are estimates. Gentle is a compatibility label; intensity is a template estimate, not measured effort. Only confirmed outcomes enter My Wins.")
+            Note("Money kept and time are worked out from the idea and typical prices; tap ⓘ on any idea for the workings. Only what you confirm afterwards enters My Wins.")
             HStack {
                 Button("Tune my ideas") { showTune = true }.buttonStyle(.text)
                 if store.aiAvailable { MoreSuggestionsButton(enoughReached: false) { clear() } }
@@ -302,16 +302,12 @@ struct MoveCard: View {
     @EnvironmentObject private var navigation: AppNavigation
 
     var body: some View {
-        let saving = Recommendations.moneyValue(idea, store.state)
         let feedback = Discovery.feedback(ideaId: idea.id, state: store.state, now: now)
         let saved = store.isSaved(idea.id)
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .topLeading) {
                 Button { navigation.openIdea(idea.id) } label: {
-                    ZStack(alignment: .bottomTrailing) {
-                        MoveArt(idea: idea).frame(height: 180).clipped()
-                        if idea.source != .ai { Text("Illustrative scene").font(Theme.body(10)).padding(5).background(.ultraThinMaterial).clipShape(Capsule()).padding(8) }
-                    }
+                    MoveArt(idea: idea).frame(height: 180).clipped()
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Explore \(idea.title)")
@@ -326,11 +322,7 @@ struct MoveCard: View {
                 Button { navigation.openIdea(idea.id) } label: { Text(idea.title).font(Theme.body(17, weight: .semibold)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading) }.buttonStyle(.plain)
                 Text(idea.body).font(Theme.body(13)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
                 IdeaTagsView(idea: idea)
-                HStack(spacing: 8) {
-                    Metric(icon: "figure.walk", value: "\(idea.minutes) min", label: "Movement", caption: "estimate")
-                    Metric(icon: "wallet.pass", value: Regions.formatMoney(saving?.cents ?? 0, currency: saving?.currency ?? store.profile.currency, country: store.profile.country), label: "Money saved", caption: "estimate")
-                }
-                Label(idea.extraTimeLabel, systemImage: "clock").font(Theme.body(12)).foregroundStyle(Theme.muted)
+                ValueStrip(idea: idea, compact: true)
                 Label(feedback.tries > 0 ? "\(feedback.worthwhile) of your \(feedback.tries) \(feedback.tries == 1 ? "try" : "tries") felt worthwhile" : idea.effort == .gentle ? "A gentle idea to explore." : "Choose a pace that suits you.", systemImage: feedback.tries > 0 ? "heart" : "leaf").font(Theme.body(12)).foregroundStyle(Theme.muted)
                 Button { navigation.openIdea(idea.id) } label: { Label("See this idea", systemImage: "arrow.right") }.buttonStyle(.text)
             }
@@ -354,19 +346,7 @@ struct MoveCard: View {
 struct MoveArt: View {
     let idea: Idea
     var body: some View {
-        let visual = Discovery.visual(idea)
-        ZStack {
-            if idea.source == .ai { IdeaPicture(idea: idea) }
-            else if let image = visual.image { SceneImage(name: image) }
-            else if visual.art == "Cycling" { iconArt("bicycle") }
-            else if visual.art == "Video call" { iconArt("video") }
-            else if visual.art == "Active play" { iconArt("figure.play") }
-            else if visual.art == "Garden + Podcast" { ChoiceArtwork(label: "Household tasks"); Image(systemName: "headphones").font(.system(size: 26)).foregroundStyle(.white).padding(8).background(Theme.ink.opacity(0.6)).clipShape(Circle()) }
-            else { ChoiceArtwork(label: visual.art) }
-        }
-    }
-    private func iconArt(_ name: String) -> some View {
-        ZStack { Theme.mist; Image(systemName: name).font(.system(size: 42, weight: .light)).foregroundStyle(Theme.accent) }
+        if idea.source == .ai { IdeaPicture(idea: idea) } else { SceneImage(name: Discovery.cover(idea)) }
     }
 }
 

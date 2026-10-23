@@ -95,7 +95,7 @@ struct WinsGallery: View {
                     ZStack(alignment: .bottomLeading) {
                         if let memory { RemoteImage(path: "/api/photos?id=\(memory.id)") }
                         else if let image = idea?.image { SceneImage(name: image) }
-                        else { ChoiceArtwork(label: Wins.artwork(idea)); Text("Illustration").font(Theme.body(10)).padding(4).background(.ultraThinMaterial).clipShape(Capsule()).padding(6) }
+                        else { SceneImage(name: idea.map(Discovery.cover) ?? "welcome-coast") }
                     }
                     HStack(spacing: 4) {
                         if memories.count > 1 { Label("\(memories.count)", systemImage: "photo.on.rectangle").font(Theme.body(11)).padding(4).background(.ultraThinMaterial).clipShape(Capsule()) }

@@ -162,15 +162,24 @@ enum Discovery {
         return topics.map { t in MoveCollection(key: t.key, title: t.title, art: t.art, image: t.image, ideas: ideas.filter { saved.contains($0.id) && t.matches($0) }, reason: "", personal: false) }.filter { !$0.ideas.isEmpty }
     }
 
-    /// `ideaCover()`: a bundled scene for library ideas.
+    /// The painting for an idea. Every library idea maps to one of the bundled
+    /// scenes by what it is; AI ideas use this while their own picture loads.
     static func cover(_ i: Idea) -> String {
         if let image = i.image { return image }
+        if i.movementMode == "stairs" { return "welcome-refill-stairs" }
+        if i.intensity == .strength { return i.key.contains("kettle") || i.key.contains("bench") ? "welcome-upload-strength" : "welcome-ad-break-strength" }
+        if i.key.contains("run") { return "welcome-library-run" }
+        if i.key.contains("cook") || i.key.contains("kitchen") || i.key.contains("music") { return "welcome-kitchen-dance" }
         switch i.category {
-        case .call, .work: return "welcome-call"
+        case .call: return i.social ? "welcome-catchup-walk" : "call"
+        case .work: return i.outdoor ? "welcome-call" : "welcome-refill-stairs"
         case .listen: return "welcome-podcast"
         case .family: return "welcome-school"
-        case .coffee, .errand, .chores, .shopping: return "welcome-dinner"
-        default: return "welcome-coast"
+        case .errand, .shopping: return "dinner"
+        case .coffee: return "welcome-hero"
+        case .chores: return "welcome-kitchen-dance"
+        case .think, .waiting, .other: return i.outdoor ? "welcome-coast" : "welcome-podcast"
+        case .travel: return i.outdoor ? "welcome-podcast" : "welcome-refill-stairs"
         }
     }
 

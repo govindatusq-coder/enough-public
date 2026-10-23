@@ -89,11 +89,7 @@ struct IdeaDetailView: View {
                 Eyebrow(store.isComplete ? "Matched to your PINS" : "Worth a look")
                 Text(idea.title).font(Theme.display(28)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
                 Text(idea.body).font(Theme.body(15)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
-                HStack(spacing: 8) {
-                    Metric(icon: "figure.walk", value: "\(idea.minutes) min", label: "Exercise Minutes")
-                    Metric(icon: "wallet.pass", value: Regions.formatMoney(cash?.cents ?? 0, currency: cash?.currency ?? store.profile.currency, country: store.profile.country), label: "Money Saved", caption: "estimate")
-                    Metric(icon: "wind", value: idea.extraMin > 0 ? "+\(idea.extraMin) min" : idea.extraMin < 0 ? "\(-idea.extraMin) min reclaimed" : "No extra time", label: idea.extraMin > 0 ? "additional time" : "paired with your day")
-                }
+                ValueStrip(idea: idea)
                 (Text("Because ").bold() + Text(active?.told.first.map { $0.prefix(1).lowercased() + String($0.dropFirst()) } ?? "this offers another way through an everyday moment.")).font(Theme.body(14)).foregroundStyle(Theme.ink)
                 IdeaTagsView(idea: idea)
                 Note(idea.source == .ai ? "AI-generated · checked against your needs" : "From the supplied idea library")
@@ -111,6 +107,7 @@ struct IdeaDetailView: View {
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Theme.border))
+        .shadow(color: Theme.ink.opacity(0.08), radius: 20, x: 0, y: 10)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Idea browser")
     }

@@ -272,7 +272,7 @@ struct IdeaPicture: View {
                     Text("\(creator) · \(credit.license ?? "")").font(Theme.body(10)).padding(6).background(.ultraThinMaterial).clipShape(Capsule()).padding(8)
                 }
             } else {
-                ZStack { LinearGradient(colors: [Theme.sky, Theme.accent, Theme.deepInk], startPoint: .topLeading, endPoint: .bottomTrailing); ChoiceArtwork(label: Discovery.visual(idea).art).opacity(0.85) }
+                SceneImage(name: Discovery.cover(idea))
             }
         }
         .onAppear { loader.prepare(idea: idea, api: store.api, enabled: store.cloud && store.isComplete) }
