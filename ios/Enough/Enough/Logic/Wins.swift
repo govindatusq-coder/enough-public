@@ -65,24 +65,6 @@ enum Wins {
         }
     }
 
-    static func artwork(_ idea: Idea?) -> String {
-        guard let idea else { return "Outside" }
-        if idea.movementMode == "seated" || idea.movementMode == "stretch" { return "Physical comfort / accessibility" }
-        if idea.category == .listen { return idea.key.contains("music") ? "Music" : idea.key.contains("audiobook") ? "Audiobooks" : "Podcasts" }
-        if idea.key.contains("garden") { return "Gardening" }
-        if idea.key.contains("photo") { return "Photography" }
-        if idea.key.contains("dog") { return "Animals" }
-        switch idea.category {
-        case .call: return "Calls"
-        case .family: return "Family time"
-        case .work: return "Work or study"
-        case .chores: return "Household tasks"
-        case .think: return "Solving problems"
-        case .waiting: return "Short bursts"
-        default: return "Outside"
-        }
-    }
-
     static func collectionMonths(_ entries: [Entry], now: Date = Date()) -> [String] {
         var months = Set([String(localDate(now).prefix(7))])
         for e in confirmed(entries, now: now) { if let d = e.completedDate { months.insert(String(localDate(d).prefix(7))) } }

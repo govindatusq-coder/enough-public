@@ -12,10 +12,10 @@ struct IdeaDetailView: View {
     @State private var showCosts = false
 
     private var feed: [Ranked] { store.feed(now: now) }
-    private var active: Ranked? { feed.first { $0.idea.id == ideaId } ?? feed.first }
+    /// Only the idea that was opened; never a silent stand-in from the feed.
+    private var active: Ranked? { feed.first { $0.idea.id == ideaId } }
     private var idea: Idea { active?.idea ?? store.state.idea(ideaId) }
-    private var position: Int { feed.firstIndex { $0.idea.id == idea.id } ?? 0 }
-    private var cash: MoneyEstimate? { Recommendations.moneyValue(idea, store.state) }
+    private var position: Int { feed.firstIndex { $0.idea.id == ideaId } ?? 0 }
     private var planned: Bool { store.isPlanned(idea.id) }
 
     private func next(_ direction: Int) {
@@ -41,19 +41,11 @@ struct IdeaDetailView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            if store.isComplete {
-                VStack(alignment: .leading, spacing: 8) {
-                    Eyebrow("Matched to your PINS")
-                    Text("\(feed.count) ideas that cleared your current needs.").font(Theme.body(14)).foregroundStyle(Theme.ink)
-                    if store.aiAvailable { Note("Fresh ideas and pictures are prepared by OpenAI only with your permission. You can exclude health needs in My Pins → AI and privacy. Your name, photos, companions and visual preferences are not sent.") }
-                    HStack { Button("Tune my ideas") { showTune = true }.buttonStyle(.secondary); if store.aiAvailable { MoreSuggestionsButton(enoughReached: false) } }
-                    AlertText(store.aiError)
-                }
-                .glassPanel(padding: 14)
-            }
-            Button("Back to all ideas") { navigation.detailIdeaId = nil }.buttonStyle(.secondary)
+            Button { navigation.detailIdeaId = nil } label: { Label("All ideas", systemImage: "chevron.left") }.buttonStyle(.text)
             if feed.isEmpty {
-                EmptyState(icon: "leaf", title: "Let’s keep your needs first.", text: store.profile.hasFreeTextNeed ? "Your written need is saved. ENOUGH cannot yet assess free-text needs, so suggestions are paused. Keep your answer, or choose equivalent listed boundaries in My Pins." : "No library idea currently clears your constraints. Keep your needs as they are, or update them if something has changed.", action: ("Review idea settings", { showTune = true }), secondary: ("Review My Pins", { navigation.sheet = .setup }))
+                EmptyState(title: "Your needs come first.", text: store.profile.hasFreeTextNeed ? "Your written need is kept. ENOUGH can’t yet read free-text needs, so ideas are paused. Keep your answer, or choose from the listed needs in My Pins." : "No library idea fits your current needs. Keep them as they are, or update them if something has changed.", action: ("Tune my ideas", { showTune = true }), secondary: ("Review my answers", { navigation.sheet = .setup }))
+            } else if active == nil {
+                EmptyState(title: "This one doesn’t fit right now.", text: "\(idea.title) isn’t among today’s ideas any more, perhaps because of the time of day or a note you made. It stays where you kept it.", action: ("See today’s ideas", { navigation.detailIdeaId = feed.first?.id }))
             } else {
                 card
                 notes
@@ -66,101 +58,83 @@ struct IdeaDetailView: View {
 
     private var card: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ZStack(alignment: .top) {
-                IdeaPicture(idea: idea).frame(height: 300).clipped()
-                HStack {
-                    Text("ENOUGH").font(Theme.body(12, weight: .semibold)).kerning(2).foregroundStyle(.white)
-                    Spacer()
-                    Text("\(position + 1)").font(Theme.body(13, weight: .semibold)).foregroundStyle(.white).accessibilityLabel("Idea \(position + 1) of \(feed.count)")
-                }
-                .padding(14)
-                .background(LinearGradient(colors: [Theme.deepInk.opacity(0.5), .clear], startPoint: .top, endPoint: .bottom))
-            }
-            .gesture(DragGesture(minimumDistance: 40).onEnded { value in
-                let d = abs(value.translation.height) > abs(value.translation.width) ? value.translation.height : value.translation.width
-                if abs(d) > 65 { next(d < 0 ? 1 : -1) }
-            })
+            IdeaPicture(idea: idea).frame(height: 300).frame(maxWidth: .infinity)
+                .gesture(DragGesture(minimumDistance: 30).onEnded { value in
+                    // Sideways only, so scrolling the page never changes the idea.
+                    let dx = value.translation.width, dy = value.translation.height
+                    guard abs(dx) > 60, abs(dx) > abs(dy) * 1.5 else { return }
+                    next(dx < 0 ? 1 : -1)
+                })
             VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 18) {
+                HStack(spacing: 20) {
                     Button { act(.save(idea.id)) } label: { Label(store.isSaved(idea.id) ? "Saved" : "Save", systemImage: store.isSaved(idea.id) ? "bookmark.fill" : "bookmark") }
-                    Button { showWhy = true } label: { Label("Why this?", systemImage: "ellipsis.circle") }
+                    Button { showWhy = true } label: { Label("Why this?", systemImage: "info.circle") }
+                    Spacer()
                 }
-                .font(Theme.body(14, weight: .semibold)).foregroundStyle(Theme.ink)
-                Eyebrow(store.isComplete ? "Matched to your PINS" : "Worth a look")
-                Text(idea.title).font(Theme.display(28)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+                .buttonStyle(.text)
+                Eyebrow(store.isComplete ? "Matched to your answers" : "Worth a look")
+                Text(idea.title).font(Theme.display(30)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
                 Text(idea.body).font(Theme.body(15)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
                 ValueStrip(idea: idea)
-                (Text("Because ").bold() + Text(active?.told.first.map { $0.prefix(1).lowercased() + String($0.dropFirst()) } ?? "this offers another way through an everyday moment.")).font(Theme.body(14)).foregroundStyle(Theme.ink)
+                (Text("Because ").fontWeight(.medium) + Text(active?.told.first.map { $0.prefix(1).lowercased() + String($0.dropFirst()) } ?? "this offers another way through an everyday moment.")).font(Theme.body(14)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
                 IdeaTagsView(idea: idea)
-                Note(idea.source == .ai ? "AI-generated · checked against your needs" : "From the supplied idea library")
-                Button(planned ? "View my experience" : "Sounds good") { act(.accept(idea.id)) }.buttonStyle(.primary).frame(maxWidth: .infinity)
+                if idea.source == .ai { Note("Made for you by AI, checked against your needs.") }
+                Button(planned ? "See my plan" : "Sounds good") { act(.accept(idea.id)) }.buttonStyle(.primary)
                 HStack {
-                    Button("Previous") { next(-1) }.buttonStyle(.secondary)
+                    Button("Previous") { next(-1) }.buttonStyle(.text)
                     Spacer()
-                    VStack(spacing: 2) { Text("\(position + 1) / \(feed.count)").font(Theme.body(13, weight: .semibold)).foregroundStyle(Theme.ink); Text("Swipe for another").font(Theme.body(11)).foregroundStyle(Theme.muted) }
+                    Text("\(position + 1) of \(feed.count)").font(Theme.body(12)).foregroundStyle(Theme.muted)
                     Spacer()
-                    Button("Next idea") { next(1) }.buttonStyle(.secondary)
+                    Button("Next idea") { next(1) }.buttonStyle(.text)
                 }
             }
             .padding(16)
         }
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Theme.border))
-        .shadow(color: Theme.ink.opacity(0.08), radius: 20, x: 0, y: 10)
+        .cardSurface()
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Idea browser")
+        .accessibilityLabel("Idea \(position + 1) of \(feed.count): \(idea.title)")
     }
 
     private var notes: some View {
         let tries = store.state.entries.filter { $0.ideaId == idea.id && $0.status == .completed }
         let cost = (store.state.costs ?? []).first { $0.ideaId == idea.id && $0.currency == store.profile.currency }
         return VStack(alignment: .leading, spacing: 12) {
-            Button(cost != nil ? "Edit my cost calculation" : "Calculate Money Saved with my costs") { showCosts = true }.buttonStyle(.text)
-            DisclosureGroup("On your terms") {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("An idea. Never an obligation. Take what fits your day and leave the rest. There’s no limit to exploring; you set the pace.").font(Theme.body(14)).foregroundStyle(Theme.ink)
-                    Button("See My Pins") { navigation.go(.pins) }.buttonStyle(.text)
-                    Note("Library and AI ideas are labelled separately. Only confirmed outcomes enter My Wins.")
-                }
-                .padding(.top, 6)
+            Text("An idea, never an obligation. Take what fits your day and leave the rest.").font(Theme.body(14)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+            if !tries.isEmpty {
+                Text("\(tries.filter { $0.worthwhile == true }.count) of your \(tries.count) \(tries.count == 1 ? "try" : "tries") felt worthwhile.").font(Theme.body(14)).foregroundStyle(Theme.ink)
             }
-            .font(Theme.body(15, weight: .semibold)).foregroundStyle(Theme.ink)
-            DisclosureGroup("Ratings & experiences") {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(tries.isEmpty ? "You haven’t rated this idea yet. After trying it, tell us whether it was worthwhile." : "\(tries.filter { $0.worthwhile == true }.count) of your \(tries.count) confirmed tries felt worthwhile.").font(Theme.body(14)).foregroundStyle(Theme.ink)
-                    Note("Your feedback is private to you. Community ratings and testimonials are not connected in this preview.")
-                }
-                .padding(.top, 6)
-            }
-            .font(Theme.body(15, weight: .semibold)).foregroundStyle(Theme.ink)
-            if (store.state.passes?.count ?? 0) >= 6 { Button("Want a closer fit? Tune your ideas.") { showTune = true }.buttonStyle(.text) }
+            Button(cost != nil ? "Edit my own costs" : "Use my own costs") { showCosts = true }.buttonStyle(.text)
+            if (store.state.passes?.count ?? 0) >= 6 { Button("Want a closer fit? Tune my ideas") { showTune = true }.buttonStyle(.text) }
         }
         .glassPanel()
     }
 
     private var whySheet: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    Eyebrow("ENOUGH")
-                    Text("A little more about this idea").font(Theme.display(28)).foregroundStyle(Theme.ink)
-                    Text(store.isComplete ? ((active.map { $0.told + $0.learned + $0.protects } ?? []).joined(separator: " ")) : "Complete your PINS and routines for personalised matches.").font(Theme.body(14)).foregroundStyle(Theme.muted)
-                    Text("Instead of: \(idea.usual)").font(Theme.body(15)).foregroundStyle(Theme.ink)
-                    Text(idea.extraMin > 0 ? "This adds \(idea.extraMin) minutes beyond the usual activity." : "This combines movement with an existing activity; timing is a template assumption.").font(Theme.body(15)).foregroundStyle(Theme.ink)
-                    Text(cash?.source ?? "No cash saving is assumed for this idea.").font(Theme.body(15)).foregroundStyle(Theme.ink)
-                    Text(idea.safety).font(Theme.body(15)).foregroundStyle(Theme.ink)
-                    if store.isComplete, let active {
-                        Text("What shaped this match").font(Theme.body(15, weight: .semibold)).foregroundStyle(Theme.ink)
-                        ForEach(active.told + active.learned + active.protects, id: \.self) { Text("• \($0)").font(Theme.body(14)).foregroundStyle(Theme.ink) }
-                        Button("Not for me · hide this idea") { store.hide(idea.id); showWhy = false; navigation.detailIdeaId = nil }.buttonStyle(.text)
-                    }
-                    Note("Check the real route, setting and movement before trying it. Your visual preferences are never used to infer ability or fit.")
-                    Button("Got it") { showWhy = false }.buttonStyle(.primary)
+        let value = Economics.value(of: idea, in: store.state)
+        return SheetFrame(title: "A little more about this idea", kicker: "Why this?") {
+            if store.isComplete, let active, !(active.told + active.learned + active.protects).isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("What shaped this match").font(Theme.body(15, weight: .medium)).foregroundStyle(Theme.ink)
+                    ForEach(active.told + active.learned + active.protects, id: \.self) { Text("• \($0)").font(Theme.body(14)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true) }
                 }
-                .padding(16)
+            } else if !store.isComplete {
+                Text("Answer a few questions about your life in My Pins and ENOUGH can say why an idea fits you.").font(Theme.body(14)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
             }
-            .background(Theme.paper)
+            whyRow("Instead of", idea.usual)
+            whyRow("Time", idea.extraMin > 0 ? "About \(idea.extraMin) extra minutes beyond what was already happening." : idea.extraMin < 0 ? "Gives back about \(-idea.extraMin) minutes compared with the usual way." : "No extra time: the movement sits inside something already in your day.")
+            whyRow("Money", value.directCents > 0 ? "\(value.directSource ?? "Cost avoided"): \(Economics.money(value.directCents, store.state)). Tap ⓘ on the idea for the full workings." : "No fee or fare is avoided; the figure is the price of the same minutes of movement. Tap ⓘ on the idea for the workings.")
+            whyRow("Take care", idea.safety)
+            if store.isComplete && active != nil {
+                Button("Not for me · hide this idea") { store.hide(idea.id); showWhy = false; navigation.detailIdeaId = nil }.buttonStyle(.text)
+            }
+            Note("Check the real route, setting and movement before trying it. Your visual preferences are never used to judge ability or fit.")
+        }
+    }
+
+    private func whyRow(_ label: String, _ text: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label).font(Theme.body(12, weight: .medium)).foregroundStyle(Theme.muted)
+            Text(text).font(Theme.body(14)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -178,34 +152,27 @@ struct CostSheet: View {
         let currency = store.profile.currency
         let existing = (store.state.costs ?? []).first { $0.ideaId == idea.id && $0.currency == currency }
         let usualCents = Regions.parseMoney(usual), moveCents = Regions.parseMoney(move)
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Your costs for this move").font(Theme.display(28)).foregroundStyle(Theme.ink)
-                    Text("\(idea.title). Use the costs you would actually pay, including any extra costs. This calculation stays separate from confirmed money in My Wins.").font(Theme.body(14)).foregroundStyle(Theme.muted)
-                    FieldLabel("What would you normally spend? (\(currency))"); TextField("0.00", text: $usual).keyboardType(.decimalPad).fieldBox()
-                    FieldLabel("What would this move cost in total? (\(currency))"); TextField("0.00", text: $move).keyboardType(.decimalPad).fieldBox()
-                    if let usualCents, let moveCents {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Money Saved").font(Theme.body(12, weight: .semibold)).foregroundStyle(Theme.muted)
-                            Text(Regions.formatMoney(max(0, usualCents - moveCents), currency: currency, country: store.profile.country)).font(Theme.display(28)).foregroundStyle(Theme.ink)
-                            Text(moveCents > usualCents ? "This move would cost \(Regions.formatMoney(moveCents - usualCents, currency: currency, country: store.profile.country)) more. No saving is counted." : "Your usual cost minus this move’s cost. Only confirm money afterwards if you actually kept it.").font(Theme.body(13)).foregroundStyle(Theme.muted)
-                        }
-                        .padding(12).background(Theme.mist).clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
-                    AlertText(error)
-                    Button("Use these costs") {
-                        guard let usualCents, let moveCents else { error = "Enter both costs from 0 to 1,000, with up to two decimal places."; return }
-                        store.setCost(Cost(ideaId: idea.id, currency: currency, usualCents: usualCents, moveCents: moveCents, updatedAt: ISO.string()))
-                        dismiss()
-                    }
-                    .buttonStyle(.primary)
-                    if existing != nil { Button("Remove my cost calculation") { store.removeCost(ideaId: idea.id, currency: currency); dismiss() }.buttonStyle(.text) }
+        SheetFrame(title: "Your own costs", kicker: idea.title, doneLabel: "Cancel") {
+            Text("Use what you would actually pay, including any extra costs. This replaces the typical figure for this idea; My Wins still counts only what you confirm afterwards.").font(Theme.body(14)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+            FieldLabel("What would you normally spend? (\(currency))"); TextField("0.00", text: $usual).keyboardType(.decimalPad).fieldBox()
+            FieldLabel("What would this move cost in total? (\(currency))"); TextField("0.00", text: $move).keyboardType(.decimalPad).fieldBox()
+            if let usualCents, let moveCents {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Money kept").font(Theme.body(12, weight: .medium)).foregroundStyle(Theme.muted)
+                    Text(Regions.formatMoney(max(0, usualCents - moveCents), currency: currency, country: store.profile.country)).font(Theme.display(28)).foregroundStyle(Theme.ink)
+                    Text(moveCents > usualCents ? "This move would cost \(Regions.formatMoney(moveCents - usualCents, currency: currency, country: store.profile.country)) more, so nothing is kept." : "Your usual cost minus this move’s cost.").font(Theme.body(13)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(16)
+                .padding(12).background(Theme.mist).clipShape(RoundedRectangle(cornerRadius: Theme.Radius.field, style: .continuous))
             }
-            .background(Theme.paper)
-            .onAppear { if let existing { usual = String(format: "%.2f", Double(existing.usualCents) / 100); move = String(format: "%.2f", Double(existing.moveCents) / 100) } }
+            AlertText(error)
+            Button("Use these costs") {
+                guard let usualCents, let moveCents else { error = "Enter both costs from 0 to 1,000, with up to two decimal places."; return }
+                store.setCost(Cost(ideaId: idea.id, currency: currency, usualCents: usualCents, moveCents: moveCents, updatedAt: ISO.string()))
+                dismiss()
+            }
+            .buttonStyle(.primary)
+            if existing != nil { Button("Go back to the typical figure") { store.removeCost(ideaId: idea.id, currency: currency); dismiss() }.buttonStyle(.text) }
         }
+        .onAppear { if let existing { usual = String(format: "%.2f", Double(existing.usualCents) / 100); move = String(format: "%.2f", Double(existing.moveCents) / 100) } }
     }
 }

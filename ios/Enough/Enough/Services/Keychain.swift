@@ -19,12 +19,12 @@ enum Keychain {
         if status == errSecItemNotFound {
             var add = query
             attributes.forEach { add[$0.key] = $0.value }
-            SecItemAdd(add as CFDictionary, nil)
+            _ = SecItemAdd(add as CFDictionary, nil)
         }
     }
 
     static func delete(_ account: String) {
         let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: account]
-        SecItemDelete(query as CFDictionary)
+        _ = SecItemDelete(query as CFDictionary)
     }
 }

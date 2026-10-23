@@ -273,13 +273,13 @@ enum Journey {
 
     /// `restore()`-equivalent sanity checks for a decoded state.
     static func validate(_ s: AppState) throws -> AppState {
-        guard s.version == 1 else { throw EnoughError.message("Stored preview could not be read.") }
-        guard Regions.currencyCodes.contains(s.profile.currency) else { throw EnoughError.message("Stored preview could not be read.") }
-        for id in s.saved where Catalogue.byId(id, generated: s.generated ?? []) == nil { throw EnoughError.message("Stored preview could not be read.") }
+        guard s.version == 1 else { throw EnoughError.message("What was kept on this device could not be read.") }
+        guard Regions.currencyCodes.contains(s.profile.currency) else { throw EnoughError.message("What was kept on this device could not be read.") }
+        for id in s.saved where Catalogue.byId(id, generated: s.generated ?? []) == nil { throw EnoughError.message("What was kept on this device could not be read.") }
         for e in s.entries {
-            guard Catalogue.byId(e.ideaId, generated: s.generated ?? []) != nil, Regions.currencyCodes.contains(e.currency) else { throw EnoughError.message("Stored moves could not be read.") }
+            guard Catalogue.byId(e.ideaId, generated: s.generated ?? []) != nil, Regions.currencyCodes.contains(e.currency) else { throw EnoughError.message("Your kept moves could not be read.") }
             if e.status == .completed {
-                guard let m = e.minutes, (0...240).contains(m), let money = e.moneyCents, (0...100_000).contains(money), e.completedAt != nil, e.outside != nil, e.connecting != nil, e.worthwhile != nil else { throw EnoughError.message("Stored moves could not be read.") }
+                guard let m = e.minutes, (0...240).contains(m), let money = e.moneyCents, (0...100_000).contains(money), e.completedAt != nil, e.outside != nil, e.connecting != nil, e.worthwhile != nil else { throw EnoughError.message("Your kept moves could not be read.") }
             }
         }
         var copy = s

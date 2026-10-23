@@ -20,7 +20,7 @@ struct MeetingCheckinView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack { Text("Who joined you?").font(Theme.body(14, weight: .semibold)).foregroundStyle(Theme.ink); Spacer(); Button(open ? "Close check-in" : "Add a name / scan QR") { open.toggle(); scanning = false }.buttonStyle(.text) }
+            HStack { Text("Who joined you?").font(Theme.body(14, weight: .medium)).foregroundStyle(Theme.ink); Spacer(); Button(open ? "Close check-in" : "Add a name / scan QR") { open.toggle(); scanning = false }.buttonStyle(.text) }
             if !people.isEmpty {
                 FlowLayout(spacing: 6) {
                     ForEach(people) { p in
@@ -39,7 +39,7 @@ struct MeetingCheckinView: View {
                     QRScannerView { raw in
                         do { candidate = try MeetingCode.read(raw); error = ""; scanning = false } catch { self.error = error.localizedDescription }
                     } onError: { message in error = message; scanning = false }
-                    .frame(height: 240).clipShape(RoundedRectangle(cornerRadius: 14)).accessibilityLabel("QR scanning camera")
+                    .frame(height: 240).clipShape(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)).accessibilityLabel("QR scanning camera")
                 }
                 if !candidate.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
@@ -58,7 +58,7 @@ struct MeetingCheckinView: View {
                     }
                     .padding(.top, 6)
                 }
-                .font(Theme.body(14, weight: .semibold)).foregroundStyle(Theme.ink)
+                .font(Theme.body(14, weight: .medium)).foregroundStyle(Theme.ink).tint(Theme.ink)
                 Note("QR check-ins are voluntary name exchanges, not verified identity or proof of location. They do not send invitations or count a completed move.")
                 AlertText(error)
             }

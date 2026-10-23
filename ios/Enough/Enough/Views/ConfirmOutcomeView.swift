@@ -26,10 +26,9 @@ struct ConfirmOutcomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    Eyebrow("ENOUGH")
-                    Text("What did it give back?").font(Theme.display(28)).foregroundStyle(Theme.ink)
-                    Text(store.state.idea(entry.ideaId).title).font(Theme.body(15, weight: .semibold)).foregroundStyle(Theme.ink)
-                    Text("Tell us what actually happened. Nothing is inferred from accepting an idea. Your chosen goal can be open-ended; a completed activity does not need to meet a SMART target.").font(Theme.body(14)).foregroundStyle(Theme.muted)
+                    Eyebrow("How did it go?")
+                    Text(store.state.idea(entry.ideaId).title).font(Theme.display(28)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+                    Text("Say what actually happened. Nothing is assumed from planning it, and it doesn’t have to match a target.").font(Theme.body(14)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
                     FieldLabel("How many minutes did you spend?")
                     TextField("0 to 240", text: $minutes).keyboardType(.numberPad).fieldBox()
                     FieldLabel("What was part of it?")
@@ -46,14 +45,14 @@ struct ConfirmOutcomeView: View {
                     LabeledPicker(label: "Did this idea add movement you otherwise wouldn’t have done? · optional", selection: $additional, options: [(nil, "Skip this question"), (.more, "Yes, more movement"), (.same, "About the same"), (.less, "Less than usual"), (.unsure, "Not sure")])
                     FieldLabel("Minutes combined with an existing task", optional: true)
                     TextField("0", text: $combined).keyboardType(.numberPad).fieldBox()
-                    Toggle("I actually saved money", isOn: $savedMoney).tint(Theme.accent)
+                    Toggle("I kept some money", isOn: $savedMoney).tint(Theme.accent)
                     if savedMoney {
                         FieldLabel("Amount kept (\(entry.currency))")
                         TextField("0.00", text: $saving).keyboardType(.decimalPad).fieldBox()
                         Note("Only the amount you would otherwise have spent, after any extra costs.")
                     }
                     AlertText(error)
-                    Button("Confirm my outcome") { confirm() }.buttonStyle(.primary)
+                    Button("Keep this moment") { confirm() }.buttonStyle(.primary)
                 }
                 .padding(16)
             }

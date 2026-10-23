@@ -7,6 +7,10 @@ import HealthKit
 @MainActor
 final class HealthService: ObservableObject {
     @Published private(set) var enabled = false
+    /// Connection state shown in My Pins. It survives the panel collapsing.
+    @Published var connected = false
+    @Published var lastRead: String?
+    @Published var permission: HealthPermissionState = .notRequested
     private let store = HKHealthStore()
     private let steps = HKQuantityType(.stepCount)
     private let exercise = HKQuantityType(.appleExerciseTime)
@@ -27,6 +31,8 @@ final class HealthService: ObservableObject {
 
     func disconnect() {
         enabled = false
+        connected = false
+        permission = .stopped
         generation += 1
     }
 

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Your starting point": the eight-step PINS and routines setup.
+/// "Your starting point": the eight-step setup, four questions about you plus routines.
 struct SetupFlowView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var navigation: AppNavigation
@@ -46,7 +46,7 @@ struct SetupFlowView: View {
                     HStack {
                         if step > 0 { Button("Back") { step -= 1 }.buttonStyle(.secondary) }
                         Spacer()
-                        Button(step == 7 ? "Continue to your ideas" : (step == 6 && draft.visual.isEmpty) ? "Skip for now" : "Continue") {
+                        Button(step == 7 ? "See my ideas" : (step == 6 && draft.visual.isEmpty) ? "Skip for now" : "Continue") {
                             if step == 7 { finish() } else { step += 1 }
                         }
                         .buttonStyle(.primary).disabled(!valid)
@@ -65,7 +65,7 @@ struct SetupFlowView: View {
     @ViewBuilder private var stepContent: some View {
         switch step {
         case 0:
-            Text("Only your PINS and life routines are required. \(store.cloud ? "We’ll keep your answers in your account." : "We’ll keep your answers on this device while you try ENOUGH.")").font(Theme.body(15)).foregroundStyle(Theme.muted)
+            Text("Four questions about you and one about your routines are all ENOUGH needs. \(store.cloud ? "Your answers are kept in your account." : "Your answers stay on this phone while you try ENOUGH.")").font(Theme.body(15)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: 6) {
                 FieldLabel("What should we call you?", optional: true)
                 TextField("Your first name", text: $draft.name).textContentType(.givenName).fieldBox()
@@ -82,11 +82,10 @@ struct SetupFlowView: View {
         case 5:
             routines
         case 6:
-            Text("Optional: which settings feel familiar? These answers are kept for future imagery only. They never change an idea’s value or suitability.").font(Theme.body(15)).foregroundStyle(Theme.muted)
+            Text("Optional: which settings feel familiar? Only for pictures. They never change which ideas suit you.").font(Theme.body(15)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
             ChoiceTiles(options: Pins.visualOptions, values: draft.visual) { v in
                 if draft.visual.contains(v) { draft.visual.removeAll { $0 == v } } else { draft.visual.append(v) }
             }
-            Note("Optional. These choices are for imagery, and never change which ideas suit your needs.")
         default:
             summary
         }
@@ -127,19 +126,19 @@ struct SetupFlowView: View {
 
     private var summary: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Check your answers. You can revisit any step or edit your profile in My Pins.").font(Theme.body(15)).foregroundStyle(Theme.muted)
+            Text("Check your answers. You can go back to any step, or change them later in My Pins.").font(Theme.body(15)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
             ForEach(Pins.groups, id: \.key) { g in
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(g.key.rawValue.capitalized).font(Theme.body(14, weight: .semibold)).foregroundStyle(Theme.ink)
+                    Text(g.key.rawValue.capitalized).font(Theme.body(14, weight: .medium)).foregroundStyle(Theme.ink)
                     Text(draft[g.key].joined(separator: " · ")).font(Theme.body(14)).foregroundStyle(Theme.muted)
                 }
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text("Life routines").font(Theme.body(14, weight: .semibold)).foregroundStyle(Theme.ink)
+                Text("Life routines").font(Theme.body(14, weight: .medium)).foregroundStyle(Theme.ink)
                 Text("\(draft.activity) · \(draft.rhythms.joined(separator: ", ")) · \(draft.window)").font(Theme.body(14)).foregroundStyle(Theme.muted)
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text("Country & currency").font(Theme.body(14, weight: .semibold)).foregroundStyle(Theme.ink)
+                Text("Country & currency").font(Theme.body(14, weight: .medium)).foregroundStyle(Theme.ink)
                 Text("\(Regions.region(for: draft.country)?.name ?? "Country not set") · \(draft.currency)").font(Theme.body(14)).foregroundStyle(Theme.muted)
             }
         }

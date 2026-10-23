@@ -186,17 +186,31 @@ final class WebAuthSession: NSObject, ASWebAuthenticationPresentationContextProv
     static let shared = WebAuthSession()
     private var session: ASWebAuthenticationSession?
 
+    /// Guards the continuation so it can only ever be resumed once.
+    private final class Once {
+        private var done = false
+        private let continuation: CheckedContinuation<URL, Error>
+        init(_ continuation: CheckedContinuation<URL, Error>) { self.continuation = continuation }
+        func resume(_ result: Result<URL, Error>) {
+            guard !done else { return }
+            done = true
+            continuation.resume(with: result)
+        }
+    }
+
     func run(url: URL, scheme: String) async throws -> URL {
-        try await withCheckedThrowingContinuation { continuation in
+        session?.cancel()
+        return try await withCheckedThrowingContinuation { continuation in
+            let once = Once(continuation)
             let session = ASWebAuthenticationSession(url: url, callbackURLScheme: scheme) { callback, error in
-                if let callback { continuation.resume(returning: callback) }
-                else if let failure = error as? ASWebAuthenticationSessionError, failure.code == .canceledLogin { continuation.resume(throwing: EnoughError.message("Sign-in was cancelled.")) }
-                else { continuation.resume(throwing: EnoughError.message("Sign-in did not complete. Try again or use your email.")) }
+                if let callback { once.resume(.success(callback)) }
+                else if let failure = error as? ASWebAuthenticationSessionError, failure.code == .canceledLogin { once.resume(.failure(EnoughError.message("Sign-in was cancelled."))) }
+                else { once.resume(.failure(EnoughError.message("Sign-in did not complete. Try again or use your email."))) }
             }
             session.presentationContextProvider = self
             session.prefersEphemeralWebBrowserSession = false
             self.session = session
-            if !session.start() { continuation.resume(throwing: EnoughError.message("Sign-in could not open. Try again or use your email.")) }
+            if !session.start() { once.resume(.failure(EnoughError.message("Sign-in could not open. Try again or use your email."))) }
         }
     }
 

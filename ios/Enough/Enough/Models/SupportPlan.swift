@@ -71,8 +71,8 @@ struct SupportPlan: Codable, Equatable {
     /// `planError()` in the web: an empty string means the plan can be saved.
     func validationError(now: Date = Date()) -> String {
         if goal.trimmingCharacters(in: .whitespaces).isEmpty { return "Add a goal in your own words." }
-        if goalType == .smart && (target.trimmingCharacters(in: .whitespaces).isEmpty || reason.trimmingCharacters(in: .whitespaces).isEmpty || deadline.isEmpty || confidence.isEmpty) { return "For a SMART goal, add a measure, a reason, a deadline and an achievable size." }
-        if goalType == .smart && deadlineDate == nil { return "Choose a valid goal deadline." }
+        if goalType == .smart && (target.trimmingCharacters(in: .whitespaces).isEmpty || reason.trimmingCharacters(in: .whitespaces).isEmpty || deadline.isEmpty || confidence.isEmpty) { return "For a clear target, add a measure, a reason, a date and an achievable size." }
+        if goalType == .smart && deadlineDate == nil { return "Choose a valid date for your target." }
         if reminder != .none {
             guard let at = remindDate, at > now else { return "Choose a future reminder time, or turn reminders off." }
         }

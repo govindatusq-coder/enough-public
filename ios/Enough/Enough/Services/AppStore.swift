@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 /// The single source of truth for the journey, mirroring `app/page.tsx` and
 /// `hooks/use-cloud-account.ts`. Local-only until an account is attached;
@@ -15,18 +16,24 @@ final class AppStore: ObservableObject {
     @Published var notice = ""
     @Published var storageError = ""
 
+    /// Today's Apple Health reading, shared by the home card and My Pins.
+    /// It lives only in memory and is dropped when the app goes to the background.
+    @Published var movementSnapshot: MovementSnapshot?
+
     // Cloud account
     @Published private(set) var cloud = false
     @Published private(set) var cloudStatus: CloudStatus = .local
     @Published var cloudError = ""
     @Published private(set) var accountEmail: String?
     @Published private(set) var accountHasCloudProfile = false
+    /// True while the account on the server matches what is on this device.
+    @Published private(set) var synced = false
     private(set) var revision = 0
-    private var lastSaved = Data()
     private var pending: AppState?
     private var pumping = false
     private var blocked = false
     private var saveTimer: Task<Void, Never>?
+    private var cancellables: Set<AnyCancellable> = []
 
     // AI suggestions
     @Published private(set) var aiAvailable = false
@@ -53,26 +60,39 @@ final class AppStore: ObservableObject {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("ENOUGH", isDirectory: true)
         try? FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
         fileURL = support.appendingPathComponent("enough-state.json")
+        // A session that ends on its own (an expired refresh token) must not
+        // leave the app believing it is still saving to the account.
+        auth.$session.dropFirst().removeDuplicates().sink { [weak self] session in
+            guard let self, session == nil, self.cloud || self.accountEmail != nil else { return }
+            self.detachAccount()
+            self.notice = "Your session has ended. Sign in again to keep saving to your account."
+        }.store(in: &cancellables)
     }
 
     // MARK: Lifecycle
 
     func start() async {
         guard !ready else { return }
-        if let data = try? Data(contentsOf: fileURL) {
-            do { state = try Journey.validate(try JSONDecoder().decode(AppState.self, from: data)) }
-            catch { storageError = "Your saved preview couldn’t be loaded. Your existing data hasn’t been overwritten. Reset it in My Pins to start again." }
-        }
+        loadLocal()
         ready = true
-        aiAvailable = await api.aiAvailable()
         if auth.isSignedIn { await loadAccount() }
+        aiAvailable = await api.aiAvailable()
+    }
+
+    private func loadLocal() {
+        guard let data = try? Data(contentsOf: fileURL) else { state = .empty; return }
+        do { state = try Journey.validate(try JSONDecoder().decode(AppState.self, from: data)) }
+        catch { storageError = "What was saved on this device couldn’t be read. Nothing has been overwritten. You can start again from My Pins." }
     }
 
     private func changed() {
         if cloud {
-            guard !blocked || cloudStatus != .conflict else { return }
             pending = state
-            if cloudStatus != .conflict { cloudStatus = .waiting }
+            synced = false
+            // After an error or a conflict the user chooses when to retry; the
+            // status keeps saying so instead of pretending to save.
+            guard !blocked else { return }
+            cloudStatus = .waiting
             saveTimer?.cancel()
             saveTimer = Task { [weak self] in
                 try? await Task.sleep(nanoseconds: 600_000_000)
@@ -122,9 +142,9 @@ final class AppStore: ObservableObject {
         }
     }
 
-    func enoughReached(snapshot: MovementSnapshot?, now: Date = Date()) -> Bool {
+    func enoughReached(now: Date = Date()) -> Bool {
         guard let settings = state.movementSettings else { return false }
-        return Movement.enoughToday(snapshot, settings: settings, now: now)
+        return Movement.enoughToday(movementSnapshot, settings: settings, now: now)
     }
 
     // MARK: Ideas: save, accept, pass, hide, tune
@@ -146,7 +166,7 @@ final class AppStore: ObservableObject {
             if !s.saved.contains(ideaId) { s.saved.append(ideaId) }
             s.demo = !self.cloud
         }
-        notice = "Your idea is saved."
+        notice = "Saved for later."
     }
 
     func unsave(_ ideaId: Int) {
@@ -163,7 +183,7 @@ final class AppStore: ObservableObject {
             s.demo = !self.cloud
             accepted = s.entries.first { $0.ideaId == ideaId && $0.status == .accepted }
         }
-        notice = "Accepted. Add some support if it would help."
+        notice = "It’s in Planned. Add a little support if it would help."
         return accepted
     }
 
@@ -181,7 +201,7 @@ final class AppStore: ObservableObject {
             if !tuning.hidden.contains(ideaId) { tuning.hidden.append(ideaId) }
             s.tuning = tuning
         }
-        notice = "Hidden from your feed. You can bring it back in Tune my ideas."
+        notice = "Hidden. You can bring it back under Tune my ideas."
     }
 
     func setTuning(_ change: (inout Tuning) -> Void) {
@@ -190,7 +210,7 @@ final class AppStore: ObservableObject {
 
     func setToday(_ context: String) {
         update { $0.today = TodayNote(date: localDate(), context: context) }
-        notice = "Today’s note is saved."
+        notice = context.isEmpty ? "Today’s note is cleared." : "Today’s note is kept."
     }
 
     func setCost(_ cost: Cost) {
@@ -199,7 +219,7 @@ final class AppStore: ObservableObject {
             costs.append(cost)
             s.costs = Array(costs.suffix(200))
         }
-        notice = "Your cost calculation is saved. Confirm actual money kept after the activity."
+        notice = "Your own costs are saved. Confirm what you actually kept after the move."
     }
 
     func removeCost(ideaId: Int, currency: String) {
@@ -214,7 +234,7 @@ final class AppStore: ObservableObject {
 
     func setSupport(_ plan: SupportPlan, for entryId: String) {
         updateEntry(entryId) { $0.support = plan }
-        notice = "Your support plan is saved."
+        notice = "Your plan is saved."
         let title = state.entries.first { $0.id == entryId }.map { state.idea($0.ideaId).title } ?? "Your ENOUGH plan"
         if plan.reminder == .inApp, let at = plan.remindDate, plan.paused != true {
             Task { await NotificationService.schedule(entryId: entryId, title: title, at: at) }
@@ -227,7 +247,7 @@ final class AppStore: ObservableObject {
         let next = try Journey.finish(state, entryId: entryId, outcome: outcome)
         state = next
         NotificationService.cancel(entryId: entryId)
-        notice = "Your confirmed outcome is in My Wins."
+        notice = "Kept in My Wins."
     }
 
     func notToday(entryId: String) {
@@ -244,7 +264,7 @@ final class AppStore: ObservableObject {
                 return Entry(id: e.id, ideaId: e.ideaId, status: .accepted, acceptedAt: e.acceptedAt, currency: e.currency, support: e.support, companions: e.companions, predicted: e.predicted)
             }
         }
-        notice = "Outcome removed. Open Planned in My Moves to confirm it again."
+        notice = "Outcome removed. The move is back in Planned."
     }
 
     func snoozeReminder(entryId: String, minutes: Int = 15) {
@@ -261,7 +281,7 @@ final class AppStore: ObservableObject {
 
     func saveWeeklyReview(worked: String, barrier: String, smallFix: String, plans: [ReviewedPlan]) throws {
         state = try WeeklyReviews.save(state, worked: worked, barrier: barrier, smallFix: smallFix, plans: plans)
-        notice = "Your review for this week is saved."
+        notice = "This week’s review is kept."
     }
 
     // MARK: Profile and consent
@@ -272,13 +292,13 @@ final class AppStore: ObservableObject {
             s.profile.name = draft.name.trimmingCharacters(in: .whitespaces)
             s.profile.complete = draft.isComplete
         }
-        if finished { notice = "Your setup is saved." }
+        if finished { notice = "Your answers are saved." }
     }
 
     func chooseAIConsent(_ choice: AIConsentChoice) {
         if choice == .declined { pendingAiRequest = false }
         update { $0.aiConsent = AIConsent.make(choice) }
-        notice = choice == .declined ? "Your choice is saved. Library ideas remain available." : "Your AI choice is saved."
+        notice = choice == .declined ? "Your choice is saved. The library is still here." : "Your AI choice is saved."
         if pendingAiRequest && choice != .declined {
             pendingAiRequest = false
             Task { await freshIdeasAfterSync() }
@@ -291,15 +311,13 @@ final class AppStore: ObservableObject {
         try? FileManager.default.removeItem(at: fileURL)
         state = .empty
         storageError = ""
-        notice = "Your local preview has been reset."
+        notice = "This device has been reset."
     }
 
     // MARK: Cloud account (use-cloud-account.ts)
 
-    var synced: Bool { cloud && (try? JSONEncoder.account.encode(state.accountSnapshot())) == lastSaved }
-
     func loadAccount() async {
-        guard auth.isSignedIn else { cloud = false; cloudStatus = .local; accountEmail = nil; accountHasCloudProfile = false; return }
+        guard auth.isSignedIn else { cloud = false; cloudStatus = .local; accountEmail = nil; accountHasCloudProfile = false; synced = false; return }
         cloudStatus = .checking
         do {
             let account = try await api.account()
@@ -307,14 +325,16 @@ final class AppStore: ObservableObject {
             revision = account.revision
             if let remote = account.state {
                 let validated = try Journey.validate(remote)
-                lastSaved = (try? JSONEncoder.account.encode(validated.accountSnapshot())) ?? Data()
                 cloud = true
                 accountHasCloudProfile = true
                 ready = false; state = validated; ready = true
+                pending = nil
+                synced = true
                 cloudStatus = .saved
             } else {
                 cloud = false
                 accountHasCloudProfile = false
+                synced = false
                 cloudStatus = .local
             }
             cloudError = ""
@@ -335,9 +355,8 @@ final class AppStore: ObservableObject {
             snapshot.demo = false
             do {
                 revision = try await api.saveAccount(snapshot, revision: revision)
-                lastSaved = (try? JSONEncoder.account.encode(snapshot)) ?? Data()
                 cloudError = ""
-                cloudStatus = .saved
+                if pending == nil { synced = true; cloudStatus = .saved }
             } catch {
                 pending = state
                 blocked = true
@@ -351,22 +370,22 @@ final class AppStore: ObservableObject {
 
     /// Create the account's cloud profile from the local preview or from scratch.
     func attach(importLocal: Bool) async -> Bool {
-        guard auth.isSignedIn else { cloudError = "Sign in to ENOUGH to keep your ENOUGH profile."; return false }
+        guard auth.isSignedIn else { cloudError = "Sign in to keep your ENOUGH in your account."; return false }
         cloudStatus = .saving; cloudError = ""
         do {
             let fresh = try await api.account()
             if fresh.state != nil {
-                cloudError = "This account already has a cloud profile. Open it instead of replacing it."
+                cloudError = "This account already has an ENOUGH. Open it instead of replacing it."
                 cloudStatus = .conflict
                 return false
             }
             var snapshot = importLocal ? state.accountSnapshot() : AppState.empty
             snapshot.demo = false
             revision = try await api.saveAccount(snapshot, revision: 0)
-            lastSaved = (try? JSONEncoder.account.encode(snapshot)) ?? Data()
             blocked = false; pending = nil
             cloud = true; accountHasCloudProfile = true
             ready = false; state = snapshot; ready = true
+            synced = true
             cloudStatus = .saved
             return true
         } catch {
@@ -391,13 +410,13 @@ final class AppStore: ObservableObject {
         if pumping || pending != nil { cloudError = "Wait for your changes to finish saving before deleting."; return false }
         do {
             try await api.deleteAccount(revision: revision)
-            blocked = true; pending = nil; revision = 0; lastSaved = Data()
-            cloud = false; accountHasCloudProfile = false
+            blocked = true; pending = nil; revision = 0
+            cloud = false; accountHasCloudProfile = false; synced = false
             try? FileManager.default.removeItem(at: fileURL)
             ready = false; state = .empty; ready = true
             cloudStatus = .local; cloudError = ""
             blocked = false
-            notice = "Your ENOUGH cloud data has been deleted."
+            notice = "Your ENOUGH account data has been deleted."
             return true
         } catch {
             cloudError = error.localizedDescription
@@ -407,10 +426,17 @@ final class AppStore: ObservableObject {
 
     func signOut() async {
         await auth.signOut()
+        detachAccount()
+    }
+
+    /// Back to the device-only state, showing what this device held before sign-in.
+    private func detachAccount() {
+        saveTimer?.cancel()
         cloud = false; accountHasCloudProfile = false; accountEmail = nil
-        cloudStatus = .local; cloudError = ""
-        revision = 0; lastSaved = Data(); pending = nil; blocked = false
-        freshIds = []; historyCursor = nil; historyHasMore = false
+        cloudStatus = .local; cloudError = ""; synced = false
+        revision = 0; pending = nil; blocked = false; pumping = false
+        freshIds = []; historyCursor = nil; historyHasMore = false; historyError = ""
+        ready = false; loadLocal(); ready = true
     }
 
     // MARK: AI suggestions (freshIdeas in page.tsx)
@@ -420,7 +446,7 @@ final class AppStore: ObservableObject {
 
     func requestFreshIdeas(enoughReached: Bool) -> AIGate {
         if aiBusy { return .started }
-        if enoughReached { notice = "Your chosen enough is here. Short sitting breaks are in My Moves; new AI batches are quiet."; return .quiet }
+        if enoughReached { notice = "You’ve had your enough today. Short sitting breaks are still in My Moves; new ideas wait until tomorrow."; return .quiet }
         if !cloud { return .needsAccount }
         if !hasAIConsent { pendingAiRequest = true; return .needsConsent }
         Task { await freshIdeasAfterSync() }
@@ -440,15 +466,15 @@ final class AppStore: ObservableObject {
         do {
             let result = try await api.freshIdeas(timezone: TimeZone.current.identifier)
             guard let ideas = result.ideas, !ideas.isEmpty else {
-                notice = result.imageWarning == true ? "Your existing suggestions are available. Some pictures couldn’t be prepared this time." : (result.picturesPrepared ?? 0) > 0 ? "Pictures for your existing suggestions are ready. No new ideas cleared your current needs." : "No new ideas met the movement and fit checks. Your existing suggestions remain available; you can request another batch."
+                notice = result.imageWarning == true ? "Your ideas are here. Some pictures couldn’t be painted this time." : (result.picturesPrepared ?? 0) > 0 ? "Pictures for your ideas are ready. No new ideas fitted your needs this time." : "No new ideas fitted your needs this time. Your existing ideas are still here; you can ask again."
                 return
             }
             update { s in s.generated = AppStore.mergeIdeas(s.generated ?? [], ideas) }
             freshIds = ideas.map(\.id)
-            notice = result.imageWarning == true ? "Your new suggestions are ready. Some pictures couldn’t be prepared this time." : "Your new suggestions are ready, alongside your library."
+            notice = result.imageWarning == true ? "Your new ideas are ready. Some pictures couldn’t be painted this time." : "Your new ideas are ready, alongside the library."
         } catch let error as APIError where error.errorDescription == "consent-required" {
             pendingAiRequest = false
-            aiError = "Choose whether OpenAI can prepare ideas and pictures in AI and privacy settings first."
+            aiError = "Choose whether AI can prepare ideas and pictures first, under AI and privacy in My Pins."
         } catch {
             aiError = error.localizedDescription
         }

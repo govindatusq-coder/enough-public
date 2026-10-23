@@ -24,20 +24,27 @@ struct OnboardingView: View {
                     Group { if index == 0 { brandCard } else { card(cards[index]) } }.tag(index)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .always))
-            .indexViewStyle(.page(backgroundDisplayMode: .always))
+            .tabViewStyle(.page(indexDisplayMode: .never))
 
-            VStack(spacing: 10) {
+            HStack(spacing: 6) {
+                ForEach(cards.indices, id: \.self) { index in
+                    Capsule().fill(index == page ? Theme.ink : Theme.border).frame(width: index == page ? 18 : 6, height: 6)
+                }
+            }
+            .padding(.bottom, 16)
+            .accessibilityLabel("Page \(page + 1) of \(cards.count)")
+
+            VStack(spacing: 4) {
                 if page < cards.count - 1 {
                     Button("Continue") { withAnimation { page += 1 } }.buttonStyle(.primary).frame(maxWidth: .infinity)
-                    Button("Skip") { finish(false) }.buttonStyle(.text)
+                    Button("Have a look first") { finish(false) }.buttonStyle(.text)
                 } else {
                     Button("Start with my life") { finish(true) }.buttonStyle(.primary).frame(maxWidth: .infinity)
-                    Button("Just have a look first") { finish(false) }.buttonStyle(.text)
+                    Button("Have a look first") { finish(false) }.buttonStyle(.text)
                 }
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 24)
+            .padding(.bottom, 20)
         }
         .background(Theme.paper)
     }

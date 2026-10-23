@@ -24,7 +24,7 @@ final class AppNavigation: ObservableObject {
     enum Tab: String, CaseIterable { case enough, moves, wins, pins }
     enum MovesView: String, CaseIterable { case explore = "Explore", saved = "Saved", planned = "Planned" }
     enum GlobalSheet: Identifiable {
-        case account(pending: PendingAction?), help, aiConsent, setup, signIn
+        case account(pending: PendingAction?), help, aiConsent, setup, signIn(pending: PendingAction?)
         var id: String {
             switch self {
             case .account: return "account"
@@ -43,20 +43,27 @@ final class AppNavigation: ObservableObject {
     @Published var detailIdeaId: Int?
     @Published var supportEntryId: String?
     @Published var sheet: GlobalSheet?
-    @Published var winsDay: String?
     @Published var winsPeriod: ReturnPeriod = .thisWeek
     @Published var highlightedOutcomeId: String?
+    /// A view id the current tab's scroll view should move to.
+    @Published var scrollTarget: String?
 
     func go(_ tab: Tab, moves: MovesView? = nil) {
         self.tab = tab
         if let moves { movesView = moves }
         detailIdeaId = nil
         supportEntryId = nil
+        highlightedOutcomeId = nil
     }
 
     func openIdea(_ id: Int) { tab = .moves; movesView = .explore; detailIdeaId = id; supportEntryId = nil }
     func openSupport(_ entryId: String) { tab = .moves; movesView = .planned; supportEntryId = entryId; detailIdeaId = nil }
-    func openOutcome(_ entryId: String) { tab = .wins; winsPeriod = .allTime; highlightedOutcomeId = entryId }
+    func openOutcome(_ entryId: String) {
+        tab = .wins
+        winsPeriod = .allTime
+        highlightedOutcomeId = entryId
+        scrollTarget = "win-outcome-\(entryId)"
+    }
 }
 
 struct RootView: View {
@@ -74,7 +81,10 @@ struct RootView: View {
                     onboarded = true
                     navigation.go(startSetup ? .moves : .enough)
                     navigation.opened = true
-                    if startSetup { navigation.sheet = .setup }
+                    // The tab view that owns the sheet has to be on screen first.
+                    if startSetup {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { navigation.sheet = .setup }
+                    }
                 }
                 .transition(.opacity)
             }

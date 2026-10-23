@@ -75,7 +75,8 @@ struct ChoiceArtwork: View {
         "Calls": ("routines", 5), "Takeaway": ("routines", 6), "Groceries": ("routines", 7), "Podcasts or music": ("preferences", 5), "Caring for someone": ("needs", 3),
         "Household tasks": ("routines", 8), "No regular routine": ("routines", 3), "Morning": ("preferences", 6), "Daytime": ("routines", 14), "Evening": ("preferences", 8),
         "It varies": ("routines", 3), "City streets": ("routines", 9), "Suburban neighbourhoods": ("routines", 10), "Small towns": ("routines", 11), "Country settings": ("routines", 12),
-        "Coastal places": ("routines", 13), "Mix it up": ("routines", 15), "Nothing to add": ("preferences", 15), "Outside": ("preferences", 0), "Short bursts": ("preferences", 11)
+        "Coastal places": ("routines", 13), "Mix it up": ("routines", 15), "Nothing to add": ("preferences", 15), "Outside": ("preferences", 0), "Short bursts": ("preferences", 11),
+        "Desk work": ("routines", 0), "Driving": ("routines", 9), "Evenings": ("preferences", 8), "Feeding and settling": ("needs", 3), "Commute": ("strengths", 6)
     ]
 
     var body: some View {
@@ -116,7 +117,7 @@ struct ChoiceTiles: View {
                             .overlay(ChoiceArtwork(label: option, lifestyle: lifestyle))
                             .clipped()
                         HStack(alignment: .top) {
-                            Text(option).font(Theme.body(13, weight: .semibold)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                            Text(option).font(Theme.body(13, weight: .medium)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 4)
                             ZStack {
                                 Circle().fill(selected ? Theme.ink : Color.clear).frame(width: 22, height: 22).overlay(Circle().stroke(selected ? Theme.ink : Theme.border, lineWidth: 0.8))
@@ -127,8 +128,8 @@ struct ChoiceTiles: View {
                         .frame(minHeight: 56, alignment: .top)
                     }
                     .background(Color.white.opacity(0.5))
-                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(selected ? Theme.ink : Theme.border, lineWidth: selected ? 1.5 : 0.8))
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).stroke(selected ? Theme.ink : Theme.border, lineWidth: selected ? 1.5 : 0.8))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(option)
@@ -163,14 +164,14 @@ struct PinsOptions: View {
                 HStack {
                     Image(systemName: "plus.circle")
                     VStack(alignment: .leading) {
-                        Text("Something else").font(Theme.body(14, weight: .semibold))
+                        Text("Something else").font(Theme.body(14, weight: .medium))
                         Text(customValue.isEmpty ? "Tell us in your own words" : "Your answer is included").font(Theme.body(12)).foregroundStyle(Theme.muted)
                     }
                     Spacer()
                 }
                 .foregroundStyle(Theme.ink)
                 .padding(12)
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Theme.border, style: StrokeStyle(lineWidth: 1, dash: [4])))
+                .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).stroke(Theme.border, style: StrokeStyle(lineWidth: 1, dash: [4])))
             }
             .buttonStyle(.plain)
             if otherOpen {
@@ -181,7 +182,7 @@ struct PinsOptions: View {
                             let trimmed = answer.trimmingCharacters(in: .whitespaces)
                             values = values.filter { !$0.hasPrefix(Pins.customPrefix) && $0 != "Nothing to add" } + (trimmed.isEmpty ? [] : [Pins.customPrefix + String(answer.prefix(150))])
                         }
-                    Note("Your answer is saved with this category.")
+                    Note("Your answer is kept with this question.")
                 }
             }
         }
@@ -229,8 +230,8 @@ struct RemoteImage: View {
     }
 }
 
-/// `IdeaPhoto`: generated pictures for AI ideas are prepared with the batch and
-/// only read here; library ideas use bundled scenes.
+/// `IdeaPhoto`: AI ideas get a painting prepared with the batch, read here;
+/// library ideas always use the bundled watercolours.
 @MainActor
 final class IdeaPictureLoader: ObservableObject {
     @Published var credit: IdeaImageCredit?
@@ -267,9 +268,7 @@ struct IdeaPicture: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            if let image = idea.image {
-                SceneImage(name: image)
-            } else if let credit = loader.credit {
+            if idea.source == .ai, let credit = loader.credit {
                 RemoteImage(path: credit.image)
                 if let creator = credit.creator {
                     Text("\(creator) · \(credit.license ?? "")").font(Theme.body(10)).padding(6).background(.ultraThinMaterial).clipShape(Capsule()).padding(8)
@@ -278,7 +277,7 @@ struct IdeaPicture: View {
                 SceneImage(name: Discovery.cover(idea))
             }
         }
-        .onAppear { loader.prepare(idea: idea, api: store.api, enabled: store.cloud && store.isComplete) }
+        .onAppear { if idea.source == .ai { loader.prepare(idea: idea, api: store.api, enabled: store.cloud && store.isComplete) } }
     }
 }
 
@@ -287,7 +286,7 @@ struct IdeaTagsView: View {
     var body: some View {
         HStack(spacing: 6) {
             ForEach(idea.tagLabels, id: \.self) { tag in
-                Text(tag).font(Theme.body(11, weight: .semibold)).foregroundStyle(Theme.ink).padding(.horizontal, 8).padding(.vertical, 4).background(Theme.mist).clipShape(Capsule())
+                Badge(tag)
             }
         }
     }
@@ -341,7 +340,7 @@ struct LogoView: View {
         VStack(spacing: 2) {
             WavePath().stroke(LinearGradient(colors: [Theme.ink, Theme.accent, Theme.sky], startPoint: .leading, endPoint: .trailing), style: StrokeStyle(lineWidth: 2, lineCap: .round))
                 .frame(width: height * 2.4, height: height * 0.5)
-            Text("ENOUGH").font(.system(size: height * 0.55, weight: .regular)).kerning(height * 0.14).foregroundStyle(Theme.ink)
+            Text("ENOUGH").font(.system(size: height * 0.55, weight: .light, design: .serif)).kerning(height * 0.16).foregroundStyle(Theme.ink)
         }
         .accessibilityLabel("ENOUGH")
     }

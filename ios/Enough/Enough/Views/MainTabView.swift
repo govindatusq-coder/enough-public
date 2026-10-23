@@ -6,14 +6,15 @@ import UniformTypeIdentifiers
 struct MainTabView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var navigation: AppNavigation
+    @Environment(\.scenePhase) private var scenePhase
     @State private var clock = Date()
 
     var body: some View {
         TabView(selection: $navigation.tab) {
             tabPage(EnoughTabView(now: clock), title: "My Enough", icon: "house", tag: .enough)
             tabPage(MovesTabView(now: clock), title: "My Moves", icon: "figure.walk", tag: .moves)
-            tabPage(WinsTabView(now: clock), title: "My Wins", icon: "doc.text", tag: .wins)
-            tabPage(PinsTabView(), title: "My Pins", icon: "pin", tag: .pins)
+            tabPage(WinsTabView(now: clock), title: "My Wins", icon: "heart", tag: .wins)
+            tabPage(PinsTabView(now: clock), title: "My Pins", icon: "pin", tag: .pins)
         }
         .task {
             // Refresh "now" every 30 seconds for reminders, periods and greetings.
@@ -22,42 +23,53 @@ struct MainTabView: View {
                 clock = Date()
             }
         }
+        .onChange(of: scenePhase) { _, phase in
+            // Daily health readings never outlive the foreground session.
+            if phase == .background { store.movementSnapshot = nil }
+            if phase == .active { clock = Date() }
+        }
         .sheet(item: $navigation.sheet) { sheet in
             switch sheet {
             case .account(let pending): AccountSheet(pending: pending)
             case .help: HelpSheet()
             case .aiConsent: AIConsentSheet()
             case .setup: SetupFlowView()
-            case .signIn: SignInView()
+            case .signIn(let pending): SignInView(pending: pending)
             }
         }
     }
 
     private func tabPage<Content: View>(_ content: Content, title: String, icon: String, tag: AppNavigation.Tab) -> some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    StatusStrip()
-                    DueReminders(now: clock)
-                    content
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        StatusStrip()
+                        DueReminders(now: clock)
+                        content
+                    }
+                    .padding(.top, 4)
+                    .padding(.bottom, 48)
                 }
-                .padding(.top, 4)
-                .padding(.bottom, 48)
+                .onChange(of: navigation.scrollTarget) { _, target in
+                    guard let target, navigation.tab == tag else { return }
+                    navigation.scrollTarget = nil
+                    Task {
+                        try? await Task.sleep(nanoseconds: 350_000_000)
+                        withAnimation { proxy.scrollTo(target, anchor: .top) }
+                    }
+                }
             }
             .background(Theme.paper)
             .scrollDismissesKeyboard(.interactively)
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button { navigation.sheet = .help } label: { Image(systemName: "questionmark.circle") }.accessibilityLabel("How it works")
+                    Button { navigation.sheet = .help } label: { Image(systemName: "questionmark.circle") }.accessibilityLabel("How ENOUGH works")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { navigation.sheet = .account(pending: nil) } label: {
-                        HStack(spacing: 6) {
-                            Circle().fill(store.cloud ? Theme.accent : Theme.warm).frame(width: 8, height: 8)
-                            Text(store.cloud ? "My account" : "Account").font(Theme.body(13, weight: .semibold))
-                        }
-                    }
+                    Button { navigation.sheet = .account(pending: nil) } label: { Image(systemName: store.cloud ? "person.circle.fill" : "person.circle") }
+                        .accessibilityLabel(store.cloud ? "My account" : "Sign in")
                 }
             }
             .navigationBarTitleDisplayMode(.large)
@@ -67,7 +79,8 @@ struct MainTabView: View {
     }
 }
 
-/// Cloud status, storage errors and the transient journey notice.
+/// Cloud status, storage errors and the transient journey notice. Quiet when
+/// everything is saved.
 struct StatusStrip: View {
     @EnvironmentObject private var store: AppStore
 
@@ -76,19 +89,18 @@ struct StatusStrip: View {
             if !store.cloudError.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     AlertText(store.cloudError)
-                    HStack {
-                        ShareLink(item: ExportFile(data: store.exportData()), preview: SharePreview("ENOUGH profile backup")) { Text("Download current changes") }.buttonStyle(.text)
+                    HStack(spacing: 16) {
+                        ShareLink(item: ExportFile(data: store.exportData()), preview: SharePreview("ENOUGH backup")) { Text("Export my changes") }.buttonStyle(.text)
                         if store.cloudStatus == .conflict {
-                            Button("Load cloud version") { Task { await store.loadCloudVersion() } }.buttonStyle(.text)
+                            Button("Use the account version") { Task { await store.loadCloudVersion() } }.buttonStyle(.text)
                         } else {
                             Button("Try again") { Task { await store.retryCloud() } }.buttonStyle(.text)
                         }
                     }
                 }
                 .pageGutter()
-            }
-            if store.cloud {
-                Text(store.cloudStatus == .saved ? "Saved to your account" : (store.cloudStatus == .saving || store.cloudStatus == .waiting) ? "Saving your changes…" : "Changes haven’t been saved yet")
+            } else if store.cloud && store.cloudStatus != .saved {
+                Text(store.cloudStatus == .saving || store.cloudStatus == .waiting ? "Saving to your account…" : "Changes haven’t been saved yet")
                     .font(Theme.body(12)).foregroundStyle(Theme.muted).pageGutter()
             }
             if !store.storageError.isEmpty { AlertText(store.storageError).pageGutter() }
@@ -96,13 +108,14 @@ struct StatusStrip: View {
                 HStack(alignment: .top) {
                     Text(store.notice).font(Theme.body(14)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
                     Spacer()
-                    Button { store.notice = "" } label: { Image(systemName: "xmark").font(.system(size: 12, weight: .bold)) }.foregroundStyle(Theme.muted).accessibilityLabel("Dismiss notice")
+                    Button { store.notice = "" } label: { Image(systemName: "xmark").font(.system(size: 12, weight: .bold)) }
+                        .buttonStyle(.plain).foregroundStyle(Theme.muted).tapTarget().accessibilityLabel("Dismiss")
                 }
-                .padding(12).background(Theme.mist).clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous)).pageGutter()
+                .padding(.leading, 14).padding(.vertical, 6).padding(.trailing, 4)
+                .background(Theme.mist).clipShape(RoundedRectangle(cornerRadius: Theme.Radius.field, style: .continuous)).pageGutter()
                 .transition(.opacity)
             }
         }
-        .padding(.top, 8)
     }
 }
 
@@ -114,11 +127,11 @@ struct DueReminders: View {
     var body: some View {
         ForEach(store.dueReminders(now: now)) { entry in
             VStack(alignment: .leading, spacing: 8) {
-                Eyebrow("Your requested reminder")
-                Text(store.state.idea(entry.ideaId).title).font(Theme.body(16, weight: .semibold)).foregroundStyle(Theme.ink)
+                Eyebrow("A reminder you asked for")
+                Text(store.state.idea(entry.ideaId).title).font(Theme.display(22)).foregroundStyle(Theme.ink)
                 Note("Only if it still fits your day.")
-                HStack {
-                    Button("View plan") { navigation.openSupport(entry.id) }.buttonStyle(.secondary)
+                Button("See my plan") { navigation.openSupport(entry.id) }.buttonStyle(.secondary)
+                HStack(spacing: 16) {
                     Button("In 15 minutes") { store.snoozeReminder(entryId: entry.id) }.buttonStyle(.text)
                     Button("Dismiss") { store.dismissReminder(entryId: entry.id) }.buttonStyle(.text)
                 }
@@ -132,7 +145,7 @@ struct DueReminders: View {
 struct ExportFile: Transferable {
     let data: Data
     static var transferRepresentation: some TransferRepresentation {
-        DataRepresentation(exportedContentType: .json) { $0.data }.suggestedFileName("enough-profile-backup.json")
+        DataRepresentation(exportedContentType: .json) { $0.data }.suggestedFileName("enough-backup.json")
     }
 }
 

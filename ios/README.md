@@ -1,15 +1,16 @@
 # ENOUGH for iPhone
 
-A native SwiftUI app built from the ENOUGH website in this repository. It keeps the same journey (Welcome → PINS and routines → My Moves → support plan → confirm → My Wins), the same copy, the same idea library and matching rules, and the same account format, so a profile saved from the website opens in the app and vice versa.
+A native SwiftUI app built from the ENOUGH website in this repository. It keeps the same journey (Welcome → a few answers about your life → My Moves → support plan → confirm → My Wins), the same idea library and matching rules, and the same account format, so a profile saved from the website opens in the app and vice versa. The look is the app's own: watercolour paintings, thin glass over paper, a light serif for headings.
 
 The app opens with a three-card onboarding and then the tabs (the website's long landing page is not reproduced). The earlier `native/` folder is a Capacitor shell that loads the website remotely; Capacitor documents that architecture as a live-reload feature, not a production one. This app replaces it with bundled native screens. The shell is kept for reference and is not needed to build this app.
 
 ## What is in the app
 
 - **Welcome**: the landing page, with the four example ideas and the "how it thinks" steps.
-- **My Enough**: greeting, featured free idea, today's opportunities, PINS readiness ring, today's progress, your life lately (private photos when signed in), what Enough has given back, your week with the optional weekly review, saved ideas, learning, "anything different today?", surprise me, ideas near you, and **Your movement today** backed by Apple Health (read-only steps and exercise time, your own chosen "enough").
-- **My Moves**: Explore (search, filters, collections, favourites, nearby, surprise me, **More suggestions** from OpenAI through the website's API), Saved and Planned. Planned moves offer **How did it go?**, the six-page support plan, Not today, the optional Health movement check and QR or typed companion check-ins.
-- **My Wins**: real returns by period and currency, moments and private photos (upload, swipe, delete), month calendar, milestones, made room for more, top moments, what Enough has learned, activity history with corrections, and the detailed receipt.
+- **My Enough**: a calm home. A greeting, one idea for today with its money-kept and time figures, "How's today feeling?" (fresh air, indoors, surprise me, and a note for today), and your week at your pace. Nothing to catch up on.
+- **My Moves**: Explore (search, a few ways in, more filters, collections, surprise me, **More ideas, made for me** from OpenAI through the website's API, each with a painted picture), Saved and Planned. Every idea shows one definite money-kept figure and a time figure, with ⓘ opening the workings. Planned moves offer **How did it go?**, the six-page support plan (a direction or a clear target, a place in your day, barriers, preparation, reminders, company), Not today, the optional Health check and QR or typed companion check-ins.
+- **My Wins**: your week, real returns by period and currency, moments with private photos (upload, swipe, delete), every moment with corrections, and the optional weekly review.
+- **My Pins**: your answers, life routines, familiar settings, country and currency, **Apple Health** (read-only steps and exercise minutes, your own chosen "enough"), AI and privacy, what ENOUGH is learning, account, export, reset and delete.
 - **My Pins**: the profile, the eight-step setup, AI and privacy choice, country and currency, reset or delete, account and backup, and the privacy notice.
 
 Idea matching (`Logic/Recommendations.swift`), discovery filters, wins and dashboard maths are line-by-line ports of `lib/recommendations.ts`, `lib/discovery.ts`, `lib/moves.ts`, `lib/wins.ts` and `lib/dashboard.ts`. The 59-idea library is ported from `lib/ideas.ts` and `lib/sitting-break-ideas.ts` with the same IDs.
@@ -42,5 +43,5 @@ The project uses Xcode's synchronised folders, so new files under `Enough/` and 
 ## Known limits and release notes
 
 - This app was written and reviewed without an Xcode build in the authoring environment. Expect to fix small compile or layout issues on the first build; the logic has unit tests and the website's own tests cover the fixture format.
-- Not yet in the app: Google or Apple sign-in, password update (use the website link from the recovery email), the live motion sensor demo from the web, and Android. Health Connect is not applicable.
+- Google and Apple sign-in use Supabase's hosted flow in a system web sheet and return on the `app.enough.movement://auth-callback` URL, which must be listed under Redirect URLs in the Supabase project. Not yet in the app: password update (use the website link from the recovery email), the live motion sensor demo from the web, and Android. Health Connect is not applicable.
 - Follow `docs/native-app-store-readiness.md` before any store submission: device permission cases, privacy declarations for Health and OpenAI processing, reviewer accounts, and the legal review of the privacy notice.

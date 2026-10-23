@@ -72,6 +72,12 @@ final class EnoughAPI {
 
     private struct ErrorBody: Decodable { var error: String?; var consentRequired: Bool? }
 
+    /// Strict percent-encoding for a query value: `+`, `&` and `=` are escaped
+    /// too, so an ISO timestamp with a `+00:00` offset survives the round trip.
+    static func queryValue(_ value: String) -> String? {
+        value.addingPercentEncoding(withAllowedCharacters: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._~")))
+    }
+
     private func request(_ path: String, method: String = "GET", body: Data? = nil, contentType: String? = nil, timeout: TimeInterval = 60) async throws -> (Data, HTTPURLResponse) {
         let token = try await auth.accessToken()
         var request = URLRequest(url: URL(string: path, relativeTo: origin)!.absoluteURL)
@@ -131,7 +137,7 @@ final class EnoughAPI {
 
     func history(before: String?) async throws -> HistoryPage {
         var path = "/api/ideas/history"
-        if let before, let encoded = before.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) { path += "?before=\(encoded)" }
+        if let before, let encoded = EnoughAPI.queryValue(before) { path += "?before=\(encoded)" }
         let (data, http) = try await request(path)
         guard http.statusCode == 200 else { throw failure(data, http, fallback: "Earlier suggestions could not be loaded.") }
         return try JSONDecoder().decode(HistoryPage.self, from: data)
@@ -171,7 +177,7 @@ final class EnoughAPI {
     }
 
     func photoData(id: String) async throws -> Data {
-        try await imageData("/api/photos?id=\(id.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? id)")
+        try await imageData("/api/photos?id=\(EnoughAPI.queryValue(id) ?? id)")
     }
 
     func uploadPhoto(entryId: String, caption: String, jpeg: Data) async throws -> ActivityPhoto {

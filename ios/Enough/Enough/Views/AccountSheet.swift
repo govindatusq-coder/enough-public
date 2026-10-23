@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The account modal: sign in, keep or replace the local profile, export,
-/// sign out and delete.
+/// The account sheet: sign in, keep or replace what is on this device,
+/// export, sign out and delete.
 struct AccountSheet: View {
     let pending: AppNavigation.PendingAction?
     @EnvironmentObject private var store: AppStore
@@ -15,49 +15,40 @@ struct AccountSheet: View {
     private var title: String {
         switch pending {
         case .save: return "Sign in to save this idea"
-        case .accept: return "Sign in to accept this idea"
-        case nil: return "Keep what works for you."
+        case .accept: return "Sign in to keep this plan"
+        case nil: return store.cloud ? "Your account" : "Keep what works for you."
         }
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Eyebrow("ENOUGH")
-                    Text(title).font(Theme.display(30)).foregroundStyle(Theme.ink)
-                    Text(store.cloud ? "Your ENOUGH profile and progress are kept with your signed-in ENOUGH account." : "Sign in to ENOUGH to keep your profile, saved moves and progress across devices.").font(Theme.body(15)).foregroundStyle(Theme.muted)
-                    if auth.isSignedIn {
-                        Text("Signed in as \(store.accountEmail ?? auth.email)").font(Theme.body(14, weight: .semibold)).foregroundStyle(Theme.ink)
-                        if store.cloud { signedInCloud } else { attachChoices }
-                    } else {
-                        Button("Sign in to ENOUGH") { navigation.sheet = .signIn }.buttonStyle(.primary)
-                        Note("Your setup stays on this device during sign-in. You can choose to import it afterwards.")
-                    }
-                    AlertText(store.cloudError)
-                    Button(store.cloud ? "Close" : "Keep browsing") { dismiss() }.buttonStyle(.text)
-                }
-                .padding(16)
+        SheetFrame(title: title, kicker: "Account", doneLabel: store.cloud ? "Done" : "Not now") {
+            Text(store.cloud ? "Your answers, plans and moments are kept in your account and follow you between devices." : "Sign in to keep your answers, saved ideas and moments, on this phone and on the website.").font(Theme.body(15)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+            if auth.isSignedIn {
+                Text("Signed in as \(store.accountEmail ?? auth.email)").font(Theme.body(14, weight: .medium)).foregroundStyle(Theme.ink)
+                if store.cloud { signedInCloud } else { attachChoices }
+            } else {
+                Button("Sign in") { navigation.sheet = .signIn(pending: pending) }.buttonStyle(.primary)
+                Note("What is on this phone stays here while you sign in. You choose afterwards whether to keep it.")
             }
-            .background(Theme.paper)
-            .sheet(isPresented: $showPrivacy) { PrivacyView() }
-            .confirmationDialog("Delete your ENOUGH data?", isPresented: $confirmDelete, titleVisibility: .visible) {
-                Button("Delete my ENOUGH cloud data", role: .destructive) {
-                    Task { if await store.deleteCloudData() { dismiss(); navigation.go(.enough) } }
-                }
-                Button("Keep my data", role: .cancel) {}
-            } message: {
-                Text("This permanently removes your ENOUGH profile, saved moves, support plans, photos, check-ins and outcomes from cloud storage. It does not delete your sign-in account.")
+            AlertText(store.cloudError)
+        }
+        .sheet(isPresented: $showPrivacy) { PrivacyView() }
+        .confirmationDialog("Delete your ENOUGH data?", isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("Delete my ENOUGH data", role: .destructive) {
+                Task { if await store.deleteCloudData() { dismiss(); navigation.go(.enough) } }
             }
+            Button("Keep my data", role: .cancel) {}
+        } message: {
+            Text("This permanently removes your answers, saved ideas, plans, photos, check-ins and moments from your account. It does not delete your sign-in itself.")
         }
     }
 
     private var signedInCloud: some View {
         VStack(alignment: .leading, spacing: 10) {
-            ShareLink(item: ExportFile(data: store.exportData()), preview: SharePreview("ENOUGH profile backup")) { Text("Download my ENOUGH data") }.buttonStyle(.secondary)
-            Note("This exports your profile, plans, check-ins and outcomes. Save photo files separately from the gallery.")
-            Button("Sign out of ENOUGH") {
-                if store.cloudStatus != .saved { store.notice = "Wait for your changes to save, or download them before signing out." }
+            ShareLink(item: ExportFile(data: store.exportData()), preview: SharePreview("ENOUGH backup")) { Text("Export my data") }.buttonStyle(.secondary)
+            Note("A file with your answers, plans, check-ins and moments. Photos are kept separately in My Wins.")
+            Button("Sign out") {
+                if store.cloudStatus != .saved { store.notice = "Wait for your changes to save, or export them, before signing out." }
                 else { Task { await store.signOut(); dismiss() } }
             }
             .buttonStyle(.text)
@@ -67,10 +58,10 @@ struct AccountSheet: View {
 
     private var attachChoices: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Note("Choose whether to bring the profile and local-demo outcomes from this device into your account. They stay self-reported; no activity has been sensor-verified.")
+            Note("Bring what is on this phone into your account, or start again. Everything stays as you reported it.")
             CollectionNotice(cloud: true, showPrivacy: $showPrivacy)
-            Button("Keep my current profile & progress") { Task { await attach(importLocal: true) } }.buttonStyle(.primary).disabled(working)
-            Button("Start with a new profile") { Task { await attach(importLocal: false) } }.buttonStyle(.secondary).disabled(working)
+            Button("Keep what’s on this phone") { Task { await attach(importLocal: true) } }.buttonStyle(.primary).disabled(working)
+            Button("Start fresh") { Task { await attach(importLocal: false) } }.buttonStyle(.secondary).disabled(working)
             if working { ProgressView() }
         }
     }
@@ -81,7 +72,7 @@ struct AccountSheet: View {
         guard await store.attach(importLocal: importLocal) else { return }
         dismiss()
         if importLocal {
-            store.notice = "Your profile and progress are now backed up."
+            store.notice = "Your ENOUGH is now kept in your account."
             switch pending {
             case .save(let id): store.save(id)
             case .accept(let id):
@@ -89,38 +80,30 @@ struct AccountSheet: View {
             case nil: break
             }
         } else {
-            store.notice = "Your ENOUGH account is ready. Complete your setup to explore."
+            store.notice = "Your account is ready. Answer a few questions to begin."
         }
     }
 }
 
-/// "A little help getting started" (the help modal).
+/// "How ENOUGH works" (the help sheet).
 struct HelpSheet: View {
     @EnvironmentObject private var navigation: AppNavigation
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Eyebrow("ENOUGH")
-                    Text("A little help getting started").font(Theme.display(30)).foregroundStyle(Theme.ink)
-                    Text("Explore freely. Complete your PINS and routines before personalised ideas. Save or accept an idea when something fits your day.").font(Theme.body(15)).foregroundStyle(Theme.muted)
-                    step("Choose an experience", "Browse My Moves by swiping or tapping Previous and Next. Optional name and visual questions can be skipped.")
-                    step("Make it easier", "After accepting, choose an open or SMART goal, prepare for barriers, add a reminder, or plan to meet someone. All support options are optional.")
-                    step("Keep what it gave you", "Use How did it go? to confirm the outcome. Add a photo or meeting check-in in My Wins. Money counts only after you confirm it.")
-                    Note("Free while we test usefulness. Email sign-in is available. Health access is optional. Browsing has no daily limit.")
-                    Button("Explore My Moves") { dismiss(); navigation.go(.moves, moves: .explore) }.buttonStyle(.primary)
-                }
-                .padding(16)
-            }
-            .background(Theme.paper)
+        SheetFrame(title: "How ENOUGH works", kicker: "A little help") {
+            Text("Movement already lives in your day: the call, the dinner you collect, the stairs you walk past. ENOUGH points it out and keeps score of nothing.").font(Theme.body(15)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+            step("Tell ENOUGH about your life", "A few answers in My Pins: what you enjoy, what you need to work around, what already happens in your week. Ideas are shaped around them.")
+            step("Choose an idea, or don’t", "Browse My Moves. Every idea shows the money kept and the time it takes; tap ⓘ for the workings. “Sounds good” puts it in Planned, where a little support is optional: a direction or a clear target, a moment in your day, a reminder, someone to go with.")
+            step("Say what happened", "Afterwards, “How did it go?” keeps the moment in My Wins, with a photo if you like. Money counts only once you confirm it.")
+            Note("Free while we learn what is useful. Browsing has no limit, and nothing happens unless you choose it.")
+            Button("Explore My Moves") { dismiss(); navigation.go(.moves, moves: .explore) }.buttonStyle(.primary)
         }
     }
 
     private func step(_ title: String, _ text: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(Theme.body(15, weight: .semibold)).foregroundStyle(Theme.ink)
+            Text(title).font(Theme.body(15, weight: .medium)).foregroundStyle(Theme.ink)
             Text(text).font(Theme.body(14)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -133,40 +116,30 @@ struct AIConsentSheet: View {
     @State private var showPrivacy = false
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 14) {
-                    Eyebrow("ENOUGH")
-                    Text("Choose how AI helps").font(Theme.display(30)).foregroundStyle(Theme.ink)
-                    Text("Your library stays available whichever option you choose. No option is pre-selected.").font(Theme.body(15)).foregroundStyle(Theme.muted)
-                    Text("OpenAI prepares fresh ideas and illustrative pictures when you request suggestions. It processes information in the United States.").font(Theme.body(14)).foregroundStyle(Theme.ink)
-                    Text("With your permission, we send your PINS, routines and activity feedback. Needs can include health information, such as pain, fatigue or recovery. For pictures, we send the suggested activity and its scene details.").font(Theme.body(14)).foregroundStyle(Theme.ink)
-                    Text("Your name, uploaded photos, companion records and visual preferences are not sent. Avoid identifying details in written answers.").font(Theme.body(14)).foregroundStyle(Theme.ink)
-                    ForEach(AIConsentChoice.allCases, id: \.self) { choice in
-                        Button {
-                            store.chooseAIConsent(choice)
-                            dismiss()
-                        } label: {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(choice.label).font(Theme.body(15, weight: .semibold)).foregroundStyle(Theme.ink)
-                                Text(choice.detail).font(Theme.body(13)).foregroundStyle(Theme.muted).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(14)
-                            .background(Color.white)
-                            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Theme.border))
-                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(store.aiBusy)
+        SheetFrame(title: "Choose how AI helps", kicker: "AI and privacy", doneLabel: "Not now") {
+            Text("The library is always there, whatever you choose. Nothing is chosen for you.").font(Theme.body(15)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+            Text("When you ask for more ideas, OpenAI writes them and paints their pictures. It processes the request in the United States.").font(Theme.body(14)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+            Text("With your permission ENOUGH sends your answers, routines and what you said after moves. Needs can include health details such as pain, tiredness or recovery. For pictures it sends the idea and its scene.").font(Theme.body(14)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+            Text("Your name, photos, companions and familiar settings are never sent. Keep identifying details out of written answers.").font(Theme.body(14)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+            ForEach(AIConsentChoice.allCases, id: \.self) { choice in
+                Button {
+                    store.chooseAIConsent(choice)
+                    dismiss()
+                } label: {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(choice.label).font(Theme.body(15, weight: .medium)).foregroundStyle(Theme.ink)
+                        Text(choice.detail).font(Theme.body(13)).foregroundStyle(Theme.muted).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                     }
-                    Note("The reduced option may return fewer ideas. It does not generate missing pictures for older ideas, which may contain earlier health context. You can change your choice in My Pins → AI and privacy. Changing it stops future requests; it cannot recall information already sent.")
-                    Button("Read the draft privacy notice") { showPrivacy = true }.buttonStyle(.text)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .cardSurface()
                 }
-                .padding(16)
+                .buttonStyle(.plain)
+                .disabled(store.aiBusy)
             }
-            .background(Theme.paper)
-            .sheet(isPresented: $showPrivacy) { PrivacyView() }
+            Note("The reduced option may bring fewer ideas and does not paint pictures for older ideas. Change your choice any time under AI and privacy in My Pins; it stops future requests but cannot recall what was already sent.")
+            Button("Read the privacy notice") { showPrivacy = true }.buttonStyle(.text)
         }
+        .sheet(isPresented: $showPrivacy) { PrivacyView() }
     }
 }

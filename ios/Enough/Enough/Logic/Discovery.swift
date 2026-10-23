@@ -1,19 +1,14 @@
 import Foundation
 
 /// Mirrors `lib/discovery.ts` and `lib/moves.ts`. Every control only narrows
-/// the already eligible feed; nothing here can broaden PINS boundaries.
+/// the already eligible feed; nothing here can broaden the user's needs.
 enum DiscoveryFilter: String, CaseIterable, Identifiable {
-    case forYou = "For you", free = "Free", quickWins = "Quick wins", lowEnergy = "Low energy", outside = "Outside", withFamily = "With family", saveMoney = "Save money"
-    var id: String { rawValue }
-}
-
-enum DashboardFilter: String, CaseIterable, Identifiable {
-    case forYou = "For you", nearby = "Nearby", saveMoney = "Save money", withFamily = "With family", quickWins = "Quick wins", lowEnergy = "Low energy", surpriseMe = "Surprise me"
+    case forYou = "For you", free = "No cost", quickWins = "Quick wins", lowEnergy = "Low energy", outside = "Outside", withFamily = "With family"
     var id: String { rawValue }
 }
 
 enum MoveFilter: String, CaseIterable, Identifiable {
-    case forYou = "For you", nearMe = "Near me", free = "Free", saveMoney = "Save money", withFamily = "With family", nature = "Nature", quickWins = "Quick wins", lowEnergy = "Low energy", breaksUpSitting = "Breaks up sitting", strength = "Strength", briskBurst = "Brisk burst", surpriseMe = "Surprise me"
+    case forYou = "For you", free = "No cost", quickWins = "Quick wins", lowEnergy = "Low energy", outside = "Outside", withFamily = "With family", nature = "Nature", breaksUpSitting = "Breaks up sitting", strength = "Strength", briskBurst = "Brisk burst", surpriseMe = "Surprise me"
     var id: String { rawValue }
 }
 
@@ -38,8 +33,7 @@ struct MoveOptions: Equatable {
 struct MoveCollection: Identifiable {
     let key: String
     let title: String
-    let art: String
-    let image: String?
+    let image: String
     let ideas: [Idea]
     let reason: String
     let personal: Bool
@@ -47,6 +41,7 @@ struct MoveCollection: Identifiable {
 }
 
 enum Discovery {
+    /// Library ideas that need nothing bought: no fee, ticket or purchase.
     private static let freeKeys: Set<String> = [
         "call-family-walk", "call-pace-indoors", "call-friend-loop", "call-work-standing", "podcast-outside", "music-album-walk", "audiobook-chores", "problem-walk",
         "plan-week-walk", "decompress-walk", "playground-laps", "after-dinner-stroll", "video-call-overseas", "kids-garden-play", "laundry-stairs", "garden-podcast",
@@ -70,29 +65,18 @@ enum Discovery {
             case .lowEnergy: return i.effort == .gentle && i.minutes <= 15
             case .outside: return i.outdoor
             case .withFamily: return i.category == .family
-            case .saveMoney: return (Recommendations.moneyValue(i, state)?.cents ?? 0) > 0
             case .forYou: return true
             }
         }
     }
 
-    /// Free ideas for the home dashboard, one category first for variety.
-    static func dashboardIdeas(_ ideas: [Idea], filter: DashboardFilter, state: AppState, query: String, maxMinutes: Int, setting: Setting, gentle: Bool) -> [Idea] {
-        let selected: DiscoveryFilter = {
-            switch filter {
-            case .nearby, .surpriseMe, .forYou: return .forYou
-            case .saveMoney: return .saveMoney
-            case .withFamily: return .withFamily
-            case .quickWins: return .quickWins
-            case .lowEnergy: return .lowEnergy
-            }
-        }()
-        let pool = filterIdeas(ideas.filter(isFreeMove), filter: selected, query: query, state: state).filter { i in
-            (maxMinutes == 0 || i.minutes <= maxMinutes) && (setting == .any || i.outdoor == (setting == .outside)) && (!gentle || i.effort == .gentle)
-        }
+    /// Ideas for the home card: no-cost ideas first, one per category for variety.
+    static func homeIdeas(_ ideas: [Idea], state: AppState, setting: Setting) -> [Idea] {
+        let pool = filterIdeas(ideas, filter: .forYou, query: "", state: state).filter { setting == .any || $0.outdoor == (setting == .outside) }
+        let free = pool.filter(isFreeMove), rest = pool.filter { !isFreeMove($0) }
         var seen = Set<IdeaCategory>()
-        let varied = pool.filter { seen.insert($0.category).inserted }
-        return varied + pool.filter { v in !varied.contains { $0.id == v.id } }
+        let varied = (free + rest).filter { seen.insert($0.category).inserted }
+        return varied + (free + rest).filter { v in !varied.contains { $0.id == v.id } }
     }
 
     static func surpriseIdeaId(_ ideas: [Idea], currentId: Int?) -> Int? {
@@ -104,11 +88,11 @@ enum Discovery {
         let base: DiscoveryFilter = {
             switch filter {
             case .breaksUpSitting, .strength, .briskBurst, .nature, .forYou: return .forYou
-            case .nearMe, .surpriseMe, .free: return .free
-            case .saveMoney: return .saveMoney
+            case .surpriseMe, .free: return .free
             case .withFamily: return .withFamily
             case .quickWins: return .quickWins
             case .lowEnergy: return .lowEnergy
+            case .outside: return .outside
             }
         }()
         let natureTags = ["Nature", "Exploring", "Gardening", "Photography", "Animals"]
@@ -123,7 +107,6 @@ enum Discovery {
             (filter != .breaksUpSitting || i.breaksSitting) &&
             (filter != .strength || i.intensity == .strength) &&
             (filter != .briskBurst || i.intensity == .vigorousBurst) &&
-            (filter != .nearMe || i.outdoor) &&
             (filter != .nature || (i.outdoor && i.enjoy.contains { natureTags.contains($0) }))
         }
     }
@@ -133,15 +116,15 @@ enum Discovery {
         return (rows.count, rows.filter { $0.worthwhile == true }.count)
     }
 
-    private struct Topic { let key: String; let title: String; let art: String; let image: String?; let interests: [String]; let matches: (Idea) -> Bool }
+    private struct Topic { let key: String; let title: String; let image: String; let interests: [String]; let matches: (Idea) -> Bool }
     private static let topics: [Topic] = [
-        Topic(key: "break-the-sit", title: "Break the sit", art: "Short bursts", image: nil, interests: [], matches: { $0.breaksSitting && $0.minutes >= 1 && $0.minutes <= 3 }),
-        Topic(key: "outside", title: "A little fresh air", art: "Outside", image: "welcome-coast", interests: ["Nature", "Exploring new places", "Gardening", "Photography", "Animals"], matches: { $0.outdoor && isFreeMove($0) }),
-        Topic(key: "listen", title: "Listen and move", art: "Podcasts", image: "welcome-podcast", interests: ["Podcasts", "Music", "Audiobooks", "Listening to something", "Reading"], matches: { $0.category == .listen }),
-        Topic(key: "family", title: "With the family", art: "Family time", image: "welcome-school", interests: ["Family time", "Family"], matches: { $0.category == .family }),
-        Topic(key: "calls", title: "Catch-ups and conversations", art: "Calls", image: "welcome-catchup-walk", interests: ["Friends / talking", "Friends", "Conversation"], matches: { $0.category == .call || $0.social }),
-        Topic(key: "tasks", title: "Everyday tasks", art: "Household tasks", image: nil, interests: ["Making things", "Solving problems", "Gardening"], matches: { [.chores, .work, .errand, .shopping].contains($0.category) }),
-        Topic(key: "pauses", title: "Useful little pauses", art: "Short bursts", image: "welcome-ad-break-strength", interests: ["Solving problems"], matches: { $0.category == .waiting || $0.category == .think || ($0.category == .work && $0.minutes <= 10) })
+        Topic(key: "break-the-sit", title: "Break the sit", image: "welcome-ad-break-strength", interests: [], matches: { $0.breaksSitting && $0.minutes >= 1 && $0.minutes <= 3 }),
+        Topic(key: "outside", title: "A little fresh air", image: "welcome-coast", interests: ["Nature", "Exploring new places", "Gardening", "Photography", "Animals"], matches: { $0.outdoor && isFreeMove($0) }),
+        Topic(key: "listen", title: "Listen and move", image: "welcome-podcast", interests: ["Podcasts", "Music", "Audiobooks", "Listening to something", "Reading"], matches: { $0.category == .listen }),
+        Topic(key: "family", title: "With the family", image: "welcome-school", interests: ["Family time", "Family"], matches: { $0.category == .family }),
+        Topic(key: "calls", title: "Catch-ups and conversations", image: "welcome-catchup-walk", interests: ["Friends / talking", "Friends", "Conversation"], matches: { $0.category == .call || $0.social }),
+        Topic(key: "tasks", title: "Everyday tasks", image: "welcome-kitchen-dance", interests: ["Making things", "Solving problems", "Gardening"], matches: { [.chores, .work, .errand, .shopping].contains($0.category) }),
+        Topic(key: "pauses", title: "Useful little pauses", image: "welcome-refill-stairs", interests: ["Solving problems"], matches: { $0.category == .waiting || $0.category == .think || ($0.category == .work && $0.minutes <= 10) })
     ]
 
     static func collections(_ ideas: [Idea], state: AppState, now: Date = Date()) -> [MoveCollection] {
@@ -152,14 +135,9 @@ enum Discovery {
             let pin = personal ? state.profile.interests.first { topic.interests.contains($0) } : nil
             let tried = matches.contains { liked.contains($0.id) }
             let preferred = personal && topic.key == "outside" && state.profile.preferences.contains("Outside")
-            let reason = pin.map { "You chose \($0.lowercased())." } ?? (tried ? "Includes an idea you found worthwhile." : preferred ? "You prefer being outside." : "A collection to explore.")
-            return MoveCollection(key: topic.key, title: topic.title, art: topic.art, image: topic.image, ideas: matches, reason: reason, personal: pin != nil || tried || preferred)
+            let reason = pin.map { "You chose \($0.lowercased())." } ?? (tried ? "Includes one you found worthwhile." : preferred ? "You prefer being outside." : "A collection to explore.")
+            return MoveCollection(key: topic.key, title: topic.title, image: topic.image, ideas: matches, reason: reason, personal: pin != nil || tried || preferred)
         }.filter { !$0.ideas.isEmpty }.sorted { $0.personal && !$1.personal }
-    }
-
-    static func favouriteCollections(_ ideas: [Idea], state: AppState) -> [MoveCollection] {
-        let saved = Set(state.saved)
-        return topics.map { t in MoveCollection(key: t.key, title: t.title, art: t.art, image: t.image, ideas: ideas.filter { saved.contains($0.id) && t.matches($0) }, reason: "", personal: false) }.filter { !$0.ideas.isEmpty }
     }
 
     /// The painting for an idea. Every library idea maps to one of the bundled
@@ -183,31 +161,11 @@ enum Discovery {
         }
     }
 
-    /// `moveVisual()`: known scenes only; other ideas use a relevant illustration.
-    static func visual(_ idea: Idea) -> (image: String?, art: String) {
-        if let image = idea.image { return (image, "Outside") }
-        if idea.movementMode == "seated" || idea.movementMode == "stretch" { return (nil, "Physical comfort / accessibility") }
-        if idea.movementMode == "cycle" { return (nil, "Cycling") }
-        if idea.movementMode == "stairs" { return ("welcome-refill-stairs", "Short bursts") }
-        if idea.key == "video-call-overseas" { return (nil, "Video call") }
-        if idea.key == "kids-garden-play" { return (nil, "Active play") }
-        if idea.key == "garden-podcast" { return (nil, "Garden + Podcast") }
-        if idea.category == .call { return idea.outdoor ? ("welcome-catchup-walk", "Calls") : (nil, "Calls") }
-        if idea.category == .listen { return (nil, idea.key.contains("music") ? "Music" : idea.key.contains("audiobook") ? "Audiobooks" : "Podcasts") }
-        if idea.category == .family { return idea.outdoor ? ("welcome-school", "Family time") : (nil, "Family time") }
-        if idea.category == .chores { return (nil, "Household tasks") }
-        if idea.key.contains("photo") { return (nil, "Photography") }
-        if idea.key.contains("dog") { return (nil, "Animals") }
-        if idea.category == .coffee { return (nil, "Coffee") }
-        if idea.outdoor { return ("welcome-coast", "Outside") }
-        return (nil, idea.category == .work ? "Work or study" : idea.category == .shopping ? "Groceries" : "Short bursts")
-    }
-
-    static func placeSearchURL(query: String, locality: String) -> URL? {
-        let place = locality.trimmingCharacters(in: .whitespaces)
-        guard !place.isEmpty else { return nil }
-        var components = URLComponents(string: "https://www.google.com/maps/search/")!
-        components.queryItems = [URLQueryItem(name: "api", value: "1"), URLQueryItem(name: "query", value: "\(query) in \(place)")]
+    /// An Apple Maps search for a place the user typed.
+    static func mapsURL(_ place: String) -> URL? {
+        let trimmed = place.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, var components = URLComponents(string: "maps://") else { return nil }
+        components.queryItems = [URLQueryItem(name: "q", value: trimmed)]
         return components.url
     }
 }

@@ -30,11 +30,11 @@ struct PrivacyView: View {
             "No selling of profile data or advertising integration is implemented in this prototype."
         ]),
         ("Access, correction and export", [
-            "Edit your profile in My Pins. Correct outcomes in My Wins. Open My account → Download my ENOUGH data for a JSON export of your current profile, consent choice, plans, check-ins and outcomes. Save original photo files separately from the gallery."
+            "Edit your answers in My Pins. Correct outcomes in My Wins. Open Account → Export my data for a JSON file with your current answers, consent choice, plans, check-ins and outcomes. Save original photo files separately from the gallery."
         ]),
         ("Deletion and retention", [
-            "My Pins or My account → Delete my ENOUGH data removes your cloud profile, plans, outcomes, suggestion archive and stored photos, including cached AI pictures. This does not delete the separate Supabase sign-in identity or recall requests already processed by OpenAI.",
-            "Reset this device’s preview clears the local preview. A fixed retention schedule, backup removal process and account-identity deletion route must be confirmed during legal review."
+            "My Pins or Account → Delete my ENOUGH data removes your cloud profile, plans, outcomes, suggestion archive and stored photos, including cached AI pictures. This does not delete the separate Supabase sign-in identity or recall requests already processed by OpenAI.",
+            "Reset this device clears what is kept on this phone. A fixed retention schedule, backup removal process and account-identity deletion route must be confirmed during legal review."
         ]),
         ("Questions and complaints", [
             "For the current prototype, contact the person who provided access to request access, correction or deletion, or to raise a privacy concern. Do not post health information, photos or account exports in a public issue tracker.",
