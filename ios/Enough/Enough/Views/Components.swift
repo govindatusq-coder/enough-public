@@ -4,6 +4,19 @@ import UIKit
 /// Bundled WebP scenes from the website's `public/images` folder.
 enum BundledImages {
     private static var cache: [String: UIImage] = [:]
+    /// A watercolour illustration dropped into `Resources/Illustrations`.
+    static func illustration(_ name: String) -> UIImage? {
+        let key = "illustration:" + name
+        if let cached = cache[key] { return cached }
+        for ext in ["webp", "png", "jpg"] {
+            if let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "Illustrations") ?? Bundle.main.url(forResource: name + "-illustration", withExtension: ext), let image = UIImage(contentsOfFile: url.path) {
+                cache[key] = image
+                return image
+            }
+        }
+        return nil
+    }
+
     static func image(_ name: String) -> UIImage? {
         if let cached = cache[name] { return cached }
         guard let url = Bundle.main.url(forResource: name, withExtension: "webp") ?? Bundle.main.url(forResource: name, withExtension: "webp", subdirectory: "Images"), let image = UIImage(contentsOfFile: url.path) else { return nil }
@@ -12,16 +25,24 @@ enum BundledImages {
     }
 }
 
-/// Fills whatever frame it is given without ever widening its container.
+/// An illustration slot. It shows `Resources/Illustrations/<name>.webp` (a
+/// watercolour painting) when that file exists; until then the matching
+/// photograph is softened into a wash so the app reads as one quiet whole.
+/// It fills whatever frame it is given without ever widening its container.
 struct SceneImage: View {
     let name: String
     var body: some View {
         Color.clear
             .overlay {
-                if let image = BundledImages.image(name) {
+                if let painting = BundledImages.illustration(name) {
+                    Image(uiImage: painting).resizable().scaledToFill()
+                } else if let image = BundledImages.image(name) {
                     Image(uiImage: image).resizable().scaledToFill()
+                        .saturation(0.55).contrast(0.9).brightness(0.04)
+                        .overlay(Theme.paper.opacity(0.18))
+                        .overlay(LinearGradient(colors: [.clear, Theme.paper.opacity(0.35)], startPoint: .center, endPoint: .bottom))
                 } else {
-                    LinearGradient(colors: [Theme.sky, Theme.accent, Theme.deepInk], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    LinearGradient(colors: [Theme.sky, Theme.panel, Theme.paper], startPoint: .topLeading, endPoint: .bottomTrailing)
                 }
             }
             .clipped()
@@ -94,15 +115,15 @@ struct ChoiceTiles: View {
                             Text(option).font(Theme.body(13, weight: .semibold)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 4)
                             ZStack {
-                                Circle().fill(selected ? Theme.accent : Color.white).frame(width: 22, height: 22).overlay(Circle().stroke(selected ? Theme.accent : Theme.border, lineWidth: 1))
+                                Circle().fill(selected ? Theme.ink : Color.clear).frame(width: 22, height: 22).overlay(Circle().stroke(selected ? Theme.ink : Theme.border, lineWidth: 0.8))
                                 if selected { Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(.white) }
                             }
                         }
                         .padding(10)
                         .frame(minHeight: 56, alignment: .top)
                     }
-                    .background(Color.white)
-                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(selected ? Theme.accent : Theme.border, lineWidth: selected ? 2 : 1))
+                    .background(Color.white.opacity(0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(selected ? Theme.ink : Theme.border, lineWidth: selected ? 1.5 : 0.8))
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
                 .buttonStyle(.plain)
@@ -276,7 +297,7 @@ struct ActivityDaysView: View {
             ForEach(days) { d in
                 VStack(spacing: 4) {
                     ZStack {
-                        Circle().fill(d.count > 0 ? Theme.accent : Theme.mist).frame(width: 28, height: 28)
+                        Circle().fill(d.count > 0 ? Theme.moss : Theme.mist).frame(width: 28, height: 28)
                             .overlay(Circle().stroke(d.today ? Theme.ink : Color.clear, lineWidth: 1.5))
                         if d.count > 0 { Image(systemName: "checkmark").font(.system(size: 12, weight: .bold)).foregroundStyle(.white) }
                         else { Circle().fill(Theme.border).frame(width: 6, height: 6) }

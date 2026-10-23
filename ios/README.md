@@ -22,6 +22,12 @@ Idea matching (`Logic/Recommendations.swift`), discovery filters, wins and dashb
 - Bearer-token support for those routes lives in `lib/public-auth.ts` and `lib/supabase/server.ts` in this branch. **The website must be deployed with that change before the app's account features work.** Until then, sign-in succeeds but saving returns "Request origin is not allowed."
 - The OpenAI key stays on the server. The app only asks the website for a batch after the user has chosen an AI and privacy option.
 
+## Look and feel
+
+The design follows the seven Japanese aesthetic principles: kanso (nothing that is not needed), fukinsei (asymmetry, left-aligned and off-centre), shibui (a muted palette with one accent), shizen (natural, unforced copy and scenes), yugen (suggestion over display, images fading into paper), datsuzoku (small surprises such as "Surprise me") and seijaku (stillness, no streaks or targets). Surfaces are thin glass over washi-coloured paper.
+
+Every image slot is an illustration slot: drop watercolour paintings into `Enough/Resources/Illustrations/` using the names and prompts in `docs/illustration-prompts.md` and the app uses them automatically. Until then the website's photographs are shown softened into a wash.
+
 ## Building
 
 Requirements: Xcode 16 or later, iOS 17 or later on the device, an Apple developer team for HealthKit.

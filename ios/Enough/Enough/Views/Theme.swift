@@ -1,23 +1,26 @@
 import SwiftUI
 
-/// The website's palette and type: ink navy, soft blue accent, warm paper
-/// background, serif headings and glass panels.
+/// A quiet palette in the spirit of shibui: ink that is not quite black,
+/// washi-coloured paper, one muted indigo accent, a little moss and clay.
+/// Surfaces stay plain (kanso), with room around everything (ma).
 enum Theme {
-    static let ink = Color(red: 0x0A / 255, green: 0x2F / 255, blue: 0x52 / 255)
-    static let deepInk = Color(red: 0x06 / 255, green: 0x27 / 255, blue: 0x44 / 255)
-    static let muted = Color(red: 0x51 / 255, green: 0x65 / 255, blue: 0x77 / 255)
-    static let accent = Color(red: 0x3F / 255, green: 0x7F / 255, blue: 0xBF / 255)
-    static let sky = Color(red: 0xA7 / 255, green: 0xC7 / 255, blue: 0xE8 / 255)
-    static let paper = Color(red: 0xFA / 255, green: 0xFA / 255, blue: 0xF8 / 255)
-    static let panel = Color(red: 0xF1 / 255, green: 0xF6 / 255, blue: 0xF9 / 255)
-    static let mist = Color(red: 0xEE / 255, green: 0xF3 / 255, blue: 0xF8 / 255)
-    static let border = Color(red: 0xDC / 255, green: 0xE3 / 255, blue: 0xE7 / 255)
-    static let warm = Color(red: 0xD9 / 255, green: 0x7B / 255, blue: 0x5B / 255)
-    static let alert = Color(red: 0xA6 / 255, green: 0x64 / 255, blue: 0x60 / 255)
+    static let ink = Color(red: 0x2A / 255, green: 0x36 / 255, blue: 0x44 / 255)
+    static let deepInk = Color(red: 0x1C / 255, green: 0x26 / 255, blue: 0x32 / 255)
+    static let muted = Color(red: 0x6B / 255, green: 0x74 / 255, blue: 0x7D / 255)
+    static let accent = Color(red: 0x4E / 255, green: 0x6E / 255, blue: 0x8E / 255)
+    static let sky = Color(red: 0xB9 / 255, green: 0xC9 / 255, blue: 0xD6 / 255)
+    static let moss = Color(red: 0x7E / 255, green: 0x8F / 255, blue: 0x74 / 255)
+    static let clay = Color(red: 0xC4 / 255, green: 0x9E / 255, blue: 0x8A / 255)
+    static let paper = Color(red: 0xF7 / 255, green: 0xF5 / 255, blue: 0xF0 / 255)
+    static let panel = Color(red: 0xF1 / 255, green: 0xEF / 255, blue: 0xE9 / 255)
+    static let mist = Color(red: 0xEC / 255, green: 0xEE / 255, blue: 0xEC / 255)
+    static let border = Color(red: 0xE2 / 255, green: 0xDF / 255, blue: 0xD8 / 255)
+    static let warm = Color(red: 0xC4 / 255, green: 0x9E / 255, blue: 0x8A / 255)
+    static let alert = Color(red: 0x9C / 255, green: 0x6B / 255, blue: 0x63 / 255)
 
     static func display(_ size: CGFloat, weight: Font.Weight = .regular) -> Font { .system(size: size, weight: weight, design: .serif) }
     static func body(_ size: CGFloat = 17, weight: Font.Weight = .regular) -> Font { .system(size: size, weight: weight, design: .default) }
-    static let eyebrow: Font = .system(size: 11, weight: .semibold)
+    static let eyebrow: Font = .system(size: 11, weight: .medium)
 }
 
 struct Eyebrow: View {
@@ -25,7 +28,7 @@ struct Eyebrow: View {
     var color: Color = Theme.muted
     init(_ text: String, color: Color = Theme.muted) { self.text = text; self.color = color }
     var body: some View {
-        Text(text.uppercased()).font(Theme.eyebrow).kerning(1.7).foregroundStyle(color)
+        Text(text).font(Theme.eyebrow).kerning(0.6).foregroundStyle(color)
     }
 }
 
@@ -33,7 +36,7 @@ struct SectionTitle: View {
     let text: String
     var size: CGFloat = 26
     init(_ text: String, size: CGFloat = 26) { self.text = text; self.size = size }
-    var body: some View { Text(text).font(Theme.display(size)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true) }
+    var body: some View { Text(text).font(Theme.display(size)).foregroundStyle(Theme.ink).lineSpacing(3).fixedSize(horizontal: false, vertical: true) }
 }
 
 struct Note: View {
@@ -42,16 +45,17 @@ struct Note: View {
     var body: some View { Text(text).font(Theme.body(13)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true) }
 }
 
+/// A sheet of glass over washi: a faint translucent fill, a hairline, no shadow.
 struct GlassPanel: ViewModifier {
-    var padding: CGFloat = 20
+    var padding: CGFloat = 22
     func body(content: Content) -> some View {
         content
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(LinearGradient(colors: [Color.white.opacity(0.78), Theme.panel.opacity(0.9)], startPoint: .topLeading, endPoint: .bottomTrailing))
-            .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Color.white.opacity(0.8), lineWidth: 1))
-            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .shadow(color: Theme.ink.opacity(0.05), radius: 14, x: 0, y: 6)
+            .background(.ultraThinMaterial.opacity(0.6))
+            .background(Color.white.opacity(0.45))
+            .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(Theme.border.opacity(0.9), lineWidth: 0.8))
+            .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
     }
 }
 
@@ -63,34 +67,33 @@ extension View {
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(Theme.body(15, weight: .semibold))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 24).padding(.vertical, 14)
-            .frame(minHeight: 48)
-            .background(LinearGradient(colors: [Color(red: 0x5C / 255, green: 0x9C / 255, blue: 0xC4 / 255), Theme.accent], startPoint: .topLeading, endPoint: .bottomTrailing))
+            .font(Theme.body(15, weight: .medium))
+            .foregroundStyle(Theme.paper)
+            .padding(.horizontal, 26).padding(.vertical, 14)
+            .frame(minHeight: 50)
+            .background(Theme.ink)
             .clipShape(Capsule())
-            .opacity(configuration.isPressed ? 0.8 : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }
 
 struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(Theme.body(14, weight: .semibold))
+            .font(Theme.body(14, weight: .medium))
             .foregroundStyle(Theme.ink)
             .padding(.horizontal, 20).padding(.vertical, 12)
-            .frame(minHeight: 44)
-            .background(Color.white.opacity(0.75))
-            .overlay(Capsule().stroke(Theme.border, lineWidth: 1))
+            .frame(minHeight: 46)
+            .overlay(Capsule().stroke(Theme.ink.opacity(0.35), lineWidth: 0.8))
             .clipShape(Capsule())
-            .opacity(configuration.isPressed ? 0.7 : 1)
+            .opacity(configuration.isPressed ? 0.6 : 1)
     }
 }
 
 struct TextButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(Theme.body(14, weight: .semibold))
+            .font(Theme.body(14, weight: .medium))
             .foregroundStyle(Theme.accent)
             .padding(.vertical, 8)
             .opacity(configuration.isPressed ? 0.6 : 1)
@@ -113,11 +116,11 @@ struct Chip: View {
                 if let icon { Image(systemName: icon).font(.system(size: 12, weight: .semibold)) }
                 Text(label)
             }
-            .font(Theme.body(14, weight: selected ? .semibold : .regular))
-            .foregroundStyle(selected ? Color.white : Theme.ink)
+            .font(Theme.body(14, weight: .regular))
+            .foregroundStyle(selected ? Theme.paper : Theme.ink)
             .padding(.horizontal, 14).padding(.vertical, 9)
-            .background(selected ? Theme.ink : Color.white.opacity(0.8))
-            .overlay(Capsule().stroke(selected ? Theme.ink : Theme.border, lineWidth: 1))
+            .background(selected ? Theme.ink : Color.clear)
+            .overlay(Capsule().stroke(selected ? Theme.ink : Theme.ink.opacity(0.3), lineWidth: 0.8))
             .clipShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -189,16 +192,13 @@ struct Metric: View {
     let label: String
     var caption: String? = nil
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Image(systemName: icon).font(.system(size: 20, weight: .light)).foregroundStyle(Theme.accent)
-            Text(value).font(Theme.body(20, weight: .semibold)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
-            Text(label).font(Theme.body(12, weight: .semibold)).foregroundStyle(Theme.ink)
-            if let caption { Text(caption).font(Theme.body(11)).foregroundStyle(Theme.muted) }
+        VStack(alignment: .leading, spacing: 3) {
+            Text(value).font(Theme.display(22)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.7)
+            Text(label).font(Theme.body(12)).foregroundStyle(Theme.muted)
+            if let caption { Text(caption).font(Theme.body(11)).foregroundStyle(Theme.muted.opacity(0.8)) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Theme.panel)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(.vertical, 6)
     }
 }
 
@@ -250,8 +250,8 @@ struct FieldBox: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(12)
-            .background(Color.white)
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Theme.border, lineWidth: 1))
+            .background(Color.white.opacity(0.55))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Theme.border, lineWidth: 0.8))
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }

@@ -257,7 +257,7 @@ struct MovesDiscoveryView: View {
     private var surprisePanel: some View {
         ZStack(alignment: .bottomLeading) {
             SceneImage(name: "welcome-coast").frame(height: 240).clipped()
-            LinearGradient(colors: [.clear, Theme.deepInk.opacity(0.85)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [.clear, Theme.deepInk.opacity(0.6)], startPoint: .top, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 6) {
                 Image(systemName: "sparkles").foregroundStyle(.white)
                 Eyebrow("A different possibility", color: .white.opacity(0.9))

@@ -36,12 +36,13 @@ struct MainTabView: View {
     private func tabPage<Content: View>(_ content: Content, title: String, icon: String, tag: AppNavigation.Tab) -> some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 24) {
                     StatusStrip()
                     DueReminders(now: clock)
                     content
                 }
-                .padding(.bottom, 32)
+                .padding(.top, 4)
+                .padding(.bottom, 48)
             }
             .background(Theme.paper)
             .scrollDismissesKeyboard(.interactively)

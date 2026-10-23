@@ -106,7 +106,7 @@ struct WinsTabView: View {
     private var nextMove: some View {
         ZStack(alignment: .bottomLeading) {
             SceneImage(name: "welcome-coast").frame(height: 220).clipped()
-            LinearGradient(colors: [.clear, Theme.deepInk.opacity(0.85)], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [.clear, Theme.deepInk.opacity(0.6)], startPoint: .top, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 6) {
                 Eyebrow("A little possibility", color: .white.opacity(0.9))
                 Text("More life, when it fits.").font(Theme.display(26)).foregroundStyle(.white)
