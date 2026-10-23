@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "demo": false,
+  "today": {"date": "2026-10-20", "context": "Feeling stressed"},
+  "profile": {
+    "name": "Sam",
+    "preferences": ["Outside", "Short bursts"],
+    "interests": ["Podcasts", "Family time"],
+    "needs": ["Not enough time"],
+    "strengths": ["I keep routines"],
+    "activity": "Mostly seated",
+    "rhythms": ["Calls", "School run"],
+    "window": "Evening",
+    "currency": "AUD",
+    "country": "AU",
+    "visual": ["Coastal places"],
+    "sittingContexts": ["Desk work"],
+    "complete": true
+  },
+  "saved": [1, 46],
+  "entries": [
+    {
+      "id": "7c2a0f1e-1111-4bbb-9ccc-000000000001",
+      "ideaId": 0,
+      "status": "completed",
+      "acceptedAt": "2026-10-18T08:30:00.000Z",
+      "completedAt": "2026-10-18T09:05:12.345Z",
+      "minutes": 18,
+      "outside": true,
+      "connecting": false,
+      "worthwhile": true,
+      "moneyCents": 699,
+      "currency": "AUD",
+      "predicted": ["movement", "money_saved", "experience", "time_saved"],
+      "gave": ["experience"],
+      "timeCombined": 10,
+      "brokeSitting": "yes",
+      "additionalMovement": "more",
+      "planMoment": "yes",
+      "companions": [{"id": "c1", "name": "Jo", "source": "manual", "metAt": "2026-10-18T09:00:00.000Z"}],
+      "movementWindow": {"start": "2026-10-18T08:40:00.000Z", "end": "2026-10-18T09:00:00.000Z"},
+      "movementEvidence": {"source": "apple-health", "start": "2026-10-18T08:40:00.000Z", "end": "2026-10-18T09:00:00.000Z", "readAt": "2026-10-18T09:01:00.000Z", "steps": 1420, "exerciseMinutes": null},
+      "support": {
+        "goalType": "open", "goal": "Explore whether collecting dinner on foot fits my evening.", "target": "", "reason": "", "deadline": "", "confidence": "",
+        "when": "Evening", "cue": "After the kids are settled", "place": "", "placeType": "Familiar streets", "barriers": ["Weather"], "fallback": "A short loop instead",
+        "prep": ["Check the pick-up time"], "commitment": "Keep it private", "buddy": "", "qrMeet": true, "reward": "", "reminder": "in-app", "remindAt": "2026-10-18T18:00",
+        "reminderDismissed": true, "paused": false, "updatedAt": "2026-10-18T08:31:00.000Z", "routineAnchor": "Calls"
+      }
+    },
+    {
+      "id": "7c2a0f1e-1111-4bbb-9ccc-000000000002",
+      "ideaId": 46,
+      "status": "accepted",
+      "acceptedAt": "2026-10-20T07:00:00.000Z",
+      "currency": "AUD",
+      "predicted": ["movement", "experience", "task_completed", "time_combined"]
+    },
+    {
+      "id": "7c2a0f1e-1111-4bbb-9ccc-000000000003",
+      "ideaId": 5,
+      "status": "not-today",
+      "acceptedAt": "2026-10-19T07:00:00.000Z",
+      "currency": "AUD"
+    }
+  ],
+  "costs": [{"ideaId": 0, "currency": "AUD", "usualCents": 1200, "moveCents": 300, "updatedAt": "2026-10-18T08:00:00.000Z"}],
+  "aiConsent": {"choice": "without-health", "version": 1, "decidedAt": "2026-10-17T10:00:00.000Z"},
+  "movementSettings": {"metric": "steps", "threshold": 6000, "quietChoice": "amount", "keepSittingBreaksAfterEnough": true},
+  "passes": [{"ideaId": 3, "at": "2026-10-20T06:00:00.000Z"}],
+  "tuning": {"extraMinutes": 10, "travel": "walk", "hidden": [4]},
+  "weeklyReviews": [{"week": "2026-10-19", "reviewedAt": "2026-10-20T07:30:00.000Z", "worked": "Walking during calls", "barrier": "Rain", "smallFix": "Keep a jacket by the door", "plans": []}],
+  "generated": [
+    {
+      "intensity": "light", "breaksSitting": true, "id": 1001, "key": "ai-kettle-lap", "title": "Kettle wait + A kitchen lap", "category": "chores",
+      "usual": "Stand at the bench while the kettle boils", "body": "Walk a slow lap of the kitchen and hallway while the kettle boils, then return for your cup.",
+      "minutes": 2, "extraMin": 0, "moneyCents": 0, "moneySource": "none", "enjoy": ["Coffee"], "outdoor": false, "effort": "gentle", "exclude": [],
+      "safety": "Keep clear of the kettle and any wet floor.", "social": false, "output": "", "family": "chores", "mechanism": "combine", "movementMode": "walk",
+      "movement": {"version": 1, "action": "Walk a slow lap of the kitchen and hallway while the kettle boils", "activityMinutes": 2},
+      "source": "ai", "brief": "A quiet kitchen in the morning light, someone strolling past the bench while the kettle steams."
+    }
+  ]
+}

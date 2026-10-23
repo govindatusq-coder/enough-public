@@ -1,5 +1,7 @@
 # Native release checklist
 
+**Update:** a native SwiftUI iPhone app now lives in `ios/Enough` and supersedes the remote-loading Capacitor shell described below for iOS. It bundles the frontend, so the "bundled frontend architecture" called for here now exists; the device, permission, privacy-declaration and reviewer-account checks below still apply to it. See `ios/README.md`.
+
 PR9 prepares configuration and status reporting. A store-ready binary still needs the checks below. Neither a device build nor a store submission was made in this workspace.
 
 ## Build and origin

@@ -4,6 +4,7 @@ import {eligible} from './recommendations.ts';
 import {mergeIdeas} from './suggestion-history.ts';
 import {generateFreshCandidates,SuggestionBusy} from './suggestion-service.ts';
 import {AiConsentRequired,checkCurrentAiConsent,requireAiConsent} from './ai-consent.ts';
+import {trustedWrite} from './public-auth.ts';
 import type {Idea} from './ideas.ts';
 import type {aiContext} from './ai-ideas.ts';
 
@@ -25,7 +26,7 @@ const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache
 // request JSON. Tests exercise the same boundary with inert provider adapters.
 export function createIdeasPost(deps:Dependencies){return async(req:Request)=>{
  if(!deps.authenticated)return json({error:'Sign in to request new ideas.'},401);
- if(req.headers.get('origin')!==new URL(req.url).origin)return json({error:'Request origin is not allowed.'},403);
+ if(!trustedWrite(req))return json({error:'Request origin is not allowed.'},403);
  try{
   const record=await deps.readAccount();
   if(!record)return json({error:'Keep your ENOUGH profile first.'},409);
