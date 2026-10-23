@@ -12,9 +12,9 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $navigation.tab) {
             tabPage(EnoughTabView(now: clock), title: "Home", icon: "house", tag: .enough, chrome: false)
-            tabPage(MovesTabView(now: clock), title: "My Moves", icon: "figure.walk", tag: .moves)
+            tabPage(MovesTabView(now: clock), title: "My Moves", icon: "magnifyingglass", tag: .moves)
             tabPage(WinsTabView(now: clock), title: "My Wins", icon: "heart", tag: .wins)
-            tabPage(PinsTabView(now: clock), title: "My Pins", icon: "pin", tag: .pins)
+            tabPage(PinsTabView(now: clock), title: "My Pins", icon: "person", tag: .pins)
         }
         .task {
             // Refresh "now" every 30 seconds for reminders, periods and greetings.

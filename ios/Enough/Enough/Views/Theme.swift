@@ -1,24 +1,28 @@
 import SwiftUI
 
-/// The ENOUGH palette in a quiet register: brand navy and blue, pale sky,
-/// washi paper, a little moss and clay. Surfaces are thin glass over paper;
-/// headings and figures are a light serif, everything else a rounded sans.
+/// The ENOUGH style guide: Indigo #2F4A6B, Sage #8A9F79, Clay #D4A373,
+/// Sand #EADDC7 and Sky #BFD3E8 on warm paper. Surfaces are thin glass over
+/// paper; headings and figures are a refined serif, everything else a clean sans.
 enum Theme {
-    static let ink = Color(red: 0x0A / 255, green: 0x2F / 255, blue: 0x52 / 255)
-    static let deepInk = Color(red: 0x06 / 255, green: 0x27 / 255, blue: 0x44 / 255)
-    static let muted = Color(red: 0x5B / 255, green: 0x6E / 255, blue: 0x80 / 255)
-    static let accent = Color(red: 0x3F / 255, green: 0x7F / 255, blue: 0xBF / 255)
-    static let sky = Color(red: 0xA7 / 255, green: 0xC7 / 255, blue: 0xE8 / 255)
-    static let moss = Color(red: 0x7E / 255, green: 0x8F / 255, blue: 0x74 / 255)
-    static let clay = Color(red: 0xD9 / 255, green: 0x9A / 255, blue: 0x7E / 255)
-    static let paper = Color(red: 0xF7 / 255, green: 0xF6 / 255, blue: 0xF2 / 255)
-    static let panel = Color(red: 0xEE / 255, green: 0xF3 / 255, blue: 0xF8 / 255)
-    static let mist = Color(red: 0xE5 / 255, green: 0xED / 255, blue: 0xF3 / 255)
-    static let border = Color(red: 0xCF / 255, green: 0xDC / 255, blue: 0xE8 / 255)
-    static let card = Color.white.opacity(0.78)
-    static let alertFill = Color(red: 0xFB / 255, green: 0xEF / 255, blue: 0xEA / 255)
-    static let warm = Color(red: 0xD9 / 255, green: 0x7B / 255, blue: 0x5B / 255)
-    static let alert = Color(red: 0xA6 / 255, green: 0x64 / 255, blue: 0x60 / 255)
+    static let indigo = Color(red: 0x2F / 255, green: 0x4A / 255, blue: 0x6B / 255)
+    static let sage = Color(red: 0x8A / 255, green: 0x9F / 255, blue: 0x79 / 255)
+    static let clay = Color(red: 0xD4 / 255, green: 0xA3 / 255, blue: 0x73 / 255)
+    static let sand = Color(red: 0xEA / 255, green: 0xDD / 255, blue: 0xC7 / 255)
+    static let sky = Color(red: 0xBF / 255, green: 0xD3 / 255, blue: 0xE8 / 255)
+
+    static let ink = indigo
+    static let deepInk = Color(red: 0x22 / 255, green: 0x37 / 255, blue: 0x52 / 255)
+    static let muted = Color(red: 0x65 / 255, green: 0x74 / 255, blue: 0x89 / 255)
+    static let accent = indigo
+    static let moss = sage
+    static let paper = Color(red: 0xF8 / 255, green: 0xF4 / 255, blue: 0xEC / 255)
+    static let panel = Color(red: 0xF3 / 255, green: 0xEC / 255, blue: 0xDF / 255)
+    static let mist = sand.opacity(0.55)
+    static let border = Color(red: 0xD8 / 255, green: 0xCC / 255, blue: 0xB6 / 255)
+    static let card = Color.white.opacity(0.72)
+    static let alertFill = Color(red: 0xF6 / 255, green: 0xE6 / 255, blue: 0xD9 / 255)
+    static let warm = clay
+    static let alert = Color(red: 0xA0 / 255, green: 0x5E / 255, blue: 0x45 / 255)
 
     enum Radius {
         static let panel: CGFloat = 24
@@ -26,20 +30,21 @@ enum Theme {
         static let field: CGFloat = 12
     }
 
-    static func display(_ size: CGFloat, weight: Font.Weight = .light) -> Font { .system(size: size, weight: weight, design: .serif) }
-    /// A handwritten flourish for the person's name; Snell Roundhand ships with iOS.
-    static func script(_ size: CGFloat) -> Font { .custom("SnellRoundhand-Bold", size: size) }
+    static func display(_ size: CGFloat, weight: Font.Weight = .regular) -> Font { .system(size: size, weight: weight, design: .serif) }
+    /// The brush script of the wordmark and the person's name: Dancing Script
+    /// (bundled, SIL Open Font Licence), falling back to the system font if missing.
+    static func script(_ size: CGFloat) -> Font { .custom("DancingScript-Bold", size: size) }
     static func italic(_ size: CGFloat) -> Font { Font.system(size: size, weight: .light, design: .serif).italic() }
-    static func body(_ size: CGFloat = 17, weight: Font.Weight = .regular) -> Font { .system(size: size, weight: weight, design: .rounded) }
-    static let eyebrow: Font = .system(size: 11, weight: .medium, design: .rounded)
-    static let shadow = Color(red: 0x0A / 255, green: 0x2F / 255, blue: 0x52 / 255).opacity(0.06)
+    static func body(_ size: CGFloat = 17, weight: Font.Weight = .regular) -> Font { .system(size: size, weight: weight, design: .default) }
+    static let eyebrow: Font = .system(size: 11, weight: .medium, design: .default)
+    static let shadow = Color(red: 0x2F / 255, green: 0x4A / 255, blue: 0x6B / 255).opacity(0.07)
 }
 
 struct Eyebrow: View {
     let text: String
     var color: Color = Theme.muted
     init(_ text: String, color: Color = Theme.muted) { self.text = text; self.color = color }
-    var body: some View { Text(text).font(Theme.eyebrow).kerning(0.6).foregroundStyle(color) }
+    var body: some View { Text(text.uppercased()).font(Theme.eyebrow).kerning(1.4).foregroundStyle(color) }
 }
 
 struct SectionTitle: View {
@@ -146,8 +151,8 @@ struct Chip: View {
             .font(Theme.body(14))
             .foregroundStyle(selected ? Color.white : Theme.ink)
             .padding(.horizontal, 14).padding(.vertical, 9)
-            .background(selected ? Theme.ink : Theme.panel)
-            .overlay(Capsule().stroke(selected ? Theme.ink : Theme.border, lineWidth: 0.8))
+            .background(selected ? Theme.sage : Theme.panel)
+            .overlay(Capsule().stroke(selected ? Theme.sage : Theme.border, lineWidth: 0.8))
             .clipShape(Capsule())
             .frame(minHeight: 44)
             .contentShape(Rectangle())
@@ -164,7 +169,7 @@ struct Badge: View {
     var body: some View {
         Text(text).font(Theme.body(11, weight: .medium)).foregroundStyle(Theme.ink)
             .padding(.horizontal, 8).padding(.vertical, 4)
-            .background(Theme.mist).clipShape(Capsule())
+            .background(Theme.sand).clipShape(Capsule())
     }
 }
 

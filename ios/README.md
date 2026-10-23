@@ -1,6 +1,6 @@
 # ENOUGH for iPhone
 
-A native SwiftUI app built from the ENOUGH website in this repository. It keeps the same journey (Welcome → a few answers about your life → My Moves → support plan → confirm → My Wins), the same idea library and matching rules, and the same account format, so a profile saved from the website opens in the app and vice versa. The look is the app's own: watercolour paintings, thin glass over paper, a light serif for headings.
+A native SwiftUI app built from the ENOUGH website in this repository. It keeps the same journey (Welcome → a few answers about your life → My Moves → support plan → confirm → My Wins), the same idea library and matching rules, and the same account format, so a profile saved from the website opens in the app and vice versa. The look follows the ENOUGH style guide: Indigo, Sage, Clay, Sand and Sky on warm paper, watercolour paintings, thin glass panels, a serif for headings and a plain sans for body text, and the brush-script wordmark (Dancing Script, bundled under the SIL Open Font Licence).
 
 The app opens with a three-card onboarding and then the tabs (the website's long landing page is not reproduced). The earlier `native/` folder is a Capacitor shell that loads the website remotely; Capacitor documents that architecture as a live-reload feature, not a production one. This app replaces it with bundled native screens. The shell is kept for reference and is not needed to build this app.
 

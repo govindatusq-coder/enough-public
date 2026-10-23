@@ -59,7 +59,7 @@ struct EnoughTabView: View {
 
     private var header: some View {
         HStack(alignment: .center) {
-            LogoView(height: 22)
+            LogoView(height: 24)
             Spacer()
             Button { navigation.sheet = .account(pending: nil) } label: {
                 Image(systemName: "gearshape").font(.system(size: 17, weight: .light)).foregroundStyle(Theme.ink)
@@ -123,8 +123,8 @@ struct TodayNoteSheet: View {
     @State private var note = ""
 
     var body: some View {
-        SheetFrame(title: "Anything different today?", kicker: "Today", doneLabel: "Cancel") {
-            Text("Less time, lower energy or a hard day changes which ideas fit. The note is forgotten tomorrow.").font(Theme.body(14)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+        SheetFrame(title: "A quieter day?", kicker: "Today", doneLabel: "Cancel") {
+            Text("Some days are full. Say so, and today’s ideas fit around it. The note is forgotten tomorrow.").font(Theme.body(14)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
             WrapChips(items: DailyContexts.todayContexts, label: { $0 }, selected: { note == $0 }) { choice in note = note == choice ? "" : choice }
             FieldLabel("Or in your own words", optional: true)
             TextField("Anything you’d like to keep in mind?", text: $note).fieldBox().onChange(of: note) { _, v in if v.count > 240 { note = String(v.prefix(240)) } }

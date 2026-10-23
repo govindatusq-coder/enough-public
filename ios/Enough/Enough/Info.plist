@@ -45,6 +45,10 @@
 	<string>ENOUGH does not write to Health.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose photos to add to your private activity gallery.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>DancingScript.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

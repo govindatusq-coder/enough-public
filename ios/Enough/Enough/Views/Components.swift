@@ -333,16 +333,20 @@ struct LabeledPicker<Value: Hashable>: View {
     }
 }
 
-/// The wordmark: a soft wave over the letters, as in `public/logo.svg`.
+/// The wordmark from the style guide: "Enough" in a brush script, with the
+/// tagline in spaced capitals and a sage brush stroke when there is room.
 struct LogoView: View {
     var height: CGFloat = 26
+    var tagline = false
     var body: some View {
-        VStack(spacing: 2) {
-            WavePath().stroke(LinearGradient(colors: [Theme.ink, Theme.accent, Theme.sky], startPoint: .leading, endPoint: .trailing), style: StrokeStyle(lineWidth: 2, lineCap: .round))
-                .frame(width: height * 2.4, height: height * 0.5)
-            Text("ENOUGH").font(.system(size: height * 0.55, weight: .light, design: .serif)).kerning(height * 0.16).foregroundStyle(Theme.ink)
+        VStack(spacing: height * 0.18) {
+            Text("Enough").font(Theme.script(height * 1.35)).foregroundStyle(Theme.indigo).lineLimit(1).fixedSize()
+            if tagline {
+                Text("Exercise that fits your vibe.").font(.system(size: max(10, height * 0.22), weight: .medium)).kerning(height * 0.06).textCase(.uppercase).foregroundStyle(Theme.ink)
+                Capsule().fill(Theme.sage.opacity(0.8)).frame(width: height * 1.6, height: max(3, height * 0.08)).rotationEffect(.degrees(-2))
+            }
         }
-        .accessibilityLabel("ENOUGH")
+        .accessibilityLabel("Enough. Exercise that fits your vibe.")
     }
 }
 
