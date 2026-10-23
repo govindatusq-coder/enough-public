@@ -52,7 +52,7 @@ struct EnoughTabView: View {
     private var hero: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("\(Discovery.greeting(now))\(store.profile.name.trimmingCharacters(in: .whitespaces).isEmpty ? "" : ", \(store.profile.name.trimmingCharacters(in: .whitespaces))").").font(Theme.body(15)).foregroundStyle(Theme.muted)
-            Text(featured != nil ? (personalised ? "I found something you might like." : "A little idea for the life you have.") : "Your life comes first.").font(Theme.display(34)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+            Text(featured != nil ? (personalised ? "I found something you might like." : "A little idea for the life you have.") : "Your life comes first.").font(Theme.display(26)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
             Text(featured != nil ? (personalised ? "A small idea for a better today." : "An example to explore. Your PINS make it personal.") : "We can find another way when something fits your needs.").font(Theme.body(15)).foregroundStyle(Theme.muted)
             if let featured {
                 let saving = Recommendations.moneyValue(featured, store.state)

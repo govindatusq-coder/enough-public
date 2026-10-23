@@ -12,14 +12,19 @@ enum BundledImages {
     }
 }
 
+/// Fills whatever frame it is given without ever widening its container.
 struct SceneImage: View {
     let name: String
     var body: some View {
-        if let image = BundledImages.image(name) {
-            Image(uiImage: image).resizable().scaledToFill()
-        } else {
-            LinearGradient(colors: [Theme.sky, Theme.accent, Theme.deepInk], startPoint: .topLeading, endPoint: .bottomTrailing)
-        }
+        Color.clear
+            .overlay {
+                if let image = BundledImages.image(name) {
+                    Image(uiImage: image).resizable().scaledToFill()
+                } else {
+                    LinearGradient(colors: [Theme.sky, Theme.accent, Theme.deepInk], startPoint: .topLeading, endPoint: .bottomTrailing)
+                }
+            }
+            .clipped()
     }
 }
 
@@ -60,6 +65,7 @@ struct ChoiceArtwork: View {
                     .resizable()
                     .frame(width: geo.size.width * 4, height: geo.size.height * 4)
                     .offset(x: -column * geo.size.width, y: -row * geo.size.height)
+                    .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
             } else {
                 Theme.mist
             }
@@ -186,11 +192,13 @@ struct RemoteImage: View {
     @EnvironmentObject private var store: AppStore
     @StateObject private var loader = RemoteImageLoader()
     var body: some View {
-        ZStack {
-            if let image = loader.image { Image(uiImage: image).resizable().scaledToFill() }
-            else if loader.failed { Theme.mist.overlay(Image(systemName: "photo").foregroundStyle(Theme.muted)) }
-            else { Theme.mist.overlay(ProgressView()) }
-        }
+        Color.clear
+            .overlay {
+                if let image = loader.image { Image(uiImage: image).resizable().scaledToFill() }
+                else if loader.failed { Theme.mist.overlay(Image(systemName: "photo").foregroundStyle(Theme.muted)) }
+                else { Theme.mist.overlay(ProgressView()) }
+            }
+            .clipped()
         .onAppear { loader.load(path, api: store.api) }
         .onChange(of: path) { _, next in loader.load(next, api: store.api) }
     }
@@ -298,5 +306,30 @@ struct LabeledPicker<Value: Hashable>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .fieldBox()
         }
+    }
+}
+
+/// The wordmark: a soft wave over the letters, as in `public/logo.svg`.
+struct LogoView: View {
+    var height: CGFloat = 26
+    var body: some View {
+        VStack(spacing: 2) {
+            WavePath().stroke(LinearGradient(colors: [Theme.ink, Theme.accent, Theme.sky], startPoint: .leading, endPoint: .trailing), style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                .frame(width: height * 2.4, height: height * 0.5)
+            Text("ENOUGH").font(.system(size: height * 0.55, weight: .regular)).kerning(height * 0.14).foregroundStyle(Theme.ink)
+        }
+        .accessibilityLabel("ENOUGH")
+    }
+}
+
+struct WavePath: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width, h = rect.height
+        path.move(to: CGPoint(x: 0, y: h * 0.8))
+        path.addCurve(to: CGPoint(x: w * 0.43, y: h * 0.2), control1: CGPoint(x: w * 0.15, y: h * 0.45), control2: CGPoint(x: w * 0.3, y: h * 0))
+        path.addCurve(to: CGPoint(x: w * 0.69, y: h * 0.85), control1: CGPoint(x: w * 0.54, y: h * 0.4), control2: CGPoint(x: w * 0.55, y: h * 0.85))
+        path.addCurve(to: CGPoint(x: w, y: h * 0.25), control1: CGPoint(x: w * 0.8, y: h * 0.85), control2: CGPoint(x: w * 0.9, y: h * 0.55))
+        return path
     }
 }

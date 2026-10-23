@@ -43,7 +43,7 @@ struct WinsTabView: View {
         let activity = Wins.dashboardActivity(store.state, now: now)
         return VStack(alignment: .leading, spacing: 12) {
             Eyebrow("My Wins · Confirmed by you")
-            Text("More life.\nIn little moments.").font(Theme.display(34)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+            Text("More life. In little moments.").font(Theme.display(24)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
             Text(report.rows.isEmpty ? "A conversation, an errand, a useful pause. Confirm what happened after a move, and your returns will appear here." : "\(report.rows.count) confirmed \(report.rows.count == 1 ? "moment" : "moments") \(period == .allTime ? "so far" : period.rawValue.lowercased()). Here’s what they gave back to you.").font(Theme.body(15)).foregroundStyle(Theme.muted)
             Button { addWin() } label: { Label("Add a win", systemImage: "plus") }.buttonStyle(.primary)
             VStack(alignment: .leading, spacing: 8) {

@@ -2,7 +2,7 @@
 
 A native SwiftUI app built from the ENOUGH website in this repository. It keeps the same journey (Welcome → PINS and routines → My Moves → support plan → confirm → My Wins), the same copy, the same idea library and matching rules, and the same account format, so a profile saved from the website opens in the app and vice versa.
 
-The earlier `native/` folder is a Capacitor shell that loads the website remotely; Capacitor documents that architecture as a live-reload feature, not a production one. This app replaces it with bundled native screens. The shell is kept for reference and is not needed to build this app.
+The app opens with a three-card onboarding and then the tabs (the website's long landing page is not reproduced). The earlier `native/` folder is a Capacitor shell that loads the website remotely; Capacitor documents that architecture as a live-reload feature, not a production one. This app replaces it with bundled native screens. The shell is kept for reference and is not needed to build this app.
 
 ## What is in the app
 

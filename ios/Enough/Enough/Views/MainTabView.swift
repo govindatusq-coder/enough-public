@@ -45,10 +45,10 @@ struct MainTabView: View {
             }
             .background(Theme.paper)
             .scrollDismissesKeyboard(.interactively)
+            .navigationTitle(title)
             .toolbar {
-                ToolbarItem(placement: .principal) { LogoView(height: 20) }
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("How it works") { navigation.sheet = .help }.font(Theme.body(13, weight: .semibold))
+                    Button { navigation.sheet = .help } label: { Image(systemName: "questionmark.circle") }.accessibilityLabel("How it works")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { navigation.sheet = .account(pending: nil) } label: {
@@ -59,7 +59,7 @@ struct MainTabView: View {
                     }
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
         }
         .tabItem { Label(title, systemImage: icon) }
         .tag(tag)
