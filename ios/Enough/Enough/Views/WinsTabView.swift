@@ -22,6 +22,7 @@ struct WinsTabView: View {
         VStack(alignment: .leading, spacing: 16) {
             summary
             returnsPanel
+            WeeklyReviewCard(now: now).glassPanel()
             WinsGallery(now: now, day: $navigation.winsDay, onAddWin: addWin)
             WinsDetails(now: now, period: period, currency: currency, day: $navigation.winsDay)
             learning

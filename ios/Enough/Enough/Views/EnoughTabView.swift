@@ -1,17 +1,14 @@
 import SwiftUI
 
 /// My Enough: the dashboard (`components/discovery.tsx` and `enough-widgets.tsx`).
+/// My Enough: a calm home. One gentle idea for today, a question about how
+/// you are, and a quiet view of your week. Everything else lives in its own tab.
 struct EnoughTabView: View {
     let now: Date
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var navigation: AppNavigation
     @EnvironmentObject private var health: HealthService
-    @State private var filter: DashboardFilter = .forYou
-    @State private var query = ""
-    @State private var maxMinutes = 0
     @State private var setting: Setting = .any
-    @State private var gentle = false
-    @State private var filtersOpen = false
     @State private var featuredId: Int?
     @State private var showToday = false
     @State private var movementOpen = false
@@ -19,266 +16,101 @@ struct EnoughTabView: View {
 
     private var enoughReached: Bool { store.enoughReached(snapshot: snapshot, now: now) }
     private var ideas: [Idea] { Movement.suggestionsAfterEnough(store.feed(now: now).map(\.idea), reached: enoughReached, settings: store.state.movementSettings) }
-    private var matches: [Idea] { Discovery.dashboardIdeas(ideas, filter: filter, state: store.state, query: query, maxMinutes: maxMinutes, setting: setting, gentle: gentle) }
+    private var matches: [Idea] { Discovery.dashboardIdeas(ideas, filter: .forYou, state: store.state, query: "", maxMinutes: 0, setting: setting, gentle: false) }
     private var featured: Idea? { matches.first { $0.id == featuredId } ?? matches.first }
-    private var hasFreeIdeas: Bool { ideas.contains(where: Discovery.isFreeMove) }
-    private var personalised: Bool { store.isComplete }
+    private var name: String { store.profile.name.trimmingCharacters(in: .whitespaces) }
 
-    private func choose(_ next: DashboardFilter) {
-        filter = next
-        featuredId = next == .surpriseMe ? Discovery.surpriseIdeaId(Discovery.dashboardIdeas(ideas, filter: next, state: store.state, query: query, maxMinutes: maxMinutes, setting: setting, gentle: gentle), currentId: featured?.id) : nil
+    private var encouragement: String {
+        let activity = Wins.dashboardActivity(store.state, now: now)
+        if enoughReached { return "You’ve had your enough today. Nothing more is needed." }
+        if activity.today > 0 { return "Something already happened today. That counts." }
+        if activity.planned > 0 { return "A plan is waiting, for whenever it fits. No rush." }
+        if !store.isComplete { return "A few answers about your life, and the ideas become yours." }
+        return "Nothing to catch up on. Here’s one small possibility, if the day has room."
     }
-    private func clearFilters() { filter = .forYou; query = ""; maxMinutes = 0; setting = .any; gentle = false; featuredId = nil }
-    private func chooseSetting(_ next: Setting) { filter = .forYou; setting = next; featuredId = nil }
-    private func startSetup() { navigation.sheet = .setup }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            hero
-            if filtersOpen { filterPanel }
-            if filter == .nearby { NearbyIdeas() } else { opportunities }
-            widgets
-            if filter != .nearby { NearbyIdeas() }
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("\(Discovery.greeting(now))\(name.isEmpty ? "" : ", \(name)").").font(Theme.display(28)).foregroundStyle(Theme.ink)
+                Text(encouragement).font(Theme.body(16)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+            }
+            if let featured { todayCard(featured) } else { quietCard }
+            if store.isComplete { mood } else { Button("Start with my life") { navigation.sheet = .setup }.buttonStyle(.primary) }
+            week
             DisclosureGroup("Your movement today", isExpanded: $movementOpen) {
                 MovementPanelView(snapshot: $snapshot, now: now)
             }
             .font(Theme.body(15, weight: .semibold)).foregroundStyle(Theme.ink)
             .glassPanel()
+            Note("ENOUGH never sets you a target. Enough is whatever you decide it is.")
         }
         .pageGutter()
         .sheet(isPresented: $showToday) { TodayNoteSheet() }
     }
 
-    private var hero: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("\(Discovery.greeting(now))\(store.profile.name.trimmingCharacters(in: .whitespaces).isEmpty ? "" : ", \(store.profile.name.trimmingCharacters(in: .whitespaces))").").font(Theme.body(15)).foregroundStyle(Theme.muted)
-            Text(featured != nil ? (personalised ? "I found something you might like." : "A little idea for the life you have.") : "Your life comes first.").font(Theme.display(26)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
-            Text(featured != nil ? (personalised ? "A small idea for a better today." : "An example to explore. Your PINS make it personal.") : "We can find another way when something fits your needs.").font(Theme.body(15)).foregroundStyle(Theme.muted)
-            if let featured {
-                let saving = Recommendations.moneyValue(featured, store.state)
-                HStack(spacing: 8) {
-                    Metric(icon: "figure.walk", value: "\(featured.minutes) min", label: "Movement", caption: "estimate")
-                    Metric(icon: "wallet.pass", value: Regions.formatMoney(saving?.cents ?? 0, currency: saving?.currency ?? store.profile.currency, country: store.profile.country), label: "Money saved", caption: "estimate")
-                    Metric(icon: featured.social ? "person.2" : "clock", value: featured.social ? "A conversation" : featured.extraTimeLabel, label: featured.social ? "Time together" : "Fits your day")
+    private func todayCard(_ idea: Idea) -> some View {
+        let saving = Recommendations.moneyValue(idea, store.state)
+        return Button { navigation.openIdea(idea.id) } label: {
+            VStack(alignment: .leading, spacing: 0) {
+                SceneImage(name: Discovery.cover(idea)).frame(height: 190).frame(maxWidth: .infinity)
+                VStack(alignment: .leading, spacing: 8) {
+                    Eyebrow(store.isComplete ? "One idea for today" : "An example to explore")
+                    Text(idea.title).font(Theme.display(24)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                    Text(idea.body).font(Theme.body(14)).foregroundStyle(Theme.muted).multilineTextAlignment(.leading).lineLimit(3)
+                    HStack(spacing: 14) {
+                        Label("\(idea.minutes) min", systemImage: "figure.walk")
+                        if (saving?.cents ?? 0) > 0 { Label(Regions.formatMoney(saving?.cents ?? 0, currency: saving?.currency ?? store.profile.currency, country: store.profile.country) + " kept", systemImage: "wallet.pass") }
+                        Label(idea.extraTimeLabel, systemImage: "clock")
+                    }
+                    .font(Theme.body(12, weight: .semibold)).foregroundStyle(Theme.ink)
+                    Text("Only if it fits. There’s always another day.").font(Theme.body(12)).foregroundStyle(Theme.muted)
                 }
-                Note("Idea estimates. Confirm what happened in My Wins.")
-                if !personalised { Button("Make it personal") { startSetup() }.buttonStyle(.secondary) }
-                featuredCard(featured)
-            } else {
-                EmptyState(icon: "leaf", title: hasFreeIdeas ? "A different filter might fit." : "Your needs come first.", text: hasFreeIdeas ? "Try another filter to find a free idea." : "No free library idea currently clears your needs.", action: (hasFreeIdeas ? "Clear filters" : "Review My Pins", { hasFreeIdeas ? clearFilters() : startSetup() }))
+                .padding(16)
             }
-            ChipRow(items: DashboardFilter.allCases, label: { $0.rawValue }, selected: { $0 == filter }, icon: { $0 == .nearby ? "mappin" : $0 == .surpriseMe ? "sparkles" : nil }, pick: { choose($0) })
-            Button { filtersOpen.toggle(); if filter == .nearby { filter = .forYou } } label: { Label("All filters", systemImage: "slider.horizontal.3") }.buttonStyle(.secondary)
-        }
-    }
-
-    private func featuredCard(_ idea: Idea) -> some View {
-        Button { navigation.openIdea(idea.id) } label: {
-            HStack(spacing: 12) {
-                SceneImage(name: Discovery.cover(idea)).frame(width: 84, height: 84).clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                VStack(alignment: .leading, spacing: 4) {
-                    Label("Free activity", systemImage: "leaf").font(Theme.body(12, weight: .semibold)).foregroundStyle(Theme.accent)
-                    Text(idea.title).font(Theme.body(16, weight: .semibold)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading)
-                    Text("\(idea.effort == .gentle ? "A gentle way to move" : "Move at your own pace") · \(idea.minutes) min").font(Theme.body(13)).foregroundStyle(Theme.muted)
-                    Label("See this idea", systemImage: "arrow.right").font(Theme.body(13, weight: .semibold)).foregroundStyle(Theme.accent)
-                }
-                Spacer()
-            }
-            .glassPanel(padding: 14)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Theme.border))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Explore featured idea: \(idea.title)")
+        .accessibilityLabel("Today’s idea: \(idea.title)")
     }
 
-    private var filterPanel: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack { SectionTitle("What would fit your day?", size: 22); Spacer(); Button("Clear filters") { clearFilters() }.buttonStyle(.text) }
-            TextField("Search calls, family, music…", text: $query).fieldBox()
-            LabeledPicker(label: "Activity length", selection: $maxMinutes, options: [(0, "Any length"), (5, "Up to 5 minutes"), (10, "Up to 10 minutes"), (15, "Up to 15 minutes"), (30, "Up to 30 minutes")])
-            LabeledPicker(label: "Setting", selection: $setting, options: Setting.allCases.map { ($0, $0.label) })
-            Toggle("Gentle movement only", isOn: $gentle).font(Theme.body(14)).tint(Theme.accent)
-            Note("Your PINS boundaries apply to every filter.")
+    private var quietCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Image(systemName: "leaf").font(.system(size: 24, weight: .light)).foregroundStyle(Theme.accent)
+            Text(enoughReached ? "Room to pause." : "Your needs come first.").font(Theme.display(24)).foregroundStyle(Theme.ink)
+            Text(enoughReached ? "Suggestions are quiet for today. Browse My Moves whenever you like." : "Nothing in the library fits your current needs, and that’s fine. Your boundaries stay as they are.").font(Theme.body(14)).foregroundStyle(Theme.muted)
+            if !enoughReached { Button("Review My Pins") { navigation.sheet = .setup }.buttonStyle(.secondary) }
         }
         .glassPanel()
     }
 
-    private var opportunities: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) { Eyebrow("A little possibility"); SectionTitle("Today’s opportunities") }
-                Spacer()
-                Button("See all ideas") { navigation.go(.moves, moves: .explore) }.buttonStyle(.text)
-            }
-            if enoughReached {
-                Text("Your chosen enough is here. \(store.state.movementSettings?.keepSittingBreaksAfterEnough == false ? "New suggestions are quiet." : "Short sitting breaks remain available.") Browse My Moves whenever it suits.").font(Theme.body(14)).foregroundStyle(Theme.ink)
-            }
-            Text("Free ways to move a little more, with what you already have.").font(Theme.body(15)).foregroundStyle(Theme.muted)
-            Text("\(matches.count) free \(matches.count == 1 ? "idea" : "ideas")\(filter == .forYou ? "" : " · \(filter.rawValue)")").font(Theme.body(13)).foregroundStyle(Theme.muted)
-            let free = (featured.map { f in [f] + matches.filter { $0.id != f.id } } ?? matches).prefix(4)
-            if free.isEmpty {
-                EmptyState(icon: "leaf", title: enoughReached ? "Room to pause." : hasFreeIdeas ? "Let’s try another angle." : "Your needs come first.", text: enoughReached ? "Your new suggestions are quiet for now. You can browse the library at any time." : filter == .saveMoney ? "No free idea in this view has a saving recorded in your currency yet. Free activities can still give you movement, time and enjoyment." : hasFreeIdeas ? "No free ideas match these filters. Try another setting or search." : "No free library ideas currently clear your needs. Your boundaries still come first.", action: (hasFreeIdeas ? "Clear filters" : "Review My Pins", { hasFreeIdeas ? clearFilters() : startSetup() }))
-            } else {
-                ForEach(Array(free)) { idea in IdeaTile(idea: idea) }
-            }
-        }
-    }
-
-    private var widgets: some View {
-        let activity = Wins.dashboardActivity(store.state, now: now)
-        return VStack(alignment: .leading, spacing: 16) {
-            readiness(activity)
-            todayProgress(activity)
-            RecentLifeWidget(now: now, activity: activity)
-            GivenBackWidget(now: now)
-            weekActivity(activity)
-            savedWidget
-            learning(activity)
-            todayContext
-            Button { choose(.surpriseMe) } label: {
-                ZStack(alignment: .bottomLeading) {
-                    SceneImage(name: "welcome-coast").frame(height: 190).clipped()
-                    LinearGradient(colors: [.clear, Theme.deepInk.opacity(0.8)], startPoint: .top, endPoint: .bottom)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Image(systemName: "sparkles").foregroundStyle(.white)
-                        Text("Find me something I’d never think of.").font(Theme.body(17, weight: .semibold)).foregroundStyle(.white).multilineTextAlignment(.leading)
-                        Text("A free idea that fits your PINS.").font(Theme.body(13)).foregroundStyle(.white.opacity(0.9))
-                    }
-                    .padding(16)
-                }
-                .frame(height: 190)
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private func readiness(_ activity: DashboardActivity) -> some View {
+    private var mood: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack { SectionTitle("Your Enough", size: 22); Spacer(); Button { startSetup() } label: { Image(systemName: "arrow.right") }.accessibilityLabel("Review My Pins") }
-            HStack(spacing: 16) {
-                ZStack {
-                    Circle().stroke(Theme.mist, lineWidth: 8)
-                    Circle().trim(from: 0, to: CGFloat(activity.pinsAnswered) / 4).stroke(Theme.accent, style: StrokeStyle(lineWidth: 8, lineCap: .round)).rotationEffect(.degrees(-90))
-                    VStack(spacing: 0) {
-                        Text("\(activity.pinsAnswered)").font(Theme.body(22, weight: .semibold)).foregroundStyle(Theme.ink) + Text("/4").font(Theme.body(12)).foregroundStyle(Theme.muted)
-                        Text("PINS").font(Theme.body(10)).foregroundStyle(Theme.muted)
-                    }
-                }
-                .frame(width: 84, height: 84)
-                .accessibilityLabel("\(activity.pinsAnswered) of 4 PINS categories answered")
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(store.isComplete ? "A starting point that can change with you." : "A few answers help us find ideas that fit your life.").font(Theme.body(14)).foregroundStyle(Theme.ink)
-                    Text("\(activity.routinesAnswered) of 3 life routine answers saved.").font(Theme.body(12)).foregroundStyle(Theme.muted)
-                }
-            }
-            if store.isComplete {
-                Text("What sounds better right now?").font(Theme.body(14, weight: .semibold)).foregroundStyle(Theme.ink)
-                HStack {
-                    Button { chooseSetting(.outside) } label: { Label("A little fresh air", systemImage: "leaf") }.buttonStyle(.secondary)
-                    Button { chooseSetting(.indoors) } label: { Label("Something indoors", systemImage: "heart") }.buttonStyle(.secondary)
-                }
-                Note("Just for this view. Your PINS needs still apply.")
-            } else {
-                Button("Continue my setup") { startSetup() }.buttonStyle(.secondary)
-            }
-        }
-        .glassPanel()
-    }
-
-    private func todayProgress(_ activity: DashboardActivity) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack { SectionTitle("Today’s progress", size: 22); Spacer(); Button("See all") { navigation.go(.wins) }.buttonStyle(.text) }
+            Text("How’s today feeling?").font(Theme.body(15, weight: .semibold)).foregroundStyle(Theme.ink)
             HStack(spacing: 8) {
-                Metric(icon: "checkmark.circle", value: "\(activity.today)", label: "Confirmed today")
-                Metric(icon: "figure.walk", value: Wins.durationLabel(activity.todayMinutes), label: "Movement reported")
-                Button { navigation.go(.moves, moves: .planned) } label: { Metric(icon: "clock", value: "\(activity.planned)", label: "Open plans") }.buttonStyle(.plain)
+                Chip(label: "Fresh air", selected: setting == .outside, icon: "leaf") { setting = setting == .outside ? .any : .outside; featuredId = nil }
+                Chip(label: "Indoors", selected: setting == .indoors, icon: "house") { setting = setting == .indoors ? .any : .indoors; featuredId = nil }
+                Chip(label: "Surprise me", selected: false, icon: "sparkles") { featuredId = Discovery.surpriseIdeaId(matches, currentId: featured?.id) }
             }
-            Note(activity.today > 0 ? "A little of your day, confirmed by you." : activity.planned > 0 ? "Your plans are here whenever something fits." : "Your day is open. Explore an idea when it suits you.")
+            Button(store.state.today.date == localDate(now) && !store.state.today.context.isEmpty ? "Today: \(store.state.today.context) · change" : "Less time, low energy, a hard day? Tell ENOUGH") { showToday = true }.buttonStyle(.text)
         }
         .glassPanel()
     }
 
-    private func weekActivity(_ activity: DashboardActivity) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack { SectionTitle("Your week, at your pace", size: 22); Spacer(); Button { navigation.go(.wins) } label: { Image(systemName: "arrow.right") }.accessibilityLabel("See activity history") }
-            HStack(alignment: .center, spacing: 12) {
-                Image(systemName: "leaf").font(.system(size: 24, weight: .light)).foregroundStyle(Theme.accent)
-                Text("\(activity.activeDays)").font(Theme.display(34)).foregroundStyle(Theme.ink)
-                Text("\(activity.activeDays == 1 ? "day" : "days") with a\nconfirmed moment").font(Theme.body(13)).foregroundStyle(Theme.muted)
+    private var week: some View {
+        let activity = Wins.dashboardActivity(store.state, now: now)
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Your week, at your pace").font(Theme.body(15, weight: .semibold)).foregroundStyle(Theme.ink)
+                Spacer()
+                Button("My Wins") { navigation.go(.wins) }.buttonStyle(.text)
             }
             ActivityDaysView(days: activity.days)
-            Note("Each check marks a move you confirmed. You decide what enough looks like.")
-            WeeklyReviewCard(now: now)
+            Text(activity.activeDays == 0 ? "An open week. There’s nothing to make up." : "\(activity.activeDays) \(activity.activeDays == 1 ? "day" : "days") with a moment you chose to keep.").font(Theme.body(13)).foregroundStyle(Theme.muted)
         }
         .glassPanel()
-    }
-
-    private var savedWidget: some View {
-        let saved = Array(Set(store.state.saved)).compactMap { Catalogue.byId($0, generated: store.state.generated ?? []) }
-        return VStack(alignment: .leading, spacing: 8) {
-            HStack { SectionTitle("Kept for another day", size: 22); Spacer(); Image(systemName: "bookmark").foregroundStyle(Theme.accent) }
-            Text(saved.isEmpty ? "A place for your possibilities." : "\(saved.count) \(saved.count == 1 ? "idea" : "ideas") you liked the look of.").font(Theme.body(15, weight: .semibold)).foregroundStyle(Theme.ink)
-            if !saved.isEmpty {
-                HStack(spacing: -12) {
-                    ForEach(saved.prefix(3)) { i in SceneImage(name: Discovery.cover(i)).frame(width: 56, height: 56).clipShape(Circle()).overlay(Circle().stroke(Color.white, lineWidth: 2)) }
-                }
-                .accessibilityHidden(true)
-            }
-            Text(saved.isEmpty ? "Save an idea in My Moves to find it here later." : "Your Saved ideas are here when the day has room. Your current needs are checked when you open them.").font(Theme.body(13)).foregroundStyle(Theme.muted)
-            Button("See Saved") { navigation.go(.moves, moves: .saved) }.buttonStyle(.text)
-        }
-        .glassPanel()
-    }
-
-    @State private var acknowledged = ""
-    private func learning(_ activity: DashboardActivity) -> some View {
-        let interests = store.profile.interests.filter { $0 != "Nothing to add" }.prefix(3).map { $0.replacingOccurrences(of: Pins.customPrefix, with: "") }
-        let key = store.profile.preferences.joined() + store.profile.interests.joined() + store.profile.needs.joined() + store.profile.strengths.joined()
-        return VStack(alignment: .leading, spacing: 8) {
-            Label("Enough is learning", systemImage: "brain").font(Theme.display(22)).foregroundStyle(Theme.ink)
-            Text(interests.isEmpty ? "Your PINS help us start with what matters to you." : "You’ve told us you enjoy \(interests.joined(separator: ", ")).").font(Theme.body(14)).foregroundStyle(Theme.ink)
-            if activity.confirmed > 0 {
-                Text("You said \(activity.worthwhile) of \(activity.confirmed) confirmed \(activity.confirmed == 1 ? "move was" : "moves were") worthwhile.\(activity.worthwhileOutside > 0 ? " \(activity.worthwhileOutside) included time outside." : "")\(activity.worthwhileTogether > 0 ? " \(activity.worthwhileTogether) included connection." : "")").font(Theme.body(13)).foregroundStyle(Theme.muted)
-            }
-            Text("Does your profile still fit?").font(Theme.body(14, weight: .semibold)).foregroundStyle(Theme.ink)
-            HStack {
-                Button("Yes, still right") { acknowledged = key }.buttonStyle(.secondary)
-                Button("Not quite") { startSetup() }.buttonStyle(.secondary)
-            }
-            if acknowledged == key { Label("Your current PINS will keep shaping your ideas.", systemImage: "checkmark").font(Theme.body(13)).foregroundStyle(Theme.accent) }
-            Button("Update My Pins") { startSetup() }.buttonStyle(.text)
-        }
-        .glassPanel()
-    }
-
-    private var todayContext: some View {
-        let note = store.state.today.date == localDate(now) ? store.state.today.context : ""
-        let choices: [(String, String)] = [("Feeling stressed", "brain"), ("Tired after a shift", "clock"), ("Low energy", "heart"), ("Got some time", "clock"), ("With the kids", "person.2"), ("Save money", "wallet.pass"), ("Want to get out", "leaf"), ("Something else", "ellipsis")]
-        return VStack(alignment: .leading, spacing: 8) {
-            SectionTitle("Anything different today?", size: 22)
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                ForEach(choices, id: \.0) { label, icon in
-                    Button { chooseContext(label) } label: {
-                        Label(label, systemImage: icon).font(Theme.body(13, weight: .semibold)).foregroundStyle(Theme.ink).frame(maxWidth: .infinity, alignment: .leading).padding(10).background(Theme.panel).clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            Note(note.isEmpty ? "Pick what fits right now. Your PINS needs always apply." : "Today’s note: \(note)")
-        }
-        .glassPanel()
-    }
-
-    private func chooseContext(_ context: String) {
-        switch context {
-        case "Something else": showToday = true
-        case "Got some time": maxMinutes = 0; filter = .forYou; filtersOpen = true
-        case "Want to get out": chooseSetting(.outside)
-        case "Feeling stressed", "Tired after a shift": store.setToday(context); choose(.forYou)
-        case "Low energy": store.setToday("Lower energy"); choose(.lowEnergy)
-        case "With the kids": choose(.withFamily)
-        default: choose(.saveMoney)
-        }
     }
 }
 
