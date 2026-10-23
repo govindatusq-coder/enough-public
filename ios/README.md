@@ -26,7 +26,7 @@ Idea matching (`Logic/Recommendations.swift`), discovery filters, wins and dashb
 
 The design follows the seven Japanese aesthetic principles: kanso (nothing that is not needed), fukinsei (asymmetry, left-aligned and off-centre), shibui (a muted palette with one accent), shizen (natural, unforced copy and scenes), yugen (suggestion over display, images fading into paper), datsuzoku (small surprises such as "Surprise me") and seijaku (stillness, no streaks or targets). Surfaces are thin glass over washi-coloured paper.
 
-Every image slot is an illustration slot: drop watercolour paintings into `Enough/Resources/Illustrations/` using the names and prompts in `docs/illustration-prompts.md` and the app uses them automatically. Until then the website's photographs are shown softened into a wash.
+Every image slot is an illustration slot: drop watercolour paintings into `Enough/Resources/Illustrations/` as `<scene>-illustration.webp` using the names and prompts in `docs/illustration-prompts.md` and the app uses them automatically. Until then the website's photographs are shown softened into a wash.
 
 ## Building
 

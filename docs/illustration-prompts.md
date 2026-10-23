@@ -1,6 +1,6 @@
 # Watercolour illustrations for the ENOUGH iPhone app
 
-The app shows a watercolour painting wherever the website shows a photograph. Each file goes in `ios/Enough/Enough/Resources/Illustrations/` with the exact name below and the app uses it automatically; until a file exists the photograph is shown softened into a wash.
+The app shows a watercolour painting wherever the website shows a photograph. Each file goes in `ios/Enough/Enough/Resources/Illustrations/` named `<scene>-illustration.webp` (for example `welcome-hero-illustration.webp`; the suffix avoids a bundle name clash with the photograph) and the app uses it automatically; until a file exists the photograph is shown softened into a wash. The first fifteen scenes were generated on 23 October 2026 and are in place; the five sprite sheets remain to do.
 
 ## Shared style (prepend to every prompt)
 

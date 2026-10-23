@@ -9,7 +9,8 @@ enum BundledImages {
         let key = "illustration:" + name
         if let cached = cache[key] { return cached }
         for ext in ["webp", "png", "jpg"] {
-            if let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "Illustrations") ?? Bundle.main.url(forResource: name + "-illustration", withExtension: ext), let image = UIImage(contentsOfFile: url.path) {
+            // Files are named `<scene>-illustration.<ext>` because Xcode flattens resource folders into the bundle, where a plain name would collide with the photograph.
+            if let url = Bundle.main.url(forResource: name + "-illustration", withExtension: ext) ?? Bundle.main.url(forResource: name + "-illustration", withExtension: ext, subdirectory: "Illustrations"), let image = UIImage(contentsOfFile: url.path) {
                 cache[key] = image
                 return image
             }
@@ -25,7 +26,7 @@ enum BundledImages {
     }
 }
 
-/// An illustration slot. It shows `Resources/Illustrations/<name>.webp` (a
+/// An illustration slot. It shows `Resources/Illustrations/<name>-illustration.webp` (a
 /// watercolour painting) when that file exists; until then the matching
 /// photograph is softened into a wash so the app reads as one quiet whole.
 /// It fills whatever frame it is given without ever widening its container.
