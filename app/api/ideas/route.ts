@@ -10,7 +10,7 @@ export const maxDuration=300;
 const config=()=>process.env;
 export async function GET(){return Response.json({available:!!config().OPENAI_API_KEY},{headers:{'Cache-Control':'no-store'}});}
 export async function POST(req:Request){
- const {db,user}=await signedIn();
+ const {db,user}=await signedIn(req);
  return createIdeasPost({
   authenticated:!!user,available:!!config().OPENAI_API_KEY,
   readAccount:async()=>{const {data,error}=await db.from('enough_accounts').select('state_json,revision').eq('user_id',user!.id).maybeSingle();if(error)throw error;return data;},
