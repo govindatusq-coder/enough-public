@@ -7,7 +7,6 @@ struct MainTabView: View {
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var navigation: AppNavigation
     @State private var clock = Date()
-    private let timer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
     var body: some View {
         TabView(selection: $navigation.tab) {
@@ -16,7 +15,13 @@ struct MainTabView: View {
             tabPage(WinsTabView(now: clock), title: "My Wins", icon: "doc.text", tag: .wins)
             tabPage(PinsTabView(), title: "My Pins", icon: "pin", tag: .pins)
         }
-        .onReceive(timer) { clock = $0 }
+        .task {
+            // Refresh "now" every 30 seconds for reminders, periods and greetings.
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 30_000_000_000)
+                clock = Date()
+            }
+        }
         .sheet(item: $navigation.sheet) { sheet in
             switch sheet {
             case .account(let pending): AccountSheet(pending: pending)
