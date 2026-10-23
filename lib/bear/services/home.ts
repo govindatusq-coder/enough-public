@@ -55,10 +55,10 @@ export const categoryWord=(c:string)=>({electricity:'Electricity',gas:'Gas',wate
 function dueLabel(due:string|null,today:string){if(!due)return 'No due date yet';const d=daysBetween(today,due);if(d===null)return '';if(d<0)return 'Past the due date';const rel=relativeDay(due,today);return 'Due '+(rel==='today'||rel==='tomorrow'?rel:rel);}
 function ledgers(rows:ValueLedgerEntry[],today:string,tasks:Task[]):HomeView['ledgers']{
  const month=today.slice(0,7);
- const wealth=rows.filter(r=>r.kind==='wealth'&&r.defensible&&r.occurredAt.slice(0,7)===month);
+ const wealth=rows.filter(r=>r.kind==='wealth'&&r.defensible&&!r.isDemo&&r.occurredAt.slice(0,7)===month);
  const wealthTotal=wealth.reduce((s,r)=>s+(r.amountCents||0),0);
- const health=rows.filter(r=>r.kind==='health'&&r.occurredAt>=weekStart(today));
- const happiness=rows.filter(r=>r.kind==='happiness'&&r.occurredAt>=weekStart(today));
+ const health=rows.filter(r=>r.kind==='health'&&!r.isDemo&&r.occurredAt>=weekStart(today));
+ const happiness=rows.filter(r=>r.kind==='happiness'&&!r.isDemo&&r.occurredAt>=weekStart(today));
  const happyMinutes=happiness.reduce((s,r)=>s+(r.minutes||0),0);
  return {
   health:{headline:health.length?`${health.length} ${health.length===1?'thing':'things'} for you this week`:'Nothing for you yet this week',lines:health.slice(0,3).map(r=>r.label)},

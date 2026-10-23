@@ -9,6 +9,18 @@
     },
     "app/api/idea-image/route.ts": {
       "maxDuration": 180
+    },
+    "app/api/bear/captures/route.ts": {
+      "maxDuration": 120
+    },
+    "app/api/bear/cron/reminders/route.ts": {
+      "maxDuration": 120
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/bear/cron/reminders",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

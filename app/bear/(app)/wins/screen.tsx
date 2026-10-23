@@ -30,6 +30,7 @@ export function WinsScreen(){
     </div>
     <div className="section">
      {data.cards.length===0&&<div className="card" style={{display:'flex',gap:14,alignItems:'center'}}><MamaBear size={64} pose="calm"/><div><p style={{fontWeight:600}}>{brand.winsEmpty}</p><p className="muted small">{brand.winsSub}</p></div></div>}
+     {data.cards.some(c=>c.isDemo)&&<p className="faint" style={{marginBottom:10}}>Example bills show here so you can see how it works, but they never count towards your totals.</p>}
      {data.cards.map(c=><div key={c.id} className="receipt"><div style={{display:'flex',justifyContent:'space-between',gap:10}}><p><span className="tick" aria-hidden="true">✓</span><strong>{c.title}</strong></p>{c.isDemo&&<span className="demo-tag">Example</span>}</div><p className="small muted" style={{marginTop:4,paddingLeft:22}}>{c.detail}</p><p className="tiny faint" style={{marginTop:4,paddingLeft:22}}>{formatAU(c.when.slice(0,10),'short')}</p></div>)}
      {data.reinforcement&&<BearSays size={22}>{data.reinforcement}</BearSays>}
     </div>

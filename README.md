@@ -1,3 +1,14 @@
+# Load Bear (`/bear`)
+
+Load Bear is the second-brain / life-management product built in this repository alongside ENOUGH, mounted at `/bear` and sharing the Supabase project and sign-in. The MVP makes one workflow real end to end: **bills** — capture, AI extraction with per-field confidence, mandatory human verification, task and reminder planning around the user's Life Rhythm, non-guilt reminders, payment assistance (Bear never pays), mark paid, My Wins and a Wealth ledger that only counts stated late fees and discounts.
+
+* Plan and design docs: `docs/load-bear/` (visual system, architecture, data model, extraction schema, vertical slice, milestones, external configuration, verification).
+* Status: `BUILD_STATUS.md`.
+* Migration to apply once: `supabase/migrations/20261023120000_load_bear.sql`.
+* Server-only keys: `ANTHROPIC_API_KEY` (photo/PDF reading), `BEAR_VAPID_*` + `BEAR_CRON_SECRET` + `SUPABASE_SERVICE_ROLE_KEY` (push delivery). See `.env.example`. Without them the affected features are visibly marked unavailable; text and typed bills work through the rule-based extractor.
+* Local run without Supabase: `BEAR_DEV_STORE=memory pnpm dev` then open `http://localhost:3000/bear` (one in-memory local user; ignored when a Supabase URL is set or on Vercel).
+* Checks: `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, and the browser walk-through `BEAR_TEST_MODE=start node scripts/test-bear-browser.mjs` (needs a prior build and Chromium at `/opt/pw-browsers/...` or `BEAR_TEST_CHROMIUM`).
+
 # ENOUGH public-hosting migration
 
 ## Privacy and AI permission
