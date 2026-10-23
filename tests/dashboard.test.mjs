@@ -56,7 +56,7 @@ test('previous returns use full labelled calendar periods across year, leap-mont
 
 test('relative moment labels count calendar days across daylight saving rather than elapsed 24-hour blocks',()=>{
  const moduleUrl=new URL('../lib/dashboard.ts',import.meta.url).href;
- const output=execFileSync(process.execPath,['--input-type=module','-e',`import {momentDateLabel} from ${JSON.stringify(moduleUrl)};process.stdout.write(momentDateLabel(new Date(2026,9,3,23,50).toISOString(),new Date(2026,9,5,0,10)));`],{env:{...process.env,TZ:'Australia/Sydney'},encoding:'utf8'});
+ const output=execFileSync(process.execPath,['--experimental-strip-types','--input-type=module','-e',`import {momentDateLabel} from ${JSON.stringify(moduleUrl)};process.stdout.write(momentDateLabel(new Date(2026,9,3,23,50).toISOString(),new Date(2026,9,5,0,10)));`],{env:{...process.env,TZ:'Australia/Sydney'},encoding:'utf8'});
  assert.equal(output,'2 days ago');
  assert.equal(momentDateLabel(new Date(2026,9,7,8).toISOString(),new Date(2026,9,7,12)),'Today');
  assert.equal(momentDateLabel(new Date(2026,9,6,23,59).toISOString(),new Date(2026,9,7,0,1)),'Yesterday');
