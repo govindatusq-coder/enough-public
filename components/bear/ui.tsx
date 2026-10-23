@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
-import {useEffect,useSyncExternalStore} from 'react';
+import {useEffect,useState,useSyncExternalStore} from 'react';
+import {createPortal} from 'react-dom';
 export function Button({children,variant='primary',className='',href,...rest}:{children:React.ReactNode;variant?:'primary'|'coral'|'glass'|'ghost'|'quiet';className?:string;href?:string}&React.ButtonHTMLAttributes<HTMLButtonElement>){
  if(href)return <Link href={href} className={`btn ${variant} ${className}`} role="button">{children}</Link>;
  return <button type="button" className={`btn ${variant} ${className}`} {...rest}>{children}</button>;
@@ -23,8 +24,11 @@ export function ChevronLeft(){return <svg width="22" height="22" viewBox="0 0 24
 export function Dots(){return <span className="dots" aria-hidden="true"><i/><i/><i/></span>;}
 export function Skeleton({lines=3}:{lines?:number}){return <div aria-busy="true" aria-live="polite" style={{display:'grid',gap:12}}>{Array.from({length:lines},(_,i)=><div key={i} className="skeleton" style={{minHeight:i===0?90:60}}/>)}<span className="sr-only">Loading</span></div>;}
 export function Sheet({children,onClose,label}:{children:React.ReactNode;onClose:()=>void;label:string}){
- useEffect(()=>{const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape')onClose();};window.addEventListener('keydown',onKey);document.body.style.overflow='hidden';return()=>{window.removeEventListener('keydown',onKey);document.body.style.overflow='';};},[onClose]);
- return <><div className="sheet-backdrop" onClick={onClose} aria-hidden="true"/><div className="sheet glass-strong" role="dialog" aria-modal="true" aria-label={label}><div className="handle" aria-hidden="true"/>{children}</div></>;
+ const [mounted,setMounted]=useState(false);
+ useEffect(()=>{const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape')onClose();};window.addEventListener('keydown',onKey);document.body.style.overflow='hidden';const t=setTimeout(()=>setMounted(true),0);return()=>{clearTimeout(t);window.removeEventListener('keydown',onKey);document.body.style.overflow='';};},[onClose]);
+ if(!mounted)return null;
+ // Portalled to the Bear root so the sheet sits above the bottom navigation's stacking context.
+ return createPortal(<><div className="sheet-backdrop" onClick={onClose} aria-hidden="true"/><div className="sheet glass-strong" role="dialog" aria-modal="true" aria-label={label}><div className="handle" aria-hidden="true"/>{children}</div></>,document.getElementById('bear-root')||document.body);
 }
 function subscribeOnline(cb:()=>void){window.addEventListener('online',cb);window.addEventListener('offline',cb);return()=>{window.removeEventListener('online',cb);window.removeEventListener('offline',cb);};}
 export function useOnline(){return useSyncExternalStore(subscribeOnline,()=>navigator.onLine,()=>true);}

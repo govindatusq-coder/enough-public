@@ -38,7 +38,7 @@ export default function BillPage({params}:{params:Promise<{id:string}>}){
     <p className="eyebrow">{categoryLabels[bill.category]}{bill.category!=='other'?' bill':''}{paid&&<span className="pill teal" style={{marginLeft:8}}>Paid</span>}{dropped&&<span className="pill" style={{marginLeft:8}}>Let go</span>}</p>
     <h2>{bill.biller}</h2>
     <div className="amount" style={{marginTop:10}}>{formatAUD(bill.amountCents)}</div>
-    <p className="muted" style={{marginTop:6}}>{bill.dueAt?`Due ${formatAU(bill.dueAt)} · ${relativeDay(bill.dueAt,today)}`:'No due date'}</p>
+    <p className="muted" style={{marginTop:6}}>{bill.dueAt?`Due ${formatAU(bill.dueAt)}${/^(today|tomorrow|yesterday|[A-Z])/.test(relativeDay(bill.dueAt,today))?' · '+relativeDay(bill.dueAt,today):''}`:'No due date'}</p>
     {task.forPerson&&<span className="pill" style={{marginTop:10}}>For {task.forPerson}</span>}
    </div>
    {!paid&&!dropped&&<>

@@ -12,7 +12,7 @@
  -webkit-tap-highlight-color:transparent;text-rendering:optimizeLegibility;
 }
 .bear *{box-sizing:border-box;}
-.bear h1,.bear h2,.bear h3{margin:0;font-weight:600;letter-spacing:-.01em;line-height:1.15;}
+.bear h1,.bear h2,.bear h3{margin:0;font-family:var(--font-ui);font-weight:600;letter-spacing:-.01em;line-height:1.15;}
 .bear h1{font-size:30px;}.bear h2{font-size:22px;}.bear h3{font-size:18px;}
 .bear p{margin:0;}
 .bear .display{font-family:var(--font-display);font-weight:400;letter-spacing:-.005em;line-height:1;}

@@ -17,5 +17,5 @@ export const metadata:Metadata={
 export const viewport:Viewport={themeColor:'#FFF7E8',viewportFit:'cover',width:'device-width',initialScale:1,maximumScale:1};
 
 export default function BearLayout({children}:{children:React.ReactNode}){
- return <div className={`bear ${display.variable} ${ui.variable} ${hand.variable}`}><div className="bear-bg" aria-hidden="true"/>{children}<BearRuntime/></div>;
+ return <div id="bear-root" className={`bear ${display.variable} ${ui.variable} ${hand.variable}`}><div className="bear-bg" aria-hidden="true"/>{children}<BearRuntime/></div>;
 }

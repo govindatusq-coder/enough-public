@@ -1,57 +1,52 @@
-// Mama Bear — abstract navy bear, coral polka-dot bandana, mustard chest, flexed arm.
-// Flat screen-print rendering in four inks. `pose` changes only the arm and expression.
+// Mama Bear — abstract navy bear, coral polka-dot bandana, mustard rolled-sleeve top and the
+// flexed-bicep Rosie pose. Flat screen-print rendering in four inks; never outlined, never a cub.
 export type BearPose='hero'|'calm'|'wave';
 export function MamaBear({size=240,pose='hero',animate=false,className='',title='Mama Bear'}:{size?:number;pose?:BearPose;animate?:boolean;className?:string;title?:string}){
  const navy='#102A43',coral='#FF5147',mustard='#FFB72B',cream='#FFF7E8';
+ const flex=pose!=='calm';
  return (
   <svg className={`mama ${animate?'animate':''} ${className}`} width={size} height={size*1.1} viewBox="0 0 400 440" role="img" aria-label={title}>
-   {/* energy ticks */}
-   {pose==='hero'&&<g className="ticks" stroke={mustard} strokeWidth="9" strokeLinecap="round" fill="none"><path d="M318 84 l22 -26"/><path d="M332 118 l30 -8"/><path d="M296 62 l6 -32"/></g>}
-   {/* body */}
-   <path d="M74 440 C70 330 120 270 200 268 C280 270 330 330 326 440 Z" fill={navy}/>
-   {/* mustard top */}
-   <path d="M112 440 C110 356 150 312 200 312 C250 312 290 356 288 440 Z" fill={mustard}/>
-   <path d="M150 440 C150 390 175 366 200 366 C225 366 250 390 250 440 Z" fill={navy} opacity=".92"/>
-   {/* flexed arm (viewer's right) */}
-   {pose!=='calm'&&<g>
-    <path d="M296 330 C330 300 352 262 344 208 C340 180 356 160 376 162 C396 164 400 186 394 212 C386 258 356 318 318 350 Z" fill={navy}/>
-    <path d="M262 352 C286 312 300 300 318 330 C324 346 318 360 300 372 L262 372 Z" fill={navy}/>
-    <ellipse cx="376" cy="178" rx="22" ry="20" fill={navy}/>
-    <path d="M344 212 C352 232 352 252 346 272 L322 262 C328 244 330 226 328 212 Z" fill={mustard}/>
+   {pose==='hero'&&<g className="ticks" stroke={mustard} strokeWidth="9" strokeLinecap="round" fill="none"><path d="M352 112 l26 -22"/><path d="M362 146 l32 -4"/><path d="M336 90 l10 -32"/></g>}
+   {/* torso */}
+   <path d="M62 440 C60 352 110 300 190 298 C270 300 322 352 320 440 Z" fill={navy}/>
+   {/* mustard top with a soft neckline */}
+   <path d="M70 440 L72 376 C84 356 118 348 148 348 C166 348 180 358 190 370 C200 358 214 348 232 348 C262 348 298 356 310 376 L312 440 Z" fill={mustard}/>
+   {/* resting arm (viewer's left) */}
+   <path d="M92 346 C66 332 50 306 52 284 C54 266 70 262 80 278 C90 296 104 314 124 328 Z" fill={navy}/>
+   {/* flexed arm (viewer's right): upper arm out, forearm up, fist beside the head */}
+   {flex&&<g>
+    <path d="M282 332 C312 322 336 298 348 270 C356 250 362 232 356 214 L326 206 C322 232 312 258 296 282 C286 296 274 306 262 312 Z" fill={navy}/>
+    <path d="M326 206 C318 184 318 164 326 150 C332 138 346 132 358 138 C372 146 376 164 372 182 C370 194 364 206 356 214 Z" fill={navy}/>
+    <ellipse cx="350" cy="140" rx="24" ry="22" fill={navy}/>
+    {/* rolled mustard sleeve on the upper arm */}
+    <path d="M276 326 C290 318 302 306 310 292 L336 306 C326 324 310 338 292 346 Z" fill={mustard}/>
    </g>}
-   {pose==='calm'&&<path d="M296 330 C330 318 346 300 346 282 C346 266 332 262 322 276 C312 292 300 306 286 316 Z" fill={navy}/>}
-   {/* left arm (viewer's left), resting */}
-   <path d="M98 338 C72 320 56 296 56 278 C56 262 70 258 80 272 C90 288 102 304 118 316 Z" fill={navy}/>
+   {!flex&&<path d="M288 346 C314 332 330 306 328 284 C326 266 310 262 300 278 C290 296 276 314 256 328 Z" fill={navy}/>}
    {/* head */}
-   <circle cx="200" cy="170" r="108" fill={navy}/>
-   {/* ears */}
-   <circle cx="112" cy="92" r="30" fill={navy}/><circle cx="288" cy="92" r="30" fill={navy}/>
-   <circle cx="116" cy="96" r="13" fill={cream} opacity=".85"/><circle cx="284" cy="96" r="13" fill={cream} opacity=".85"/>
-   {/* brow + muzzle marks */}
-   <path d="M200 110 C220 100 246 104 256 116 C244 112 224 112 200 120 C176 112 156 112 144 116 C154 104 180 100 200 110 Z" fill={cream} opacity=".9"/>
-   <path d="M200 182 C236 182 262 200 262 226 C262 256 234 276 200 276 C166 276 138 256 138 226 C138 200 164 182 200 182 Z" fill={cream}/>
-   {/* eyes */}
-   <g>
-    <path d="M150 150 C158 140 176 140 184 150 C176 160 158 160 150 150 Z" fill={cream}/>
-    <path d="M216 150 C224 140 242 140 250 150 C242 160 224 160 216 150 Z" fill={cream}/>
-    <circle cx="168" cy="151" r="5.5" fill={navy}/><circle cx="234" cy="151" r="5.5" fill={navy}/>
-    {/* confident brows */}
-    <path d="M146 134 L186 128" stroke={cream} strokeWidth="6" strokeLinecap="round" opacity=".95"/>
-    <path d="M254 134 L214 128" stroke={cream} strokeWidth="6" strokeLinecap="round" opacity=".95"/>
-   </g>
-   {/* nose + mouth */}
-   <path d="M200 208 C214 208 222 216 222 224 C222 234 210 240 200 240 C190 240 178 234 178 224 C178 216 186 208 200 208 Z" fill={navy}/>
-   <path d="M200 240 L200 252 M200 252 C190 262 180 258 176 252 M200 252 C210 262 220 258 224 252" stroke={navy} strokeWidth="5" strokeLinecap="round" fill="none"/>
-   {/* bandana band */}
-   <path d="M98 108 C120 70 160 56 200 56 C240 56 280 70 302 108 C280 94 240 86 200 86 C160 86 120 94 98 108 Z" fill={coral}/>
-   <g fill="#fff" opacity=".95"><circle cx="150" cy="80" r="4"/><circle cx="190" cy="70" r="4"/><circle cx="230" cy="72" r="4"/><circle cx="268" cy="86" r="4"/><circle cx="124" cy="96" r="3.5"/></g>
-   {/* knot + tails */}
+   <circle cx="190" cy="178" r="104" fill={navy}/>
+   <circle cx="104" cy="104" r="32" fill={navy}/><circle cx="276" cy="104" r="32" fill={navy}/>
+   <circle cx="108" cy="108" r="14" fill={cream} opacity=".85"/><circle cx="272" cy="108" r="14" fill={cream} opacity=".85"/>
+   {/* muzzle */}
+   <path d="M190 196 C226 196 250 214 250 236 C250 262 224 280 190 280 C156 280 130 262 130 236 C130 214 154 196 190 196 Z" fill={cream}/>
+   {/* eyes: calm, confident */}
+   <path d="M136 160 C146 148 166 148 176 160 C166 170 146 170 136 160 Z" fill={cream}/>
+   <path d="M204 160 C214 148 234 148 244 160 C234 170 214 170 204 160 Z" fill={cream}/>
+   <circle cx="157" cy="160" r="6" fill={navy}/><circle cx="223" cy="160" r="6" fill={navy}/>
+   <circle cx="159" cy="157" r="2" fill={cream}/><circle cx="225" cy="157" r="2" fill={cream}/>
+   {/* brows: outer ends lifted, inner ends set */}
+   <path d="M132 140 C146 132 162 134 176 142" stroke={cream} strokeWidth="7" strokeLinecap="round" fill="none"/>
+   <path d="M248 140 C234 132 218 134 204 142" stroke={cream} strokeWidth="7" strokeLinecap="round" fill="none"/>
+   {/* nose + smile */}
+   <path d="M190 214 C204 214 212 222 212 230 C212 240 200 246 190 246 C180 246 168 240 168 230 C168 222 176 214 190 214 Z" fill={navy}/>
+   <path d="M190 246 L190 256 M176 258 C182 266 198 266 204 258" stroke={navy} strokeWidth="5" strokeLinecap="round" fill="none"/>
+   {/* bandana */}
+   <path d="M90 124 C112 84 150 66 190 66 C230 66 268 84 290 124 C266 108 230 100 190 100 C150 100 114 108 90 124 Z" fill={coral}/>
+   <g fill="#fff" opacity=".95"><circle cx="140" cy="94" r="4"/><circle cx="178" cy="82" r="4"/><circle cx="218" cy="84" r="4"/><circle cx="256" cy="100" r="4"/><circle cx="116" cy="112" r="3.5"/></g>
    <g className="bandana-tails">
-    <path d="M118 86 C96 60 60 48 38 58 C56 62 70 74 80 90 C62 92 44 104 34 122 C58 110 86 108 118 104 Z" fill={coral}/>
-    <g fill="#fff" opacity=".95"><circle cx="60" cy="66" r="3.5"/><circle cx="64" cy="108" r="3.5"/><circle cx="88" cy="96" r="3"/></g>
+    <path d="M110 100 C84 72 50 60 26 70 C46 74 62 86 72 104 C52 106 34 118 24 136 C50 124 80 120 112 118 Z" fill={coral}/>
+    <g fill="#fff" opacity=".95"><circle cx="48" cy="76" r="3.5"/><circle cx="52" cy="122" r="3.5"/><circle cx="80" cy="108" r="3"/></g>
    </g>
-   <ellipse cx="122" cy="92" rx="16" ry="13" fill={coral}/>
-   <circle cx="122" cy="92" r="4" fill="#fff" opacity=".9"/>
+   <ellipse cx="114" cy="108" rx="17" ry="14" fill={coral}/><circle cx="114" cy="108" r="4" fill="#fff" opacity=".9"/>
   </svg>
  );
 }
