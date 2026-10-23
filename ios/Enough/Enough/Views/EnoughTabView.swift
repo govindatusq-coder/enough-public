@@ -1,116 +1,117 @@
 import SwiftUI
 
-/// My Enough: a calm home. A greeting, one gentle idea for today, a question
-/// about how the day feels, and a quiet view of the week. Nothing to catch up
-/// on, nothing to score.
+/// Home: a soft painting behind a greeting, one calm line, and four ways in.
+/// Ideas for exercise (My Moves), Record exercise & savings (My Wins), My life
+/// (My Pins) and My goals (the goals list in My Wins). Nothing to catch up on.
 struct EnoughTabView: View {
     let now: Date
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var navigation: AppNavigation
-    @State private var setting: Setting = .any
-    @State private var featuredId: Int?
     @State private var showToday = false
 
-    private var enoughReached: Bool { store.enoughReached(now: now) }
-    private var ideas: [Idea] { Movement.suggestionsAfterEnough(store.feed(now: now).map(\.idea), reached: enoughReached, settings: store.state.movementSettings) }
-    private var matches: [Idea] { Discovery.homeIdeas(ideas, state: store.state, setting: setting) }
-    private var featured: Idea? { matches.first { $0.id == featuredId } ?? matches.first }
     private var name: String { store.profile.name.trimmingCharacters(in: .whitespaces) }
     private var todayNote: String { store.state.today.date == localDate(now) ? store.state.today.context : "" }
+    private var activity: DashboardActivity { Wins.dashboardActivity(store.state, now: now) }
+    private var featured: Idea? {
+        let ideas = Movement.suggestionsAfterEnough(store.feed(now: now).map(\.idea), reached: store.enoughReached(now: now), settings: store.state.movementSettings)
+        return Discovery.homeIdeas(ideas, state: store.state, setting: .any).first
+    }
 
-    private var encouragement: String {
-        let activity = Wins.dashboardActivity(store.state, now: now)
-        if enoughReached { return "You’ve had your enough today. Nothing more is needed." }
+    private var calmLine: String {
+        if store.enoughReached(now: now) { return "You’ve had your enough today. Nothing more is needed." }
         if activity.today > 0 { return "Something already happened today. That counts." }
-        if activity.planned > 0 { return "A plan is waiting, for whenever it fits. No rush." }
-        if !store.isComplete { return "A few answers about your life, and the ideas become yours." }
-        return "Nothing to catch up on. Here’s one small possibility, if the day has room."
+        if !todayNote.isEmpty { return "Noted: \(todayNote.lowercased()). Today’s ideas are shaped around it." }
+        return "Take a breath. There’s nothing you need to do this second."
+    }
+
+    /// One quiet line under the tiles, with a link: a waiting plan, today's idea, or the first step.
+    private var notice: (text: String, link: String, action: () -> Void)? {
+        if activity.planned > 0 {
+            return ("A plan is waiting, for whenever it fits.", "Have a look when you’re ready.", { navigation.go(.moves, moves: .planned) })
+        }
+        if !store.isComplete {
+            return ("A few answers about your life make the ideas yours.", "Start when you’re ready.", { navigation.sheet = .setup })
+        }
+        if let featured {
+            return ("One idea for today: \(featured.title).", "Have a look when you’re ready.", { navigation.openIdea(featured.id) })
+        }
+        return nil
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("\(Discovery.greeting(now))\(name.isEmpty ? "" : ", \(name)").").font(Theme.display(30)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
-                Text(encouragement).font(Theme.body(16)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 0) {
+            header.pageGutter().padding(.top, 8)
+            StatusStrip().padding(.top, 12)
+            DueReminders(now: now).padding(.top, 12)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(Discovery.greeting(now)),").font(Theme.display(38)).foregroundStyle(Theme.ink)
+                Text("\(name.isEmpty ? "friend" : name).").font(Theme.script(54)).foregroundStyle(Theme.ink).lineLimit(1).minimumScaleFactor(0.6).padding(.leading, 6)
             }
-            if let featured { todayCard(featured) } else { quietCard }
-            if store.isComplete { mood } else { Button("Start with my life") { navigation.sheet = .setup }.buttonStyle(.primary) }
-            week
-            Note("ENOUGH never sets you a target. Enough is whatever you decide it is.")
+            .pageGutter().padding(.top, 28)
+            .accessibilityElement(children: .combine)
+            Text(calmLine).font(Theme.italic(19)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true).pageGutter().padding(.top, 18)
+            panel.pageGutter().padding(.top, 26)
+            HStack { Spacer(); Button("Having a hard day?") { showToday = true }.buttonStyle(.secondary); Spacer() }.padding(.top, 30)
+            Note("ENOUGH never sets you a target. Enough is whatever you decide it is.").pageGutter().padding(.top, 26)
         }
-        .pageGutter()
         .sheet(isPresented: $showToday) { TodayNoteSheet(now: now) }
     }
 
-    private func todayCard(_ idea: Idea) -> some View {
-        Button { navigation.openIdea(idea.id) } label: {
-            VStack(alignment: .leading, spacing: 0) {
-                IdeaPicture(idea: idea).frame(height: 200).frame(maxWidth: .infinity)
-                VStack(alignment: .leading, spacing: 10) {
-                    Eyebrow(store.isComplete ? "One idea for today" : "An example to explore")
-                    Text(idea.title).font(Theme.display(24)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
-                    Text(idea.body).font(Theme.body(14)).foregroundStyle(Theme.muted).multilineTextAlignment(.leading).lineLimit(3)
-                    ValueStrip(idea: idea, compact: true)
-                    Text("Only if it fits. There’s always another day.").font(Theme.body(12)).foregroundStyle(Theme.muted)
-                }
-                .padding(16)
+    private var header: some View {
+        HStack(alignment: .center) {
+            LogoView(height: 22)
+            Spacer()
+            Button { navigation.sheet = .account(pending: nil) } label: {
+                Image(systemName: "gearshape").font(.system(size: 17, weight: .light)).foregroundStyle(Theme.ink)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.card).overlay(Circle().stroke(Theme.border)).clipShape(Circle())
             }
-            .cardSurface()
+            .buttonStyle(.plain)
+            .accessibilityLabel(store.cloud ? "Account and settings" : "Sign in and settings")
+            Text(now.formatted(.dateTime.weekday(.wide))).font(Theme.display(19)).foregroundStyle(Theme.ink).padding(.leading, 10)
+        }
+    }
+
+    private var panel: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("What would help right now?").font(Theme.display(27)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+                Text(store.isComplete ? "Pick one, or just have a look." : "Pick one. Nothing here is required.").font(Theme.body(15)).foregroundStyle(Theme.muted)
+            }
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                tile("Ideas for exercise", icon: "figure.walk") { navigation.go(.moves, moves: .explore) }
+                tile("Record exercise & savings", icon: "checkmark.circle") { navigation.go(.wins); navigation.scrollTarget = "wins-record" }
+                tile("My life", icon: "leaf") { navigation.go(.pins) }
+                tile("My goals", icon: "flag") { navigation.go(.wins); navigation.scrollTarget = "wins-goals" }
+            }
+            if let notice {
+                Button(action: notice.action) {
+                    HStack(alignment: .top, spacing: 10) {
+                        Circle().fill(Theme.clay).frame(width: 8, height: 8).padding(.top, 8)
+                        (Text(notice.text + " ") + Text(notice.link).underline()).font(Theme.display(17, weight: .regular)).foregroundStyle(Theme.ink).multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
+            }
+        }
+        .glassPanel(padding: 22)
+    }
+
+    private func tile(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 10) {
+                Image(systemName: icon).font(.system(size: 22, weight: .ultraLight)).foregroundStyle(Theme.accent).accessibilityHidden(true)
+                Text(title).font(Theme.display(18, weight: .regular)).foregroundStyle(Theme.ink).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, minHeight: 112)
+            .padding(.horizontal, 10).padding(.vertical, 12)
+            .background(Theme.card.opacity(0.55))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).stroke(Theme.border))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Today’s idea: \(idea.title)")
-    }
-
-    private var quietCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(enoughReached ? "Room to pause." : "Your needs come first.").font(Theme.display(24)).foregroundStyle(Theme.ink)
-            Text(enoughReached ? "Ideas are quiet for today. Browse My Moves whenever you like." : "Nothing in the library fits your current needs, and that’s fine. Your boundaries stay as they are.").font(Theme.body(14)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
-            if !enoughReached { Button("Review my answers") { navigation.sheet = .setup }.buttonStyle(.secondary) }
-        }
-        .glassPanel()
-    }
-
-    private enum Mood: String, CaseIterable, Hashable {
-        case outside = "Fresh air", indoors = "Indoors", surprise = "Surprise me"
-    }
-
-    private func moodSelected(_ mood: Mood) -> Bool {
-        switch mood {
-        case .outside: return setting == .outside
-        case .indoors: return setting == .indoors
-        case .surprise: return false
-        }
-    }
-
-    private func pickMood(_ mood: Mood) {
-        switch mood {
-        case .outside: setting = setting == .outside ? .any : .outside; featuredId = nil
-        case .indoors: setting = setting == .indoors ? .any : .indoors; featuredId = nil
-        case .surprise: featuredId = Discovery.surpriseIdeaId(matches, currentId: featured?.id)
-        }
-    }
-
-    private var mood: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("How’s today feeling?").font(Theme.body(15, weight: .medium)).foregroundStyle(Theme.ink)
-            ChipRow(items: Mood.allCases, label: { $0.rawValue }, selected: { moodSelected($0) }, pick: { pickMood($0) })
-            Button(todayNote.isEmpty ? "Less time, low energy, a hard day? Tell ENOUGH" : "Today: \(todayNote) · change") { showToday = true }.buttonStyle(.text)
-        }
-        .glassPanel()
-    }
-
-    private var week: some View {
-        let activity = Wins.dashboardActivity(store.state, now: now)
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("Your week, at your pace").font(Theme.body(15, weight: .medium)).foregroundStyle(Theme.ink)
-                Spacer()
-                Button("My Wins") { navigation.go(.wins) }.buttonStyle(.text)
-            }
-            ActivityDaysView(days: activity.days)
-            Text(activity.activeDays == 0 ? "An open week. There’s nothing to make up." : "\(activity.activeDays) \(activity.activeDays == 1 ? "day" : "days") with a moment you chose to keep.").font(Theme.body(13)).foregroundStyle(Theme.muted)
-        }
-        .glassPanel()
+        .accessibilityLabel(title)
     }
 }
 

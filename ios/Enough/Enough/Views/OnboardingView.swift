@@ -68,10 +68,12 @@ struct OnboardingView: View {
     }
 
     private func card(_ card: Card) -> some View {
+        // Scrolls on small phones so the story text is never clipped.
+        ScrollView(showsIndicators: false) {
         VStack(alignment: .leading, spacing: 0) {
             if let image = card.image {
                 SceneImage(name: image)
-                    .frame(height: 300)
+                    .frame(height: 260)
                     .frame(maxWidth: .infinity)
                     .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                     .padding(.horizontal, 16)
@@ -84,8 +86,9 @@ struct OnboardingView: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 22)
-            Spacer(minLength: 0)
+            .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 }

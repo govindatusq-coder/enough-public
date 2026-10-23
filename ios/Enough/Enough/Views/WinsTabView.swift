@@ -6,10 +6,12 @@ struct WinsTabView: View {
     let now: Date
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var navigation: AppNavigation
+    @EnvironmentObject private var health: HealthService
     @State private var reportCurrency: String?
     @State private var showWorkings = false
     @State private var correcting: Entry?
     @State private var historyOpen = false
+    @State private var photos: [ActivityPhoto] = []
 
     private var period: ReturnPeriod { navigation.winsPeriod }
     private var currency: String { reportCurrency ?? store.profile.currency }
@@ -20,13 +22,15 @@ struct WinsTabView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             summary
-            returns
-            WinsGallery(now: now, onAddWin: addWin)
+            record
+            WinsGallery(now: now, photos: $photos, onAddWin: addWin)
+            goals
             history
             WeeklyReviewCard(now: now).glassPanel()
             Note("\(store.cloud ? "Kept in your account." : "Kept only on this device.") Money is never converted between currencies; this receipt is in \(currency).")
         }
         .pageGutter()
+        .onAppear { if navigation.highlightedOutcomeId != nil { historyOpen = true } }
         .sheet(isPresented: $showWorkings) { workings }
         .confirmationDialog("Correct this outcome?", isPresented: Binding(get: { correcting != nil }, set: { if !$0 { correcting = nil } }), titleVisibility: .visible) {
             Button("Return it to Planned", role: .destructive) { if let e = correcting { store.undoOutcome(entryId: e.id) }; correcting = nil }
@@ -48,17 +52,20 @@ struct WinsTabView: View {
                 Note(activity.activeDays == 0 ? "An open week. Nothing to make up." : "\(activity.activeDays) \(activity.activeDays == 1 ? "day" : "days") with a moment you kept.")
             }
             .glassPanel(padding: 14)
-            Button("Add a moment") { addWin() }.buttonStyle(.primary)
         }
     }
 
-    private var returns: some View {
-        let moving = report.rows.reduce(0) { $0 + ($1.minutes ?? 0) }, combined = report.rows.reduce(0) { $0 + ($1.timeCombined ?? 0) }
+    /// Record exercise & savings: steps today, money kept, activities you enjoy, photos.
+    private var record: some View {
+        let moving = report.rows.reduce(0) { $0 + ($1.minutes ?? 0) }
         let previous = Wins.previousReturns(store.state.entries, period: period, currency: currency, now: now)
         let currencies = Array(Set([currency] + Wins.returnCurrencies(store.state, now: now))).sorted()
+        let interests = Set(store.profile.interests)
+        let enjoyed = report.rows.filter { e in !interests.isDisjoint(with: store.state.idea(e.ideaId).enjoy) }.count
+        let steps = Movement.todayMovement(store.movementSnapshot, now: now)?.steps
         return VStack(alignment: .leading, spacing: 12) {
-            Eyebrow("What came back")
-            SectionTitle("Your real returns.")
+            Eyebrow("Record exercise & savings")
+            SectionTitle("What came back.")
             HStack(spacing: 10) {
                 Picker("Period", selection: $navigation.winsPeriod) { ForEach(ReturnPeriod.allCases) { Text($0.rawValue).tag($0) } }.pickerStyle(.menu).tint(Theme.ink)
                 if currencies.count > 1 {
@@ -67,14 +74,59 @@ struct WinsTabView: View {
                 Spacer()
             }
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                Metric(value: steps.map { String(Int($0)) } ?? "—", label: "Steps today", caption: health.connected ? "From Apple Health" : "Connect Apple Health in My Pins")
                 Metric(value: Regions.formatMoney(report.money, currency: currency, country: store.profile.country), label: "Money kept", caption: previous.map { "\($0.label): \(Regions.formatMoney($0.money, currency: currency, country: store.profile.country))" } ?? "Only what you confirmed")
-                Metric(value: Wins.durationLabel(moving), label: "Moving", caption: combined > 0 ? "\(Wins.durationLabel(combined)) inside something else" : "From the moments you kept")
-                Metric(value: Wins.durationLabel(report.outside), label: "Outside", caption: "Time you spent outdoors")
-                Metric(value: "\(report.worthwhile)", label: "Worthwhile", caption: report.rows.isEmpty ? "Moments you said were worth it" : "of \(report.rows.count) \(report.rows.count == 1 ? "moment" : "moments")")
+                Metric(value: "\(enjoyed)", label: "Activities you enjoy", caption: interests.isEmpty ? "Say what you enjoy in My Pins" : "\(enjoyed == 1 ? "moment" : "moments") with something you love, of \(report.rows.count)")
+                Metric(value: "\(store.cloud ? photos.count : 0)", label: "Photos", caption: store.cloud ? "Kept with your moments" : "Sign in to keep photos")
             }
-            Button("How this is worked out") { showWorkings = true }.buttonStyle(.text)
+            Note("\(Wins.durationLabel(moving)) moving, \(Wins.durationLabel(report.outside)) of it outside, \(report.worthwhile) \(report.worthwhile == 1 ? "moment" : "moments") you called worthwhile.")
+            VStack(alignment: .leading, spacing: 8) {
+                Button("Add a moment") { addWin() }.buttonStyle(.primary)
+                Button("How this is worked out") { showWorkings = true }.buttonStyle(.text)
+            }
         }
         .glassPanel()
+        .id("wins-record")
+    }
+
+    /// My goals: every plan you set, planned, done or set aside.
+    private var goals: some View {
+        let rows = store.state.entries.filter { $0.support != nil }.sorted { $0.acceptedAt > $1.acceptedAt }
+        return VStack(alignment: .leading, spacing: 12) {
+            Eyebrow("My goals")
+            SectionTitle("What you set out to do.")
+            if rows.isEmpty {
+                Text("No goals yet. Say “sounds good” to an idea in My Moves, then add a plan: a direction or a clear target, in your own words.").font(Theme.body(14)).foregroundStyle(Theme.muted).fixedSize(horizontal: false, vertical: true)
+                Button("Find an idea") { navigation.go(.moves, moves: .explore) }.buttonStyle(.secondary)
+            } else {
+                ForEach(rows) { e in goalRow(e) }
+            }
+        }
+        .glassPanel()
+        .id("wins-goals")
+    }
+
+    private func goalRow(_ e: Entry) -> some View {
+        let plan = e.support ?? SupportPlan()
+        let status = e.status == .completed ? "Done" : e.status == .notToday ? "Set aside" : plan.paused == true ? "Paused" : "Planned"
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top) {
+                Text(store.state.idea(e.ideaId).title).font(Theme.display(20)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+                Spacer()
+                Badge(status)
+            }
+            Text(plan.goal).font(Theme.body(14)).foregroundStyle(Theme.ink).fixedSize(horizontal: false, vertical: true)
+            Note(plan.goalType == .smart
+                ? "A clear target\(plan.target.isEmpty ? "" : " · \(plan.target)")\(plan.deadlineDate.map { " · by \($0.formatted(date: .abbreviated, time: .omitted))" } ?? "")"
+                : "A direction\(plan.when.isEmpty ? "" : " · \(plan.when)")")
+            if e.status == .accepted {
+                Button("See my plan") { navigation.openSupport(e.id) }.buttonStyle(.text)
+            } else if e.status == .completed {
+                Button("See outcome") { navigation.openOutcome(e.id) }.buttonStyle(.text)
+            }
+        }
+        .padding(.vertical, 8)
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.border).frame(height: 1) }
     }
 
     private var history: some View {

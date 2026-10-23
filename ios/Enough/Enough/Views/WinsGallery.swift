@@ -5,10 +5,10 @@ import PhotosUI
 /// (`components/wins-gallery.tsx`). Photos need an account.
 struct WinsGallery: View {
     let now: Date
+    @Binding var photos: [ActivityPhoto]
     let onAddWin: () -> Void
     @EnvironmentObject private var store: AppStore
     @EnvironmentObject private var navigation: AppNavigation
-    @State private var photos: [ActivityPhoto] = []
     @State private var status = "loading"
     @State private var error = ""
     @State private var view: MomentFilter = .all

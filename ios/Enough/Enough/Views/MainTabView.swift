@@ -11,7 +11,7 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $navigation.tab) {
-            tabPage(EnoughTabView(now: clock), title: "My Enough", icon: "house", tag: .enough)
+            tabPage(EnoughTabView(now: clock), title: "Home", icon: "house", tag: .enough, chrome: false)
             tabPage(MovesTabView(now: clock), title: "My Moves", icon: "figure.walk", tag: .moves)
             tabPage(WinsTabView(now: clock), title: "My Wins", icon: "heart", tag: .wins)
             tabPage(PinsTabView(now: clock), title: "My Pins", icon: "pin", tag: .pins)
@@ -39,30 +39,30 @@ struct MainTabView: View {
         }
     }
 
-    private func tabPage<Content: View>(_ content: Content, title: String, icon: String, tag: AppNavigation.Tab) -> some View {
+    /// `chrome: false` is the home tab: it draws its own header over a soft
+    /// painting and carries the status strip and reminders itself.
+    private func tabPage<Content: View>(_ content: Content, title: String, icon: String, tag: AppNavigation.Tab, chrome: Bool = true) -> some View {
         NavigationStack {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
-                        StatusStrip()
-                        DueReminders(now: clock)
+                        if chrome {
+                            StatusStrip()
+                            DueReminders(now: clock)
+                        }
                         content
                     }
                     .padding(.top, 4)
                     .padding(.bottom, 48)
                 }
-                .onChange(of: navigation.scrollTarget) { _, target in
-                    guard let target, navigation.tab == tag else { return }
-                    navigation.scrollTarget = nil
-                    Task {
-                        try? await Task.sleep(nanoseconds: 350_000_000)
-                        withAnimation { proxy.scrollTo(target, anchor: .top) }
-                    }
-                }
+                .onChange(of: navigation.scrollTarget) { _, _ in scrollIfAsked(proxy, tag: tag) }
+                .onAppear { scrollIfAsked(proxy, tag: tag) }
             }
-            .background(Theme.paper)
+            .background { pageBackground(chrome: chrome) }
             .scrollDismissesKeyboard(.interactively)
             .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar(chrome ? .visible : .hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button { navigation.sheet = .help } label: { Image(systemName: "questionmark.circle") }.accessibilityLabel("How ENOUGH works")
@@ -72,10 +72,32 @@ struct MainTabView: View {
                         .accessibilityLabel(store.cloud ? "My account" : "Sign in")
                 }
             }
-            .navigationBarTitleDisplayMode(.large)
         }
         .tabItem { Label(title, systemImage: icon) }
         .tag(tag)
+    }
+
+    /// Scroll to a section another tab asked for, once this page is on screen.
+    private func scrollIfAsked(_ proxy: ScrollViewProxy, tag: AppNavigation.Tab) {
+        guard let target = navigation.scrollTarget, navigation.tab == tag else { return }
+        navigation.scrollTarget = nil
+        Task {
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            withAnimation { proxy.scrollTo(target, anchor: .top) }
+        }
+    }
+
+    @ViewBuilder private func pageBackground(chrome: Bool) -> some View {
+        if chrome {
+            Theme.paper.ignoresSafeArea()
+        } else {
+            ZStack {
+                Theme.paper
+                SceneImage(name: "welcome-coast").blur(radius: 10).opacity(0.75)
+                LinearGradient(colors: [Theme.paper.opacity(0.45), Theme.paper.opacity(0.7), Theme.paper.opacity(0.9)], startPoint: .top, endPoint: .bottom)
+            }
+            .ignoresSafeArea()
+        }
     }
 }
 

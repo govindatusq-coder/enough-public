@@ -7,9 +7,9 @@ The app opens with a three-card onboarding and then the tabs (the website's long
 ## What is in the app
 
 - **Welcome**: the landing page, with the four example ideas and the "how it thinks" steps.
-- **My Enough**: a calm home. A greeting, one idea for today with its money-kept and time figures, "How's today feeling?" (fresh air, indoors, surprise me, and a note for today), and your week at your pace. Nothing to catch up on.
+- **Home**: a soft painting, a greeting with your name, one calm line, and four ways in: Ideas for exercise (My Moves), Record exercise & savings (My Wins), My life (My Pins) and My goals (the goals list in My Wins). One quiet line points to a waiting plan or today's idea; "Having a hard day?" keeps a note that shapes today's ideas.
 - **My Moves**: Explore (search, a few ways in, more filters, collections, surprise me, **More ideas, made for me** from OpenAI through the website's API, each with a painted picture), Saved and Planned. Every idea shows one definite money-kept figure and a time figure, with ⓘ opening the workings. Planned moves offer **How did it go?**, the six-page support plan (a direction or a clear target, a place in your day, barriers, preparation, reminders, company), Not today, the optional Health check and QR or typed companion check-ins.
-- **My Wins**: your week, real returns by period and currency, moments with private photos (upload, swipe, delete), every moment with corrections, and the optional weekly review.
+- **My Wins**: your week, the record (steps today from Apple Health, money kept, activities you enjoy, photos) by period and currency, moments with private photos (upload, swipe, delete), My goals (every plan: planned, done, paused or set aside), every moment with corrections, and the optional weekly review.
 - **My Pins**: your answers, life routines, familiar settings, country and currency, **Apple Health** (read-only steps and exercise minutes, your own chosen "enough"), AI and privacy, what ENOUGH is learning, account, export, reset and delete.
 - **My Pins**: the profile, the eight-step setup, AI and privacy choice, country and currency, reset or delete, account and backup, and the privacy notice.
 

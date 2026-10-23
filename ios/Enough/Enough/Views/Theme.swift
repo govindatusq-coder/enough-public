@@ -27,6 +27,9 @@ enum Theme {
     }
 
     static func display(_ size: CGFloat, weight: Font.Weight = .light) -> Font { .system(size: size, weight: weight, design: .serif) }
+    /// A handwritten flourish for the person's name; Snell Roundhand ships with iOS.
+    static func script(_ size: CGFloat) -> Font { .custom("SnellRoundhand-Bold", size: size) }
+    static func italic(_ size: CGFloat) -> Font { Font.system(size: size, weight: .light, design: .serif).italic() }
     static func body(_ size: CGFloat = 17, weight: Font.Weight = .regular) -> Font { .system(size: size, weight: weight, design: .rounded) }
     static let eyebrow: Font = .system(size: 11, weight: .medium, design: .rounded)
     static let shadow = Color(red: 0x0A / 255, green: 0x2F / 255, blue: 0x52 / 255).opacity(0.06)
