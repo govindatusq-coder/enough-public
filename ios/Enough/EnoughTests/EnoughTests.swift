@@ -5,9 +5,9 @@ import XCTest
 final class CatalogueTests: XCTestCase {
     func testLibraryMatchesWebIdsAndCount() {
         let ideas = Catalogue.ideas
-        XCTAssertEqual(ideas.count, 61)
-        XCTAssertEqual(Set(ideas.map(\.id)).count, 61)
-        XCTAssertEqual(Set(ideas.map(\.id)), Set(0...60))
+        XCTAssertEqual(ideas.count, 59)
+        XCTAssertEqual(Set(ideas.map(\.id)).count, 59)
+        XCTAssertEqual(Set(ideas.map(\.id)), Set(0...60).subtracting([2, 13]), "The web id formula skips 2 and 13")
         XCTAssertEqual(Catalogue.byId(0)?.title, "Dinner, with a little fresh air.")
         XCTAssertEqual(Catalogue.byId(0)?.moneyCents, 699)
         XCTAssertEqual(Catalogue.byId(0)?.moneySource, .feeAvoided)
@@ -15,7 +15,8 @@ final class CatalogueTests: XCTestCase {
         XCTAssertEqual(Catalogue.byId(1)?.minutes, 12)
         XCTAssertEqual(Catalogue.byId(46)?.key, "ad-break-wall-pushups")
         XCTAssertEqual(Catalogue.byId(60)?.key, "commute-wait-loop")
-        XCTAssertEqual(Catalogue.byId(2)?.key, "call-pace-indoors")
+        XCTAssertNil(Catalogue.byId(2))
+        XCTAssertEqual(Catalogue.byId(3)?.key, "call-pace-indoors")
     }
 
     func testDerivedFieldsMatchWeb() throws {
@@ -31,7 +32,8 @@ final class CatalogueTests: XCTestCase {
         let refill = try XCTUnwrap(Catalogue.ideas.first { $0.key == "water-refill-far" })
         XCTAssertEqual(refill.movementMode, "stairs")
         XCTAssertEqual(refill.intensity, .moderate)
-        XCTAssertEqual(coffee.promised, [.movement, .moneySaved, .experience, .taskCompleted])
+        XCTAssertEqual(coffee.promised, [.movement, .moneySaved, .experience])
+        XCTAssertEqual(post.promised, [.movement, .moneySaved, .experience, .taskCompleted])
         XCTAssertTrue(Catalogue.ideas.allSatisfy(IdeaMovement.hasMovement))
     }
 
@@ -95,7 +97,7 @@ final class JourneyTests: XCTestCase {
         s = completeState(); s.demo = true
         let accepted = Journey.accept(s, ideaId: 0)
         XCTAssertEqual(accepted.entries.count, 1)
-        XCTAssertEqual(accepted.entries[0].predicted, [.movement, .moneySaved, .experience, .timeSaved])
+        XCTAssertEqual(accepted.entries[0].predicted, [.movement, .moneySaved, .experience, .taskCompleted, .timeSaved])
         XCTAssertEqual(Journey.accept(accepted, ideaId: 0).entries.count, 1, "An idea is planned once")
     }
 

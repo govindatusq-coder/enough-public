@@ -210,7 +210,7 @@ private func lowerFirst(_ text: String) -> String {
 }
 
 enum Catalogue {
-    /// The full library: 46 original ideas plus 15 sitting breaks, in web ID order.
+    /// The full library: 44 original ideas plus 15 sitting breaks, in web ID order (ids 2 and 13 are unused, as on the web).
     static let ideas: [Idea] = {
         var list: [Idea] = []
         for (n, r) in libraryRows.enumerated() {

@@ -12,7 +12,7 @@ The earlier `native/` folder is a Capacitor shell that loads the website remotel
 - **My Wins**: real returns by period and currency, moments and private photos (upload, swipe, delete), month calendar, milestones, made room for more, top moments, what Enough has learned, activity history with corrections, and the detailed receipt.
 - **My Pins**: the profile, the eight-step setup, AI and privacy choice, country and currency, reset or delete, account and backup, and the privacy notice.
 
-Idea matching (`Logic/Recommendations.swift`), discovery filters, wins and dashboard maths are line-by-line ports of `lib/recommendations.ts`, `lib/discovery.ts`, `lib/moves.ts`, `lib/wins.ts` and `lib/dashboard.ts`. The 61-idea library is ported from `lib/ideas.ts` and `lib/sitting-break-ideas.ts` with the same IDs.
+Idea matching (`Logic/Recommendations.swift`), discovery filters, wins and dashboard maths are line-by-line ports of `lib/recommendations.ts`, `lib/discovery.ts`, `lib/moves.ts`, `lib/wins.ts` and `lib/dashboard.ts`. The 59-idea library is ported from `lib/ideas.ts` and `lib/sitting-break-ideas.ts` with the same IDs.
 
 ## Accounts, sync and AI
 

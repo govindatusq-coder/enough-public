@@ -114,7 +114,7 @@ struct EnoughTabView: View {
             }
             Text("Free ways to move a little more, with what you already have.").font(Theme.body(15)).foregroundStyle(Theme.muted)
             Text("\(matches.count) free \(matches.count == 1 ? "idea" : "ideas")\(filter == .forYou ? "" : " · \(filter.rawValue)")").font(Theme.body(13)).foregroundStyle(Theme.muted)
-            let free = (featured.map { [$0] + matches.filter { m in m.id != $0.id } } ?? matches).prefix(4)
+            let free = (featured.map { f in [f] + matches.filter { $0.id != f.id } } ?? matches).prefix(4)
             if free.isEmpty {
                 EmptyState(icon: "leaf", title: enoughReached ? "Room to pause." : hasFreeIdeas ? "Let’s try another angle." : "Your needs come first.", text: enoughReached ? "Your new suggestions are quiet for now. You can browse the library at any time." : filter == .saveMoney ? "No free idea in this view has a saving recorded in your currency yet. Free activities can still give you movement, time and enjoyment." : hasFreeIdeas ? "No free ideas match these filters. Try another setting or search." : "No free library ideas currently clear your needs. Your boundaries still come first.", action: (hasFreeIdeas ? "Clear filters" : "Review My Pins", { hasFreeIdeas ? clearFilters() : startSetup() }))
             } else {

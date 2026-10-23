@@ -27,7 +27,7 @@ struct MovesTabView: View {
                     }
                 }
                 .pickerStyle(.segmented).pageGutter()
-                .onChange(of: navigation.movesView) { _, _ in navigation.detailIdeaId = nil }
+                .onChange(of: navigation.movesView) { _, v in if v != .explore { navigation.detailIdeaId = nil } }
                 switch navigation.movesView {
                 case .explore:
                     if let id = navigation.detailIdeaId {
@@ -79,7 +79,7 @@ struct MovesDiscoveryView: View {
     private var featured: Idea? { narrowed.first { $0.id == surpriseId } ?? narrowed.first }
     private var shown: [Idea] {
         if filter == .surpriseMe, let featured { return [featured] + narrowed.filter { $0.id != featured.id } }
-        let fresh = Dictionary(uniqueKeysWithValues: store.freshIds.enumerated().map { ($1, $0) })
+        let fresh = Dictionary(store.freshIds.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
         return narrowed.filter { fresh[$0.id] != nil }.sorted { fresh[$0.id]! < fresh[$1.id]! } + narrowed.filter { fresh[$0.id] == nil }
     }
 
