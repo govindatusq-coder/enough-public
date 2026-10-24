@@ -44,5 +44,5 @@ Rules:
 - steps: 1–5 concrete sub-steps only when the task genuinely needs them, otherwise an empty list.
 - extractedText: the readable text of the input, cleaned, up to 6000 characters. For spoken notes, the transcript.
 - bill: when kind is bill, fill the full bill reading using the bill rules; otherwise null.
-- Never invent values. Unknown is null with low confidence. Never output card numbers, CVVs or passwords.
+- Never invent values. When something is unknown, leave it empty rather than guessing, and list any field you are unsure about in uncertain. Never output card numbers, CVVs or passwords.
 Bill rules: amounts in AUD cents; the total due now; list every date in candidateDates and every amount in candidateAmounts; lower confidence when ambiguous; alreadyPaid only when stated.`;
