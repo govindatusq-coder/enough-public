@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {addDays,formatAU,isValidISODate,parseISODate} from '../domain/dates.ts';
-import {billCategories,paymentMethods,recurrences,traced,type Area,type Bill,type BillFieldKey,type BillFields,type Project,type Task,type TaskDependency,type UserCorrection} from '../domain/types.ts';
+import {areaKeys,billCategories,paymentMethods,recurrences,traced,type Area,type Bill,type BillFieldKey,type BillFields,type Project,type Task,type TaskDependency,type Traced,type UserCorrection} from '../domain/types.ts';
+import {areaLabels} from '../domain/labels.ts';
 import {stamp,type BearStore} from '../store/store.ts';
 import {recordBehaviour} from './behaviour.ts';
 import {keyFields} from './bill-extraction.ts';
@@ -23,6 +24,9 @@ const corrections=z.object({
 }).strict();
 export const confirmBillSchema=z.object({extractionId:z.string().uuid(),corrections:corrections.default({}),confirmedFields:z.array(z.string().max(40)).max(30).default([]),allowDuplicate:z.boolean().default(false),forPerson:z.string().trim().max(40).nullable().default(null)}).strict();
 export type ConfirmBillInput=z.infer<typeof confirmBillSchema>;
+export const confirmTaskSchema=z.object({extractionId:z.string().uuid(),corrections:z.object({title:z.string().trim().min(1).max(120).optional(),area:z.enum(areaKeys).optional(),when:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),timeOfDay:z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),person:z.string().trim().max(80).nullable().optional(),location:z.string().trim().max(160).nullable().optional(),isRecurring:z.boolean().optional(),notes:z.string().trim().max(1000).nullable().optional()}).strict().default({}),confirmedFields:z.array(z.string().max(40)).max(20).default([]),includeSteps:z.boolean().default(true)}).strict();
+export type ConfirmTaskInput=z.infer<typeof confirmTaskSchema>;
+const kindToTask:Record<string,Task['kind']>={appointment:'appointment',school:'school',form:'form',errand:'errand',shopping:'shopping',message:'message',note:'note',event:'event',other:'custom',bill:'custom'};
 export class ConfirmError extends Error{readonly status:number;readonly code:string;constructor(message:string,status=400,code='invalid'){super(message);this.name='ConfirmError';this.status=status;this.code=code;}}
 
 export function applyCorrections(fields:BillFields,input:ConfirmBillInput['corrections'],confirmed:string[]):{fields:BillFields;changes:{field:string;from:unknown;to:unknown}[]}{
@@ -67,6 +71,32 @@ export async function confirmBill(store:BearStore,input:ConfirmBillInput){
  if(capture)await store.update('captures',capture.id,{status:'verified'});
  const dependencies=await planDependencies(store,task,bill,profile.pins.preferences.planningDetail);
  return {bill,task,project,dependencies};
+}
+
+// A verified non-bill capture becomes Area → Project → Task with the original as the Resource.
+export async function confirmTask(store:BearStore,input:ConfirmTaskInput){
+ const extraction=await store.get('extractions',input.extractionId);
+ if(!extraction)throw new ConfirmError('That capture could not be found.',404,'not_found');
+ if(extraction.status==='verified')throw new ConfirmError('Bear already has this one.',409,'already_confirmed');
+ const at=new Date().toISOString();const g={...extraction.general};const changes:{field:string;from:unknown;to:unknown}[]=[];
+ for(const [key,value] of Object.entries(input.corrections) as [keyof typeof input.corrections,unknown][]){if(value===undefined||key==='notes')continue;const cur=(g as unknown as Record<string,{value:unknown}>)[key];if(cur&&JSON.stringify(cur.value)!==JSON.stringify(value))changes.push({field:key,from:cur.value,to:value});(g as unknown as Record<string,unknown>)[key]=traced(value,'user',1,true,at);}
+ for(const key of input.confirmedFields){const t=(g as unknown as Record<string,Traced<unknown>>)[key];if(t&&typeof t==='object'&&'confidence' in t&&t.value!==null)(g as unknown as Record<string,unknown>)[key]={...t,confidence:1,userVerified:true,lastUpdated:at};}
+ for(const c of changes){await store.insert('user_corrections',stamp<UserCorrection>(store.userId,{extractionId:extraction.id,field:c.field,from:c.from,to:c.to}));await recordBehaviour(store,'field_corrected',{field:c.field});}
+ if(!g.title.value||!g.title.userVerified)throw new ConfirmError('Bear needs a name for this before it can carry it.',400,'unverified_title');
+ if(g.when.value&&!isValidISODate(g.when.value))throw new ConfirmError('That date is not valid.',400,'invalid_date');
+ const areaKey=g.area.value||'me';const profile=await ensureProfile(store);
+ let area=(await store.list('areas',{where:[{column:'key',value:areaKey}]}))[0];
+ if(!area)area=await store.insert('areas',stamp<Area>(store.userId,{key:areaKey,label:areaLabels[areaKey],archived:false}));else if(area.archived)await store.update('areas',area.id,{archived:false});
+ if(!profile.areas.includes(areaKey))await store.update('profiles',profile.id,{areas:[...profile.areas,areaKey]});
+ const capture=await store.get('captures',extraction.captureId);
+ const project=await store.insert('projects',stamp<Project>(store.userId,{areaKey,title:g.title.value,status:'active',dueAt:g.when.value,resourceDocumentIds:capture?.documentId?[capture.documentId]:[],billId:null}));
+ const minutes=g.estimatedMinutes||(g.kind==='form'?10:g.kind==='shopping'?20:g.kind==='appointment'||g.kind==='event'?30:5);
+ const task=await store.insert('tasks',stamp<Task>(store.userId,{projectId:project.id,kind:kindToTask[g.kind]||'custom',title:g.title.value,status:'open',dueAt:g.when.value,dueTime:g.timeOfDay.value,location:g.location.value,notes:input.corrections.notes??(g.summary||null),estimatedMinutes:minutes,cognitiveEffort:g.steps.length>2?'medium':'low',forPerson:g.person.value,isDemo:!!capture?.isDemo}));
+ const steps:Task[]=[];
+ if(input.includeSteps&&profile.pins.preferences.planningDetail!=='just_the_task')for(const s of g.steps.slice(0,5)){const t=await store.insert('tasks',stamp<Task>(store.userId,{projectId:project.id,kind:'custom',title:s,status:'open',dueAt:g.when.value,estimatedMinutes:5,cognitiveEffort:'low',forPerson:g.person.value,isDemo:!!capture?.isDemo}));await store.insert('task_dependencies',stamp<TaskDependency>(store.userId,{taskId:task.id,dependsOnTaskId:t.id}));steps.push(t);}
+ await store.update('extractions',extraction.id,{status:'verified',general:g});
+ if(capture)await store.update('captures',capture.id,{status:'verified'});
+ return {task,project,steps};
 }
 
 // Only dependencies the bill actually warrants. The user never sees PM complexity otherwise.

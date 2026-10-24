@@ -20,13 +20,18 @@ const NOW=new Date('2026-11-10T09:00:00+11:00'); // Tuesday morning, Sydney
 const png=new Uint8Array([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a,0,0,0,0]);
 const field=(value,confidence=0.95,evidence='')=>({value,confidence,evidence});
 const empty=()=>({value:null,confidence:0,evidence:null});
-function modelOutput(overrides={}){
+function billOutput(overrides={}){
  return {documentType:'bill',biller:field('Energy Australia'),billerKey:'energy-australia',category:field('electricity'),amountDueCents:field(18460,0.96,'Total amount due $184.60'),currency:'AUD',
   dueDate:field('2026-11-28',0.55,'Due date 28/11/2026 ... Pay by 20/11/2026 for discount'),issueDate:field('2026-11-05'),accountReference:field('1234 5678 90'),isRecurring:field(true,0.8),expectedRecurrence:field('quarterly',0.8),
   paymentMethods:field(['bpay','card_online']),paymentUrl:field('https://www.energyaustralia.com.au/pay'),bpayBillerCode:field('3111'),bpayReference:field('123456789012'),directDebitActive:field(false,0.6),
   lateFeeCents:field(1500,0.9,'Late payment fee $15.00'),earlyDiscountCents:field(900,0.9),discountDeadline:field('2026-11-20',0.9),servicePeriodStart:field('2026-08-05'),servicePeriodEnd:field('2026-11-05'),personHint:empty(),alreadyPaid:field(false,0.9),
   candidateDates:[{label:'due',date:'2026-11-28',evidence:'Due date 28/11/2026'},{label:'discount',date:'2026-11-20',evidence:'Pay by 20/11/2026'}],
   candidateAmounts:[{label:'total_due',cents:18460,evidence:'$184.60'},{label:'discount',cents:900,evidence:'$9.00'}],notes:null,...overrides};
+}
+// The model returns a general understanding with the bill reading nested inside.
+function modelOutput(overrides={},general={}){
+ const bill=billOutput(overrides);
+ return {kind:'bill',summary:'An electricity bill',title:field(`Pay ${bill.category.value||'electricity'} bill`),area:field('money'),when:bill.dueDate,timeOfDay:empty(),person:empty(),location:empty(),isRecurring:bill.isRecurring,steps:[],estimatedMinutes:2,extractedText:null,bill,...general};
 }
 async function onboard(store){
  await ensureProfile(store);

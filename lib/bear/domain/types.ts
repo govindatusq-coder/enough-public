@@ -117,16 +117,21 @@ export interface BillFields{
  notes:string|null;
 }
 export type BillFieldKey=Exclude<keyof BillFields,'documentType'|'billerKey'|'candidateDates'|'candidateAmounts'|'notes'>;
-export interface VerificationQuestion{field:BillFieldKey;question:string;options:{label:string;value:string|number|boolean|null}[]}
-export interface ExtractedEntity extends Owned{captureId:Id;kind:'bill';status:'draft'|'verified'|'rejected';fields:BillFields;questions:VerificationQuestion[];sourceText:string|null;inferenceId:Id|null;duplicateOfBillId:Id|null}
+export type GeneralFieldKey='title'|'area'|'when'|'timeOfDay'|'person'|'location'|'isRecurring';
+export interface VerificationQuestion{field:BillFieldKey|GeneralFieldKey;question:string;options:{label:string;value:string|number|boolean|null}[]}
+// What Bear understood from any capture, before the user confirms it.
+export const captureKinds=['bill','appointment','school','form','errand','shopping','message','note','event','other'] as const;
+export type CaptureKind=typeof captureKinds[number];
+export interface GeneralFields{kind:CaptureKind;summary:string;title:Traced<string>;area:Traced<AreaKey>;when:Traced<ISODate>;timeOfDay:Traced<string>;person:Traced<string>;location:Traced<string>;isRecurring:Traced<boolean>;steps:string[];estimatedMinutes:number|null}
+export interface ExtractedEntity extends Owned{captureId:Id;kind:'bill'|'task';status:'draft'|'verified'|'rejected';fields:BillFields;general:GeneralFields;questions:VerificationQuestion[];sourceText:string|null;inferenceId:Id|null;duplicateOfBillId:Id|null}
 export interface AIInference extends Owned{captureId:Id|null;service:string;provider:string;model:string;promptHash:string;rawOutput:unknown;latencyMs:number;ok:boolean;error:string|null}
 export interface UserCorrection extends Owned{extractionId:Id;field:string;from:unknown;to:unknown}
 
 // ---------- PARA ----------
 export interface Project extends Owned{areaKey:AreaKey;title:string;status:'active'|'done'|'archived';dueAt:ISODate|null;resourceDocumentIds:Id[];billId:Id|null}
-export const taskKinds=['pay_bill','check_balance','confirm_discount','confirm_discrepancy','transfer_money','save_receipt','custom'] as const;
+export const taskKinds=['pay_bill','check_balance','confirm_discount','confirm_discrepancy','transfer_money','save_receipt','appointment','school','form','errand','shopping','message','note','event','custom'] as const;
 export type TaskKind=typeof taskKinds[number];
-export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;status:'open'|'done'|'dropped'|'archived';dueAt:ISODate|null;estimatedMinutes:number;cognitiveEffort:'low'|'medium'|'high';forPerson:string|null;isDemo:boolean}
+export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;status:'open'|'done'|'dropped'|'archived';dueAt:ISODate|null;dueTime?:string|null;location?:string|null;notes?:string|null;estimatedMinutes:number;cognitiveEffort:'low'|'medium'|'high';forPerson:string|null;isDemo:boolean}
 export interface TaskDependency extends Owned{taskId:Id;dependsOnTaskId:Id}
 
 // ---------- Bill ----------

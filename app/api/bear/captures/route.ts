@@ -14,6 +14,6 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
   return json(result,201);
  }
  const raw=await req.text();if(new TextEncoder().encode(raw).length>64*1024)throw new HttpError('That is a lot of text. Paste just the bill.',413);
- let body;try{body=captureTextSchema.parse(JSON.parse(raw));}catch{throw new HttpError('Tell Bear something about the bill first.',400);}
+ let body;try{body=captureTextSchema.parse(JSON.parse(raw));}catch{throw new HttpError('Tell Bear something first.',400);}
  return json(await createCapture(store,provider,{method:body.method,text:body.text,isDemo:body.isDemo}),201);
 });

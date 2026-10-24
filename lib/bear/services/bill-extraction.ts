@@ -1,9 +1,11 @@
-import {billOutputJsonSchema,billOutputSchema,billSystemPrompt,type BillOutput} from '../ai/bill-schema.ts';
+import {type BillOutput} from '../ai/bill-schema.ts';
+import {generalOutputJsonSchema,generalOutputSchema,generalSystemPrompt,type GeneralOutput} from '../ai/general-schema.ts';
+import {understandWithRules} from '../ai/general-rules.ts';
 import {ProviderError,type StructuredModelProvider} from '../ai/provider.ts';
 import {extractBillWithRules,slug} from '../ai/rules.ts';
 import {formatAU} from '../domain/dates.ts';
 import {formatAUD} from '../domain/money.ts';
-import {traced,type AIInference,type Bill,type BillFieldKey,type BillFields,type ExtractedEntity,type Traced,type VerificationQuestion} from '../domain/types.ts';
+import {traced,type AIInference,type AreaKey,type Bill,type BillFieldKey,type BillFields,type ExtractedEntity,type GeneralFields,type Traced,type VerificationQuestion} from '../domain/types.ts';
 import {stamp,type BearStore} from '../store/store.ts';
 
 // BillExtractionService: runs the rule-based extractor and (when configured) the model,
@@ -70,34 +72,60 @@ export async function findDuplicate(store:BearStore,f:BillFields):Promise<Bill|n
  return bills.find(b=>(f.dueDate.value&&b.dueAt===f.dueDate.value&&(f.amountDueCents.value===null||b.amountCents===f.amountDueCents.value))||(f.accountReference.value&&b.fields.accountReference.value===f.accountReference.value&&f.dueDate.value===b.dueAt))||null;
 }
 
-export async function extractBill(store:BearStore,provider:StructuredModelProvider|null,input:ExtractionInput):Promise<ExtractedEntity>{
+// Reconcile the model's general understanding (or the rule-based one) into traced fields.
+export function reconcileGeneral(model:GeneralOutput|null,rules:GeneralOutput,at:string):GeneralFields{
+ const pickG=<T,>(key:'title'|'area'|'when'|'timeOfDay'|'person'|'location'|'isRecurring'):Traced<T>=>{const m=model?(model[key] as {value:T|null;confidence:number}):null;const r=rules[key] as {value:T|null;confidence:number};return pick<T>(m,r,at);};
+ return {kind:model?.kind||rules.kind,summary:model?.summary||rules.summary,title:pickG<string>('title'),area:pickG<AreaKey>('area'),when:pickG<string>('when'),timeOfDay:pickG<string>('timeOfDay'),person:pickG<string>('person'),location:pickG<string>('location'),isRecurring:pickG<boolean>('isRecurring'),steps:model?.steps||[],estimatedMinutes:model?.estimatedMinutes??null};
+}
+export function generalQuestions(g:GeneralFields):VerificationQuestion[]{
+ const q:VerificationQuestion[]=[];
+ if(g.title.value===null)q.push({field:'title',question:"What should Bear call this?",options:[{label:'Type it',value:null}]});
+ else if(g.title.confidence<VERIFY_THRESHOLD)q.push({field:'title',question:`Is "${g.title.value}" the right way to put it?`,options:[{label:'Yes',value:g.title.value},{label:'Change it',value:null}]});
+ if(g.when.value===null)q.push({field:'when',question:"When does this need to happen? Leave it blank if there's no date.",options:[{label:'Choose a date',value:null}]});
+ else if(g.when.confidence<VERIFY_THRESHOLD)q.push({field:'when',question:`Is ${formatAU(g.when.value)} the date that matters?`,options:[{label:'Yes',value:g.when.value},{label:'Change date',value:null}]});
+ if(g.area.value===null||g.area.confidence<VERIFY_THRESHOLD)q.push({field:'area',question:'Which part of life is this?',options:(['work','family','home','money','health','me'] as const).map(a=>({label:a.charAt(0).toUpperCase()+a.slice(1),value:a}))});
+ return q;
+}
+
+// Understand any capture: text/voice through the rules (and the model when configured),
+// images and PDFs through the model only. Produces one ExtractedEntity with both the
+// general understanding and, for bills, the detailed bill reading.
+export async function extractCapture(store:BearStore,provider:StructuredModelProvider|null,input:ExtractionInput):Promise<ExtractedEntity>{
  const at=new Date().toISOString();
  const needsVision=input.images.length>0||input.documents.length>0;
- if(needsVision&&!provider)throw new ExtractionError("Bear can't read pictures or PDFs until the AI service is connected. You can paste the bill text or type it in instead.",'unavailable');
- if(!needsVision&&!(input.text&&input.text.trim()))throw new ExtractionError('Tell Bear something about the bill first.','empty');
- const rules=extractBillWithRules(input.text||'',input.referenceYear);
- let model:BillOutput|null=null;let inferenceId:string|null=null;
+ if(needsVision&&!provider)throw new ExtractionError("Bear can't read pictures or PDFs until the AI service is connected. You can paste or type it instead.",'unavailable');
+ if(!needsVision&&!(input.text&&input.text.trim()))throw new ExtractionError('Tell Bear something first.','empty');
+ const billRules=extractBillWithRules(input.text||'',input.referenceYear);
+ const generalRules=understandWithRules(input.text||'',input.referenceYear,billRules);
+ let model:GeneralOutput|null=null;let inferenceId:string|null=null;
  if(provider){
   const started=Date.now();
   try{
-   const result=await provider.extract({schema:billOutputJsonSchema as unknown as Record<string,unknown>,system:billSystemPrompt,text:input.text,images:input.images,documents:input.documents});
-   const parsed=billOutputSchema.safeParse(result.output);
-   const inference=await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:input.captureId,service:'BillExtractionService',provider:result.provider,model:result.model,promptHash:hash(billSystemPrompt),rawOutput:result.output,latencyMs:result.latencyMs,ok:parsed.success,error:parsed.success?null:'schema_invalid'}));
+   const result=await provider.extract({schema:generalOutputJsonSchema as unknown as Record<string,unknown>,system:generalSystemPrompt,text:input.text,images:input.images,documents:input.documents});
+   const parsed=generalOutputSchema.safeParse(result.output);
+   const inference=await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:input.captureId,service:'CaptureUnderstandingService',provider:result.provider,model:result.model,promptHash:hash(generalSystemPrompt),rawOutput:result.output,latencyMs:result.latencyMs,ok:parsed.success,error:parsed.success?null:'schema_invalid'}));
    inferenceId=inference.id;
-   if(!parsed.success){if(needsVision)throw new ExtractionError('Bear read the document but the result did not make sense. Try a clearer picture or paste the text.','ai_failed');}
+   if(!parsed.success){if(needsVision)throw new ExtractionError('Bear read it but the result did not make sense. Try a clearer picture or paste the text.','ai_failed');}
    else model=parsed.data;
   }catch(error){
    if(error instanceof ExtractionError)throw error;
    const message=error instanceof ProviderError?error.message:'The AI service had a problem.';
-   await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:input.captureId,service:'BillExtractionService',provider:provider.name,model:provider.model,promptHash:hash(billSystemPrompt),rawOutput:null,latencyMs:Date.now()-started,ok:false,error:message}));
-   // With text we can still fall back to the rule-based read; with only an image there is nothing to read.
+   await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:input.captureId,service:'CaptureUnderstandingService',provider:provider.name,model:provider.model,promptHash:hash(generalSystemPrompt),rawOutput:null,latencyMs:Date.now()-started,ok:false,error:message}));
    if(needsVision||!input.text)throw new ExtractionError(message,error instanceof ProviderError&&error.kind==='unsupported'?'unsupported':'ai_failed');
   }
  }
- const fields=reconcile(model,rules,at);
- const duplicate=await findDuplicate(store,fields);
- const entity=stamp<ExtractedEntity>(store.userId,{captureId:input.captureId,kind:'bill',status:'draft',fields,questions:verificationQuestions(fields),sourceText:input.text,inferenceId,duplicateOfBillId:duplicate?.id||null});
+ // When the model read an image, its extracted text lets the rule-based bill reader cross-check.
+ const sourceText=input.text||model?.extractedText||null;
+ const billRulesFinal=input.text?billRules:extractBillWithRules(sourceText||'',input.referenceYear);
+ const general=reconcileGeneral(model,generalRules,at);
+ const isBill=general.kind==='bill'||(!model&&billRulesFinal.documentType==='bill'&&billRulesFinal.amountDueCents.value!==null);
+ const fields=reconcile(model?.bill||null,billRulesFinal,at);
+ if(isBill&&general.kind!=='bill')general.kind='bill';
+ const questions=isBill?verificationQuestions(fields):generalQuestions(general);
+ const duplicate=isBill?await findDuplicate(store,fields):null;
+ const entity=stamp<ExtractedEntity>(store.userId,{captureId:input.captureId,kind:isBill?'bill':'task',status:'draft',fields,general,questions,sourceText,inferenceId,duplicateOfBillId:duplicate?.id||null});
  return store.insert('extractions',entity);
 }
+export const extractBill=extractCapture;
 function hash(s:string){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return (h>>>0).toString(16);}
 export const keyFields:BillFieldKey[]=['biller','amountDueCents','dueDate'];

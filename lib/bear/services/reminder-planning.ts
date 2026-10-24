@@ -19,9 +19,9 @@ function latestSafe(dueAt:string,prefs:Profile['pins']['preferences']){return ad
 
 export function candidateWindows(windows:CapacityWindow[],fromIso:string,untilIso:string){return windows.filter(w=>w.start>=fromIso&&w.start<=untilIso&&!w.protected&&w.score>0.25);}
 
-export async function recommendPlan(store:BearStore,bill:Bill,task:Task,now=new Date()):Promise<PlanRecommendation>{
+export async function recommendPlan(store:BearStore,bill:Bill|null,task:Task,now=new Date()):Promise<PlanRecommendation>{
  const profile=await ensureProfile(store);const tz=profile.lifeRhythm.timezone||'Australia/Sydney';
- const today=todayISO(tz,now);const dueAt=bill.dueAt||task.dueAt;const prefs=profile.pins.preferences;
+ const today=todayISO(tz,now);const dueAt=bill?.dueAt||task.dueAt;const prefs=profile.pins.preferences;
  const signals=await behaviourSignals(store);
  const windows=capacityWindows({profile,signals,dayMode:activeDayMode(profile,today),now,days:14});
  const horizonEnd=dueAt?Math.max(0,daysBetween(today,dueAt)??0):7;
@@ -51,25 +51,26 @@ function fallbackOption(today:string,dueAt:string|null,tz:string,now:Date):PlanO
  const soon=new Date(now.getTime()+60*60000).toISOString();const sameDay=dueAt===today||dueAt===null;
  return {key:'bear',label:formatWhen(soon,tz),when:soon,rationale:sameDay?'This is due today, so the sooner the better. Bear will keep it quick.':'There is no quiet window before it is due, so Bear will bring it back soon.',score:0.2};
 }
-const bearLine=(bill:Bill)=>`Your ${bill.category.replace('_',' ')} bill is due ${bill.dueAt?'on '+bill.dueAt:'soon'}. Want me to help you sort it now?`;
-export const acceptPlanSchema=z.object({billId:z.string().uuid(),when:z.string().datetime({offset:true}),label:z.string().max(80),rationale:z.string().max(300).default(''),key:z.enum(['bear','tomorrow','weekend','few_days','custom']),followUpIfUnpaid:z.boolean().default(true)}).strict();
+const bearLine=(bill:Bill|null,task:Task)=>bill?`Your ${bill.category.replace('_',' ')} bill is due ${bill.dueAt?'on '+bill.dueAt:'soon'}. Want me to help you sort it now?`:`${task.title}${task.dueAt?' is coming up on '+task.dueAt:''}. Want a hand with it now?`;
+export const acceptPlanSchema=z.object({billId:z.string().uuid().optional(),taskId:z.string().uuid().optional(),when:z.string().datetime({offset:true}),label:z.string().max(80),rationale:z.string().max(300).default(''),key:z.enum(['bear','tomorrow','weekend','few_days','custom']),followUpIfUnpaid:z.boolean().default(true)}).strict();
 export type AcceptPlanInput=z.infer<typeof acceptPlanSchema>;
 
 export async function acceptPlan(store:BearStore,input:AcceptPlanInput,now=new Date()){
- const bill=await store.get('bills',input.billId);if(!bill)throw new Error('not_found');
- const task=await store.get('tasks',bill.taskId);if(!task)throw new Error('not_found');
+ const bill=input.billId?await store.get('bills',input.billId):null;if(input.billId&&!bill)throw new Error('not_found');
+ const task=await store.get('tasks',bill?bill.taskId:(input.taskId||''));if(!task)throw new Error('not_found');
  const when=new Date(input.when);if(Number.isNaN(when.getTime())||when.getTime()<now.getTime()-60000)throw new Error('invalid_time');
  // Replace any earlier scheduled reminders for this task.
  const existing=await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed']}]});
  for(const r of existing)await store.update('reminders',r.id,{status:'cancelled'});
  const plan:ReminderPlan={scheduledFor:when.toISOString(),label:input.label,rationale:input.rationale,windowId:null,score:0};
- const reminder=await store.insert('reminders',stamp<Reminder>(store.userId,{taskId:task.id,billId:bill.id,kind:'planned',status:'scheduled',scheduledFor:plan.scheduledFor,plan,followUpIfUnpaid:input.followUpIfUnpaid,attempts:0,deliveredAt:null,deliveredVia:[],message:bearLine(bill)}));
+ const reminder=await store.insert('reminders',stamp<Reminder>(store.userId,{taskId:task.id,billId:bill?.id||null,kind:'planned',status:'scheduled',scheduledFor:plan.scheduledFor,plan,followUpIfUnpaid:input.followUpIfUnpaid,attempts:0,deliveredAt:null,deliveredVia:[],message:bearLine(bill,task)}));
  const reminders=[reminder];
- if(input.followUpIfUnpaid&&bill.dueAt){
+ const dueAt=bill?.dueAt||task.dueAt;
+ if(input.followUpIfUnpaid&&dueAt){
   const profile=await ensureProfile(store);const tz=profile.lifeRhythm.timezone||'Australia/Sydney';
-  const dayBefore=zonedDateTime(addDays(bill.dueAt,-1),18*60+30,tz);
-  if(new Date(dayBefore).getTime()>when.getTime()+6*3600000)reminders.push(await store.insert('reminders',stamp<Reminder>(store.userId,{taskId:task.id,billId:bill.id,kind:'deadline',status:'scheduled',scheduledFor:dayBefore,plan:{scheduledFor:dayBefore,label:'The evening before it is due',rationale:'Only if it still is not paid.',windowId:null,score:0},followUpIfUnpaid:false,attempts:0,deliveredAt:null,deliveredVia:[],message:`Your ${bill.category.replace('_',' ')} bill is due tomorrow. Want me to help you sort it now?`})));
+  const dayBefore=zonedDateTime(addDays(dueAt,-1),18*60+30,tz);
+  if(new Date(dayBefore).getTime()>when.getTime()+6*3600000)reminders.push(await store.insert('reminders',stamp<Reminder>(store.userId,{taskId:task.id,billId:bill?.id||null,kind:'deadline',status:'scheduled',scheduledFor:dayBefore,plan:{scheduledFor:dayBefore,label:'The evening before',rationale:bill?'Only if it still is not paid.':'Only if it is still open.',windowId:null,score:0},followUpIfUnpaid:false,attempts:0,deliveredAt:null,deliveredVia:[],message:bill?`Your ${bill.category.replace('_',' ')} bill is due tomorrow. Want me to help you sort it now?`:`${task.title} is tomorrow. Want a hand getting it done?`})));
  }
- await recordBehaviour(store,input.key==='bear'?'plan_accepted':'plan_changed',{billId:bill.id,key:input.key,hour:localParts(when).hour});
+ await recordBehaviour(store,input.key==='bear'?'plan_accepted':'plan_changed',{billId:bill?.id,taskId:task.id,key:input.key,hour:localParts(when).hour});
  return reminders;
 }
