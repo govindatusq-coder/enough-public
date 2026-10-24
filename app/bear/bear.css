@@ -218,3 +218,9 @@
 .bear .tile.side .check{top:auto;bottom:8px;left:8px;right:auto;width:22px;height:22px;}
 .bear .tile.side[aria-pressed="true"]{filter:none;}
 .bear .empty-art{display:block;width:100%;max-width:300px;height:auto;margin:0 auto 8px;mix-blend-mode:multiply;}
+.bear .tile.photo.has-sub{min-height:176px;}
+.bear .tile.photo.has-sub .art{inset:0 0 64px 0;}
+.bear .tile.photo.has-sub .label{font-size:17px;}
+.bear .people-head{display:grid;grid-template-columns:1fr 38%;gap:8px;align-items:end;}
+.bear .people-head img{width:100%;height:auto;display:block;mix-blend-mode:multiply;}
+.bear .capacity-art{display:block;width:calc(100% + 40px);margin:24px -20px -40px;height:auto;}

@@ -10,7 +10,7 @@ import {BearSays} from '@/components/bear/brand';
 import {Horizon} from '@/components/bear/horizon';
 import {Button,Chip,Progress,Tile,Toast,TopBar} from '@/components/bear/ui';
 import {AreaArt,NeedArt,InterestArt,StrengthArt} from '@/components/bear/tile-art';
-import {EmptyArt,needArt,strengthArt} from '@/components/bear/art';
+import {areaArt,CapacityArt,EmptyArt,interestArt,needArt,PeopleHeader,strengthArt} from '@/components/bear/art';
 
 const steps=['areas','people','needs','interests','strengths','preferences','rhythm','capacity','done'] as const;
 type Step=typeof steps[number];
@@ -54,11 +54,11 @@ export default function Onboarding(){
    {step!=='done'&&<><TopBar back={index>0?{onClick:back}:{href:'/bear/welcome'}} right={<span className="faint">{index+1} of {steps.length-1}</span>}/><Progress step={index} total={steps.length-1}/></>}
    {step==='areas'&&<section>
     <h1>What&rsquo;s in your life?</h1><p className="muted" style={{marginTop:8}}>Pick everything you regularly have to think about.</p>
-    <div className="tiles section">{areaTiles.map(t=><Tile key={t.key} label={t.label} sub={t.sub} selected={profile.areas.includes(t.key)} onToggle={()=>update({areas:toggle(profile.areas,t.key)})} art={<AreaArt area={t.key}/>}/>)}</div>
+    <div className="tiles section">{areaTiles.map((t,i)=><Tile key={t.key} photo={!!areaArt[t.key]} tint={['#E3F1FB','#FFE6E7','#FFEFC9','#D5F3F0','#FFE1DE','#FFEFC9'][i]} label={t.label} sub={t.sub} selected={profile.areas.includes(t.key)} onToggle={()=>update({areas:toggle(profile.areas,t.key)})} art={<AreaArt area={t.key}/>}/>)}</div>
     <div className="btn-stack"><Button disabled={busy||profile.areas.length===0} onClick={()=>save({areas:profile.areas},'people')}>Next</Button></div>
    </section>}
    {step==='people'&&<section>
-    <h1>Who do you carry things for?</h1><p className="muted" style={{marginTop:8}}>Bear can remember people as well as tasks.</p>
+    <div className="people-head"><div><h1>Who do you carry things for?</h1><p className="muted" style={{marginTop:8}}>Bear can remember people as well as tasks.</p></div><PeopleHeader/></div>
     <div className="chips section">{peopleOptions.map(o=>{const on=people.some(p=>p.role===o.role);return <Chip key={o.role} label={o.label} selected={on} onToggle={()=>setPeople(on?people.filter(p=>p.role!==o.role):[...people,{role:o.role,name:o.role==='me'?(profile.name||''):(names[o.role]||'')}])}/>;})}</div>
     {peopleOptions.filter(o=>o.named&&people.some(p=>p.role===o.role)).map(o=><div key={o.role} className="field"><label htmlFor={'n-'+o.role}>{o.label} — names (optional)</label><input id={'n-'+o.role} placeholder={o.role==='child'?'Ava, Max':'Name'} value={names[o.role]||''} onChange={e=>setNames({...names,[o.role]:e.target.value})}/></div>)}
     <div className="field"><label htmlFor="myname">And you?</label><input id="myname" placeholder="Your first name" value={profile.name} maxLength={40} onChange={e=>update({name:e.target.value})}/></div>
@@ -71,7 +71,7 @@ export default function Onboarding(){
    </section>}
    {step==='interests'&&<section>
     <h1>What do you want more room for?</h1><p className="muted" style={{marginTop:8}}>Bear protects time for these when it can.</p>
-    <div className="tiles section three">{interestOptions.map(n=><Tile key={n} compact label={n} selected={pins.interests.includes(n)} onToggle={()=>update({pins:{...pins,interests:toggle(pins.interests,n)}})} art={<InterestArt label={n}/>}/>)}</div>
+    <div className="tiles section three">{interestOptions.map((n,i)=><Tile key={n} compact photo={!!interestArt[n]} tint={['#E4DDFB','#FFE6E7','#D5F3F0','#FFE1DE','#FFEFC9','#E3F1FB'][i%6]} label={n} selected={pins.interests.includes(n)} onToggle={()=>update({pins:{...pins,interests:toggle(pins.interests,n)}})} art={<InterestArt label={n}/>}/>)}</div>
     <div className="btn-stack"><Button disabled={busy} onClick={()=>save({pins},'strengths')}>Next</Button></div>
    </section>}
    {step==='strengths'&&<section>
@@ -115,6 +115,7 @@ export default function Onboarding(){
     <div className="chips section">{emptyOptions.map(o=><Chip key={o.key} label={o.label} selected={profile.emptyMoments.includes(o.key)} onToggle={()=>{const none=o.key==='none';update({emptyMoments:none?(profile.emptyMoments.includes('none')?[]:['none']):toggle(profile.emptyMoments.filter(m=>m!=='none'),o.key)});}}/>)}</div>
     <p className="faint" style={{marginTop:16}}>These are only estimates. Bear never assumes it knows how you feel, and an empty calendar doesn&rsquo;t mean an empty tank.</p>
     <div className="btn-stack"><Button disabled={busy} onClick={()=>save({emptyMoments:profile.emptyMoments,onboardingComplete:true},'done')}>That&rsquo;s me</Button></div>
+    <CapacityArt/>
    </section>}
    {step==='done'&&<section style={{textAlign:'center',paddingTop:24}}>
     <HeroBear width={280}/>
