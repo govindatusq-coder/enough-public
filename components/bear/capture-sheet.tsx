@@ -6,7 +6,7 @@ import {brand} from '@/lib/bear/domain/copy';
 import {formatAUD} from '@/lib/bear/domain/money';
 import {formatAU} from '@/lib/bear/domain/dates';
 import type {Capture,ExtractedEntity} from '@/lib/bear/domain/types';
-import {BearHead} from './art';
+import {CaptureBear} from './art';
 import {BearThinking} from './bear-thinking';
 import {Button,ErrorCard,TopBar,useOnline} from './ui';
 
@@ -47,12 +47,12 @@ export function CaptureSheet(){
   <main id="main" className="bear-screen flow">
    <TopBar back={{onClick:close,label:mode==='menu'?'Close':'Back'}}/>
    {mode==='thinking'?<BearThinking preview={preview} fields={fields}/>:<>
-    <div style={{display:'flex',gap:14,alignItems:'flex-end'}}><BearHead size={84}/><div><h1>{brand.captureHeading}</h1><p className="muted" style={{marginTop:6}}>{brand.captureSub}</p></div></div>
+    <div style={{display:'flex',gap:10,alignItems:'center'}}><CaptureBear width={120}/><div><h1>{brand.captureHeading}</h1><p className="muted" style={{marginTop:6}}>{brand.captureSub}</p></div></div>
     {first&&<p className="note teal" style={{marginTop:14}}>Start with a bill. A screenshot of an email, a photo of the paper one, or just paste the text.</p>}
     {error&&<div style={{marginTop:14}}><ErrorCard message={error}/></div>}
     {!online&&<p className="note" style={{marginTop:14}} role="status">You&rsquo;re offline. Bear will be here when you&rsquo;re back.</p>}
     {mode==='menu'&&<div className="glass-strong" style={{padding:'8px 16px',marginTop:18}}>
-     {options.map(o=>{const off=('unavailable' in o&&o.unavailable)||(o.file&&aiAvailable===false);return <button key={o.key} type="button" className="row" style={{width:'100%',textAlign:'left',opacity:off?.55:1}} onClick={()=>pick(o)} aria-disabled={off} disabled={off}>
+     {[...options].sort((a,b)=>Number(('unavailable' in a&&a.unavailable)||(a.file&&aiAvailable===false))-Number(('unavailable' in b&&b.unavailable)||(b.file&&aiAvailable===false))).map(o=>{const off=('unavailable' in o&&o.unavailable)||(o.file&&aiAvailable===false);return <button key={o.key} type="button" className="row" style={{width:'100%',textAlign:'left',opacity:off?.55:1}} onClick={()=>pick(o)} aria-disabled={off} disabled={off}>
       <span className={`icon-dot ${o.key==='photo'?'coral':o.key==='screenshot'?'sky':o.key==='upload'?'mustard':o.key==='text'?'teal':o.key==='manual'?'lavender':'blush'}`}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={o.icon}/></svg></span>
       <span className="grow"><span className="title">{o.label}</span><br/><span className="faint">{off?(o.file?'Needs the AI service connected':'Coming soon'):o.sub}</span></span>
       {!off&&<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{color:'var(--ink-3)'}}><path d="M9 6l6 6-6 6"/></svg>}

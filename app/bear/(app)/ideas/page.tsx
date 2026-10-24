@@ -4,7 +4,7 @@ import {useRouter} from 'next/navigation';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import {brand} from '@/lib/bear/domain/copy';
 import type {Suggestion} from '@/lib/bear/domain/types';
-import {BearHead} from '@/components/bear/art';
+import {EmptyArt} from '@/components/bear/art';
 import {Button,ErrorCard,Skeleton,Toast} from '@/components/bear/ui';
 export default function Ideas(){
  const router=useRouter();const [items,setItems]=useState<Suggestion[]|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [leaving,setLeaving]=useState<string|null>(null);
@@ -22,7 +22,7 @@ export default function Ideas(){
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
    <div className="section">
     {!items&&!error&&<Skeleton/>}
-    {items&&items.length===0&&<div className="card" style={{display:'flex',gap:14,alignItems:'center'}}><BearHead size={64}/><p className="muted">{brand.ideasEmpty}</p></div>}
+    {items&&items.length===0&&<div className="card" style={{textAlign:'center'}}><EmptyArt file="empty-ideas"/><p style={{fontWeight:700,fontSize:19}}>Nothing to suggest right now.</p><p className="muted small" style={{marginTop:4}}>When Bear notices a pattern worth acting on, it&rsquo;ll show up here.</p></div>}
     {items?.map(s=><div key={s.id} className={`card ${leaving===s.id?'collapse-out':''}`}><p style={{fontWeight:700,fontSize:18}}>{s.title}</p><p className="muted small" style={{marginTop:6}}>{s.body}</p><div className="btn-row"><Button className="sm" variant="primary" disabled={leaving===s.id} onClick={()=>respond(s,'accept')}>{s.actionLabel}</Button><Button className="sm" variant="quiet" disabled={leaving===s.id} onClick={()=>respond(s,'reject')}>Not relevant</Button></div></div>)}
    </div>
    <Toast message={toast} onDone={()=>setToast(null)}/>

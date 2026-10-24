@@ -10,7 +10,7 @@ import {BearSays} from '@/components/bear/brand';
 import {Horizon} from '@/components/bear/horizon';
 import {Button,Chip,Progress,Tile,Toast,TopBar} from '@/components/bear/ui';
 import {AreaArt,NeedArt,InterestArt,StrengthArt} from '@/components/bear/tile-art';
-import {strengthArt} from '@/components/bear/art';
+import {EmptyArt,needArt,strengthArt} from '@/components/bear/art';
 
 const steps=['areas','people','needs','interests','strengths','preferences','rhythm','capacity','done'] as const;
 type Step=typeof steps[number];
@@ -66,7 +66,7 @@ export default function Onboarding(){
    </section>}
    {step==='needs'&&<section>
     <h1>Where would another brain help?</h1><p className="muted" style={{marginTop:8}}>Bills &amp; money is where Bear is strongest right now.</p>
-    <div className="tiles section">{needsOptions.map(n=><Tile key={n} compact label={n} selected={pins.needs.includes(n)} onToggle={()=>update({pins:{...pins,needs:toggle(pins.needs,n)}})} art={<NeedArt label={n}/>}/>)}</div>
+    <div className="tiles section">{needsOptions.map((n,i)=><Tile key={n} compact side={!!needArt[n]} tint={['#FFE6E7','#E3F1FB','#D5F3F0','#FFEFC9','#E4DDFB'][i%5]} label={n} selected={pins.needs.includes(n)} onToggle={()=>update({pins:{...pins,needs:toggle(pins.needs,n)}})} art={<NeedArt label={n}/>}/>)}</div>
     <div className="btn-stack"><Button disabled={busy} onClick={()=>save({pins},'interests')}>Next</Button></div>
    </section>}
    {step==='interests'&&<section>
@@ -93,7 +93,7 @@ export default function Onboarding(){
      <div className="rhythm" aria-label={`Timeline for ${rhythmDay}`}>
       <div className="hours">{Array.from({length:18},(_,i)=><span key={i}>{hhmm((6+i)*60)}</span>)}</div>
       <div className="track">{dayBlocks.map(b=>{const start=Math.max(6*60,b.startMinute),end=b.endMinute<b.startMinute?24*60:Math.min(24*60,b.endMinute);const top=(start-6*60)/60*22,h=Math.max(20,(end-start)/60*22-2);return <button key={b.id} className={`block ${b.capacity}`} style={{top,height:h}} onClick={()=>setEditing(b.id)} aria-label={`${b.label} ${hhmm(b.startMinute)} to ${hhmm(b.endMinute)}, tap to adjust`}>{b.label}</button>;})}
-       {dayBlocks.length===0&&<p className="faint" style={{padding:14}}>Nothing yet for this day. Tap routines above to add them.</p>}
+       {dayBlocks.length===0&&<div style={{padding:14}}><p className="faint">Nothing yet for this day. Tap routines above to add them.</p><div style={{marginTop:40}}><EmptyArt file="empty-rhythm"/></div></div>}
       </div>
      </div>
      <p className="tiny faint" style={{marginTop:8}}>Coral: no room · Mustard: a little · Teal: good time for admin</p>

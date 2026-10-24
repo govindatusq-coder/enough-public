@@ -3,8 +3,7 @@ import {useState} from 'react';
 import Link from 'next/link';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {browserClient} from '@/lib/supabase/client';
-import {BearHead} from '@/components/bear/art';
-import {Wordmark} from '@/components/bear/brand';
+import {CompactLockup} from '@/components/bear/art';
 import {TopBar} from '@/components/bear/ui';
 export function SignInForm(){
  const params=useSearchParams();const router=useRouter();const [create,setCreate]=useState(params.get('mode')==='create');
@@ -19,7 +18,7 @@ export function SignInForm(){
  return (
   <main id="main" className="bear-screen flow">
    <TopBar back={{href:'/bear/welcome'}}/>
-   <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:18}}><BearHead size={72}/><Wordmark size={28}/></div>
+   <div style={{marginBottom:18}}><CompactLockup width={320}/></div>
    <h1>{create?'Get yourself a Bear.':'Welcome back.'}</h1>
    <p className="muted" style={{marginTop:8}}>{create?"One account. Bear remembers the rest.":"Bear's been keeping everything where you left it."}</p>
    <form onSubmit={submit} style={{marginTop:10}}>

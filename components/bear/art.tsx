@@ -13,5 +13,9 @@ export function HeroBear({width=260}:{width?:number}){
 export function RoundBadge({size=140}:{size?:number}){
  return <img src={base+'badge-round.webp'} alt="Load Bear. Your mental load is ours to bear." width={size} height={size} style={{width:size,height:size,display:'block',margin:'0 auto'}}/>;
 }
+export const needArt:Record<string,string>={'School & childcare':'school-childcare','Appointments':'appointments','Work deadlines':'work-deadlines','Meals & groceries':'meals-groceries','Bills & money':'bills-money','Birthdays & presents':'birthdays-presents','Housework':'housework','Family calendar':'family-calendar','Health':'health','Activities & sport':'activities-sport','Forms & admin':'forms-admin','Things I just forget':'things-i-forget'};
+export function EmptyArt({file,alt=''}:{file:string;alt?:string}){return <img src={base+file+'.webp'} alt={alt} className="empty-art" loading="lazy"/>;}
+export function CompactLockup({width=300}:{width?:number}){return <img src={base+'lockup-compact.webp'} alt="Load Bear" style={{width,maxWidth:'100%',height:'auto',display:'block',mixBlendMode:'multiply'}}/>;}
+export function CaptureBear({width=120}:{width?:number}){return <img src={base+'capture-bear.webp'} alt="Mama Bear" style={{width,height:'auto',display:'block',mixBlendMode:'multiply',flex:'none'}}/>;}
 export const strengthArt:Record<string,string>={'Planning ahead':'planning-ahead','Getting things done':'getting-things-done','Looking after people':'looking-after-people','Money':'money','Work':'work','Routines':'routines','Cooking':'cooking','Staying active':'staying-active','Problem solving':'problem-solving','Asking for help':'asking-for-help','Keeping calm in chaos':'keeping-calm'};
 export function TileImage({file,alt=''}:{file:string;alt?:string}){return <img src={base+file+'.webp'} alt={alt} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} loading="lazy"/>;}
