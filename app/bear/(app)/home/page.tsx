@@ -6,7 +6,7 @@ import {apiGet,apiSend} from '@/lib/bear/client';
 import {brand,dayModeReply} from '@/lib/bear/domain/copy';
 import type {DayMode} from '@/lib/bear/domain/types';
 import type {HomeView,NeedsYouItem} from '@/lib/bear/services/home';
-import {BearHead} from '@/components/bear/art';
+import {Art} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
 import {Button,ErrorCard,Skeleton,Toast,useOnline} from '@/components/bear/ui';
 import {showLocalReminder} from '@/components/bear/runtime';
@@ -37,7 +37,7 @@ export default function Home(){
   <main id="main" className="bear-screen">
    <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12}}>
     <div><h1 style={{fontSize:28}}>{home.greeting}</h1><p className="muted" style={{marginTop:6}}>{home.coveredCount>0?`Bear's got ${home.coveredCount} ${home.coveredCount===1?'thing':'things'} covered.`:"Bear's ready when you are."}</p></div>
-    <Link href="/bear/me" aria-label="Me"><BearHead size={54}/></Link>
+    <Link href="/bear/me" aria-label="Me"><Art file="home-head" width={96} alt="Mama Bear"/></Link>
    </header>
    {!online&&<p className="note" style={{marginTop:14}} role="status">You&rsquo;re offline. Showing what Bear last knew.</p>}
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
@@ -47,7 +47,7 @@ export default function Home(){
    </section>
    <section className="section" aria-labelledby="needs">
     <p id="needs" className="eyebrow coral">Needs you{needs.length?` · ${needs.length} ${needs.length===1?'thing':'things'}`:''}</p>
-    {needs.length===0&&<div className="card" style={{display:'flex',gap:14,alignItems:'center'}}><BearHead size={64}/><div><p style={{fontWeight:600}}>{brand.emptyNeeds}</p><p className="muted small">{brand.emptyNeedsSub}</p></div></div>}
+    {needs.length===0&&<div className="card" style={{display:'flex',gap:14,alignItems:'center',paddingLeft:10}}><Art file="home-calm" width={110}/><div><p style={{fontWeight:600}}>{brand.emptyNeeds}</p><p className="muted small">{brand.emptyNeedsSub}</p></div></div>}
     {needs.map(item=><div key={item.taskId} className="card" style={{borderColor:item.essential?'rgba(255,81,71,.35)':undefined}}>
      <div style={{display:'flex',justifyContent:'space-between',gap:10}}><div><p style={{fontWeight:700,fontSize:18}}>{item.title}</p><p className="muted small">{item.amount}{item.amount?' · ':''}{item.dueLabel} · ~{item.minutes} min</p></div>{item.isDemo&&<span className="demo-tag">Example</span>}</div>
      {item.message&&<p className="hand" style={{fontSize:20,marginTop:10}}>{item.message}</p>}
@@ -58,8 +58,8 @@ export default function Home(){
    </section>
    <section className="section" aria-labelledby="handling">
     <p id="handling" className="eyebrow teal">Bear&rsquo;s handling</p>
-    <div className="card">{home.handling.lines.length?home.handling.lines.map(l=><div key={l} className="row"><span className="icon-dot" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 13l4 4L19 7"/></svg></span><span className="grow">{l}</span></div>):<p className="muted">{home.hasAnyBill?'Nothing being watched right now.':'Give Bear a bill and it starts watching.'}</p>}
-     {home.demoAvailable&&<div style={{marginTop:14,paddingTop:14,borderTop:'1px solid var(--line)'}}><p className="small">Want to see how it works first? Bear can walk you through an <strong>example</strong> electricity bill.</p><div className="btn-row"><Button className="sm" variant="ghost" disabled={busy==='demo'} onClick={demo}>Try the example bill</Button><Button className="sm" variant="coral" href="/bear/capture">Give Bear a real one</Button></div></div>}
+    <div className="card" style={home.handling.lines.length?undefined:{display:'grid',gridTemplateColumns:'96px 1fr',gap:12,alignItems:'center'}}>{!home.handling.lines.length&&<Art file="home-bill" width={96}/>}{home.handling.lines.length?home.handling.lines.map(l=><div key={l} className="row"><span className="icon-dot" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 13l4 4L19 7"/></svg></span><span className="grow">{l}</span></div>):<p style={{fontWeight:600}}>{home.hasAnyBill?'Nothing being watched right now.':'Give Bear a bill and it starts watching.'}</p>}
+     {home.demoAvailable&&<div style={{gridColumn:'1 / -1',marginTop:14,paddingTop:14,borderTop:'1px solid var(--line)'}}><p className="small">Want to see how it works first? Bear can walk you through an <strong>example</strong> electricity bill.</p><div className="btn-row"><Button className="sm" variant="ghost" disabled={busy==='demo'} onClick={demo}>Try the example bill</Button><Button className="sm" variant="coral" href="/bear/capture">Give Bear a real one</Button></div></div>}
     </div>
    </section>
    <section className="section" aria-labelledby="notyet">
@@ -68,9 +68,9 @@ export default function Home(){
    </section>
    <section className="section" aria-label="Health, wealth and happiness">
     <div className="ledgers">
-     <div className="ledger health"><span className="k">Health</span><span className="v">{home.ledgers.health.headline}</span>{home.ledgers.health.lines.map(l=><span key={l} className="l">{l}</span>)}{!home.ledgers.health.lines.length&&<span className="l">Things you do for yourself will show up here.</span>}</div>
-     <div className="ledger wealth"><span className="k">Wealth</span><span className="v">{home.ledgers.wealth.headline||'Nothing to count yet'}</span>{home.ledgers.wealth.lines.map(l=><span key={l} className="l">{l}</span>)}{!home.ledgers.wealth.lines.length&&<span className="l">Late fees avoided and discounts kept are counted here, only when the bill states them.</span>}</div>
-     <div className="ledger happiness"><span className="k">Happiness</span><span className="v">{home.ledgers.happiness.headline||'Nothing protected yet'}</span>{home.ledgers.happiness.lines.map(l=><span key={l} className="l">{l}</span>)}{!home.ledgers.happiness.lines.length&&<span className="l">Time Bear helps you protect will show up here.</span>}</div>
+     <div className="ledger health"><Art file="ledger-health" className="ledger-icon"/><span className="k">Health</span><span className="v">{home.ledgers.health.headline}</span>{home.ledgers.health.lines.map(l=><span key={l} className="l">{l}</span>)}{!home.ledgers.health.lines.length&&<span className="l">Things you do for yourself will show up here.</span>}</div>
+     <div className="ledger wealth"><Art file="ledger-wealth" className="ledger-icon"/><span className="k">Wealth</span><span className="v">{home.ledgers.wealth.headline||'Nothing to count yet'}</span>{home.ledgers.wealth.lines.map(l=><span key={l} className="l">{l}</span>)}{!home.ledgers.wealth.lines.length&&<span className="l">Late fees avoided and discounts kept are counted here, only when the bill states them.</span>}</div>
+     <div className="ledger happiness"><Art file="ledger-happiness" className="ledger-icon"/><span className="k">Happiness</span><span className="v">{home.ledgers.happiness.headline||'Nothing protected yet'}</span>{home.ledgers.happiness.lines.map(l=><span key={l} className="l">{l}</span>)}{!home.ledgers.happiness.lines.length&&<span className="l">Time Bear helps you protect will show up here.</span>}</div>
     </div>
    </section>
    {home.ideasCount>0&&<section className="section"><Link href="/bear/ideas" className="glass" style={{display:'flex',padding:'14px 16px',alignItems:'center',gap:12}}><span className="icon-dot mustard" aria-hidden="true">✦</span><span className="grow"><strong>Bear noticed {home.ideasCount===1?'something':`${home.ideasCount} things`}.</strong><br/><span className="faint">Have a look when you have a minute.</span></span></Link></section>}

@@ -10,7 +10,7 @@ import {BearSays} from '@/components/bear/brand';
 import {Horizon} from '@/components/bear/horizon';
 import {Button,Chip,Progress,Tile,Toast,TopBar} from '@/components/bear/ui';
 import {AreaArt,NeedArt,InterestArt,StrengthArt} from '@/components/bear/tile-art';
-import {areaArt,CapacityArt,EmptyArt,interestArt,needArt,PeopleHeader,strengthArt} from '@/components/bear/art';
+import {areaArt,Art,CapacityArt,EmptyArt,interestArt,needArt,PeopleHeader,prefArt,strengthArt} from '@/components/bear/art';
 
 const steps=['areas','people','needs','interests','strengths','preferences','rhythm','capacity','done'] as const;
 type Step=typeof steps[number];
@@ -81,7 +81,7 @@ export default function Onboarding(){
    </section>}
    {step==='preferences'&&<section>
     <h1>How do you like to get things done?</h1>
-    {prefQuestions.map(p=><div key={p.key} className="section"><h3>{p.q}</h3><div className="chips" style={{marginTop:10}} role="group" aria-label={p.q}>{p.options.map(o=><Chip key={o.value} label={o.label} selected={pins.preferences[p.key]===o.value} onToggle={()=>update({pins:{...pins,preferences:{...pins.preferences,[p.key]:o.value}}})}/>)}</div></div>)}
+    {prefQuestions.map(p=><div key={p.key} className="card pref-card" style={{marginTop:14}}><Art file={prefArt[p.key]}/><div><h3>{p.q}</h3><div className="chips" style={{marginTop:10}} role="group" aria-label={p.q}>{p.options.map(o=><Chip key={o.value} label={o.label} selected={pins.preferences[p.key]===o.value} onToggle={()=>update({pins:{...pins,preferences:{...pins.preferences,[p.key]:o.value}}})}/>)}</div></div></div>)}
     <div className="btn-stack"><Button disabled={busy} onClick={()=>save({pins},'rhythm')}>Next</Button></div>
    </section>}
    {step==='rhythm'&&<section>

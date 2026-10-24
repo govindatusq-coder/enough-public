@@ -5,7 +5,8 @@ import Link from 'next/link';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import type {Profile} from '@/lib/bear/domain/types';
 import {Avatar} from '@/components/bear/art';
-import {Wordmark,Tagline} from '@/components/bear/brand';
+import {Tagline} from '@/components/bear/brand';
+import {Art} from '@/components/bear/art';
 import {Button,ErrorCard,Skeleton,Toast} from '@/components/bear/ui';
 import {areaLabels} from '@/lib/bear/domain/labels';
 type Loaded={profile:Profile;user:{email:string|null;name:string};aiAvailable:boolean;pushAvailable:boolean};
@@ -42,7 +43,7 @@ export default function Me(){
    <section className="section"><p className="eyebrow">Reading bills</p><div className="card"><p className="small">{data.aiAvailable?'Photos, screenshots and PDFs are read by the AI service on Bear’s server. Your bills are never used to train anything, and nothing is paid without you.':'The AI service is not connected, so pictures and PDFs are off. Pasted text and typed bills still work.'}</p></div></section>
    <section className="section"><p className="eyebrow">Privacy</p><div className="card"><p className="small">Only you can see your bills. Bear stores the biller, amount, dates and payment reference, never card numbers, CVVs or bank passwords. <Link href="/privacy" style={{textDecoration:'underline'}}>Privacy notice</Link></p>
     <div className="btn-row"><Button className="sm" variant="quiet" href="/signout">Sign out</Button></div></div></section>
-   <div style={{marginTop:32,textAlign:'center'}}><Wordmark size={22}/><br/><Tagline size={20}/></div>
+   <div style={{marginTop:32,textAlign:'center'}}><Art file="wordmark" className="wordmark-img" alt="Load Bear"/><Tagline size={20}/></div>
    <Toast message={toast} onDone={()=>setToast(null)}/>
    <span className="sr-only" data-tick={permTick}/>
   </main>

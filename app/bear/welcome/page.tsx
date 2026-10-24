@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import {HeroLockup} from '@/components/bear/art';
+import {HeroVertical} from '@/components/bear/art';
 import {Horizon} from '@/components/bear/horizon';
 import {brand} from '@/lib/bear/domain/copy';
 export default function Welcome(){
@@ -7,7 +7,7 @@ export default function Welcome(){
   <main id="main" className="bear-screen flow" style={{display:'flex',flexDirection:'column',minHeight:'100dvh',position:'relative',overflow:'hidden'}}>
    <Horizon height={220}/>
    <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',flex:1,justifyContent:'center',gap:18,paddingTop:12}}>
-    <HeroLockup/>
+    <HeroVertical/>
     <p className="muted" style={{fontSize:16,letterSpacing:'.02em'}}>{brand.areasLine}</p>
    </div>
    <div style={{position:'relative',zIndex:1,display:'grid',gap:12,paddingBottom:8}}>

@@ -224,3 +224,9 @@
 .bear .people-head{display:grid;grid-template-columns:1fr 38%;gap:8px;align-items:end;}
 .bear .people-head img{width:100%;height:auto;display:block;mix-blend-mode:multiply;}
 .bear .capacity-art{display:block;width:calc(100% + 40px);margin:24px -20px -40px;height:auto;}
+.bear .art-inline{display:block;height:auto;mix-blend-mode:multiply;flex:none;}
+.bear .ledger{grid-template-columns:72px 1fr;display:grid;column-gap:12px;align-items:center;}
+.bear .ledger .ledger-icon{grid-row:1 / span 4;width:72px;height:72px;object-fit:contain;mix-blend-mode:multiply;}
+.bear .pref-card{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:start;}
+.bear .pref-card img{width:64px;height:64px;object-fit:contain;mix-blend-mode:multiply;margin-top:4px;}
+.bear .wordmark-img{display:block;width:150px;height:auto;margin:0 auto;mix-blend-mode:multiply;}
