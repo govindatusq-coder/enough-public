@@ -1,0 +1,17 @@
+/* eslint-disable @next/next/no-img-element -- local brand artwork served from /public */
+// Supplied Load Bear artwork. These replace the drawn SVG wherever the character appears.
+const base='/bear/art/';
+export function BearHead({size=64,className='',alt='Mama Bear'}:{size?:number;className?:string;alt?:string}){
+ return <img src={base+'head.webp'} width={size} height={size} alt={alt} className={className} style={{width:size,height:size,borderRadius:'50%',objectFit:'cover',flex:'none',boxShadow:'0 6px 16px -10px rgba(16,42,67,.6)'}}/>;
+}
+export function HeroLockup({width='100%'}:{width?:number|string}){
+ return <img src={base+'hero-lockup.webp'} alt="Load Bear. Your mental load is ours to bear." style={{width,height:'auto',display:'block',mixBlendMode:'multiply'}} fetchPriority="high"/>;
+}
+export function HeroBear({width=260}:{width?:number}){
+ return <img src={base+'hero-bear.webp'} alt="Mama Bear flexing" style={{width,height:'auto',display:'block',margin:'0 auto',mixBlendMode:'multiply'}}/>;
+}
+export function RoundBadge({size=140}:{size?:number}){
+ return <img src={base+'badge-round.webp'} alt="Load Bear. Your mental load is ours to bear." width={size} height={size} style={{width:size,height:size,display:'block',margin:'0 auto'}}/>;
+}
+export const strengthArt:Record<string,string>={'Planning ahead':'planning-ahead','Getting things done':'getting-things-done','Looking after people':'looking-after-people','Money':'money','Work':'work','Routines':'routines','Cooking':'cooking','Staying active':'staying-active','Problem solving':'problem-solving','Asking for help':'asking-for-help','Keeping calm in chaos':'keeping-calm'};
+export function TileImage({file,alt=''}:{file:string;alt?:string}){return <img src={base+file+'.webp'} alt={alt} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} loading="lazy"/>;}

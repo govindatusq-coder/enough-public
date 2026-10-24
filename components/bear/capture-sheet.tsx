@@ -6,7 +6,7 @@ import {brand} from '@/lib/bear/domain/copy';
 import {formatAUD} from '@/lib/bear/domain/money';
 import {formatAU} from '@/lib/bear/domain/dates';
 import type {Capture,ExtractedEntity} from '@/lib/bear/domain/types';
-import {MamaBear} from './mama-bear';
+import {BearHead} from './art';
 import {BearThinking} from './bear-thinking';
 import {Button,ErrorCard,TopBar,useOnline} from './ui';
 
@@ -47,7 +47,7 @@ export function CaptureSheet(){
   <main id="main" className="bear-screen flow">
    <TopBar back={{onClick:close,label:mode==='menu'?'Close':'Back'}}/>
    {mode==='thinking'?<BearThinking preview={preview} fields={fields}/>:<>
-    <div style={{display:'flex',gap:14,alignItems:'flex-end'}}><MamaBear size={84} pose="calm"/><div><h1>{brand.captureHeading}</h1><p className="muted" style={{marginTop:6}}>{brand.captureSub}</p></div></div>
+    <div style={{display:'flex',gap:14,alignItems:'flex-end'}}><BearHead size={84}/><div><h1>{brand.captureHeading}</h1><p className="muted" style={{marginTop:6}}>{brand.captureSub}</p></div></div>
     {first&&<p className="note teal" style={{marginTop:14}}>Start with a bill. A screenshot of an email, a photo of the paper one, or just paste the text.</p>}
     {error&&<div style={{marginTop:14}}><ErrorCard message={error}/></div>}
     {!online&&<p className="note" style={{marginTop:14}} role="status">You&rsquo;re offline. Bear will be here when you&rsquo;re back.</p>}

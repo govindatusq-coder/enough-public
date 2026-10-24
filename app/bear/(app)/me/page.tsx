@@ -4,7 +4,7 @@ import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import type {Profile} from '@/lib/bear/domain/types';
-import {MamaBear} from '@/components/bear/mama-bear';
+import {BearHead} from '@/components/bear/art';
 import {Wordmark,Tagline} from '@/components/bear/brand';
 import {Button,ErrorCard,Skeleton,Toast} from '@/components/bear/ui';
 import {areaLabels} from '@/lib/bear/domain/labels';
@@ -25,7 +25,7 @@ export default function Me(){
  const p=data.profile;
  return (
   <main id="main" className="bear-screen">
-   <div style={{display:'flex',gap:14,alignItems:'center'}}><MamaBear size={80} pose="calm"/><div><h1>{p.name||'You'}</h1><p className="muted small">{data.user.email}</p></div></div>
+   <div style={{display:'flex',gap:14,alignItems:'center'}}><BearHead size={80}/><div><h1>{p.name||'You'}</h1><p className="muted small">{data.user.email}</p></div></div>
    <section className="section"><p className="eyebrow">Your Bear</p><div className="card">
     <div className="row"><span className="grow"><span className="title">What&rsquo;s in your life</span><br/><span className="faint">{p.areas.map(a=>areaLabels[a]).join(' · ')||'Nothing picked yet'}</span></span></div>
     <div className="row"><span className="grow"><span className="title">People</span><br/><span className="faint">{p.people.map(x=>x.name||x.role).join(', ')||'Just you'}</span></span></div>

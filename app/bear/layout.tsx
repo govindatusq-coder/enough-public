@@ -12,7 +12,7 @@ export const metadata:Metadata={
  description:'A second brain for everything you carry. Give a bill to Bear, verify it, forget about it, and get one useful reminder at a good time.',
  manifest:'/bear/manifest.webmanifest',
  appleWebApp:{capable:true,statusBarStyle:'default',title:'Load Bear'},
- icons:{icon:[{url:'/bear/icon.svg',type:'image/svg+xml'}],apple:[{url:'/bear/apple-touch-icon.png',sizes:'180x180'}]},
+ icons:{icon:[{url:'/bear/icon-192.png',type:'image/png',sizes:'192x192'}],apple:[{url:'/bear/apple-touch-icon.png',sizes:'180x180'}]},
 };
 export const viewport:Viewport={themeColor:'#FFF7E8',viewportFit:'cover',width:'device-width',initialScale:1,maximumScale:1};
 

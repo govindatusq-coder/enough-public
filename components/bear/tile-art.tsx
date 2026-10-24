@@ -1,3 +1,4 @@
+import {strengthArt,TileImage} from './art';
 // Abstract, screen-print style tile artwork in the brand palette. Replaceable by
 // licensed photography later via the `art` prop on Tile.
 const palettes:Record<string,[string,string,string]>={work:['#E3F1FB','#CFE7F7','#102A43'],family:['#FFE6E7','#FF9FA3','#FF5147'],home:['#FFEFC9','#FFB72B','#102A43'],money:['#D5F3F0','#18B7AA','#102A43'],health:['#FFE1DE','#FF5147','#102A43'],me:['#E4DDFB','#C9BDF5','#102A43']};
@@ -15,4 +16,4 @@ const hash=(s:string)=>[...s].reduce((h,c)=>h+c.charCodeAt(0),0);
 export function AreaArt({area}:{area:string}){return <Art p={palettes[area]||palettes.me} shape={hash(area)}/>;}
 export function NeedArt({label}:{label:string}){const keys=Object.keys(palettes);const key=/bill|money/i.test(label)?'money':/school|birthday|family/i.test(label)?'family':/health|appointment/i.test(label)?'health':/work|form|admin/i.test(label)?'work':/meal|house/i.test(label)?'home':keys[hash(label)%keys.length];return <Art p={palettes[key]} shape={hash(label)}/>;}
 export function InterestArt({label}:{label:string}){const keys=Object.keys(palettes);return <Art p={palettes[keys[hash(label)%keys.length]]} shape={hash(label)+1}/>;}
-export function StrengthArt({label}:{label:string}){const keys=Object.keys(palettes);return <Art p={palettes[keys[(hash(label)+2)%keys.length]]} shape={hash(label)+2}/>;}
+export function StrengthArt({label}:{label:string}){const file=strengthArt[label];if(file)return <TileImage file={'strength-'+file}/>;const keys=Object.keys(palettes);return <Art p={palettes[keys[(hash(label)+2)%keys.length]]} shape={hash(label)+2}/>;}

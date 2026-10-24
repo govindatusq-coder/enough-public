@@ -6,7 +6,7 @@ import {apiGet,apiSend} from '@/lib/bear/client';
 import {brand,dayModeReply} from '@/lib/bear/domain/copy';
 import type {DayMode} from '@/lib/bear/domain/types';
 import type {HomeView,NeedsYouItem} from '@/lib/bear/services/home';
-import {MamaBear} from '@/components/bear/mama-bear';
+import {BearHead} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
 import {Button,ErrorCard,Skeleton,Toast,useOnline} from '@/components/bear/ui';
 import {showLocalReminder} from '@/components/bear/runtime';
@@ -37,7 +37,7 @@ export default function Home(){
   <main id="main" className="bear-screen">
    <header style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12}}>
     <div><h1 style={{fontSize:28}}>{home.greeting}</h1><p className="muted" style={{marginTop:6}}>{home.coveredCount>0?`Bear's got ${home.coveredCount} ${home.coveredCount===1?'thing':'things'} covered.`:"Bear's ready when you are."}</p></div>
-    <Link href="/bear/me" aria-label="Me"><MamaBear size={54} pose="calm"/></Link>
+    <Link href="/bear/me" aria-label="Me"><BearHead size={54}/></Link>
    </header>
    {!online&&<p className="note" style={{marginTop:14}} role="status">You&rsquo;re offline. Showing what Bear last knew.</p>}
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
@@ -47,7 +47,7 @@ export default function Home(){
    </section>
    <section className="section" aria-labelledby="needs">
     <p id="needs" className="eyebrow coral">Needs you{needs.length?` · ${needs.length} ${needs.length===1?'thing':'things'}`:''}</p>
-    {needs.length===0&&<div className="card" style={{display:'flex',gap:14,alignItems:'center'}}><MamaBear size={64} pose="calm"/><div><p style={{fontWeight:600}}>{brand.emptyNeeds}</p><p className="muted small">{brand.emptyNeedsSub}</p></div></div>}
+    {needs.length===0&&<div className="card" style={{display:'flex',gap:14,alignItems:'center'}}><BearHead size={64}/><div><p style={{fontWeight:600}}>{brand.emptyNeeds}</p><p className="muted small">{brand.emptyNeedsSub}</p></div></div>}
     {needs.map(item=><div key={item.taskId} className="card" style={{borderColor:item.essential?'rgba(255,81,71,.35)':undefined}}>
      <div style={{display:'flex',justifyContent:'space-between',gap:10}}><div><p style={{fontWeight:700,fontSize:18}}>{item.title}</p><p className="muted small">{item.amount}{item.amount?' · ':''}{item.dueLabel} · ~{item.minutes} min</p></div>{item.isDemo&&<span className="demo-tag">Example</span>}</div>
      {item.message&&<p className="hand" style={{fontSize:20,marginTop:10}}>{item.message}</p>}

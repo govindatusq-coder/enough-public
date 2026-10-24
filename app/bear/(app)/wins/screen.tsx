@@ -6,7 +6,7 @@ import {brand} from '@/lib/bear/domain/copy';
 import {formatAUD} from '@/lib/bear/domain/money';
 import {formatAU} from '@/lib/bear/domain/dates';
 import type {WinsView} from '@/lib/bear/services/wins';
-import {MamaBear} from '@/components/bear/mama-bear';
+import {BearHead,RoundBadge} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
 import {ErrorCard,Skeleton} from '@/components/bear/ui';
 export function WinsScreen(){
@@ -18,7 +18,7 @@ export function WinsScreen(){
  return (
   <main id="main" className="bear-screen">
    <h1>{brand.winsHeading}</h1><p className="muted" style={{marginTop:6}}>{brand.winsSub}</p>
-   {just&&<div className="glass" style={{padding:16,marginTop:16,display:'flex',gap:12,alignItems:'center'}}><MamaBear size={64} pose="calm"/><div><BearSays>{brand.oneLess}</BearSays><p className="small muted">{just}</p></div></div>}
+   {just&&<div className="glass" style={{padding:16,marginTop:16,display:'flex',gap:12,alignItems:'center'}}><RoundBadge size={88}/><div><BearSays>{brand.oneLess}</BearSays><p className="small muted">{just}</p></div></div>}
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
    {!data&&!error&&<div className="section"><Skeleton/></div>}
    {data&&<>
@@ -29,7 +29,7 @@ export function WinsScreen(){
      <div className="t"><b>{data.totals.forMe||'—'}</b><span>Things for me</span></div>
     </div>
     <div className="section">
-     {data.cards.length===0&&<div className="card" style={{display:'flex',gap:14,alignItems:'center'}}><MamaBear size={64} pose="calm"/><div><p style={{fontWeight:600}}>{brand.winsEmpty}</p><p className="muted small">{brand.winsSub}</p></div></div>}
+     {data.cards.length===0&&<div className="card" style={{display:'flex',gap:14,alignItems:'center'}}><BearHead size={64}/><div><p style={{fontWeight:600}}>{brand.winsEmpty}</p><p className="muted small">{brand.winsSub}</p></div></div>}
      {data.cards.some(c=>c.isDemo)&&<p className="faint" style={{marginBottom:10}}>Example bills show here so you can see how it works, but they never count towards your totals.</p>}
      {data.cards.map(c=><div key={c.id} className="receipt"><div style={{display:'flex',justifyContent:'space-between',gap:10}}><p><span className="tick" aria-hidden="true">✓</span><strong>{c.title}</strong></p>{c.isDemo&&<span className="demo-tag">Example</span>}</div><p className="small muted" style={{marginTop:4,paddingLeft:22}}>{c.detail}</p><p className="tiny faint" style={{marginTop:4,paddingLeft:22}}>{formatAU(c.when.slice(0,10),'short')}</p></div>)}
      {data.reinforcement&&<BearSays size={22}>{data.reinforcement}</BearSays>}

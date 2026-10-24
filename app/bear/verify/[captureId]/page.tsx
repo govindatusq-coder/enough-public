@@ -7,7 +7,7 @@ import {formatAUD} from '@/lib/bear/domain/money';
 import {formatAU} from '@/lib/bear/domain/dates';
 import {billCategories,recurrences,type Bill,type BillFieldKey,type Capture,type ExtractedEntity} from '@/lib/bear/domain/types';
 import {categoryLabels} from '@/lib/bear/domain/labels';
-import {MamaBear} from '@/components/bear/mama-bear';
+import {BearHead} from '@/components/bear/art';
 import {Button,ErrorCard,Skeleton,Toast,TopBar} from '@/components/bear/ui';
 
 type Loaded={capture:Capture;extraction:ExtractedEntity|null;document:{id:string;name:string;mime:string;url:string}|null;duplicate:{id:string;biller:string;dueAt:string|null;amountCents:number;status:string}|null};
@@ -59,7 +59,7 @@ export default function VerifyPage({params}:{params:Promise<{captureId:string}>}
    </div>
    {data.duplicate&&<p className="note" style={{marginTop:12}}>Bear is already watching a {data.duplicate.biller} bill for {formatAU(data.duplicate.dueAt)} ({formatAUD(data.duplicate.amountCents)}). If this is a different bill, you can keep going.</p>}
    {questions.length>0&&<div className="glass" style={{padding:18,marginTop:14}}>
-    <div style={{display:'flex',gap:12,alignItems:'flex-start'}}><MamaBear size={56} pose="calm"/><div style={{flex:1}}>
+    <div style={{display:'flex',gap:12,alignItems:'flex-start'}}><BearHead size={56}/><div style={{flex:1}}>
      <p className="hand" style={{fontSize:20}}>{questions.length===1?"One thing I'm not sure about:":"A couple of things I'm not sure about:"}</p>
      {questions.slice(0,1).map(q=><div key={q.field} style={{marginTop:8}}><p style={{fontWeight:600}}>{q.question}</p><div className="btn-row">{q.options.map((o,i)=><Button key={i} variant={i===0&&o.value!==null?'primary':'ghost'} className="sm" onClick={()=>answer(q.field,o.value)}>{o.label}</Button>)}</div></div>)}
     </div></div>

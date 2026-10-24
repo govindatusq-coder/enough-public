@@ -8,7 +8,7 @@ import type {Bill,RecurringExpectation,Reminder,Task} from '@/lib/bear/domain/ty
 import type {PlanRecommendation} from '@/lib/bear/services/reminder-planning';
 import type {AssistOption} from '@/lib/bear/services/assistance';
 import {categoryLabels} from '@/lib/bear/domain/labels';
-import {MamaBear} from '@/components/bear/mama-bear';
+import {RoundBadge} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
 import {Button,ErrorCard,Sheet,Skeleton,Toast,TopBar} from '@/components/bear/ui';
 
@@ -62,7 +62,7 @@ export default function BillPage({params}:{params:Promise<{id:string}>}){
     {steps.filter(s=>s.status==='open').length>0&&<div className="section"><p className="eyebrow">Worth doing first</p><div className="card">{steps.filter(s=>s.status==='open').map(s=><div key={s.id} className="row"><span className="icon-dot mustard" aria-hidden="true">·</span><span className="grow"><span className="title">{s.title}</span>{s.dueAt&&<><br/><span className="faint">By {formatAU(s.dueAt,'short')}</span></>}</span></div>)}</div></div>}
     <div className="btn-stack" style={{marginTop:24}}><Button variant="coral" onClick={()=>setShowPaid(true)}>I&rsquo;ve paid it</Button><Button variant="quiet" onClick={drop} disabled={busy}>Not important anymore</Button></div>
    </>}
-   {paid&&<div className="glass" style={{padding:18,textAlign:'center'}}><MamaBear size={90} pose="calm"/><BearSays>That&rsquo;s sorted.</BearSays><p className="muted small" style={{marginTop:6}}>Paid {bill.paidAt?formatAU(bill.paidAt.slice(0,10)):''}.</p>{data.expectation&&<p className="faint" style={{marginTop:6}}>Bear expects the next one around {formatAU(data.expectation.expectedFrom,'short')}–{formatAU(data.expectation.expectedTo,'short')}.</p>}<div className="btn-stack"><Button href="/bear/wins" variant="ghost">See it in My Wins</Button></div></div>}
+   {paid&&<div className="glass" style={{padding:18,textAlign:'center'}}><RoundBadge size={120}/><BearSays>That&rsquo;s sorted.</BearSays><p className="muted small" style={{marginTop:6}}>Paid {bill.paidAt?formatAU(bill.paidAt.slice(0,10)):''}.</p>{data.expectation&&<p className="faint" style={{marginTop:6}}>Bear expects the next one around {formatAU(data.expectation.expectedFrom,'short')}–{formatAU(data.expectation.expectedTo,'short')}.</p>}<div className="btn-stack"><Button href="/bear/wins" variant="ghost">See it in My Wins</Button></div></div>}
    {data.documentUrl&&<p style={{marginTop:16}}><a className="pill" href={data.documentUrl} target="_blank" rel="noreferrer">Original bill</a></p>}
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
    {showPlan&&plan&&<Sheet onClose={()=>setShowPlan(false)} label="When should Bear bring this back?">

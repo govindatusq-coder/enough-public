@@ -5,11 +5,12 @@ import {apiGet,apiSend} from '@/lib/bear/client';
 import type {AreaKey,EmptyMoment,PersonRole,Preferences,Profile,RhythmBlock,Weekday} from '@/lib/bear/domain/types';
 import {interestOptions,needsOptions,strengthOptions,weekdays} from '@/lib/bear/domain/types';
 import {rhythmPresets} from '@/lib/bear/domain/labels';
-import {MamaBear} from '@/components/bear/mama-bear';
+import {HeroBear} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
 import {Horizon} from '@/components/bear/horizon';
 import {Button,Chip,Progress,Tile,Toast,TopBar} from '@/components/bear/ui';
 import {AreaArt,NeedArt,InterestArt,StrengthArt} from '@/components/bear/tile-art';
+import {strengthArt} from '@/components/bear/art';
 
 const steps=['areas','people','needs','interests','strengths','preferences','rhythm','capacity','done'] as const;
 type Step=typeof steps[number];
@@ -75,7 +76,7 @@ export default function Onboarding(){
    </section>}
    {step==='strengths'&&<section>
     <h1>You&rsquo;ve already got a lot working.</h1><p className="muted" style={{marginTop:8}}>Pick what you&rsquo;re already good at. Bear works around it.</p>
-    <div className="tiles section three">{strengthOptions.map(n=><Tile key={n} compact label={n} selected={pins.strengths.includes(n)} onToggle={()=>update({pins:{...pins,strengths:toggle(pins.strengths,n)}})} art={<StrengthArt label={n}/>}/>)}</div>
+    <div className="tiles section three">{strengthOptions.map((n,i)=><Tile key={n} compact photo={!!strengthArt[n]} tint={['#E3F1FB','#D5F3F0','#FFEFC9','#FFE6E7','#E4DDFB'][i%5]} label={n} selected={pins.strengths.includes(n)} onToggle={()=>update({pins:{...pins,strengths:toggle(pins.strengths,n)}})} art={<StrengthArt label={n}/>}/>)}</div>
     <div className="btn-stack"><Button disabled={busy} onClick={()=>save({pins},'preferences')}>Next</Button></div>
    </section>}
    {step==='preferences'&&<section>
@@ -116,7 +117,7 @@ export default function Onboarding(){
     <div className="btn-stack"><Button disabled={busy} onClick={()=>save({emptyMoments:profile.emptyMoments,onboardingComplete:true},'done')}>That&rsquo;s me</Button></div>
    </section>}
    {step==='done'&&<section style={{textAlign:'center',paddingTop:24}}>
-    <MamaBear size={200} animate/>
+    <HeroBear width={280}/>
     <h1 style={{marginTop:12}}>You&rsquo;re all set{profile.name?`, ${profile.name}`:''}.</h1>
     <BearSays size={26}>Mama Bear&rsquo;s got you.</BearSays>
     <p className="muted" style={{marginTop:14}}>Give Bear a bill and it will take it from there. Verify what it reads, then forget about it.</p>

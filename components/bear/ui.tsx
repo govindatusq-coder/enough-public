@@ -8,8 +8,8 @@ export function Button({children,variant='primary',className='',href,...rest}:{c
 }
 export function Chip({label,selected,onToggle}:{label:string;selected:boolean;onToggle:()=>void}){return <button type="button" className="chip" aria-pressed={selected} onClick={onToggle}>{selected&&<Check/>}{label}</button>;}
 export function Check({size=16}:{size?:number}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>;}
-export function Tile({label,sub,selected,onToggle,art,compact}:{label:string;sub?:string;selected:boolean;onToggle:()=>void;art:React.ReactNode;compact?:boolean}){
- return <button type="button" className={`tile ${compact?'compact':''}`} aria-pressed={selected} onClick={onToggle}><span className="art" aria-hidden="true">{art}</span><span className="check" aria-hidden="true"><Check size={15}/></span><span className="label">{label}</span>{sub&&<span className="sub">{sub}</span>}</button>;
+export function Tile({label,sub,selected,onToggle,art,compact,photo,tint}:{label:string;sub?:string;selected:boolean;onToggle:()=>void;art:React.ReactNode;compact?:boolean;photo?:boolean;tint?:string}){
+ return <button type="button" className={`tile ${compact&&!photo?'compact':''} ${photo?'photo':''}`} style={tint?{['--tile' as string]:tint}:undefined} aria-pressed={selected} onClick={onToggle}><span className="art" aria-hidden="true">{art}</span><span className="check" aria-hidden="true"><Check size={15}/></span><span className="label">{label}</span>{sub&&<span className="sub">{sub}</span>}</button>;
 }
 export function Toast({message,kind='info',onDone}:{message:string|null;kind?:'info'|'error';onDone:()=>void}){
  useEffect(()=>{if(!message)return;const t=setTimeout(onDone,kind==='error'?5000:3200);return()=>clearTimeout(t);},[message,kind,onDone]);
