@@ -1,7 +1,7 @@
 import 'server-only';
 import Anthropic from '@anthropic-ai/sdk';
 import {ProviderError,type ExtractInput,type ExtractResult,type StructuredModelProvider} from './provider.ts';
-import {structuredOutputSchema} from './schema-subset.ts';
+import {restoreNullables,structuredOutputSchema} from './schema-subset.ts';
 
 const IMAGE_TYPES=new Set(['image/jpeg','image/png','image/webp','image/gif','image/heic','image/heif']);
 const MAX_IMAGE_BYTES=4.5*1024*1024;
@@ -42,7 +42,7 @@ export class AnthropicProvider implements StructuredModelProvider{
    if(response.stop_reason==='refusal')throw new ProviderError('The AI service declined to read this document.','refused');
    if(response.stop_reason==='max_tokens')throw new ProviderError('The AI response was cut short.','invalid_output');
    const text=response.content.filter((b):b is Anthropic.TextBlock=>b.type==='text').map(b=>b.text).join('');
-   let output:unknown;try{output=JSON.parse(text);}catch{throw new ProviderError('The AI service returned something Bear could not read.','invalid_output');}
+   let output:unknown;try{output=restoreNullables(input.schema,JSON.parse(text));}catch{throw new ProviderError('The AI service returned something Bear could not read.','invalid_output');}
    return {output,raw:{id:response.id,usage:response.usage,stop:response.stop_reason},provider:this.name,model:response.model,latencyMs:Date.now()-started};
   }catch(error){
    if(error instanceof ProviderError)throw error;
