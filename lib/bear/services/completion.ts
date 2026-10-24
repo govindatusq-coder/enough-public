@@ -42,9 +42,13 @@ export async function completeTask(store:BearStore,input:CompleteInput,now=new D
   const existing=bill.recurringExpectationId?await store.get('recurring_expectations',bill.recurringExpectationId):null;
   if(existing&&existing.status==='expecting')await store.update('recurring_expectations',existing.id,{status:'arrived'});
  }else{
-  win=await store.insert('wins',stamp<Win>(store.userId,{completionId:completion.id,category:'handled',title:task.title,detail:'Done',amountCents:null,minutes:null,billId:null,isDemo:task.isDemo}));
+  // A finished main task closes its project (the PARA archive); a finished step does not.
+  const isStep=(await store.list('task_dependencies',{where:[{column:'depends_on_task_id',value:task.id}]})).length>0;
+  if(!isStep)await store.update('projects',task.projectId,{status:'done'});
+  const timing=daysBeforeDue===null||isStep?'Done':daysBeforeDue>1?`${daysBeforeDue} days early`:daysBeforeDue===1?'1 day early':daysBeforeDue===0?'On the day':'Done';
+  if(!isStep)win=await store.insert('wins',stamp<Win>(store.userId,{completionId:completion.id,category:task.kind==='appointment'&&/me|gp|doctor|dentist|physio/i.test(task.title)&&!task.forPerson?'me':'handled',title:task.title,detail:timing,amountCents:null,minutes:null,billId:null,isDemo:task.isDemo}));
  }
- return {completion,win,ledger,expectation,suggestion};
+ return {completion,win:win as Win,ledger,expectation,suggestion};
 }
 export const categoryLabel=(c:string)=>({electricity:'Electricity',gas:'Gas',water:'Water',internet:'Internet',mobile:'Mobile',council_rates:'Council rates',car_registration:'Car registration',insurance:'Insurance',school_fees:'School fee',childcare:'Childcare',sports_fees:'Sports fee',subscription:'Subscription',rent:'Rent',strata:'Strata',medical:'Medical',other:'Bill'} as Record<string,string>)[c]||'Bill';
 

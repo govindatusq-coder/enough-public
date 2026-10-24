@@ -9,6 +9,7 @@ import {billCategories,recurrences,type Bill,type BillFieldKey,type Capture,type
 import {categoryLabels} from '@/lib/bear/domain/labels';
 import {BearHead} from '@/components/bear/art';
 import {Button,ErrorCard,Skeleton,Toast,TopBar} from '@/components/bear/ui';
+import {GeneralVerify} from './general';
 
 type Loaded={capture:Capture;extraction:ExtractedEntity|null;document:{id:string;name:string;mime:string;url:string}|null;duplicate:{id:string;biller:string;dueAt:string|null;amountCents:number;status:string}|null};
 const editable:{key:BillFieldKey;label:string;type:'text'|'money'|'date'|'category'|'recurrence'|'bool'}[]=[
@@ -29,6 +30,7 @@ export default function VerifyPage({params}:{params:Promise<{captureId:string}>}
  if(ex.status==='verified')return <main id="main" className="bear-screen flow"><TopBar back={{href:'/bear/home'}}/><h1>Bear&rsquo;s already got this one.</h1><div className="btn-stack"><Button href="/bear/home">Back to My Bear</Button></div></main>;
  const f=ex.fields;const cat=f.category.value;
  const notBill=f.documentType==='not_a_bill';
+ if(ex.kind==='task')return <main id="main" className="bear-screen flow"><TopBar back={{href:'/bear/capture',label:'Start over'}} right={data.capture.isDemo?<span className="demo-tag">Example data</span>:null}/><h1>{brand.verifyHeading}</h1><GeneralVerify extraction={ex} documentUrl={data.document?.url||null} isDemo={data.capture.isDemo}/><div className="btn-stack"><Button variant="quiet" disabled={busy} onClick={reject}>That&rsquo;s not right, start over</Button></div><Toast message={toast} onDone={()=>setToast(null)}/></main>;
  const questions=ex.questions.filter(q=>!answered.has(q.field));
  const unsure=(key:string)=>{const t=(f as unknown as Record<string,{confidence:number;value:unknown}>)[key];return t&&t.value!==null&&t.confidence<0.75&&!confirmed.has(key)&&values[key]===(t.value as string);};
  const setValue=(key:string,v:string|boolean|null)=>{setValues(x=>({...x,[key]:v}));setConfirmed(c=>{const n=new Set(c);n.add(key);return n;});};

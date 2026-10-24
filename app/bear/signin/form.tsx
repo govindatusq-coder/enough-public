@@ -31,7 +31,7 @@ export function SignInForm(){
      {!create&&<Link href="/recover" className="btn quiet wide">Forgot your password?</Link>}
     </div>
    </form>
-   <p className="faint" style={{marginTop:24}}>Bear keeps your bills private: only you can see them, and nothing is paid without you.</p>
+   <p className="faint" style={{marginTop:24}}>Bear keeps what you give it private: only you can see it, and nothing is paid without you.</p>
   </main>
  );
 }

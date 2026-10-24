@@ -1,4 +1,4 @@
-# Load Bear MVP — verification record (23 October 2026)
+# Load Bear MVP — verification record (23–24 October 2026)
 
 ## What was run
 
@@ -8,7 +8,7 @@
 | TypeScript | `pnpm typecheck` | clean |
 | Lint | `pnpm lint` (new flat config, `eslint-config-next`) | clean |
 | Production build | `pnpm build` | compiled; all `/bear` and `/api/bear` routes emitted |
-| Browser walk-through | `BEAR_TEST_MODE=start node scripts/test-bear-browser.mjs` | 21 steps passed in headless Chromium (390×844, en-AU, Australia/Sydney) against `next start` with the in-memory local store; screenshots in `.bear-browser-results/` |
+| Browser walk-through | `BEAR_TEST_MODE=start node scripts/test-bear-browser.mjs` | 24 steps passed (bill slice, school-note task with steps/plan/win, Everything view, voice option) in headless Chromium (390×844, en-AU, Australia/Sydney) against `next start` with the in-memory local store; screenshots in `.bear-browser-results/` |
 
 ## The vertical slice covered by `tests/bear-vertical-slice.test.mjs`
 

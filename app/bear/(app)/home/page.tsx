@@ -21,8 +21,9 @@ export default function Home(){
   }).catch(e=>{const err=e as {status?:number;message:string};if(err.status===401)router.replace('/bear/signin');else setError(err.message);}),[router]);
  useEffect(()=>{load();const onVis=()=>{if(document.visibilityState==='visible')load();};document.addEventListener('visibilitychange',onVis);return()=>document.removeEventListener('visibilitychange',onVis);},[load]);
  async function setMode(mode:DayMode){setBusy('mode');try{const res=await apiSend<{reply:string|null}>('/api/bear/day',{mode:home?.dayMode===mode?null:mode});setToast(res.reply||'Noted.');await load();}catch(e){setError((e as Error).message);}finally{setBusy(null);}}
- async function act(item:NeedsYouItem,key:string){if(!item.reminderId){router.push(`/bear/bills/${item.billId}`);return;}
-  if(key==='help'||key==='break_down'){router.push(`/bear/bills/${item.billId}?reminder=${item.reminderId}`);return;}
+ const linkFor=(item:NeedsYouItem)=>item.billId?`/bear/bills/${item.billId}`:`/bear/tasks/${item.taskId}`;
+ async function act(item:NeedsYouItem,key:string){if(!item.reminderId){router.push(linkFor(item));return;}
+  if(key==='help'||key==='break_down'){router.push(`${linkFor(item)}?reminder=${item.reminderId}`);return;}
   setBusy(item.reminderId);
   try{if(key==='tonight')await apiSend('/api/bear/reminders/interact',{reminderId:item.reminderId,action:'snoozed',detail:'tonight'});
    else if(key==='another_time')await apiSend('/api/bear/reminders/interact',{reminderId:item.reminderId,action:'snoozed',detail:'tomorrow'});
@@ -52,14 +53,14 @@ export default function Home(){
      <div style={{display:'flex',justifyContent:'space-between',gap:10}}><div><p style={{fontWeight:700,fontSize:18}}>{item.title}</p><p className="muted small">{item.amount}{item.amount?' · ':''}{item.dueLabel} · ~{item.minutes} min</p></div>{item.isDemo&&<span className="demo-tag">Example</span>}</div>
      {item.message&&<p className="hand" style={{fontSize:20,marginTop:10}}>{item.message}</p>}
      <div className="btn-row">
-      {item.actions.length?item.actions.map(a=><Button key={a.key} className="sm" variant={a.key==='help'?'coral':'ghost'} disabled={busy===item.reminderId} onClick={()=>act(item,a.key)}>{a.label}</Button>):<Button className="sm" variant="coral" href={`/bear/bills/${item.billId}`}>Sort it with Bear</Button>}
+      {item.actions.length?item.actions.map(a=><Button key={a.key} className="sm" variant={a.key==='help'?'coral':'ghost'} disabled={busy===item.reminderId} onClick={()=>act(item,a.key)}>{a.label}</Button>):<Button className="sm" variant="coral" href={linkFor(item)}>Sort it with Bear</Button>}
      </div>
     </div>)}
    </section>
    <section className="section" aria-labelledby="handling">
     <p id="handling" className="eyebrow teal">Bear&rsquo;s handling</p>
-    <div className="card" style={home.handling.lines.length?undefined:{display:'grid',gridTemplateColumns:'96px 1fr',gap:12,alignItems:'center'}}>{!home.handling.lines.length&&<Art file="home-bill" width={96}/>}{home.handling.lines.length?home.handling.lines.map(l=><div key={l} className="row"><span className="icon-dot" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 13l4 4L19 7"/></svg></span><span className="grow">{l}</span></div>):<p style={{fontWeight:600}}>{home.hasAnyBill?'Nothing being watched right now.':'Give Bear a bill and it starts watching.'}</p>}
-     {home.demoAvailable&&<div style={{gridColumn:'1 / -1',marginTop:14,paddingTop:14,borderTop:'1px solid var(--line)'}}><p className="small">Want to see how it works first? Bear can walk you through an <strong>example</strong> electricity bill.</p><div className="btn-row"><Button className="sm" variant="ghost" disabled={busy==='demo'} onClick={demo}>Try the example bill</Button><Button className="sm" variant="coral" href="/bear/capture">Give Bear a real one</Button></div></div>}
+    <div className="card" style={home.handling.lines.length?undefined:{display:'grid',gridTemplateColumns:'96px 1fr',gap:12,alignItems:'center'}}>{!home.handling.lines.length&&<Art file="home-bill" width={96}/>}{home.handling.lines.length?home.handling.lines.map(l=><div key={l} className="row"><span className="icon-dot" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 13l4 4L19 7"/></svg></span><span className="grow">{l}</span></div>):<p style={{fontWeight:600}}>{home.hasAnyBill?'Nothing being watched right now.':'Give Bear anything and it starts holding it.'}</p>}
+     {home.demoAvailable&&<div style={{gridColumn:'1 / -1',marginTop:14,paddingTop:14,borderTop:'1px solid var(--line)'}}><p className="small">Bills, school notes, appointments, forms, lists. Want to see how it works first? Bear can walk you through an <strong>example</strong> electricity bill.</p><div className="btn-row"><Button className="sm" variant="ghost" disabled={busy==='demo'} onClick={demo}>Try the example bill</Button><Button className="sm" variant="coral" href="/bear/capture">Give Bear something real</Button></div></div>}
     </div>
    </section>
    <section className="section" aria-labelledby="notyet">
@@ -74,7 +75,7 @@ export default function Home(){
     </div>
    </section>
    {home.ideasCount>0&&<section className="section"><Link href="/bear/ideas" className="glass" style={{display:'flex',padding:'14px 16px',alignItems:'center',gap:12}}><span className="icon-dot mustard" aria-hidden="true">✦</span><span className="grow"><strong>Bear noticed {home.ideasCount===1?'something':`${home.ideasCount} things`}.</strong><br/><span className="faint">Have a look when you have a minute.</span></span></Link></section>}
-   {!aiAvailable&&<p className="faint" style={{marginTop:20}}>Photo and PDF reading is off until the AI service is connected. Pasted and typed bills work.</p>}
+   {!aiAvailable&&<p className="faint" style={{marginTop:20}}>Photo and PDF reading is off until the AI service is connected. Pasted, typed and spoken things work.</p>}
    <BearSays size={20}>{brand.gotYou}</BearSays>
    <Toast message={toast} onDone={()=>setToast(null)}/>
   </main>

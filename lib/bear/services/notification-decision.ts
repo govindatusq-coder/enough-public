@@ -8,7 +8,7 @@ import type {BehaviourSignals} from './behaviour.ts';
 export type Decision={deliver:true;message:string;actions:{key:string;label:string}[];essential:boolean;reason:string}|{deliver:false;reason:string;revisitAt:string|null};
 export interface DecisionContext{reminder:Reminder;task:Task;bill:Bill|null;profile:Profile;dayMode:DayMode|null;signals:BehaviourSignals;now:Date;quietHours?:boolean}
 
-export const assistanceActions=(bill:Bill|null,minutes:number)=>[{key:'help',label:`Pay it · ~${minutes} min`},{key:'tonight',label:'Tonight'},{key:'another_time',label:'Another time'}];
+export const assistanceActions=(bill:Bill|null,minutes:number)=>[{key:'help',label:`${bill?'Pay it':'Do it'} · ~${minutes} min`},{key:'tonight',label:'Tonight'},{key:'another_time',label:'Another time'}];
 export const stuckActions=[{key:'break_down',label:'Break it down'},{key:'another_time',label:'Find another time'},{key:'help',label:'Help me do it'},{key:'drop',label:'Not important anymore'}];
 
 export function decide(ctx:DecisionContext):Decision{

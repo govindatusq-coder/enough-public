@@ -65,7 +65,7 @@ export default function Onboarding(){
     <div className="btn-stack"><Button disabled={busy} onClick={()=>{const list:{role:PersonRole;name:string}[]=[];for(const p of people){if(p.role==='me')list.push({role:'me',name:profile.name});else{const ns=(names[p.role]||'').split(',').map(s=>s.trim()).filter(Boolean);if(ns.length)ns.forEach(n=>list.push({role:p.role,name:n}));else list.push({role:p.role,name:''});}}save({people:list,name:profile.name},'needs');}}>Next</Button><Button variant="quiet" onClick={()=>save({name:profile.name},'needs')}>Skip for now</Button></div>
    </section>}
    {step==='needs'&&<section>
-    <h1>Where would another brain help?</h1><p className="muted" style={{marginTop:8}}>Bills &amp; money is where Bear is strongest right now.</p>
+    <h1>Where would another brain help?</h1><p className="muted" style={{marginTop:8}}>Pick as many as you like.</p>
     <div className="tiles section">{needsOptions.map((n,i)=><Tile key={n} compact side={!!needArt[n]} tint={['#FFE6E7','#E3F1FB','#D5F3F0','#FFEFC9','#E4DDFB'][i%5]} label={n} selected={pins.needs.includes(n)} onToggle={()=>update({pins:{...pins,needs:toggle(pins.needs,n)}})} art={<NeedArt label={n}/>}/>)}</div>
     <div className="btn-stack"><Button disabled={busy} onClick={()=>save({pins},'interests')}>Next</Button></div>
    </section>}
@@ -121,7 +121,7 @@ export default function Onboarding(){
     <HeroBear width={280}/>
     <h1 style={{marginTop:12}}>You&rsquo;re all set{profile.name?`, ${profile.name}`:''}.</h1>
     <BearSays size={26}>Mama Bear&rsquo;s got you.</BearSays>
-    <p className="muted" style={{marginTop:14}}>Give Bear a bill and it will take it from there. Verify what it reads, then forget about it.</p>
+    <p className="muted" style={{marginTop:14}}>Give Bear anything: a bill, a school note, an appointment, a thought. Check what it reads, then forget about it.</p>
     <div className="btn-stack"><Button variant="coral" onClick={()=>router.replace('/bear/capture?first=1')}>Give it to Bear</Button><Button variant="quiet" onClick={()=>router.replace('/bear/home')}>Have a look around first</Button></div>
    </section>}
    </div>
