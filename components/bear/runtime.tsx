@@ -1,10 +1,25 @@
 'use client';
-import {useEffect} from 'react';
-// Registers the Load Bear service worker (push receipt + notification clicks). Nothing else
-// runs in the background; reminders are decided server-side.
+import {useCallback,useEffect,useState} from 'react';
+// Registers the Load Bear service worker (push receipt + notification clicks) and watches for
+// a newer deployment, offering a one-tap refresh. Nothing else runs in the background.
+export const CURRENT_BUILD=process.env.NEXT_PUBLIC_BEAR_BUILD||'dev';
+export async function checkForUpdate():Promise<'current'|'update'|'unknown'>{
+ try{const res=await fetch('/api/bear/version',{cache:'no-store'});if(!res.ok)return 'unknown';const {build}=await res.json();return build&&build!==CURRENT_BUILD?'update':'current';}catch{return 'unknown';}
+}
+export async function applyUpdate(){
+ try{const regs=await navigator.serviceWorker?.getRegistrations();for(const r of regs||[])await r.update();if('caches' in window){for(const k of await caches.keys())await caches.delete(k);}}catch{/* best effort */}
+ window.location.reload();
+}
 export function BearRuntime(){
- useEffect(()=>{if('serviceWorker' in navigator)navigator.serviceWorker.register('/bear/sw.js',{scope:'/bear/'}).catch(()=>{/* unsupported: in-app reminders still work */});},[]);
- return null;
+ const [update,setUpdate]=useState(false);
+ const check=useCallback(()=>{checkForUpdate().then(r=>{if(r==='update')setUpdate(true);});},[]);
+ useEffect(()=>{
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/bear/sw.js',{scope:'/bear/'}).catch(()=>{/* unsupported: in-app reminders still work */});
+  check();const onVis=()=>{if(document.visibilityState==='visible')check();};document.addEventListener('visibilitychange',onVis);
+  const t=setInterval(check,10*60*1000);return()=>{document.removeEventListener('visibilitychange',onVis);clearInterval(t);};
+ },[check]);
+ if(!update)return null;
+ return <div className="update-banner glass-strong" role="status"><span>A newer Bear is ready.</span><button type="button" className="btn primary sm" onClick={applyUpdate}>Update now</button></div>;
 }
 // Show a local notification for a reminder that is due while the app is open, once.
 export async function showLocalReminder(reminderId:string,message:string,url:string){

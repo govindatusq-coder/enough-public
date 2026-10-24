@@ -213,7 +213,7 @@
 
 /* Side tiles: label left, supplied illustration right (Needs). */
 .bear .tile.side{min-height:96px;padding:0 0 0 14px;flex-direction:row;align-items:center;justify-content:space-between;background:var(--tile,#fff);filter:none;}
-.bear .tile.side .art{position:relative;inset:auto;width:44%;height:96px;flex:none;order:2;}
+.bear .tile.side .art{position:relative;inset:auto;width:46%;height:96px;flex:none;order:2;}
 .bear .tile.side .label{flex:1;order:1;padding:10px 6px 10px 0;font-size:15px;line-height:1.15;}
 .bear .tile.side .check{top:auto;bottom:8px;left:8px;right:auto;width:22px;height:22px;}
 .bear .tile.side[aria-pressed="true"]{filter:none;}
@@ -230,3 +230,4 @@
 .bear .pref-card{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:start;}
 .bear .pref-card img{width:64px;height:64px;object-fit:contain;mix-blend-mode:multiply;margin-top:4px;}
 .bear .wordmark-img{display:block;width:150px;height:auto;margin:0 auto;mix-blend-mode:multiply;}
+.bear .update-banner{position:fixed;top:calc(var(--safe-top) + 10px);left:14px;right:14px;z-index:70;max-width:532px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 10px 10px 16px;border-radius:999px;font-weight:600;animation:rise .4s var(--spring);}

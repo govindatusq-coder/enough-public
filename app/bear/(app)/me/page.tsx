@@ -7,11 +7,12 @@ import type {Profile} from '@/lib/bear/domain/types';
 import {Avatar} from '@/components/bear/art';
 import {Tagline} from '@/components/bear/brand';
 import {Art} from '@/components/bear/art';
+import {applyUpdate,checkForUpdate,CURRENT_BUILD} from '@/components/bear/runtime';
 import {Button,ErrorCard,Skeleton,Toast} from '@/components/bear/ui';
 import {areaLabels} from '@/lib/bear/domain/labels';
 type Loaded={profile:Profile;user:{email:string|null;name:string};aiAvailable:boolean;pushAvailable:boolean};
 export default function Me(){
- const router=useRouter();const [data,setData]=useState<Loaded|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [push,setPush]=useState<{available:boolean;publicKey:string|null;subscriptions:number}|null>(null);const perm=useSyncExternalStore(subscribePerm,()=>typeof Notification==='undefined'?'unknown':Notification.permission,()=>'unknown');const [permTick,setPermTick]=useState(0);
+ const router=useRouter();const [data,setData]=useState<Loaded|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [push,setPush]=useState<{available:boolean;publicKey:string|null;subscriptions:number}|null>(null);const [updateState,setUpdateState]=useState<'idle'|'checking'|'current'|'update'|'unknown'>('idle');const perm=useSyncExternalStore(subscribePerm,()=>typeof Notification==='undefined'?'unknown':Notification.permission,()=>'unknown');const [permTick,setPermTick]=useState(0);
  const load=useCallback(()=>Promise.all([apiGet<Loaded>('/api/bear/profile'),apiGet<{available:boolean;publicKey:string|null;subscriptions:number}>('/api/bear/push')]).then(([d,p])=>{setData(d);setPush(p);setError(null);}).catch(e=>{if(e.status===401)router.replace('/bear/signin');else setError(e.message);}),[router]);
  useEffect(()=>{load();},[load]);
  async function enableNotifications(){if(typeof Notification==='undefined'){setToast('This browser cannot show notifications.');return;}
@@ -43,6 +44,9 @@ export default function Me(){
    <section className="section"><p className="eyebrow">Reading bills</p><div className="card"><p className="small">{data.aiAvailable?'Photos, screenshots and PDFs are read by the AI service on Bear’s server. Your bills are never used to train anything, and nothing is paid without you.':'The AI service is not connected, so pictures and PDFs are off. Pasted text and typed bills still work.'}</p></div></section>
    <section className="section"><p className="eyebrow">Privacy</p><div className="card"><p className="small">Only you can see your bills. Bear stores the biller, amount, dates and payment reference, never card numbers, CVVs or bank passwords. <Link href="/privacy" style={{textDecoration:'underline'}}>Privacy notice</Link></p>
     <div className="btn-row"><Button className="sm" variant="quiet" href="/signout">Sign out</Button></div></div></section>
+   <section className="section"><p className="eyebrow">App</p><div className="card"><p className="small">Version <strong>{CURRENT_BUILD}</strong>. Bear checks for a newer version each time you open it.</p>
+    <div className="btn-row">{updateState==='update'?<Button className="sm" variant="coral" onClick={applyUpdate}>Update now</Button>:<Button className="sm" variant="ghost" disabled={updateState==='checking'} onClick={async()=>{setUpdateState('checking');setUpdateState(await checkForUpdate());}}>{updateState==='checking'?'Checking…':'Check for updates'}</Button>}</div>
+    {updateState==='current'&&<p className="faint" style={{marginTop:8}}>You&rsquo;re on the latest Bear.</p>}{updateState==='unknown'&&<p className="faint" style={{marginTop:8}}>Couldn&rsquo;t check right now. Try again when you&rsquo;re online.</p>}</div></section>
    <div style={{marginTop:32,textAlign:'center'}}><Art file="wordmark" className="wordmark-img" alt="Load Bear"/><Tagline size={20}/></div>
    <Toast message={toast} onDone={()=>setToast(null)}/>
    <span className="sr-only" data-tick={permTick}/>
