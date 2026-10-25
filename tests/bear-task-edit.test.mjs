@@ -381,3 +381,15 @@ test('things for me counts real wins marked for the person, not guesses',async()
  const {task}=await maybeAutoSetup(store,extraction,NOW);await completeTask(store,{taskId:task.id,method:null,expectNext:false},NOW);
  const view=await winsView(store);assert.equal(view.totals.forMe,view.breakdown.forMe.length);
 });
+
+import {sharedText} from '../lib/bear/domain/share.ts';
+test('shared text is tidy: parts that repeat each other are only used once',()=>{
+ assert.equal(sharedText({title:'Excursion',text:'Return the form by Friday https://school.example/form',url:'https://school.example/form'}),'Excursion\nReturn the form by Friday https://school.example/form');
+ assert.equal(sharedText({title:'Hello',text:'Hello there',url:null}),'Hello there');
+ assert.equal(sharedText({title:'  ',text:'',url:''}),'');assert.equal(sharedText({url:'https://a.example'}),'https://a.example');
+ assert.equal(sharedText({text:'x'.repeat(30000)}).length,20000);
+});
+test('the web app manifest accepts shares from other apps and lands inside its own scope',()=>{
+ const m=JSON.parse(readFileSync('public/bear/manifest.webmanifest','utf8'));
+ assert.equal(m.share_target.action,'/bear/share');assert.ok(m.share_target.action.startsWith(m.scope));assert.equal(m.share_target.method,'GET');assert.deepEqual(Object.keys(m.share_target.params).sort(),['text','title','url']);
+});

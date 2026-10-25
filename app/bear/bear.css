@@ -308,3 +308,6 @@
 .bear .metric-row[data-area]{box-shadow:inset 3px 0 0 var(--ac);}
 .bear .metric-row.total{border-top:2px solid var(--line);}
 .bear .metric-row b{font-family:var(--font-display);font-weight:400;font-size:19px;color:var(--navy);}
+
+.bear .quick-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px;padding-top:8px;border-top:1px solid var(--line);}
+.bear .quick-tools .faint{font-size:13px;flex:1;min-width:140px;}
