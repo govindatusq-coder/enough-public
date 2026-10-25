@@ -370,6 +370,7 @@
 .bear .area-grid.six .badge,.bear .area-grid.six .badge-dot{z-index:3;}
 .bear .area-grid.six .area-label,.bear .area-grid.six .area-sub{padding-left:8px;padding-right:4px;}
 .bear .area-grid.six .area-sub{font-size:11px;letter-spacing:-.01em;}
-/* Tiles keep the artwork's own proportions, so nothing is cropped or zoomed on tall phones. */
-.bear .area-grid.six{grid-template-rows:none;grid-auto-rows:auto;align-content:center;}
-.bear .area-grid.six .area-tile{aspect-ratio:300/310;height:auto;}
+/* Tall tiles: the whole picture sits centred at its own proportions, over a soft blur of itself. */
+.bear .tile-anim{position:relative;overflow:hidden;background:none !important;}
+.bear .tile-anim::before{content:"";position:absolute;inset:-20px;background:var(--tile-img) center/cover no-repeat;filter:blur(16px) saturate(1.1);transform:scale(1.1);}
+.bear .tile-anim::after{content:"";position:absolute;left:0;right:0;top:50%;aspect-ratio:300/310;transform:translateY(-50%);background:var(--tile-img) center/cover no-repeat;}
