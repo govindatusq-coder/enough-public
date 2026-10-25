@@ -370,3 +370,6 @@
 .bear .area-grid.six .badge,.bear .area-grid.six .badge-dot{z-index:3;}
 .bear .area-grid.six .area-label,.bear .area-grid.six .area-sub{padding-left:8px;padding-right:4px;}
 .bear .area-grid.six .area-sub{font-size:11px;letter-spacing:-.01em;}
+/* Tiles keep the artwork's own proportions, so nothing is cropped or zoomed on tall phones. */
+.bear .area-grid.six{grid-template-rows:none;grid-auto-rows:auto;align-content:center;}
+.bear .area-grid.six .area-tile{aspect-ratio:300/310;height:auto;}
