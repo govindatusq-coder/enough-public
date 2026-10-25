@@ -118,13 +118,13 @@ export interface BillFields{
  notes:string|null;
 }
 export type BillFieldKey=Exclude<keyof BillFields,'documentType'|'billerKey'|'candidateDates'|'candidateAmounts'|'notes'>;
-export type GeneralFieldKey='title'|'area'|'when'|'timeOfDay'|'person'|'location'|'isRecurring';
+export type GeneralFieldKey='title'|'area'|'when'|'timeOfDay'|'person'|'location'|'isRecurring'|'timing'|'size';
 export interface VerificationQuestion{field:BillFieldKey|GeneralFieldKey;question:string;options:{label:string;value:string|number|boolean|null}[]}
 // What Bear understood from any capture, before the user confirms it.
 export const captureKinds=['bill','appointment','school','form','errand','shopping','message','note','event','other'] as const;
 export type CaptureKind=typeof captureKinds[number];
 export interface ListItem{name:string;quantity:string|null;estimatedCents:number|null}
-export interface GeneralFields{kind:CaptureKind;summary:string;title:Traced<string>;area:Traced<AreaKey>;when:Traced<ISODate>;timeOfDay:Traced<string>;person:Traced<string>;location:Traced<string>;isRecurring:Traced<boolean>;steps:string[];estimatedMinutes:number|null;items:ListItem[];estimatedCostCents:number|null}
+export interface GeneralFields{kind:CaptureKind;summary:string;title:Traced<string>;area:Traced<AreaKey>;when:Traced<ISODate>;timeOfDay:Traced<string>;person:Traced<string>;location:Traced<string>;isRecurring:Traced<boolean>;steps:string[];estimatedMinutes:number|null;items:ListItem[];estimatedCostCents:number|null;timing:Traced<'time_sensitive'|'flexible'>;size:Traced<'one_go'|'bigger'>}
 export interface ExtractedEntity extends Owned{captureId:Id;kind:'bill'|'task';status:'draft'|'verified'|'rejected';fields:BillFields;general:GeneralFields;questions:VerificationQuestion[];sourceText:string|null;inferenceId:Id|null;duplicateOfBillId:Id|null}
 export interface AIInference extends Owned{captureId:Id|null;service:string;provider:string;model:string;promptHash:string;rawOutput:unknown;latencyMs:number;ok:boolean;error:string|null}
 export interface UserCorrection extends Owned{extractionId:Id;field:string;from:unknown;to:unknown}
@@ -134,7 +134,7 @@ export interface Project extends Owned{areaKey:AreaKey;title:string;status:'acti
 export const taskKinds=['pay_bill','check_balance','confirm_discount','confirm_discrepancy','transfer_money','save_receipt','appointment','school','form','errand','shopping','message','note','event','custom'] as const;
 export type TaskKind=typeof taskKinds[number];
 export interface ShoppingItem{id:string;name:string;quantity:string|null;estimatedCents:number|null;done:boolean;doneAt:ISODateTime|null}
-export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;status:'open'|'done'|'dropped'|'archived';dueAt:ISODate|null;dueTime?:string|null;location?:string|null;notes?:string|null;estimatedMinutes:number;cognitiveEffort:'low'|'medium'|'high';forPerson:string|null;isDemo:boolean;items?:ShoppingItem[];estimatedCents?:number|null;setupBy?:'bear'|'user';part?:{of:Id;index:number;total:number}|null;buyWhen?:'now'|null;wishlist?:{since:ISODate;checkBackAt:ISODate|null}|null}
+export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;status:'open'|'done'|'dropped'|'archived';dueAt:ISODate|null;dueTime?:string|null;location?:string|null;notes?:string|null;estimatedMinutes:number;cognitiveEffort:'low'|'medium'|'high';forPerson:string|null;isDemo:boolean;items?:ShoppingItem[];estimatedCents?:number|null;setupBy?:'bear'|'user';part?:{of:Id;index:number;total:number}|null;timing?:'time_sensitive'|'flexible';size?:'one_go'|'bigger';nudge?:{every:'week'|'fortnight'|'month'}|null;nudgeChoice?:'none'|'nudge'|'day'|null;buyWhen?:'now'|null;wishlist?:{since:ISODate;checkBackAt:ISODate|null}|null}
 export interface TaskDependency extends Owned{taskId:Id;dependsOnTaskId:Id}
 
 // ---------- Bill ----------
@@ -143,7 +143,7 @@ export interface Bill extends Owned{taskId:Id;projectId:Id;extractionId:Id|null;
 export interface RecurringExpectation extends Owned{billerKey:string;biller:string;category:BillCategory;recurrence:Recurrence;status:'expecting'|'arrived'|'missing'|'cancelled';lastDueAt:ISODate;expectedFrom:ISODate;expectedTo:ISODate;typicalAmountCents:number|null;observedDueDates:ISODate[];lastBillId:Id}
 
 // ---------- Reminder ----------
-export type ReminderKind='planned'|'follow_up'|'deadline';
+export type ReminderKind='planned'|'follow_up'|'deadline'|'nudge';
 export type ReminderStatus='scheduled'|'delivered'|'actioned'|'snoozed'|'dismissed'|'cancelled';
 export interface ReminderPlan{scheduledFor:ISODateTime;label:string;rationale:string;windowId:Id|null;score:number}
 export interface Reminder extends Owned{taskId:Id;billId:Id|null;kind:ReminderKind;status:ReminderStatus;scheduledFor:ISODateTime;plan:ReminderPlan;followUpIfUnpaid:boolean;attempts:number;deliveredAt:ISODateTime|null;deliveredVia:('in_app'|'local'|'push')[];message:string}

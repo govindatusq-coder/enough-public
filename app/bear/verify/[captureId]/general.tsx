@@ -2,11 +2,12 @@
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {apiSend,ApiError} from '@/lib/bear/client';
-import {formatAU} from '@/lib/bear/domain/dates';
+import {formatAU,todayISO} from '@/lib/bear/domain/dates';
+import {overdueDays,overdueLabel} from '@/lib/bear/domain/overdue';
 import {areaLabels} from '@/lib/bear/domain/labels';
 import type {ExtractedEntity,Task} from '@/lib/bear/domain/types';
 import {BearHead} from '@/components/bear/art';
-import {Button,ErrorCard} from '@/components/bear/ui';
+import {Button,ErrorCard,OverdueAlert} from '@/components/bear/ui';
 
 const kindLabel:Record<string,string>={appointment:'Appointment',school:'School',form:'Form to deal with',errand:'Errand',shopping:'Shopping',message:'From a message',note:'Note',event:'Event',other:'Task'};
 type Key='title'|'area'|'when'|'timeOfDay'|'person'|'location'|'isRecurring';
@@ -28,6 +29,7 @@ export function GeneralVerify({extraction,documentUrl,isDemo}:{extraction:Extrac
   catch(e){setError((e as ApiError).message);setBusy(false);}
  }
  return (<>
+  {g.timing?.value!=='flexible'&&overdueDays(String(v.when||'')||null,todayISO())>0&&<div style={{marginTop:16}}><OverdueAlert title={`That date has already passed. ${overdueLabel(overdueDays(String(v.when),todayISO()))}.`}><p className="small muted">It isn&rsquo;t too late. Check the details and Bear will help you sort it, or set it to No rush if it can wait.</p></OverdueAlert></div>}
   <div className="card" style={{marginTop:16}}>
    <p className="eyebrow">{kindLabel[g.kind]||'Task'}{isDemo&&<span className="demo-tag" style={{marginLeft:8}}>Example</span>}</p>
    <h2>{v.title||'Something for Bear to hold'}</h2>

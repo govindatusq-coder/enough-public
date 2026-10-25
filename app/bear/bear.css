@@ -242,6 +242,44 @@
 .bear .hero-img{display:block;width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply;-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 34%);mask-image:linear-gradient(to right,transparent 0%,#000 34%);}
 .bear .area-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .bear .area-tile{display:flex;flex-direction:column;gap:2px;padding:0 0 12px;overflow:hidden;border-radius:var(--r-lg);background:var(--glass);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);color:inherit;text-decoration:none;}
-.bear .area-img{display:block;height:92px;background:var(--cream);}
+.bear .area-img{display:block;height:96px;overflow:hidden;background:var(--cream);}
+.bear .area-photo{display:block;width:100%;height:100%;object-fit:cover;object-position:center;}
 .bear .area-label{font-family:var(--font-display);font-size:19px;color:var(--navy);padding:8px 14px 0;}
 .bear .area-tile .small{padding:0 14px;}
+
+/* Capture: type straight away */
+.bear .quick-box{margin-top:18px;padding:14px 14px 12px;border-radius:var(--r-lg);}
+.bear .quick-box textarea{width:100%;min-height:104px;border:0;outline:0;resize:none;background:transparent;font:inherit;font-size:18px;line-height:1.4;color:var(--ink);}
+.bear .quick-box textarea::placeholder{color:var(--ink-3);}
+.bear .quick-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;}
+.bear .quick-actions .faint{font-size:13px;max-width:52%;}
+
+/* Task: how Bear read it */
+.bear .read-card{padding:16px;margin-top:14px;border-radius:var(--r-lg);display:flex;flex-direction:column;gap:10px;}
+.bear .read-card .eyebrow{margin:0;}
+.bear .read-row{display:flex;flex-direction:column;gap:6px;}
+.bear .read-label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);}
+
+/* My Bear: Bear's handling banner (mirror of the greeting banner: picture on the left) */
+.bear .stats-banner{position:relative;min-height:156px;margin:28px -4px 56px;padding:18px 18px 18px 0;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;border-radius:var(--r-lg);background:linear-gradient(225deg,#FFF3E6 0%,#FFEFC9 100%);border:1px solid var(--glass-border);box-shadow:0 18px 44px -26px rgba(16,42,67,.4),inset 0 1px 0 rgba(255,255,255,.9);}
+.bear .stats-art{position:absolute;top:0;bottom:0;left:0;width:40%;pointer-events:none;}
+.bear .stats-art .hero-img{-webkit-mask-image:linear-gradient(to left,transparent 0%,#000 34%);mask-image:linear-gradient(to left,transparent 0%,#000 34%);}
+.bear .stats-body{position:relative;z-index:1;width:60%;}
+.bear .stats-title{margin:0 0 8px;font-size:22px;line-height:1.1;color:var(--coral);}
+.bear .stats-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.bear .stats-nums b{display:block;font-family:var(--font-display);font-weight:400;font-size:34px;line-height:1;color:var(--navy);}
+.bear .stats-nums span{display:block;margin-top:6px;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;line-height:1.2;color:var(--ink-2);}
+.bear .stats-note{margin:10px 0 0;font-size:13px;line-height:1.3;color:var(--ink-2);}
+
+/* Overdue alerts */
+.bear .alert-card{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:var(--r-lg);background:linear-gradient(135deg,#FFE9E6 0%,#FFF1E8 100%);border:1px solid rgba(255,81,71,.38);box-shadow:0 14px 34px -24px rgba(255,81,71,.7),inset 4px 0 0 var(--coral);}
+.bear .alert-icon{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--coral);color:#fff;}
+.bear .alert-body{min-width:0;flex:1;}
+.bear .alert-title{margin:0;font-weight:700;font-size:17px;line-height:1.25;color:var(--navy);}
+.bear .alert-body .small{margin-top:4px;}
+.bear .alert-rows{margin-top:8px;display:flex;flex-direction:column;gap:2px;}
+.bear .alert-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid rgba(255,81,71,.18);color:inherit;text-decoration:none;}
+.bear .alert-row:first-child{border-top:0;}
+.bear .alert-row b{font-weight:700;color:var(--navy);}
+.bear .overdue-text{color:#D8352B;font-weight:700;}
+.bear .pill.overdue{background:#FFE1DE;color:#B42318;}

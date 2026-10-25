@@ -25,9 +25,17 @@ export function understandWithRules(text:string,referenceYear=new Date().getFull
  // Prefer an instruction in the text ("please return the permission form by…") over the opening line.
  const instr=/\b(?:please\s+)?(return|bring|sign|pay|book|buy|collect|send|complete|fill in|rsvp|confirm|renew|submit|order|pick up|drop off)\b([^.\n]*)/i.exec(clean);
  const sentence=(instr?(instr[1].charAt(0).toUpperCase()+instr[1].slice(1).toLowerCase()+instr[2]).replace(/\s+(by|before|on)\s+\d.*$/i,'').replace(/\s+(by|before)\s+[A-Z]?[a-z]+day.*$/i,''):first.replace(/[.!?].*$/,'')).trim().slice(0,80);
+// How soon, and how big: Bear's best read from the words alone. Conservative: a real date, a
+ // booked kind of thing (appointment, event) or clearly time-bound wording is time-sensitive;
+ // everything else can wait. The person can change either with one tap.
+ const timeBound=/\b(urgent|asap|today|tonight|tomorrow|this week|deadline|due|expires?|expiry|by (?:the )?end of|before)\b/i.test(clean);
+ const timing=bill?'time_sensitive':(when||rel||timeBound||kind==='appointment'||kind==='event')?'time_sensitive':'flexible';
+ const timingConf=bill?0.9:when?0.62:(rel||timeBound||kind==='appointment'||kind==='event')?0.58:0.55;
+ const bigger=/\b(organi[sz]e|renovat\w*|clean ?out|declutter|sort out|party|trip|holiday|tax|wedding|project|redo|build|set up|research|moving house|spring clean|plan(?:ning)? (?:a|the|for))\b/i.test(clean)||clean.length>400;
+ const size=bigger?'bigger':'one_go';
  const shopTitle=items.length>=2?listTitle(clean):null;
  const title=shopTitle?shopTitle:bill&&bill.biller.value?`Pay ${bill.category.value?bill.category.value.replace('_',' '):bill.biller.value} bill`:sentence?sentence.charAt(0).toUpperCase()+sentence.slice(1):null;
- return {kind,summary:first.slice(0,200),title:conf(title,bill?0.8:0.55),area:conf(area,bill?0.9:0.55),when:conf(when,when?0.6:0),timeOfDay:conf(timeOfDay,0.6),person:conf(person,0.5),location:conf(null,0),isRecurring:conf(bill?bill.isRecurring.value:null,0.4),steps:[],items,estimatedMinutes:null,extractedText:clean.slice(0,6000),bill:bill&&bill.documentType!=='not_a_bill'?bill:null,...(rel?{whenHint:rel[1].toLowerCase()}:{})} as GeneralOutput;
+ return {kind,summary:first.slice(0,200),title:conf(title,bill?0.8:0.55),area:conf(area,bill?0.9:0.55),when:conf(when,when?0.6:0),timeOfDay:conf(timeOfDay,0.6),person:conf(person,0.5),location:conf(null,0),isRecurring:conf(bill?bill.isRecurring.value:null,0.4),timing:conf(timing,timingConf),size:conf(size,0.5),steps:[],items,estimatedMinutes:null,extractedText:clean.slice(0,6000),bill:bill&&bill.documentType!=='not_a_bill'?bill:null,...(rel?{whenHint:rel[1].toLowerCase()}:{})} as GeneralOutput;
 }
 
 // A shopping list typed or spoken as lines, bullets or commas becomes items. No prices are

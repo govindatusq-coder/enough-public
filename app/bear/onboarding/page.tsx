@@ -51,7 +51,7 @@ export default function Onboarding(){
   <main id="main" className="bear-screen flow" style={{position:'relative',overflow:'hidden'}}>
    {step!=='done'&&<Horizon height={140} tint={index%2?'cool':'warm'}/>}
    <div style={{position:'relative',zIndex:1}}>
-   {step!=='done'&&<><TopBar back={index>0?{onClick:back}:{href:'/bear/welcome'}} right={<span className="faint">{index+1} of {steps.length-1}</span>}/><Progress step={index} total={steps.length-1}/></>}
+   {step!=='done'&&<><TopBar back={index>0?{onClick:back}:{href:'/bear/welcome'}} right={<span className="faint">{index+1} of {steps.length-1}</span>}/><Progress step={index} total={steps.length-1}/><div style={{textAlign:'right',marginTop:6}}><button type="button" className="btn quiet sm" disabled={busy} onClick={()=>save({onboardingComplete:true},'done')}>Skip the rest for now</button></div></>}
    {step==='areas'&&<section>
     <h1>What&rsquo;s in your life?</h1><p className="muted" style={{marginTop:8}}>Pick everything you regularly have to think about.</p>
     <div className="tiles section">{areaTiles.map((t,i)=><Tile key={t.key} photo={!!areaArt[t.key]} tint={['#E3F1FB','#FFE6E7','#FFEFC9','#D5F3F0','#FFE1DE','#FFEFC9'][i]} label={t.label} sub={t.sub} selected={profile.areas.includes(t.key)} onToggle={()=>update({areas:toggle(profile.areas,t.key)})} art={<AreaArt area={t.key}/>}/>)}</div>

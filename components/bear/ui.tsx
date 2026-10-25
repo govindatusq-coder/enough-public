@@ -33,3 +33,8 @@ export function Sheet({children,onClose,label}:{children:React.ReactNode;onClose
 function subscribeOnline(cb:()=>void){window.addEventListener('online',cb);window.addEventListener('offline',cb);return()=>{window.removeEventListener('online',cb);window.removeEventListener('offline',cb);};}
 export function useOnline(){return useSyncExternalStore(subscribeOnline,()=>navigator.onLine,()=>true);}
 export function ErrorCard({message,retry}:{message:string;retry?:()=>void}){return <div className="note coral" role="alert"><span style={{fontSize:20}} aria-hidden="true">·</span><div style={{flex:1}}><p>{message}</p>{retry&&<button type="button" className="btn ghost sm" style={{marginTop:10}} onClick={retry}>Try again</button>}</div></div>;}
+
+// A clear, calm alert for something past its date. Says what is true and what can happen next.
+export function OverdueAlert({title,children}:{title:string;children?:React.ReactNode}){
+ return <div className="alert-card" role="alert"><span className="alert-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/></svg></span><div className="alert-body"><p className="alert-title">{title}</p>{children}</div></div>;
+}

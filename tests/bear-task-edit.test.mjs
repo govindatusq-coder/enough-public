@@ -255,3 +255,108 @@ test('a known date, or no date at all, are both valid wishlist answers; past dat
  assert.equal((await store.list('reminders')).filter(r=>r.status==='scheduled').length,0,'no date, no reminder: it simply waits on the wishlist');
  assert.equal((await homeView(store,NOW)).wishlist.next,null);
 });
+
+import {setRead,setNudge,ensureNudges,breakDownTask} from '../lib/bear/services/task-edit.ts';
+import {understandWithRules} from '../lib/bear/ai/general-rules.ts';
+const live=async store=>(await store.list('reminders')).filter(r=>r.status==='scheduled'||r.status==='snoozed');
+
+test('Bear deduces how soon and how big: dates and appointments are time-sensitive, ideas can wait, projects are bigger',()=>{
+ const a=understandWithRules('Look into new curtains for the lounge room',2026);assert.equal(a.timing.value,'flexible');assert.equal(a.size.value,'one_go');
+ const b=understandWithRules('Return the permission form for Max by 12/11/2026',2026);assert.equal(b.timing.value,'time_sensitive');
+ const c=understandWithRules('Book the dentist for Ava',2026);assert.equal(c.timing.value,'time_sensitive');
+ const d=understandWithRules('Organise the garage and sort out the shed',2026);assert.equal(d.size.value,'bigger');assert.equal(d.timing.value,'flexible');
+ const e=understandWithRules('Urgent: ring the plumber today',2026);assert.equal(e.timing.value,'time_sensitive');
+});
+
+test('a flexible task is held with no date, no time and no reminder, and the person chooses how to be reminded',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Look into new curtains for the lounge room',referenceYear:2026});
+ const auto=await maybeAutoSetup(store,extraction,NOW);
+ assert.equal(auto.task.timing,'flexible');assert.equal(auto.planned,false);assert.equal((await live(store)).length,0,'no reminder time is set for something that can wait');assert.equal(auto.task.nudgeChoice??null,null,'the choice is still the person’s to make');
+ assert.equal((await homeView(store,NOW)).needsYou.length,0);
+});
+
+test('a time-sensitive task with no date is still planned, so it is not forgotten',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Urgent: ring the plumber today',referenceYear:2026});
+ const auto=await maybeAutoSetup(store,extraction,NOW);assert.equal(auto.task.timing,'time_sensitive');assert.equal(auto.planned,true);assert.equal((await live(store)).length>=1,true);
+});
+
+test('changing how soon swaps planned reminders for gentle ones, and back',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);const {auto}=await listTask(store);
+ assert.equal(auto.task.timing,'time_sensitive');assert.ok((await live(store)).length>=1);
+ let r=await setRead(store,null,auto.task.id,{timing:'flexible'},NOW);assert.equal(r.task.timing,'flexible');assert.equal((await live(store)).length,0,'all dated reminders are gone');
+ r=await setRead(store,null,auto.task.id,{timing:'time_sensitive'},NOW);assert.ok((await live(store)).some(x=>x.kind==='planned'),'planned again');
+});
+
+test('gentle reminders: a nudge every so often, never urgent, wording that does not press, and the next one lines itself up',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Look into new curtains for the lounge room',referenceYear:2026});
+ const {task}=await maybeAutoSetup(store,extraction,NOW);
+ await assert.rejects(setNudge(store,task.id,{choice:'day',date:'2026-11-01'},NOW),e=>e.code==='invalid_date');
+ await assert.rejects(setNudge(store,task.id,{choice:'every'},NOW),e=>e.code==='invalid_every');
+ const t=await setNudge(store,task.id,{choice:'every',every:'fortnight'},NOW);assert.equal(t.nudgeChoice,'nudge');
+ const [first]=await live(store);assert.equal(first.kind,'nudge');const l=localParts(first.scheduledFor,'Australia/Sydney');assert.equal(l.date,'2026-11-24');assert.equal(l.hour,10);
+ assert.match(first.message,/^No rush\./);assert.ok(!banned.test(first.message));
+ // it arrives gently, even on a day Bear is told nothing is urgent
+ const due=await dueReminders(store,new Date('2026-11-24T10:45:00+11:00'));assert.equal(due.length,1);
+ assert.equal(due[0].decision.essential,false);assert.deepEqual(due[0].decision.actions.map(a=>a.key),['help','another_time','stop_nudges']);assert.match(due[0].decision.message,/^No rush\./);
+ // once it has gone, the next one is lined up a fortnight later
+ await store.update('reminders',first.id,{status:'delivered',deliveredAt:'2026-11-24T10:46:00+11:00'});
+ await ensureNudges(store,new Date('2026-11-24T11:00:00+11:00'));
+ const [next]=await live(store);assert.equal(localParts(next.scheduledFor,'Australia/Sydney').date,'2026-12-08');
+ // and the person can stop them entirely
+ const stopped=await setNudge(store,task.id,{choice:'none'},NOW);assert.equal(stopped.nudgeChoice,'none');assert.equal((await live(store)).length,0);
+ await ensureNudges(store,new Date('2026-12-20T09:00:00+11:00'));assert.equal((await live(store)).length,0,'nothing comes back once stopped');
+});
+
+test('a flexible task that mentions a date is never treated as urgent',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Return the permission form for Max by 12/11/2026',referenceYear:2026});
+ const {task}=await maybeAutoSetup(store,extraction,NOW);await setRead(store,null,task.id,{timing:'flexible'},NOW);
+ const home=await homeView(store,new Date('2026-11-11T09:00:00+11:00'));assert.equal(home.needsYou.length,0,'no deadline protection for something marked no rush');
+ assert.equal((await areaView(store,'family',NOW)).current[0].dueLabel,'No rush');
+});
+
+test('bigger tasks are broken into small steps by the AI service, only when asked or deduced, and never invented without it',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Organise the garage and sort out the shed',referenceYear:2026});
+ const {task}=await maybeAutoSetup(store,extraction,NOW);assert.equal(task.size,'bigger');
+ await assert.rejects(breakDownTask(store,null,task.id),e=>e.code==='ai_unavailable');
+ const provider=new FakeProvider(()=>({steps:['Clear a space to work','Sort into keep, donate, bin','Take the bin pile out','Shelve what is staying']}));
+ const steps=await breakDownTask(store,provider,task.id);assert.equal(steps.length,4);assert.ok(steps.every(s=>s.dueAt===null&&s.timing==='flexible'),'no dates on the small steps of a flexible task');
+ assert.equal((await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})).length,4);
+ await assert.rejects(breakDownTask(store,provider,task.id),e=>e.code==='already_steps');
+ assert.equal((await areaView(store,'me',NOW)).current.length,1,'the steps stay inside the task');
+});
+
+test('choosing bigger on a task with no steps breaks it down when the AI service is connected',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Look into new curtains for the lounge room',referenceYear:2026});
+ const {task}=await maybeAutoSetup(store,extraction,NOW);const provider=new FakeProvider(()=>({steps:['Measure the windows','Choose a style','Compare prices']}));
+ const r=await setRead(store,provider,task.id,{size:'bigger'},NOW);assert.equal(r.task.size,'bigger');assert.equal(r.brokeDown,true);
+});
+
+import {overdueDays,overdueLabel} from '../lib/bear/domain/overdue.ts';
+test('overdue is calm, factual and only applies to things with a real date; no rush is never overdue',async()=>{
+ assert.equal(overdueDays('2026-11-01','2026-11-10'),9);assert.equal(overdueDays('2026-11-10','2026-11-10'),0);assert.equal(overdueDays('2026-11-12','2026-11-10'),0);
+ assert.equal(overdueDays('2026-11-01','2026-11-10','flexible'),0);assert.equal(overdueDays(null,'2026-11-10'),0);
+ assert.equal(overdueLabel(1),'Overdue by a day');assert.equal(overdueLabel(9),'Overdue by 9 days');assert.equal(overdueLabel(0),'');assert.ok(!banned.test(overdueLabel(9)));
+});
+test('something already overdue is flagged at the top of My Bear, in its area and in Needs you, and clears when it is marked no rush or done',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Return the library books by 1/11/2026',referenceYear:2026});
+ const {task}=await maybeAutoSetup(store,extraction,NOW);assert.equal(task.dueAt,'2026-11-01');assert.equal(task.timing,'time_sensitive');
+ const home=await homeView(store,NOW);assert.equal(home.overdue.length,1);assert.equal(home.overdue[0].days,9);assert.equal(home.overdue[0].label,'Overdue by 9 days');
+ assert.equal(home.needsYou.find(n=>n.taskId===task.id).overdueDays,9);
+ assert.equal((await areaView(store,'home',NOW)).current[0].dueLabel,'Overdue by 9 days');assert.equal((await areaView(store,'home',NOW)).current[0].overdueDays,9);
+ await setRead(store,null,task.id,{timing:'flexible'},NOW);assert.equal((await homeView(store,NOW)).overdue.length,0,'no rush clears it');
+ await setRead(store,null,task.id,{timing:'time_sensitive'},NOW);assert.equal((await homeView(store,NOW)).overdue.length,1);
+ await completeTask(store,{taskId:task.id,method:null,expectNext:false},NOW);assert.equal((await homeView(store,NOW)).overdue.length,0,'done clears it');
+});
+test('an overdue bill is flagged with its amount',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'AGL electricity bill. Amount due $184.60. Due 5/11/2026. BPAY biller 12345 ref 998877',referenceYear:2026});
+ await confirmBill(store,{extractionId:extraction.id,corrections:{biller:'AGL',amountDueCents:18460,dueDate:'2026-11-05',category:'electricity',isRecurring:false},confirmedFields:['biller','amountDueCents','dueDate','category','isRecurring'],allowDuplicate:false});
+ const home=await homeView(store,NOW);assert.equal(home.overdue.length,1);assert.equal(home.overdue[0].title,'Electricity bill');assert.equal(home.overdue[0].amount,'$184.60');assert.equal(home.overdue[0].days,5);assert.ok(home.overdue[0].billId);
+});

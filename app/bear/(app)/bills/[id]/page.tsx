@@ -10,7 +10,8 @@ import type {AssistOption} from '@/lib/bear/services/assistance';
 import {categoryLabels} from '@/lib/bear/domain/labels';
 import {RoundBadge} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
-import {Button,ErrorCard,Sheet,Skeleton,Toast,TopBar} from '@/components/bear/ui';
+import {Button,ErrorCard,OverdueAlert,Sheet,Skeleton,Toast,TopBar} from '@/components/bear/ui';
+import {overdueDays,overdueLabel} from '@/lib/bear/domain/overdue';
 
 type Loaded={bill:Bill;task:Task;reminders:Reminder[];steps:Task[];plan:PlanRecommendation|null;assistance:{options:AssistOption[];explanation:string;contactDraft:string|null;increase:{previousCents:number;deltaCents:number}|null};expectation:RecurringExpectation|null;documentUrl:string|null};
 export default function BillPage({params}:{params:Promise<{id:string}>}){
@@ -42,6 +43,7 @@ export default function BillPage({params}:{params:Promise<{id:string}>}){
     <p className="muted" style={{marginTop:6}}>{bill.dueAt?`Due ${formatAU(bill.dueAt)}${/^(today|tomorrow|yesterday|[A-Z])/.test(relativeDay(bill.dueAt,today))?' · '+relativeDay(bill.dueAt,today):''}`:'No due date'}</p>
     {task.forPerson&&<span className="pill" style={{marginTop:10}}>For {task.forPerson}</span>}
    </div>
+   {!paid&&!dropped&&overdueDays(bill.dueAt,today)>0&&<div style={{marginTop:14}}><OverdueAlert title={`This bill is overdue. ${overdueLabel(overdueDays(bill.dueAt,today))}.`}><p className="small muted">It was due {formatAU(bill.dueAt!)}. It isn&rsquo;t too late: pay it now, or ask the biller about more time or a late fee. Bear can help with either.</p></OverdueAlert></div>}
    {!paid&&!dropped&&<>
     {active.length>0&&!showPlan&&<div className="glass" style={{padding:16}}>
      <p className="eyebrow teal">Bear&rsquo;s handling it</p>

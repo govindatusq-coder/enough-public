@@ -1,8 +1,8 @@
 import {z} from 'zod';
-import {addDays,formatWhen,todayISO,zonedDateTime} from '../domain/dates.ts';
+import {addDays,formatWhen,localParts,todayISO,zonedDateTime} from '../domain/dates.ts';
 import {formatAUD} from '../domain/money.ts';
 import {itemCost,totalCost} from '../domain/items.ts';
-import type {Project,Reminder,ReminderPlan,ShoppingItem,Task} from '../domain/types.ts';
+import type {Project,Reminder,ReminderPlan,ShoppingItem,Task,TaskDependency} from '../domain/types.ts';
 import {newId,stamp,type BearStore} from '../store/store.ts';
 import type {StructuredModelProvider} from '../ai/provider.ts';
 import {ProviderError} from '../ai/provider.ts';
@@ -125,6 +125,84 @@ export async function splitIntoPurchases(store:BearStore,taskId:string,parts:num
  const archived=await store.update('tasks',task.id,{status:'archived',notes:`Split into ${n} purchases.`});
  if(original)await store.update('projects',original.id,{status:'archived'});
  return {original:archived,tasks,areaKey};
+}
+
+// ---------- How soon, how big, and how to be reminded ----------
+// Bear reads each task two ways: time-sensitive or flexible, and one go or bigger. Only
+// time-sensitive tasks get planned reminder times. Flexible ones never get a date or a time
+// unless the person chooses one: they pick no reminders, a gentle nudge every so often, or a
+// day. Nothing here is a deadline Bear sets for someone.
+const NUDGE_DAYS={week:7,fortnight:14,month:30} as const;
+export const readSchema=z.object({timing:z.enum(['time_sensitive','flexible']).optional(),size:z.enum(['one_go','bigger']).optional()}).strict();
+export const nudgeSchema=z.object({choice:z.enum(['none','every','day']),every:z.enum(['week','fortnight','month']).optional(),date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional()}).strict();
+const nudgeMessage=(t:{title:string})=>`No rush. ${t.title} is here whenever you feel like it.`;
+async function cancelLive(store:BearStore,taskId:string,kinds?:string[]){
+ for(const r of await store.list('reminders',{where:[{column:'task_id',value:taskId},{column:'status',op:'in',value:['scheduled','snoozed']}]}))if(!kinds||kinds.includes(r.kind))await store.update('reminders',r.id,{status:'cancelled'});
+}
+async function tzOf(store:BearStore){return (await ensureProfile(store)).lifeRhythm.timezone||'Australia/Sydney';}
+async function scheduleNudge(store:BearStore,task:Task,date:string,tz:string){
+ const when=zonedDateTime(date,10*60+30,tz);const plan:ReminderPlan={scheduledFor:when,label:formatWhen(when,tz),rationale:'A gentle nudge, as you asked.',windowId:null,score:0};
+ return store.insert('reminders',stamp<Reminder>(store.userId,{taskId:task.id,billId:null,kind:'nudge',status:'scheduled',scheduledFor:when,plan,followUpIfUnpaid:false,attempts:0,deliveredAt:null,deliveredVia:[],message:nudgeMessage(task)}));
+}
+async function planTimeSensitive(store:BearStore,task:Task,now:Date){
+ try{const plan=await recommendPlan(store,null,task,now);if(plan.suggested.when)await acceptPlan(store,{taskId:task.id,when:plan.suggested.when,label:plan.suggested.label,rationale:plan.suggested.rationale,key:'bear',followUpIfUnpaid:true},now);}catch{/* held without a reminder */}
+}
+export async function setRead(store:BearStore,provider:StructuredModelProvider|null,taskId:string,input:z.infer<typeof readSchema>,now=new Date()){
+ let task=await loadEditable(store,taskId);let brokeDown=false;
+ if(input.timing&&input.timing!==task.timing){
+  await cancelLive(store,task.id);
+  task=await store.update('tasks',task.id,{timing:input.timing,nudge:null,nudgeChoice:null});
+  if(input.timing==='time_sensitive')await planTimeSensitive(store,task,now);
+ }
+ if(input.size&&input.size!==task.size){
+  task=await store.update('tasks',task.id,{size:input.size});
+  if(input.size==='bigger'&&provider&&!(await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})).length){try{await breakDownTask(store,provider,task.id);brokeDown=true;}catch{/* the Break it down button can try again */}}
+ }
+ return {task:(await store.get('tasks',task.id))!,brokeDown};
+}
+export async function setNudge(store:BearStore,taskId:string,input:z.infer<typeof nudgeSchema>,now=new Date()){
+ const task=await loadEditable(store,taskId);const tz=await tzOf(store);const today=todayISO(tz,now);
+ await cancelLive(store,task.id,['nudge']);
+ if(input.choice==='none')return store.update('tasks',task.id,{nudge:null,nudgeChoice:'none'});
+ if(input.choice==='day'){
+  if(!input.date||input.date<=today)throw new ConfirmError('Pick a day that is still ahead of you.',400,'invalid_date');
+  await scheduleNudge(store,task,input.date,tz);return store.update('tasks',task.id,{nudge:null,nudgeChoice:'day'});
+ }
+ if(!input.every)throw new ConfirmError('Say how often.',400,'invalid_every');
+ await scheduleNudge(store,task,addDays(today,NUDGE_DAYS[input.every]),tz);
+ return store.update('tasks',task.id,{nudge:{every:input.every},nudgeChoice:'nudge'});
+}
+// Keeps "now and then" going: when a nudge has been and gone, the next one is lined up for an
+// interval after it, never sooner than tomorrow.
+export async function ensureNudges(store:BearStore,now=new Date()){
+ const tasks=(await store.list('tasks',{where:[{column:'status',value:'open'}]})).filter(t=>t.nudge&&!t.wishlist);if(!tasks.length)return;
+ const tz=await tzOf(store);const today=todayISO(tz,now);
+ for(const t of tasks){
+  const mine=await store.list('reminders',{where:[{column:'task_id',value:t.id}]});
+  if(mine.some(r=>r.status==='scheduled'||r.status==='snoozed'))continue;
+  const last=mine.map(r=>r.scheduledFor).sort().pop()||t.createdAt;
+  const base=localParts(last,tz).date;const target=addDays(base,NUDGE_DAYS[t.nudge!.every]);
+  await scheduleNudge(store,t,target>today?target:addDays(today,1),tz);
+ }
+}
+
+const STEPS_SCHEMA={type:'object',additionalProperties:false,required:['steps'],properties:{steps:{type:'array',items:{type:'string'}}}} as const;
+const stepsOutput=z.object({steps:z.array(z.string().trim().min(1).max(120)).min(2).max(8)}).strict();
+const STEPS_PROMPT=`You help a busy person get started on something that feels big. Break the task into 3 to 6 small, concrete steps, in order, each doable in a few minutes, written as short plain Australian English instructions ("Find the form", "Ring the school office"). Use only what you were told. Do not add deadlines, dates or pressure.`;
+export async function breakDownTask(store:BearStore,provider:StructuredModelProvider|null,taskId:string){
+ const task=await loadEditable(store,taskId);
+ if(task.status!=='open')throw new ConfirmError('Only open things can be broken down.',400,'not_open');
+ if((await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})).length)throw new ConfirmError('This is already broken into steps.',409,'already_steps');
+ if(!provider)throw new ConfirmError('Breaking things down needs the AI service connected.',503,'ai_unavailable');
+ let parsed;try{const r=await provider.extract({schema:STEPS_SCHEMA as unknown as Record<string,unknown>,system:STEPS_PROMPT,text:[task.title,task.notes||'',(task.items||[]).map(i=>i.name).join(', ')].filter(Boolean).join('\n'),images:[],documents:[],maxOutputTokens:1500});parsed=stepsOutput.parse(r.output);}
+ catch(e){throw new ConfirmError(e instanceof ProviderError?e.message:'Bear could not break that down just now.',503,'breakdown_failed');}
+ const steps:Task[]=[];
+ for(const title of parsed.steps.slice(0,6)){
+  const step=await store.insert('tasks',stamp<Task>(store.userId,{projectId:task.projectId,kind:'custom',title,status:'open',dueAt:task.timing==='flexible'?null:task.dueAt,estimatedMinutes:5,cognitiveEffort:'low',forPerson:task.forPerson,isDemo:task.isDemo,timing:task.timing,setupBy:'bear'}));
+  await store.insert('task_dependencies',stamp<TaskDependency>(store.userId,{taskId:task.id,dependsOnTaskId:step.id}));steps.push(step);
+ }
+ await store.update('tasks',task.id,{size:'bigger'});
+ return steps;
 }
 
 // ---------- Big spends: when could this comfortably be bought? ----------

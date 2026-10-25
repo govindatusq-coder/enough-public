@@ -143,7 +143,7 @@ test('already paid, overdue, duplicate and rejected bills are handled honestly',
  const plan=await recommendPlan(store,ob,ot,NOW);assert.ok(plan.suggested.when,'still offers a time');
  await acceptPlan(store,{billId:ob.id,when:plan.suggested.when,label:plan.suggested.label,rationale:'',key:'bear',followUpIfUnpaid:true},NOW);
  const home=await homeView(store,NOW);const item=home.needsYou.find(n=>n.billId===ob.id);assert.ok(item);assert.equal(item.dueLabel,'Past the due date');assert.ok(!banned.test(JSON.stringify(home)));
- const due=await dueReminders(store,new Date(plan.suggested.when));assert.match(due[0].decision.message,/hanging around/);
+ const due=await dueReminders(store,new Date(plan.suggested.when));assert.match(due[0].decision.message,/past its due date\. It isn't too late/);
  const done=await completeTask(store,{taskId:ot.id,method:null,expectNext:false},NOW);assert.equal(done.ledger.length,0,'late fee not "avoided" when paid late');
  // duplicate
  const first=await createCapture(store,null,{method:'text',text:'Telstra\nTotal amount due: $99.00\nDue date: 05/12/2026',referenceYear:2026});

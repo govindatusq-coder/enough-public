@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {ensureNudges} from './task-edit.ts';
 import {addDays,todayISO,zonedDateTime} from '../domain/dates.ts';
 import type {Reminder,ReminderInteraction} from '../domain/types.ts';
 import {stamp,type BearStore} from '../store/store.ts';
@@ -11,6 +12,7 @@ import {activeDayMode,ensureProfile} from './profile.ts';
 // route call; it returns reminders the decision service says should be delivered now.
 export interface DueReminder{reminder:Reminder;decision:Extract<Decision,{deliver:true}>;taskTitle:string;billId:string|null}
 export async function dueReminders(store:BearStore,now=new Date()):Promise<DueReminder[]>{
+ await ensureNudges(store,now);
  const profile=await ensureProfile(store);const today=todayISO(profile.lifeRhythm.timezone||'Australia/Sydney',now);const dayMode=activeDayMode(profile,today);
  const signals=await behaviourSignals(store);
  const horizon=new Date(now.getTime()+36*3600000).toISOString();

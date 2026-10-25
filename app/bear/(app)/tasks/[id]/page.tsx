@@ -10,7 +10,8 @@ import type {Project,Reminder,ShoppingItem,Task} from '@/lib/bear/domain/types';
 import type {PlanRecommendation} from '@/lib/bear/services/reminder-planning';
 import {RoundBadge} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
-import {Button,ErrorCard,Sheet,Skeleton,Toast,TopBar} from '@/components/bear/ui';
+import {Button,Chip,ErrorCard,OverdueAlert,Sheet,Skeleton,Toast,TopBar} from '@/components/bear/ui';
+import {overdueDays,overdueLabel} from '@/lib/bear/domain/overdue';
 
 type Loaded={task:Task;project:Project|null;reminders:Reminder[];steps:Task[];plan:PlanRecommendation|null;documentUrl:string|null;redirect?:string};
 const kindLabel:Record<string,string>={appointment:'Appointment',school:'School',form:'Form',errand:'Errand',shopping:'Shopping',message:'From a message',note:'Note',event:'Event',custom:'Task'};
@@ -18,7 +19,8 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
  const {id}=use(params);const router=useRouter();const search=useSearchParams();
  const [data,setData]=useState<Loaded|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [busy,setBusy]=useState(false);
  const [custom,setCustom]=useState('');const [followUp,setFollowUp]=useState(true);const [showPlan,setShowPlan]=useState(search.get('plan')==='1');
- const reminderId=search.get('reminder');const autoSetup=search.get('auto')==='1';
+ const reminderId=search.get('reminder');
+ const [nudgeStep,setNudgeStep]=useState<null|'every'|'day'>(null);const [nudgeDate,setNudgeDate]=useState('');const [readBusy,setReadBusy]=useState(false);
  const [affordStep,setAffordStep]=useState<'ask'|'date'|'unsure'>('ask');const [affordDate,setAffordDate]=useState('');
  const [showEdit,setShowEdit]=useState(false);const [showSplit,setShowSplit]=useState(false);const [edit,setEdit]=useState({title:'',dueAt:'',dueTime:'',forPerson:'',location:'',notes:'',list:''});const [estimating,setEstimating]=useState(false);
  const load=useCallback(()=>apiGet<Loaded>(`/api/bear/tasks/${id}`).then(d=>{if(d.redirect){router.replace(d.redirect);return;}setData(d);setError(null);if(d.plan&&d.task.setupBy!=='bear')setShowPlan(true);}).catch(e=>{if(e.status===401)router.replace('/bear/signin');else setError(e.message);}),[id,router]);
@@ -48,18 +50,23 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
  async function estimate(){setEstimating(true);setError(null);try{await apiSend(`/api/bear/tasks/${id}/estimate`,{});await load();setToast('Rough prices added. They are estimates, not quotes.');}catch(e){setError((e as Error).message);}finally{setEstimating(false);}}
  async function split(parts:number){setBusy(true);try{const res=await apiSend<{areaKey:string}>(`/api/bear/tasks/${id}/split`,{parts});setShowSplit(false);router.push(`/bear/areas/${res.areaKey}`);}catch(e){setError((e as Error).message);setBusy(false);}}
  async function afford(body:{mode:'now'|'date'|'check_back'|'wishlist';date?:string;days?:number}){setBusy(true);try{await apiSend(`/api/bear/tasks/${id}/afford`,body);setToast(body.mode==='now'?"Good. Bear will plan it.":body.mode==='wishlist'?'On your wishlist. It will wait there.':'On your wishlist. Bear will check back.');setAffordStep('ask');await load();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+
+ async function changeRead(body:{timing?:'time_sensitive'|'flexible';size?:'one_go'|'bigger'}){setReadBusy(true);setError(null);try{await apiSend(`/api/bear/tasks/${id}/read`,body);setNudgeStep(null);await load();}catch(e){setError((e as Error).message);}finally{setReadBusy(false);}}
+ async function chooseNudge(body:{choice:'none'|'every'|'day';every?:'week'|'fortnight'|'month';date?:string}){setReadBusy(true);setError(null);try{await apiSend(`/api/bear/tasks/${id}/nudge`,body);setNudgeStep(null);setToast(body.choice==='none'?"No reminders. It will be here when you want it.":'Got it. Bear will keep it gentle.');await load();}catch(e){setError((e as Error).message);}finally{setReadBusy(false);}}
+ async function breakItDown(){setReadBusy(true);setError(null);try{await apiSend(`/api/bear/tasks/${id}/breakdown`,{});setToast('Broken into small steps.');await load();}catch(e){setError((e as Error).message);}finally{setReadBusy(false);}}
  return (
   <main id="main" className="bear-screen">
    <TopBar back={{href:'/bear/home'}} right={task.isDemo?<span className="demo-tag">Example</span>:null}/>
    <div className="card">
     <p className="eyebrow">{kindLabel[task.kind]||'Task'}{project&&<span className="pill" style={{marginLeft:8}}>{areaLabels[project.areaKey]}</span>}{task.part&&<span className="pill" style={{marginLeft:8}}>Part {task.part.index} of {task.part.total}</span>}{onWishlist&&<span className="pill mustard" style={{marginLeft:8}}>Wishlist</span>}{done&&<span className="pill teal" style={{marginLeft:8}}>Done</span>}{dropped&&<span className="pill" style={{marginLeft:8}}>Let go</span>}</p>
     <h2 style={{marginTop:6}}>{task.title}</h2>
-    <p className="muted" style={{marginTop:6}}>{task.dueAt?`${formatAU(task.dueAt)}${task.dueTime?' · '+task.dueTime:''}${/^(today|tomorrow|yesterday|[A-Z])/.test(relativeDay(task.dueAt,today))?' · '+relativeDay(task.dueAt,today):''}`:'No date'}</p>
+    <p className="muted" style={{marginTop:6}}>{task.timing==='flexible'?'No rush':task.dueAt?`${formatAU(task.dueAt)}${task.dueTime?' · '+task.dueTime:''}${/^(today|tomorrow|yesterday|[A-Z])/.test(relativeDay(task.dueAt,today))?' · '+relativeDay(task.dueAt,today):''}`:'No date'}</p>
     {task.forPerson&&<span className="pill" style={{marginTop:10,marginRight:6}}>For {task.forPerson}</span>}{task.location&&<span className="pill" style={{marginTop:10}}>{task.location}</span>}
     {task.notes&&<p className="small muted" style={{marginTop:12}}>{task.notes}</p>}
     {items.length>0&&<p style={{marginTop:12,fontWeight:700,fontSize:19}}>{(cost??0)>0?`About ${formatAUD(cost)}`:'No cost estimate yet'}<span className="small muted" style={{fontWeight:400}}>{(cost??0)>0?(missingPrices?' · rough estimate, some items not priced':' · rough estimate, not a quote'):''}</span></p>}
     <div className="btn-row" style={{marginTop:12}}>{!dropped&&<Button className="sm" variant="ghost" onClick={openEdit}>Edit</Button>}{items.length>0&&missingPrices&&!done&&<Button className="sm" variant="primary" disabled={estimating} onClick={estimate}>{estimating?'Estimating…':(cost??0)>0?'Price the rest':'Estimate the cost'}</Button>}</div>
    </div>
+   {!done&&!dropped&&!onWishlist&&overdueDays(task.dueAt,today,task.timing)>0&&<div style={{marginTop:14}}><OverdueAlert title={`This is overdue. ${overdueLabel(overdueDays(task.dueAt,today,task.timing))}.`}><p className="small muted">The date was {formatAU(task.dueAt!)}. It isn&rsquo;t too late: do it now, change the date with Edit, or choose No rush below if it can wait.</p></OverdueAlert></div>}
    {askAfford&&<div className="glass" style={{padding:16,marginTop:14,background:'var(--mustard-tint)'}}>
     <p className="eyebrow" style={{marginBottom:4}}>That&rsquo;s a bigger spend</p>
     <p style={{fontWeight:700,fontSize:18}}>About {formatAUD(cost)}. When could you comfortably buy it?</p>
@@ -75,7 +82,23 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
     <div className="chips" style={{marginTop:10}} role="group" aria-label="Check back later"><button type="button" className="chip" disabled={busy} onClick={()=>afford({mode:'check_back',days:14})}>Ask me in 2 weeks</button><button type="button" className="chip" disabled={busy} onClick={()=>afford({mode:'check_back',days:30})}>In a month</button><button type="button" className="chip" disabled={busy} onClick={()=>afford({mode:'check_back',days:90})}>In 3 months</button></div>
    </div>}
    {!done&&!dropped&&!onWishlist&&!askAfford&&active.length===0&&plan&&!showPlan&&<div className="btn-row" style={{marginTop:12}}><Button className="sm" variant="ghost" onClick={()=>setShowPlan(true)}>Set a reminder</Button></div>}
-   {autoSetup&&task.setupBy==='bear'&&!done&&<div className="glass" style={{padding:16,marginTop:14,background:'var(--teal-tint)'}}><p className="eyebrow teal" style={{marginBottom:4}}>Bear set this up</p><p className="small">Filed under <strong>{project?areaLabels[project.areaKey]:'Me'}</strong>{active[0]||task.dueAt?'':', with no date, so no reminder yet'}. Not right? Tap Edit and change anything.</p></div>}
+   {!done&&!dropped&&!onWishlist&&!task.part&&<div className="glass read-card">
+    <p className="eyebrow">How I read this</p>
+    <p className="small muted">Filed under <strong>{project?areaLabels[project.areaKey]:'Me'}</strong>. Change any of it with a tap, or just leave it.</p>
+    <div className="read-row"><span className="read-label">How soon</span><div className="chips"><Chip label="Time-sensitive" selected={task.timing==='time_sensitive'} onToggle={()=>!readBusy&&task.timing!=='time_sensitive'&&changeRead({timing:'time_sensitive'})}/><Chip label="No rush" selected={task.timing==='flexible'} onToggle={()=>!readBusy&&task.timing!=='flexible'&&changeRead({timing:'flexible'})}/></div></div>
+    <div className="read-row"><span className="read-label">How big</span><div className="chips"><Chip label="One go" selected={task.size!=='bigger'} onToggle={()=>!readBusy&&task.size==='bigger'&&changeRead({size:'one_go'})}/><Chip label="Bigger, in parts" selected={task.size==='bigger'} onToggle={()=>!readBusy&&task.size!=='bigger'&&changeRead({size:'bigger'})}/></div></div>
+    {task.size==='bigger'&&!hasSteps&&<div className="btn-row"><Button className="sm" variant="ghost" disabled={readBusy} onClick={breakItDown}>{readBusy?'Thinking…':'Break it into small steps'}</Button></div>}
+    {task.timing==='time_sensitive'&&!active[0]&&<p className="small muted" style={{marginTop:10}}>No reminder is set yet.</p>}
+    {task.timing==='flexible'&&<div className="read-row" style={{marginTop:10}}><span className="read-label">Reminders</span><div className="chips" role="group" aria-label="How would you like to be reminded">
+     <Chip label="None, I'll look when I'm ready" selected={task.nudgeChoice==='none'} onToggle={()=>!readBusy&&chooseNudge({choice:'none'})}/>
+     <Chip label="Now and then" selected={task.nudgeChoice==='nudge'||nudgeStep==='every'} onToggle={()=>setNudgeStep(nudgeStep==='every'?null:'every')}/>
+     <Chip label="On a day I pick" selected={task.nudgeChoice==='day'||nudgeStep==='day'} onToggle={()=>setNudgeStep(nudgeStep==='day'?null:'day')}/>
+    </div></div>}
+    {task.timing==='flexible'&&nudgeStep==='every'&&<div className="chips" style={{marginTop:8}}><Chip label="Every week" selected={task.nudge?.every==='week'} onToggle={()=>!readBusy&&chooseNudge({choice:'every',every:'week'})}/><Chip label="Every fortnight" selected={task.nudge?.every==='fortnight'} onToggle={()=>!readBusy&&chooseNudge({choice:'every',every:'fortnight'})}/><Chip label="Every month" selected={task.nudge?.every==='month'} onToggle={()=>!readBusy&&chooseNudge({choice:'every',every:'month'})}/></div>}
+    {task.timing==='flexible'&&nudgeStep==='day'&&<div style={{display:'flex',gap:8,marginTop:8}}><input aria-label="Remind me on" type="date" value={nudgeDate} min={todayISO()} onChange={e=>setNudgeDate(e.target.value)}/><Button variant="primary" disabled={!nudgeDate||readBusy} onClick={()=>chooseNudge({choice:'day',date:nudgeDate})}>Set</Button></div>}
+    {task.timing==='flexible'&&task.nudgeChoice==null&&nudgeStep===null&&<p className="small muted" style={{marginTop:8}}>No reminders are set. Choose one only if you&rsquo;d like it.</p>}
+    {task.timing==='flexible'&&task.nudgeChoice==='nudge'&&task.nudge&&<p className="small muted" style={{marginTop:8}}>A quiet nudge about every {task.nudge.every==='week'?'week':task.nudge.every==='fortnight'?'fortnight':'month'}. You can stop it any time.</p>}
+   </div>}
    {!done&&!dropped&&<>
     {active.length>0&&!showPlan&&!onWishlist&&<div className="glass" style={{padding:16}}><p className="eyebrow teal">Bear&rsquo;s handling it</p><p><strong>Bringing it back {formatWhen(active[0].scheduledFor)}</strong></p><p className="small muted" style={{marginTop:4}}>{active[0].plan.rationale}</p><button type="button" className="btn quiet sm" style={{marginTop:8}} onClick={()=>setShowPlan(true)}>Change the plan</button></div>}
     {items.length>0&&!hasSteps&&<div className="section"><p className="eyebrow">The list{cost!==null?` · about ${formatAUD(cost)} (rough estimate)`:''}</p><div className="card">

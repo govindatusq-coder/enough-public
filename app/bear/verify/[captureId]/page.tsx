@@ -4,11 +4,12 @@ import {useRouter} from 'next/navigation';
 import {apiGet,apiSend,ApiError} from '@/lib/bear/client';
 import {brand} from '@/lib/bear/domain/copy';
 import {formatAUD} from '@/lib/bear/domain/money';
-import {formatAU} from '@/lib/bear/domain/dates';
+import {formatAU,todayISO} from '@/lib/bear/domain/dates';
+import {overdueDays,overdueLabel} from '@/lib/bear/domain/overdue';
 import {billCategories,recurrences,type Bill,type BillFieldKey,type Capture,type ExtractedEntity} from '@/lib/bear/domain/types';
 import {categoryLabels} from '@/lib/bear/domain/labels';
 import {BearHead} from '@/components/bear/art';
-import {Button,ErrorCard,Skeleton,Toast,TopBar} from '@/components/bear/ui';
+import {OverdueAlert,Button,ErrorCard,Skeleton,Toast,TopBar} from '@/components/bear/ui';
 import {GeneralVerify} from './general';
 
 type Loaded={capture:Capture;extraction:ExtractedEntity|null;document:{id:string;name:string;mime:string;url:string}|null;duplicate:{id:string;biller:string;dueAt:string|null;amountCents:number;status:string}|null};
@@ -43,7 +44,7 @@ export default function VerifyPage({params}:{params:Promise<{captureId:string}>}
    else{const s=v===''?null:v;if(s!==original){if(s!==null||e.key!=='biller'&&e.key!=='dueDate'&&e.key!=='category'&&e.key!=='expectedRecurrence')corrections[e.key]=s;}}
   }
   const confirmedFields=[...new Set([...confirmed,...editable.map(e=>e.key)])].filter(k=>!(k in corrections));
-  try{const res=await apiSend<{bill:Bill}>('/api/bear/bills/confirm',{extractionId:ex.id,corrections,confirmedFields,allowDuplicate});router.replace(`/bear/bills/${res.bill.id}?plan=1`);}
+  try{const res=await apiSend<{bill:Bill;planned?:boolean}>('/api/bear/bills/confirm',{extractionId:ex.id,corrections,confirmedFields,allowDuplicate});router.replace(res.planned?`/bear/bills/${res.bill.id}`:`/bear/bills/${res.bill.id}?plan=1`);}
   catch(e){const err=e as ApiError;if(err.body?.code==='duplicate'){setError(err.message);setAllowDuplicate(true);}else setError(err.message);setBusy(false);}
  }
  async function reject(){setBusy(true);try{await apiSend(`/api/bear/captures/${captureId}/reject`,{});router.replace('/bear/capture');}catch(e){setError((e as Error).message);setBusy(false);}}
@@ -51,6 +52,7 @@ export default function VerifyPage({params}:{params:Promise<{captureId:string}>}
   <main id="main" className="bear-screen flow">
    <TopBar back={{href:'/bear/capture',label:'Start over'}} right={data.capture.isDemo?<span className="demo-tag">Example data</span>:null}/>
    <h1>{brand.verifyHeading}</h1>
+   {overdueDays(String(values.dueDate||'')||null,todayISO())>0&&<div style={{marginTop:14}}><OverdueAlert title={`The due date on this has already passed. ${overdueLabel(overdueDays(String(values.dueDate),todayISO()))}.`}><p className="small muted">It isn&rsquo;t too late. You can still check for a late fee or ask for more time. Bear will help you sort it as soon as you&rsquo;ve checked the details.</p></OverdueAlert></div>}
    {notBill&&<p className="note" style={{marginTop:12}}>This doesn&rsquo;t look like a bill to Bear. You can still fill in the details below, or start over.</p>}
    <div className="card" style={{marginTop:16}}>
     <p className="eyebrow">{cat?categoryLabels[cat]:'Bill'}{f.category.value?' bill':''}</p>

@@ -1,4 +1,5 @@
 import {daysBetween,localParts,relativeDay,todayISO} from '../domain/dates.ts';
+import {overdueDays,overdueLabel} from '../domain/overdue.ts';
 import {areaTiles,type AreaTile} from './areas.ts';
 import {formatAUD} from '../domain/money.ts';
 import {brand,greeting} from '../domain/copy.ts';
@@ -10,10 +11,11 @@ import {refreshSuggestions} from './suggestions.ts';
 
 // My Bear assembly. Deliberately not a task list: what needs you, what Bear is
 // handling, the three value ledgers and Chaos mode.
-export interface NeedsYouItem{taskId:string;billId:string|null;kind:string;title:string;amount:string|null;due:string|null;dueLabel:string;minutes:number;reminderId:string|null;message:string|null;actions:{key:string;label:string}[];essential:boolean;isDemo:boolean}
+export interface OverdueItem{taskId:string;billId:string|null;title:string;amount:string|null;days:number;label:string}
+export interface NeedsYouItem{overdueDays:number;taskId:string;billId:string|null;kind:string;title:string;amount:string|null;due:string|null;dueLabel:string;minutes:number;reminderId:string|null;message:string|null;actions:{key:string;label:string}[];essential:boolean;isDemo:boolean}
 export interface HomeView{
  greeting:string;name:string;coveredCount:number;dayMode:DayMode|null;today:string;
- needsYou:NeedsYouItem[];areas:AreaTile[];wishlist:{count:number;next:string|null};handling:{watching:number;remindersReady:number;expectedSoon:number;lines:string[]};
+ needsYou:NeedsYouItem[];overdue:OverdueItem[];areas:AreaTile[];wishlist:{count:number;next:string|null};handling:{watching:number;held:number;remindersReady:number;expectedSoon:number;lines:string[]};
  ledgers:{health:{headline:string;lines:string[]};wealth:{headline:string|null;lines:string[]};happiness:{headline:string|null;lines:string[]}};
  ideasCount:number;demoAvailable:boolean;hasAnyBill:boolean;
 }
@@ -29,6 +31,7 @@ export async function homeView(store:BearStore,now=new Date(),fallbackName=''):P
  const due=await dueReminders(store,now);
  const suggestions=await refreshSuggestions(store,now);
  const needsYou=needsYouItems(bills,tasks,due,today,dayMode);
+ const overdue=overdueItems(bills,tasks,today);
  const needsTaskIds=new Set(needsYou.map(n=>n.taskId));
  const watching=bills.filter(b=>!needsTaskIds.has(b.taskId)).length;
  const otherHeld=tasks.filter(t=>t.kind!=='pay_bill'&&!needsTaskIds.has(t.id)).length;
@@ -41,20 +44,26 @@ export async function homeView(store:BearStore,now=new Date(),fallbackName=''):P
  const ledgerRows=await store.list('value_ledger',{orderBy:{column:'occurred_at',ascending:false},limit:200});
  const covered=bills.length+otherHeld+scheduled.length+expectations.length+suggestions.length;
  const hour=localParts(now,tz).hour;
- return {greeting:greeting(hour,profile.name||fallbackName),name:profile.name||fallbackName,coveredCount:covered,dayMode,today,needsYou,areas:await areaTiles(store,profile.areas),wishlist:{count:wished.length,next:wished.map(t=>t.wishlist!.checkBackAt).filter((d):d is string=>!!d).sort()[0]||null},handling:{watching,remindersReady:ready,expectedSoon,lines},ledgers:ledgers(ledgerRows,today,tasks),ideasCount:suggestions.length,demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
+ return {greeting:greeting(hour,profile.name||fallbackName),name:profile.name||fallbackName,coveredCount:covered,dayMode,today,needsYou,overdue,areas:await areaTiles(store,profile.areas),wishlist:{count:wished.length,next:wished.map(t=>t.wishlist!.checkBackAt).filter((d):d is string=>!!d).sort()[0]||null},handling:{watching,held:otherHeld,remindersReady:ready,expectedSoon,lines},ledgers:ledgers(ledgerRows,today,tasks),ideasCount:suggestions.length,demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
+}
+function overdueItems(bills:Bill[],tasks:Task[],today:string):OverdueItem[]{
+ const out:OverdueItem[]=[];const billTasks=new Set(bills.map(b=>b.taskId));
+ for(const b of bills){const days=overdueDays(b.dueAt,today);if(days>0)out.push({taskId:b.taskId,billId:b.id,title:`${categoryWord(b.category)} bill`,amount:formatAUD(b.amountCents),days,label:overdueLabel(days)});}
+ for(const t of tasks){if(billTasks.has(t.id))continue;const days=overdueDays(t.dueAt,today,t.timing);if(days>0)out.push({taskId:t.id,billId:null,title:t.title,amount:null,days,label:overdueLabel(days)});}
+ return out.sort((a,b)=>b.days-a.days);
 }
 function needsYouItems(bills:Bill[],tasks:Task[],due:DueReminder[],today:string,dayMode:DayMode|null):NeedsYouItem[]{
  const items:NeedsYouItem[]=[];
  for(const d of due){
   const bill=d.billId?bills.find(b=>b.id===d.billId):undefined;const task=tasks.find(t=>t.id===d.reminder.taskId);
-  items.push({taskId:d.reminder.taskId,billId:d.billId,kind:task?.kind||'custom',title:bill?`${categoryWord(bill.category)} bill`:d.taskTitle,amount:bill?formatAUD(bill.amountCents):null,due:bill?.dueAt||task?.dueAt||null,dueLabel:dueLabel(bill?.dueAt||task?.dueAt||null,today),minutes:task?.estimatedMinutes||2,reminderId:d.reminder.id,message:d.decision.message,actions:d.decision.actions,essential:d.decision.essential,isDemo:!!bill?.isDemo});
+  items.push({overdueDays:overdueDays(bill?.dueAt||task?.dueAt||null,today,task?.timing),taskId:d.reminder.taskId,billId:d.billId,kind:task?.kind||'custom',title:bill?`${categoryWord(bill.category)} bill`:d.taskTitle,amount:bill?formatAUD(bill.amountCents):null,due:bill?.dueAt||task?.dueAt||null,dueLabel:dueLabel(bill?.dueAt||task?.dueAt||null,today),minutes:task?.estimatedMinutes||2,reminderId:d.reminder.id,message:d.decision.message,actions:d.decision.actions,essential:d.decision.essential,isDemo:!!bill?.isDemo});
  }
  // Anything due within two days always needs you, even without a reminder firing yet (deadline protection).
  for(const task of tasks){
   if(items.some(i=>i.taskId===task.id))continue;
   const bill=bills.find(b=>b.taskId===task.id)||null;const due=bill?.dueAt||task.dueAt;
-  const d=due?daysBetween(today,due):null;
-  if(d!==null&&d<=2){if(dayMode==='chaos'&&d>1)continue;items.push({taskId:task.id,billId:bill?.id||null,kind:task.kind,title:bill?`${categoryWord(bill.category)} bill`:task.title,amount:bill?formatAUD(bill.amountCents):null,due,dueLabel:dueLabel(due,today),minutes:task.estimatedMinutes||2,reminderId:null,message:null,actions:[],essential:true,isDemo:bill?bill.isDemo:task.isDemo});}
+  const d=due&&task.timing!=='flexible'?daysBetween(today,due):null;
+  if(d!==null&&d<=2){if(dayMode==='chaos'&&d>1)continue;items.push({overdueDays:overdueDays(due,today,task.timing),taskId:task.id,billId:bill?.id||null,kind:task.kind,title:bill?`${categoryWord(bill.category)} bill`:task.title,amount:bill?formatAUD(bill.amountCents):null,due,dueLabel:dueLabel(due,today),minutes:task.estimatedMinutes||2,reminderId:null,message:null,actions:[],essential:true,isDemo:bill?bill.isDemo:task.isDemo});}
  }
  return items.sort((a,b)=>(a.due||'')<(b.due||'')?-1:1);
 }
