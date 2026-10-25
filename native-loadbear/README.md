@@ -35,3 +35,7 @@ bundle identifier before uploading, or Xcode will offer to create it.
 
 * The site must be live at the origin you pass in `LOADBEAR_SERVER_URL`.
 * Supabase Auth redirect URLs must include `https://YOUR-APP.vercel.app/auth/callback?next=/bear`.
+
+## App icon
+
+Use `public/bear/art/icon-master-square.png` (1024×1024, full square, no rounded corners) for the Xcode AppIcon. iOS rounds the corners itself. `public/bear/art/icon-master.png` has rounded corners baked in, so it would show black slivers.

@@ -12,7 +12,8 @@ export const metadata:Metadata={
  description:'A second brain for everything you carry. Give a bill to Bear, verify it, forget about it, and get one useful reminder at a good time.',
  manifest:'/bear/manifest.webmanifest',
  appleWebApp:{capable:true,statusBarStyle:'default',title:'Load Bear'},
- icons:{icon:[{url:'/bear/icon-192.png',type:'image/png',sizes:'192x192'}],apple:[{url:'/bear/apple-touch-icon.png',sizes:'180x180'}]},
+ // ?v= busts the browser's stubborn cached tab icon whenever the artwork changes.
+ icons:{icon:[{url:'/bear/favicon.ico?v=4',sizes:'48x48'},{url:'/bear/icon-32.png?v=4',type:'image/png',sizes:'32x32'},{url:'/bear/icon-192.png?v=4',type:'image/png',sizes:'192x192'}],shortcut:'/bear/favicon.ico?v=4',apple:[{url:'/bear/apple-touch-icon.png?v=4',sizes:'180x180'}]},
 };
 export const viewport:Viewport={themeColor:'#FFF7E8',viewportFit:'cover',width:'device-width',initialScale:1,maximumScale:1};
 
