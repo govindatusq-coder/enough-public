@@ -27,7 +27,7 @@ export default function AreaPage({params}:{params:Promise<{key:string}>}){
    {!data&&!error&&<Skeleton/>}
    {data&&<>
     <header className="area-banner" data-area={key}>
-     <div className="area-art" aria-hidden="true"><Art file={`tile-${key}`} className="area-hero-img" style={{objectPosition:focus[key]||'50% 50%'}}/></div>
+     <div className="area-art" aria-hidden="true"><Art file={`scene-${key}`} className="area-hero-img" style={{objectPosition:focus[key]||'50% 50%'}}/></div>
      <div className="area-text"><h1 className="area-title">{data.label}</h1><p className="area-count"><span>{data.current.length===0?'Nothing current':`${data.current.length} current`}</span>{data.done.length>0&&<span>{data.done.length} done</span>}</p></div>
     </header>
     <section className="section"><p className="eyebrow">Current{data.current.length?` · ${data.current.length}`:''}</p>
