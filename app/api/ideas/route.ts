@@ -29,6 +29,8 @@ export async function POST(req:Request){
    return JSON.parse(raw);
   },
   keep:async candidates=>{const {data,error}=await db.rpc('enough_keep_ideas',{p_ideas:candidates});if(error)throw error;const kept=new Set((data||[]).map((row:{idea_json:unknown})=>ideaSchema.parse(row.idea_json).id));return candidates.filter(i=>kept.has(i.id));},
-  pictures:async(ideas,previous,checkConsent)=>prepareSuggestionPictures(ideas,previous,user!.id,ideaImageStorage(db),async idea=>{await checkConsent();return generateIdeaImage(idea,config().OPENAI_API_KEY||'',config().OPENAI_IMAGE_MODEL||'gpt-image-2.5-sunburst');})
+  // Bespoke AI pictures are off by default: suggestions use the curated illustration library.
+  // Set ENOUGH_AI_PICTURES=on to prepare generated pictures for classic AI ideas again.
+  pictures:async(ideas,previous,checkConsent)=>config().ENOUGH_AI_PICTURES!=='on'?{ready:0,errors:[]}:prepareSuggestionPictures(ideas,previous,user!.id,ideaImageStorage(db),async idea=>{await checkConsent();return generateIdeaImage(idea,config().OPENAI_API_KEY||'',config().OPENAI_IMAGE_MODEL||'gpt-image-2.5-sunburst');})
  })(req);
 }

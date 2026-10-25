@@ -41,7 +41,7 @@ export const illustrationLibrary:Record<IllustrationCategory,{variants:Art[];ded
  groceries:{variants:[art.shopping],dedicated:true},
  home:{variants:[art.kitchenBench,art.stillLife],dedicated:true},
  cooking:{variants:[art.kitchen,art.kitchenBench],dedicated:true},
- television:{variants:[art.livingRoom],dedicated:false},
+ television:{variants:[art.stillLife],dedicated:false},
  transport:{variants:[art.busStop],dedicated:true},
  walking:{variants:[art.hero,art.coast],dedicated:true},
  nature:{variants:[art.coast,art.hero],dedicated:true},

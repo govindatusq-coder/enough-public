@@ -66,6 +66,8 @@ export const stealOptions=[{id:'none',label:'None',minutes:1},{id:'5',label:'5 m
 
 const intensityRank:Record<Intensity,number>={'very-light':0,light:1,moderate:2,vigorous:3};
 const stylePhrase:Record<MovementStyle,string>={wander:'easy walking',destination:'getting somewhere',useful:'getting something done',outside:'being outside',people:'time with people',bursts:'a tiny burst',puffed:'getting a bit puffed',playful:'a bit of play'};
+/** "Long stretches at my desk" → "long stretches at your desk". */
+const secondPerson=(label:string)=>(label.charAt(0).toLowerCase()+label.slice(1)).replace(/\bmy\b/g,'your').replace(/\bI\b/g,'you');
 const hash=(text:string)=>{let h=2166136261;for(const c of text){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return (h>>>0)/4294967295;};
 
 /** Movement minutes: scaled ideas fit the extra-time tolerance; fixed ones use a sensible point in the range. */
@@ -139,7 +141,7 @@ function score(o:MovementOpportunity,input:EngineInput,options:RankOptions):Rank
  let s=0;
  if(o.contexts.some(c=>map.contexts.includes(c)))s+=w.contextMatch;
  if(options.situation&&options.situation!=='other'&&o.moments.some(m=>situationMoments[options.situation!].includes(m)))s+=w.situationMatch;
- if(map.moments.includes(moment)){s+=w.momentMatch;signals.push(`You said ${momentLabels[moment].charAt(0).toLowerCase()+momentLabels[moment].slice(1)} happens a lot.`);}
+ if(map.moments.includes(moment)){s+=w.momentMatch;signals.push(`You told us about ${secondPerson(momentLabels[moment])}.`);}
  const permission=permissionFor(o,map,options.situation);
  if(permission==='yes'){s+=w.permissionYes;signals.push('You said you’d like ideas for moments like this.');}else if(permission==='maybe')s+=w.permissionMaybe;
  const styles=o.movementTypes.filter(t=>map.styles.includes(t));
