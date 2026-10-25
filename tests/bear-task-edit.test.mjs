@@ -88,3 +88,46 @@ test('a completed task can be edited, and reopened without leaving a stale win',
  assert.equal((await winsView(store)).cards.length,0);assert.equal((await store.list('completions')).length,0);
  await assert.rejects(reopenTask(store,auto.task.id),e=>e.code==='not_done');
 });
+
+import {areaView,areaTiles} from '../lib/bear/services/areas.ts';
+import {setWinSaving} from '../lib/bear/services/win-edit.ts';
+import {confirmBill} from '../lib/bear/services/task-inference.ts';
+import {homeView} from '../lib/bear/services/home.ts';
+
+test('areas list what is current in each, without listing steps twice, and move tasks to done',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);const {auto}=await listTask(store);
+ await updateTask(store,auto.task.id,{items:auto.task.items.map(i=>({...i,estimatedCents:1000}))});
+ await splitIntoPurchases(store,auto.task.id,2,NOW);
+ const home=await areaView(store,'home',NOW);assert.equal(home.current.length,1,'purchases are steps of the main task');assert.equal(home.current[0].taskId,auto.task.id);assert.equal(home.current[0].stepsLeft,2);assert.match(home.current[0].estimate,/about \$70/);
+ const tiles=await areaTiles(store,['family','home','money']);assert.equal(tiles.find(t=>t.key==='home').open,1);assert.equal(tiles.find(t=>t.key==='money').open,0);
+ assert.equal((await homeView(store,NOW)).areas.find(a=>a.key==='home').open,1);
+ await completeTask(store,{taskId:auto.task.id,method:null,expectNext:false},NOW);
+ const after=await areaView(store,'home',NOW);assert.equal(after.current.length,0);assert.equal(after.done.length,1);
+});
+
+async function paidElectricityBill(store){
+ const {extraction}=await createCapture(store,null,{method:'text',text:'AGL electricity bill. Amount due $184.60. Due 28/11/2026. BPAY biller 12345 ref 998877',referenceYear:2026});
+ const {bill,task}=await confirmBill(store,{extractionId:extraction.id,corrections:{biller:'AGL',amountDueCents:18460,dueDate:'2026-11-28',category:'electricity',isRecurring:false},confirmedFields:['biller','amountDueCents','dueDate','category','isRecurring'],allowDuplicate:false});
+ const done=await completeTask(store,{taskId:task.id,method:null,expectNext:false},NOW);
+ return {bill,task,done};
+}
+test('a saving the person knows about is counted, labelled as theirs, replaceable and removable',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);const {done}=await paidElectricityBill(store);
+ assert.equal((await winsView(store)).totals.moneyCents,0,'nothing was printed on the bill, so nothing is counted automatically');
+ await setWinSaving(store,done.win.id,{cents:1500,reason:'early_discount_used'},NOW);
+ let view=await winsView(store);assert.equal(view.totals.moneyCents,1500);assert.match(view.cards[0].detail,/\+\$15\.00 early payment discount \(you told Bear\)/);assert.equal(view.cards[0].counted[0].mine,true);
+ await setWinSaving(store,done.win.id,{cents:2000,reason:'discount_used'},NOW);
+ view=await winsView(store);assert.equal(view.totals.moneyCents,2000,'replaced, not added twice');assert.equal(view.cards[0].detail.split('you told Bear').length,2);
+ assert.equal((await homeView(store,NOW)).ledgers.wealth.headline,'$20.00 protected this month');
+ await setWinSaving(store,done.win.id,{cents:0,reason:'discount_used'},NOW);
+ assert.equal((await winsView(store)).totals.moneyCents,0);
+});
+
+test('a paid bill can be made current again, and its saving goes with the win',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);const {bill,task,done}=await paidElectricityBill(store);
+ await setWinSaving(store,done.win.id,{cents:1500,reason:'early_discount_used'},NOW);
+ const reopened=await reopenTask(store,task.id);assert.equal(reopened.status,'open');
+ const b=await store.get('bills',bill.id);assert.equal(b.status,'watching');assert.equal(b.paidAt,null);
+ const view=await winsView(store);assert.equal(view.cards.length,0);assert.equal(view.totals.moneyCents,0);
+ assert.equal((await areaView(store,'money',NOW)).current.length,1);
+});

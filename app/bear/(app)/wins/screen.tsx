@@ -1,19 +1,26 @@
 'use client';
 import {useCallback,useEffect,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
-import {apiGet} from '@/lib/bear/client';
+import Link from 'next/link';
+import {apiGet,apiSend} from '@/lib/bear/client';
 import {brand} from '@/lib/bear/domain/copy';
 import {formatAUD} from '@/lib/bear/domain/money';
 import {formatAU} from '@/lib/bear/domain/dates';
 import type {WinsView} from '@/lib/bear/services/wins';
 import {EmptyArt,RoundBadge} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
-import {ErrorCard,Skeleton} from '@/components/bear/ui';
+import {Button,ErrorCard,Sheet,Skeleton,Toast} from '@/components/bear/ui';
 export function WinsScreen(){
  const router=useRouter();const params=useSearchParams();const just=params.get('just');
  const [data,setData]=useState<WinsView|null>(null);const [error,setError]=useState<string|null>(null);
+ const [editing,setEditing]=useState<WinsView['cards'][number]|null>(null);const [saved,setSaved]=useState('');const [why,setWhy]=useState('early_discount_used');const [busy,setBusy]=useState(false);const [toast,setToast]=useState<string|null>(null);
  const load=useCallback(()=>apiGet<WinsView>('/api/bear/wins').then(d=>{setData(d);setError(null);}).catch(e=>{if(e.status===401)router.replace('/bear/signin');else setError(e.message);}),[router]);
  useEffect(()=>{load();},[load]);
+
+ function openEdit(c:WinsView['cards'][number]){const mine=c.counted.find(x=>x.mine);setSaved(mine?(mine.cents/100).toFixed(2):'');setWhy('early_discount_used');setEditing(c);}
+ async function saveSaving(){if(!editing)return;const cents=saved.trim()?Math.round(Number(saved.replace(/[^0-9.]/g,''))*100):0;if(!Number.isFinite(cents)){setToast('Type the amount as numbers, like 15.00.');return;}
+  setBusy(true);try{await apiSend(`/api/bear/wins/${editing.id}/saving`,{cents,reason:why});setEditing(null);setToast(cents>0?'Saving counted.':'Saving removed.');await load();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ async function makeCurrent(){if(!editing?.taskId)return;setBusy(true);try{await apiSend(`/api/bear/tasks/${editing.taskId}/reopen`,{});router.push(editing.billId?`/bear/bills/${editing.billId}`:`/bear/tasks/${editing.taskId}`);}catch(e){setError((e as Error).message);setBusy(false);}}
  const minutes=data?.totals.timeMinutes||0;
  return (
   <main id="main" className="bear-screen">
@@ -31,10 +38,17 @@ export function WinsScreen(){
     <div className="section">
      {data.cards.length===0&&<div className="card" style={{textAlign:'center'}}><EmptyArt file="empty-wins"/><p style={{fontWeight:700,fontSize:19}}>{brand.winsEmpty}</p><p className="muted small" style={{marginTop:4}}>{brand.winsSub}</p><BearSays size={22}>{brand.oneLess}</BearSays></div>}
      {data.cards.some(c=>c.isDemo)&&<p className="faint" style={{marginBottom:10}}>Example bills show here so you can see how it works, but they never count towards your totals.</p>}
-     {data.cards.map(c=><div key={c.id} className="receipt"><div style={{display:'flex',justifyContent:'space-between',gap:10}}><p><span className="tick" aria-hidden="true">✓</span><strong>{c.title}</strong></p>{c.isDemo&&<span className="demo-tag">Example</span>}</div><p className="small muted" style={{marginTop:4,paddingLeft:22}}>{c.detail}</p><p className="tiny faint" style={{marginTop:4,paddingLeft:22}}>{formatAU(c.when.slice(0,10),'short')}</p></div>)}
+     {data.cards.map(c=><div key={c.id} className="receipt"><div style={{display:'flex',justifyContent:'space-between',gap:10}}><p><span className="tick" aria-hidden="true">✓</span><strong>{c.title}</strong></p>{c.isDemo&&<span className="demo-tag">Example</span>}</div><p className="small muted" style={{marginTop:4,paddingLeft:22}}>{c.detail}</p><p className="tiny faint" style={{marginTop:4,paddingLeft:22}}>{formatAU(c.when.slice(0,10),'short')}</p>{!c.isDemo&&c.taskId&&<div className="btn-row" style={{paddingLeft:22,marginTop:6}}><Button className="sm" variant="ghost" onClick={()=>openEdit(c)}>Edit</Button></div>}</div>)}
      {data.reinforcement&&<BearSays size={22}>{data.reinforcement}</BearSays>}
     </div>
    </>}
+   {editing&&<Sheet onClose={()=>setEditing(null)} label="Edit this win">
+    <h2>{editing.title}</h2><p className="muted small" style={{marginTop:6}}>{editing.detail}</p>
+    {editing.counted.length>0&&<div className="note plain" style={{marginTop:12}}><div><p style={{fontWeight:600}}>Counted so far</p><ul style={{margin:'6px 0 0 18px',padding:0}}>{editing.counted.map((x,i)=><li key={i} className="small">{formatAUD(x.cents)} · {x.label}{x.mine?' (you told Bear)':''}</li>)}</ul></div></div>}
+    <div className="field" style={{marginTop:14}}><label htmlFor="w-saved">Did this save you money?</label><input id="w-saved" inputMode="decimal" placeholder="Amount saved, like 15.00" value={saved} onChange={e=>setSaved(e.target.value)}/><select aria-label="How you saved" value={why} onChange={e=>setWhy(e.target.value)} style={{marginTop:8}}><option value="early_discount_used">Paid early for a discount</option><option value="late_fee_avoided">Avoided a late fee</option><option value="discount_used">A discount or rebate</option><option value="better_price">A better price</option></select><span className="hint">Only if you know the amount. Bear never guesses. It counts as something you told it, and replaces any amount you told it before. Leave it empty to remove it.</span></div>
+    <div className="btn-stack"><Button variant="coral" disabled={busy} onClick={saveSaving}>Save</Button>{editing.taskId&&<Link className="btn ghost" href={editing.billId?`/bear/bills/${editing.billId}`:`/bear/tasks/${editing.taskId}`}>Open details to edit</Link>}<Button variant="quiet" disabled={busy} onClick={makeCurrent}>Make this current again</Button></div>
+   </Sheet>}
+   <Toast message={toast} onDone={()=>setToast(null)}/>
   </main>
  );
 }

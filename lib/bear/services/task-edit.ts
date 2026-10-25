@@ -118,11 +118,15 @@ export async function splitIntoPurchases(store:BearStore,taskId:string,parts:num
 // Undo "done": the task, its project and its dependencies open again; the Win and Completion are
 // removed so My Wins stays honest.
 export async function reopenTask(store:BearStore,taskId:string){
- const task=await loadEditable(store,taskId);
+ const task=await store.get('tasks',taskId);if(!task)throw new Error('not_found');
  if(task.status!=='done')throw new ConfirmError("That one isn't marked done.",400,'not_done');
  const {completion,win}=await winFor(store,task.id);
  if(win)await store.remove('wins',win.id);
  if(completion)await store.remove('completions',completion.id);
+ // Savings counted for this completion go with it, so totals never include something that is no longer done.
+ for(const e of await store.list('value_ledger',{where:[{column:'kind',value:'wealth'}]}))if(e.sourceTaskId===task.id)await store.remove('value_ledger',e.id);
+ const bill=(await store.list('bills',{where:[{column:'task_id',value:task.id}]}))[0]||null;
+ if(bill)await store.update('bills',bill.id,{status:'watching',paidAt:null});
  const items=task.items?.map(i=>({...i,done:false,doneAt:null}));
  const next=await store.update('tasks',task.id,{status:'open',...(items?{items}:{})});
  const project=await store.get('projects',task.projectId);if(project)await store.update('projects',project.id,{status:'active'});

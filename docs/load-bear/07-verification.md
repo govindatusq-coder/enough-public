@@ -8,7 +8,7 @@
 | TypeScript | `pnpm typecheck` | clean |
 | Lint | `pnpm lint` (new flat config, `eslint-config-next`) | clean |
 | Production build | `pnpm build` | compiled; all `/bear` and `/api/bear` routes emitted |
-| Browser walk-through | `BEAR_TEST_MODE=start node scripts/test-bear-browser.mjs` | 25 steps passed (bill slice, school note auto-set-up and edited, Everything view, voice option, shopping list ticked, estimated and split) in headless Chromium (390×844, en-AU, Australia/Sydney) against `next start` with the in-memory local store; screenshots in `.bear-browser-results/` |
+| Browser walk-through | `BEAR_TEST_MODE=start node scripts/test-bear-browser.mjs` | 26 steps passed (bill slice, school note auto-set-up and edited, Everything view, voice option, shopping list ticked, estimated and split, win edited with a saving and made current again, area page) in headless Chromium (390×844, en-AU, Australia/Sydney) against `next start` with the in-memory local store; screenshots in `.bear-browser-results/` |
 
 ## The vertical slice covered by `tests/bear-vertical-slice.test.mjs`
 

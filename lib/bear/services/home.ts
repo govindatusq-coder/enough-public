@@ -1,4 +1,5 @@
 import {daysBetween,localParts,relativeDay,todayISO} from '../domain/dates.ts';
+import {areaTiles,type AreaTile} from './areas.ts';
 import {formatAUD} from '../domain/money.ts';
 import {brand,greeting} from '../domain/copy.ts';
 import type {Bill,DayMode,Profile,Reminder,Suggestion,Task,ValueLedgerEntry} from '../domain/types.ts';
@@ -12,7 +13,7 @@ import {refreshSuggestions} from './suggestions.ts';
 export interface NeedsYouItem{taskId:string;billId:string|null;kind:string;title:string;amount:string|null;due:string|null;dueLabel:string;minutes:number;reminderId:string|null;message:string|null;actions:{key:string;label:string}[];essential:boolean;isDemo:boolean}
 export interface HomeView{
  greeting:string;name:string;coveredCount:number;dayMode:DayMode|null;today:string;
- needsYou:NeedsYouItem[];handling:{watching:number;remindersReady:number;expectedSoon:number;lines:string[]};
+ needsYou:NeedsYouItem[];areas:AreaTile[];handling:{watching:number;remindersReady:number;expectedSoon:number;lines:string[]};
  ledgers:{health:{headline:string;lines:string[]};wealth:{headline:string|null;lines:string[]};happiness:{headline:string|null;lines:string[]}};
  ideasCount:number;demoAvailable:boolean;hasAnyBill:boolean;
 }
@@ -39,7 +40,7 @@ export async function homeView(store:BearStore,now=new Date()):Promise<HomeView>
  const ledgerRows=await store.list('value_ledger',{orderBy:{column:'occurred_at',ascending:false},limit:200});
  const covered=bills.length+otherHeld+scheduled.length+expectations.length+suggestions.length;
  const hour=localParts(now,tz).hour;
- return {greeting:greeting(hour,profile.name),name:profile.name,coveredCount:covered,dayMode,today,needsYou,handling:{watching,remindersReady:ready,expectedSoon,lines},ledgers:ledgers(ledgerRows,today,tasks),ideasCount:suggestions.length,demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
+ return {greeting:greeting(hour,profile.name),name:profile.name,coveredCount:covered,dayMode,today,needsYou,areas:await areaTiles(store,profile.areas),handling:{watching,remindersReady:ready,expectedSoon,lines},ledgers:ledgers(ledgerRows,today,tasks),ideasCount:suggestions.length,demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
 }
 function needsYouItems(bills:Bill[],tasks:Task[],due:DueReminder[],today:string,dayMode:DayMode|null):NeedsYouItem[]{
  const items:NeedsYouItem[]=[];

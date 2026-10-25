@@ -29,6 +29,7 @@ export default function Me(){
  const p=data.profile;
  return (
   <main id="main" className="bear-screen">
+   <p className="eyebrow">Settings</p>
    <div style={{display:'flex',gap:14,alignItems:'center'}}><Avatar size={84}/><div><h1>{p.name||'You'}</h1><p className="muted small">{data.user.email}</p></div></div>
    <section className="section"><p className="eyebrow">Your Bear</p><div className="card">
     <div className="row"><span className="grow"><span className="title">What&rsquo;s in your life</span><br/><span className="faint">{p.areas.map(a=>areaLabels[a]).join(' · ')||'Nothing picked yet'}</span></span></div>

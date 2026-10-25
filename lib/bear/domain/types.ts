@@ -161,7 +161,7 @@ export type WinCategory='handled'|'money'|'time'|'me';
 export interface Win extends Owned{completionId:Id;category:WinCategory;title:string;detail:string;amountCents:number|null;minutes:number|null;billId:Id|null;isDemo:boolean}
 export type LedgerKind='wealth'|'health'|'happiness';
 export type WealthReason='late_fee_avoided'|'early_discount_used'|'subscription_cancelled'|'better_price'|'discount_used'|'duplicate_charge';
-export interface ValueLedgerEntry extends Owned{kind:LedgerKind;reason:WealthReason|'care_task'|'protected_time';label:string;amountCents:number|null;minutes:number|null;occurredAt:ISODateTime;sourceTaskId:Id|null;sourceBillId:Id|null;defensible:boolean;isDemo:boolean}
+export interface ValueLedgerEntry extends Owned{kind:LedgerKind;reason:WealthReason|'care_task'|'protected_time';label:string;amountCents:number|null;minutes:number|null;occurredAt:ISODateTime;sourceTaskId:Id|null;sourceBillId:Id|null;defensible:boolean;isDemo:boolean;source?:'user'}
 
 // ---------- Behaviour ----------
 export const behaviourTypes=['suggestion_accepted','suggestion_rejected','task_completed','reminder_delivered','reminder_opened','reminder_snoozed','reminder_dismissed','capture_created','capture_rejected','field_corrected','task_dropped','day_mode_set','rhythm_changed','assist_used','plan_accepted','plan_changed'] as const;

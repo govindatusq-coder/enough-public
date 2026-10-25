@@ -57,6 +57,10 @@ export default function Home(){
      </div>
     </div>)}
    </section>
+   {home.areas.length>0&&<section className="section" aria-labelledby="areas">
+    <p id="areas" className="eyebrow">Your areas</p>
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>{home.areas.map(a=><Link key={a.key} href={`/bear/areas/${a.key}`} className="glass" style={{padding:'14px 16px',display:'block'}} aria-label={`${a.label}: ${a.open} current`}><span style={{fontWeight:700,fontSize:18,display:'block'}}>{a.label}</span><span className="small muted">{a.open===0?'Nothing current':`${a.open} current`}</span></Link>)}</div>
+   </section>}
    <section className="section" aria-labelledby="handling">
     <p id="handling" className="eyebrow teal">Bear&rsquo;s handling</p>
     <div className="card" style={home.handling.lines.length?undefined:{display:'grid',gridTemplateColumns:'96px 1fr',gap:12,alignItems:'center'}}>{!home.handling.lines.length&&<Art file="home-bill" width={96}/>}{home.handling.lines.length?home.handling.lines.map(l=><div key={l} className="row"><span className="icon-dot" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 13l4 4L19 7"/></svg></span><span className="grow">{l}</span></div>):<p style={{fontWeight:600}}>{home.hasAnyBill?'Nothing being watched right now.':'Give Bear anything and it starts holding it.'}</p>}
