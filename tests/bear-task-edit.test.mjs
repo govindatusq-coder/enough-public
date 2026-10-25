@@ -450,9 +450,9 @@ test('deleting one purchase of a split list leaves the others, and the archived 
 test('How is today: it counts only for today, and is a plain setting that clears itself tomorrow',async()=>{
  const store=new MemoryBackend().for(USER);await onboard(store);
  const {setDayMode,activeDayMode,ensureProfile:ep}=await import('../lib/bear/services/profile.ts');
- await setDayMode(store,'full');const p=await ep(store);
- assert.equal(activeDayMode(p,p.dayModeSetAt.slice(0,10)),'full');assert.equal(activeDayMode(p,'2099-01-01'),null,'not carried over to another day');
- await setDayMode(store,null);assert.equal(activeDayMode(await ep(store),p.dayModeSetAt.slice(0,10)),null);
+ await setDayMode(store,'full');const p=await ep(store);const {todayISO}=await import('../lib/bear/domain/dates.ts');const local=todayISO(p.lifeRhythm.timezone||'Australia/Sydney',new Date(p.dayModeSetAt));
+ assert.equal(activeDayMode(p,local),'full');assert.equal(activeDayMode(p,'2099-01-01'),null,'not carried over to another day');
+ await setDayMode(store,null);assert.equal(activeDayMode(await ep(store),local),null);
 });
 
 test('area tiles carry a count of what needs you, split into overdue, and gentle nudges never make a number',async()=>{
@@ -478,4 +478,11 @@ test('a gentle nudge marks its area with a quiet dot, never a number, and its ro
  const home=await homeView(store,at);const tile=home.areas.find(a=>a.key==='me');
  assert.equal(tile.needs,0,'no number for a gentle nudge');assert.equal(tile.soft,true,'a quiet dot instead');
  const row=(await areaView(store,'me',at)).current[0];assert.equal(row.soft,true);assert.equal(row.needs,false);assert.ok(row.reminderId);
+});
+
+test('a day rating made in the Sydney morning still counts for that Sydney day',async()=>{
+ const {activeDayMode}=await import('../lib/bear/services/profile.ts');
+ const profile={dayMode:'chaos',dayModeSetAt:'2026-10-25T23:30:00.000Z',lifeRhythm:{timezone:'Australia/Sydney'}};
+ assert.equal(activeDayMode(profile,'2026-10-26'),'chaos');
+ assert.equal(activeDayMode(profile,'2026-10-25'),null);
 });

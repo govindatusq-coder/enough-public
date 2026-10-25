@@ -374,3 +374,7 @@
 .bear .metrics .metric::after{content:"";position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(180deg,rgba(16,42,67,0) 0%,rgba(16,42,67,.78) 100%);pointer-events:none;}
 .bear .metrics .metric b,.bear .metrics .metric span:not(.metric-pic),.bear .metrics .metric i{position:relative;z-index:2;color:#fff;text-shadow:0 1px 6px rgba(16,42,67,.6);}
 .bear .metrics .metric i{color:#FFD9A0;}
+/* Opening screen */
+.bear-splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:calc(var(--safe-top) + 24px) 32px calc(var(--safe-bottom) + 24px);background:#FFF7E8;transition:opacity .45s ease;}
+.bear-splash.leaving{opacity:0;pointer-events:none;}
+.bear-splash-art{width:100%;max-width:360px;}

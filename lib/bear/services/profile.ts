@@ -1,3 +1,4 @@
+import {todayISO} from '../domain/dates.ts';
 import {z} from 'zod';
 import {areaKeys,dayModes,emptyMomentOptions,leadTimeOptions,nudgeToleranceOptions,personRoles,planningDetailOptions,proactiveOptions,rhythmKinds,toneOptions,weekdays,type Area,type DayMode,type Person,type Profile} from '../domain/types.ts';
 import {areaLabels} from '../domain/labels.ts';
@@ -55,4 +56,5 @@ export async function setDayMode(store:BearStore,mode:DayMode|null){
 }
 export const dayModeSchema=z.object({mode:z.enum(dayModes).nullable()}).strict();
 // Day mode is only trusted for the day it was set on.
-export function activeDayMode(profile:Profile,todayIso:string):DayMode|null{if(!profile.dayMode||!profile.dayModeSetAt)return null;return profile.dayModeSetAt.slice(0,10)===todayIso?profile.dayMode:null;}
+export function activeDayMode(profile:Profile,todayIso:string):DayMode|null{if(!profile.dayMode||!profile.dayModeSetAt)return null;// Compare in the person's own time zone: a rating made at 9am in Sydney is still 'yesterday' in UTC.
+ return todayISO(profile.lifeRhythm.timezone||'Australia/Sydney',new Date(profile.dayModeSetAt))===todayIso?profile.dayMode:null;}
