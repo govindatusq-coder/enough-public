@@ -311,3 +311,9 @@
 
 .bear .quick-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px;padding-top:8px;border-top:1px solid var(--line);}
 .bear .quick-tools .faint{font-size:13px;flex:1;min-width:140px;}
+
+/* Task: your own steps */
+.bear .add-step{display:flex;gap:8px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
+.bear .add-step input{flex:1;min-width:0;}
+.bear .step-x{flex:none;width:32px;height:32px;border-radius:10px;border:0;background:transparent;color:var(--ink-3);font-size:22px;line-height:1;cursor:pointer;}
+.bear .step-x:hover{background:rgba(16,42,67,.06);color:var(--coral);}

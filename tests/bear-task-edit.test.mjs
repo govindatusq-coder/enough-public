@@ -403,3 +403,54 @@ test('what the iPhone app hands over becomes text and real files, and anything u
  const many=payloadToInbox({files:Array.from({length:9},(_,i)=>({name:`p${i}.png`,mime:'image/png',b64:png}))});assert.equal(many.files.length,5,'at most five files');
  const cleaned=payloadToInbox({files:[{name:'../../etc/passwd.png',mime:'image/png',b64:png}]}).files[0].name;assert.ok(!cleaned.includes('/'),'no folder tricks in names: '+cleaned);
 });
+
+import {addStep,removeStep} from '../lib/bear/services/task-edit.ts';
+test('anyone can add their own steps to a task, without the AI service, and remove them again',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Look into new curtains for the lounge room',referenceYear:2026});
+ const {task}=await maybeAutoSetup(store,extraction,NOW);assert.equal(task.size,'one_go');
+ const a=await addStep(store,task.id,'Measure the windows');const b=await addStep(store,task.id,'Choose a style');
+ assert.equal(a.dueAt,null,'no date on a step of a no-rush task');assert.equal(a.timing,'flexible');assert.equal(a.setupBy,'user');
+ assert.equal((await store.get('tasks',task.id)).size,'bigger','adding a step makes it bigger');
+ const deps=await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]});assert.equal(deps.length,2);
+ assert.equal((await areaView(store,'me',NOW)).current.length,1,'steps stay inside the task');
+ await completeTask(store,{taskId:a.id,method:null,expectNext:false},NOW);
+ await removeStep(store,task.id,b.id);assert.equal((await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})).length,1);assert.equal(await store.get('tasks',b.id),null);
+ await assert.rejects(removeStep(store,task.id,'not-a-step'),e=>e.message==='not_found');
+});
+test('steps of a time-sensitive task share its date, and a task holds at most twelve steps',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);const {auto}=await listTask(store);
+ const s=await addStep(store,auto.task.id,'Buy the drill');assert.equal(s.dueAt,'2026-12-05');assert.equal(s.timing,'time_sensitive');
+ for(let i=0;i<11;i++)await addStep(store,auto.task.id,'Step '+i);
+ await assert.rejects(addStep(store,auto.task.id,'One too many'),e=>e.code==='too_many_steps');
+});
+
+import {deleteTask} from '../lib/bear/services/task-edit.ts';
+test('deleting a task really removes it: steps, reminders, its project, and a done task also leaves My Wins and the saving count',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {auto}=await listTask(store);await addStep(store,auto.task.id,'Make a list');await addStep(store,auto.task.id,'Go on Saturday');
+ assert.ok((await live(store)).length>=1);
+ await deleteTask(store,auto.task.id);
+ assert.equal(await store.get('tasks',auto.task.id),null);assert.equal((await store.list('tasks')).length,0,'steps went with it');assert.equal((await store.list('task_dependencies')).length,0);
+ assert.equal((await store.list('reminders')).length,0);assert.equal((await store.list('projects')).length,0,'an empty project is removed');
+ assert.equal((await areaView(store,'home',NOW)).current.length,0);assert.equal((await homeView(store,NOW)).areas.find(a=>a.key==='home')?.open??0,0);
+ await assert.rejects(deleteTask(store,auto.task.id),e=>e.message==='not_found');
+ // a done task with a saving
+ const {done,task}=await paidElectricityBill(store);await setWinSaving(store,done.win.id,{cents:1500,reason:'early_discount_used'},NOW);
+ assert.equal((await winsView(store)).totals.moneyCents,1500);
+ await deleteTask(store,task.id);
+ const view=await winsView(store);assert.equal(view.cards.length,0);assert.equal(view.totals.moneyCents,0);assert.equal((await store.list('bills')).length,0);assert.equal((await store.list('completions')).length,0);
+});
+test('deleting one purchase of a split list leaves the others, and the archived original stays out of sight',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);const {auto}=await listTask(store);
+ const split=await splitIntoPurchases(store,auto.task.id,2,NOW);
+ await deleteTask(store,split.tasks[0].id);
+ const view=await areaView(store,'home',NOW);assert.equal(view.current.length,1);assert.equal(view.current[0].taskId,split.tasks[1].id);
+});
+test('How is today: it counts only for today, and is a plain setting that clears itself tomorrow',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {setDayMode,activeDayMode,ensureProfile:ep}=await import('../lib/bear/services/profile.ts');
+ await setDayMode(store,'full');const p=await ep(store);
+ assert.equal(activeDayMode(p,p.dayModeSetAt.slice(0,10)),'full');assert.equal(activeDayMode(p,'2099-01-01'),null,'not carried over to another day');
+ await setDayMode(store,null);assert.equal(activeDayMode(await ep(store),p.dayModeSetAt.slice(0,10)),null);
+});

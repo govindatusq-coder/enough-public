@@ -53,10 +53,10 @@ export default function Home(){
     <p id="overdue" className="small muted">It isn&rsquo;t too late. Open one and Bear will help you sort it.</p>
     <div className="alert-rows">{home.overdue.slice(0,3).map(o=><Link key={o.taskId} href={o.billId?`/bear/bills/${o.billId}`:`/bear/tasks/${o.taskId}`} className="alert-row"><span><b>{o.title}</b>{o.amount?<> · {o.amount}</>:null}<br/><span className="overdue-text small">{o.label}</span></span><span className="small" style={{fontWeight:700,color:'var(--coral)'}}>Open</span></Link>)}{home.overdue.length>3&&<p className="small muted" style={{paddingTop:6}}>And {home.overdue.length-3} more in your areas.</p>}</div>
    </OverdueAlert></section>}
-   <section className="section" aria-labelledby="how">
+   {/* Once today's level is rated the card goes away; the reply shows as a note, and it can be changed in Settings. */}
+   {!home.dayMode&&<section className="section" aria-labelledby="how">
     <div className="glass" style={{padding:'12px 16px',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}><span id="how" className="small" style={{fontWeight:600}}>How&rsquo;s today?</span><div className="chips" style={{gap:6}}>{modes.map(m=><button key={m.key} type="button" className="chip" style={{minHeight:38,padding:'0 12px',fontSize:14}} aria-pressed={home.dayMode===m.key} disabled={busy==='mode'} onClick={()=>setMode(m.key)}>{m.label}</button>)}</div></div>
-    {home.dayMode&&<p className="hand" style={{fontSize:19,marginTop:8,color:'var(--ink-2)'}}>{dayModeReply[home.dayMode]}</p>}
-   </section>
+   </section>}
    <section className="section" aria-labelledby="needs">
     <p id="needs" className="eyebrow coral">Needs you{needs.length?` · ${needs.length} ${needs.length===1?'thing':'things'}`:''}</p>
     {needs.length===0&&<div className="card" style={{display:'flex',gap:14,alignItems:'center',paddingLeft:10}}><Art file="home-calm" width={110}/><div><p style={{fontWeight:600}}>{brand.emptyNeeds}</p><p className="muted small">{brand.emptyNeedsSub}</p></div></div>}

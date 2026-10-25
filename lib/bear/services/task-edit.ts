@@ -205,6 +205,51 @@ export async function breakDownTask(store:BearStore,provider:StructuredModelProv
  return steps;
 }
 
+// ---------- The person's own steps ----------
+// Anyone can add their own small steps to a task, with or without the AI service, and remove any step.
+// Adding a step makes the task "bigger". Steps never get a date of their own unless the task is
+// time-sensitive, in which case they share its date.
+export const stepSchema=z.object({title:z.string().trim().min(1).max(120)}).strict();
+const MAX_STEPS=12;
+export async function addStep(store:BearStore,taskId:string,title:string){
+ const task=await loadEditable(store,taskId);
+ if(task.status!=='open')throw new ConfirmError('Only open things can have steps.',400,'not_open');
+ const deps=await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]});
+ if(deps.length>=MAX_STEPS)throw new ConfirmError(`That is plenty of steps. Bear keeps up to ${MAX_STEPS} per task.`,400,'too_many_steps');
+ const step=await store.insert('tasks',stamp<Task>(store.userId,{projectId:task.projectId,kind:'custom',title,status:'open',dueAt:task.timing==='flexible'?null:task.dueAt,estimatedMinutes:5,cognitiveEffort:'low',forPerson:task.forPerson,isDemo:task.isDemo,timing:task.timing,setupBy:'user'}));
+ await store.insert('task_dependencies',stamp<TaskDependency>(store.userId,{taskId:task.id,dependsOnTaskId:step.id}));
+ if(task.size!=='bigger')await store.update('tasks',task.id,{size:'bigger'});
+ return step;
+}
+export async function removeStep(store:BearStore,taskId:string,stepId:string){
+ const task=await loadEditable(store,taskId);
+ const dep=(await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})).find(d=>d.dependsOnTaskId===stepId);
+ if(!dep)throw new Error('not_found');
+ await store.remove('task_dependencies',dep.id);await store.remove('tasks',stepId);
+}
+
+// ---------- Deleting ----------
+// A real delete, for anything the person no longer wants in Bear at all (different from "not important
+// anymore", which keeps a record). It takes the task's steps, reminders, its win and any saving counted
+// for it, its bill if it is one, and its project when nothing else is left in it. The original photo or
+// text the person gave Bear is kept with the capture history, not shown anywhere.
+export async function deleteTask(store:BearStore,taskId:string){
+ const task=await store.get('tasks',taskId);if(!task)throw new Error('not_found');
+ // Steps (and a step's own link, if a step is deleted directly)
+ for(const d of await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})){await store.remove('task_dependencies',d.id);if(await store.get('tasks',d.dependsOnTaskId))await store.remove('tasks',d.dependsOnTaskId);}
+ for(const d of await store.list('task_dependencies',{where:[{column:'depends_on_task_id',value:task.id}]}))await store.remove('task_dependencies',d.id);
+ for(const r of await store.list('reminders',{where:[{column:'task_id',value:task.id}]}))await store.remove('reminders',r.id);
+ for(const c of await store.list('completions',{where:[{column:'task_id',value:task.id}]})){
+  for(const w of await store.list('wins',{where:[{column:'completion_id',value:c.id}]}))await store.remove('wins',w.id);
+  await store.remove('completions',c.id);
+ }
+ for(const e of await store.list('value_ledger',{where:[{column:'kind',value:'wealth'}]}))if(e.sourceTaskId===task.id)await store.remove('value_ledger',e.id);
+ for(const b of await store.list('bills',{where:[{column:'task_id',value:task.id}]}))await store.remove('bills',b.id);
+ await store.remove('tasks',task.id);
+ const left=(await store.list('tasks',{where:[{column:'project_id',value:task.projectId}]})).length;
+ if(!left)await store.remove('projects',task.projectId);
+}
+
 // ---------- Big spends: when could this comfortably be bought? ----------
 // Asked once, for a spend of BIG_SPEND_CENTS or more. "Now" keeps it current. Anything else moves
 // it to the wishlist, which lives with the areas and stays off the busy screens until its check-back
