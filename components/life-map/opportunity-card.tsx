@@ -1,6 +1,6 @@
 "use client";
 import {useState} from 'react';
-import {illustrationFor} from '@/lib/illustrations';
+import {Illustration} from './illustration';
 import {extraLabel,extraLabelLong,movementLabel,type CardCopy} from '@/lib/opportunity-copy';
 import {rejectReasons,rejectReasonLabels,type RejectReason} from '@/lib/opportunity-log';
 import type {Ranked} from '@/lib/opportunity-engine';
@@ -22,7 +22,6 @@ type Props={
 /** One opportunity, in the Enough card style: painting for mood, words for specifics. */
 export function OpportunityCard({ranked,copy,variant,eyebrow,acceptLabel='I’d do that',rejectLabel='Not for me',onAccept,onReject,askReason,accepted}:Props){
  const [asking,setAsking]=useState(false),[declined,setDeclined]=useState(false);
- const art=illustrationFor(ranked.opportunity.imageCategory,ranked.opportunity.imageVariant);
  const decline=(reason?:RejectReason)=>{setAsking(false);setDeclined(true);onReject(reason);};
  const reject=()=>{if(askReason)setAsking(true);else decline();};
  if(asking)return <article className={`lm-card lm-${variant} lm-reasons`} aria-live="polite">
@@ -33,7 +32,7 @@ export function OpportunityCard({ranked,copy,variant,eyebrow,acceptLabel='I’d 
  </article>;
  if(declined&&variant!=='payoff')return <article className={`lm-card lm-${variant} lm-declined`} role="status"><p>Got it. Enough will suggest “{copy.title}” less.</p></article>;
  return <article className={`lm-card lm-${variant}${accepted?' lm-accepted':''}${declined?' lm-was-declined':''}`}>
-  <div className="lm-art"><img src={art.src} alt="" loading={variant==='hero'?'eager':'lazy'} decoding="async"/></div>
+  <div className="lm-art"><Illustration category={ranked.opportunity.imageCategory} variant={ranked.opportunity.imageVariant} eager={variant==='hero'}/></div>
   <div className="lm-card-body">
    {eyebrow&&<span className="eyebrow">{eyebrow}</span>}
    <h3>{copy.title}</h3>

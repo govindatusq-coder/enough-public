@@ -17,6 +17,8 @@ type Dependencies={
  authenticated:boolean;
  available:boolean;
  readAccount:()=>Promise<{state_json:unknown}|null>;
+ /** Takes one slot from the person's daily wording allowance. False when it's used up. */
+ allow:()=>Promise<boolean>;
  generate:(context:ReturnType<typeof personaliseContext>)=>Promise<unknown>;
  now?:()=>Date;
 };
@@ -37,6 +39,10 @@ export function createPersonalisePost(deps:Dependencies){return async(req:Reques
   const now=deps.now?.()||new Date();
   const ranked=rank({lifeMap:state.lifeMap,feedback:state.opportunityFeedback,moments:state.opportunityMoments,now},{situation:body.situation,extraAllowance:body.extraAllowance}).find(r=>r.opportunity.id===body.opportunityId);
   if(!ranked)return json({copy:null});
+  // Fail closed: if the allowance can't be checked, no model request is made.
+  let allowed=false;
+  try{allowed=await deps.allow();}catch(error){console.warn('Wording allowance unavailable',error instanceof Error?error.message:error);}
+  if(!allowed)return json({copy:null,limited:true});
   try{
    const raw=await deps.generate(personaliseContext(ranked,state.lifeMap,body.situation));
    return json({copy:validatePersonalised(raw,ranked,cardCopy(ranked))});

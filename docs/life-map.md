@@ -30,6 +30,14 @@ Life Map copy is conditional ("Next time…", "If…") because Enough knows what
 
 Add an `o({...})` entry to `lib/opportunities.ts`. Set the moments in priority order, the hard-constraint tags it would break, `extraScales` if the extra time equals the movement time, and an `imageCategory`. `tests/opportunity-engine.test.mjs` checks every entry for valid fields, conditional copy, banned words and an existing illustration.
 
+## AI wording allowance
+
+Each signed-in person gets 40 rewordings per UTC day, enforced in Postgres by `public.enough_take_wording_slot()` (migration `supabase/migrations/20261025090000_wording_quota.sql`). The check runs before any model call, and if it can't run the endpoint makes no model request and the app keeps its template copy. Each device also caches a day's result, or a failure, per card.
+
+## iPhone app
+
+The iPhone app doesn't show the Life Map yet. It keeps any account fields it doesn't model and sends them back untouched on save (`AccountFields` in `ios/Enough/Enough/Services/EnoughAPI.swift`), so using both on one account doesn't erase the Life Map, feedback or moments.
+
 ## Automatic AI pictures
 
 Bespoke AI pictures for classic AI ideas are off. Set `ENOUGH_AI_PICTURES=on` on the server to turn them back on.

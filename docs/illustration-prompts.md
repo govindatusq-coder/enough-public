@@ -8,6 +8,22 @@ The app shows a watercolour painting wherever the website shows a photograph. Ea
 
 Principles the pictures should carry: **kanso** (only what is needed), **fukinsei** (off-centre composition, asymmetry), **shibui** (understated, no bright saturation), **shizen** (natural, unforced moments), **yugen** (suggest more than you show; faces soft or turned away, scenes fading into paper), **datsuzoku** (a small unexpected detail that makes you smile), **seijaku** (stillness).
 
+## Seven paintings for the Enough Illustration Library (web)
+
+These categories still borrow a neighbouring painting. Each already names its file, so a correctly named upload appears with no code change. Put files in `public/illustrations/` on the `claude/gracious-babbage-w0djds` branch. Use WebP at quality 80, 1536 × 1024 landscape, under 400 KB. If you only have PNGs, upload them with the same names ending `.png` and ask Claude to convert them.
+
+Prepend the shared style above to each prompt. Keep the subject in the middle two-thirds: cards crop the top and bottom, and a phone shows the picture small.
+
+| File | Category | Prompt |
+|---|---|---|
+| `kids-sport.webp` | children-sport | A parent in everyday clothes walking slowly along the edge of a suburban sports oval at golden hour, children in loose team shirts training in the soft distance, a coach's cones, gum trees, the parent glancing over with a small smile. Nobody running towards the viewer. |
+| `waiting.webp` | waiting | Someone strolling along a quiet, tree-lined footpath outside a small medical centre or car service shop, glancing at their phone for the time, a bench and an empty waiting-room window behind them. Unhurried, mid-morning. |
+| `desk-sitting.webp` | desk-work | A home or office desk by a window with a laptop and a mug; the person has just stood up and is stretching their arms gently while looking outside, a pot plant catching light. Ordinary clothes, no activewear. |
+| `outdoor-work.webp` | outdoor-work | A worker in a hi-vis vest and work boots walking across a building site or council park at dawn, carrying a clipboard and a coffee, long soft shadows, scaffolding barely suggested. |
+| `tv-evening.webp` | television | A lived-in living room in warm evening light, the television glowing softly, someone getting up from the sofa with an empty mug on the way to the kitchen, a basket of folded washing on the arm. No exercise. |
+| `pets-dog-walk.webp` | pets | A person walking a medium-sized dog along a leafy suburban street lined with jacarandas, the dog sniffing a fence post, the person relaxed with the lead loose, late-afternoon light. |
+| `supermarket.webp` | groceries | Someone carrying a shopping basket down a quiet supermarket aisle, fruit and vegetable shelves washed in pale colour, pendant lights, a trolley bay at the end. Calm, uncluttered, no brand names. |
+
 ## Specifications
 
 - Size 1536 × 1024 (3:2 landscape) for every file except the two sprite sheets.

@@ -2,7 +2,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowLeft,Check} from 'lucide-react';
 import {lifeContexts,contextCards,suggestedMoments,momentLabels,scenariosFor,permissionLevels,movementStyles,styleCards,hardNos,hardNoLabels,extraTimeChoices,extraTimeOptions,emptyLifeMap,type LifeMap,type LifeContext,type RecurringMoment,type MovementStyle,type HardNo,type ExtraTime} from '@/lib/life-map';
-import {illustrationFor} from '@/lib/illustrations';
+import {Illustration} from './illustration';
 import {payoff,type Ranked} from '@/lib/opportunity-engine';
 import {cardCopy} from '@/lib/opportunity-copy';
 import type {FeedbackEvent} from '@/lib/opportunity-log';
@@ -71,9 +71,9 @@ export function LifeMapOnboarding({initial,feedback,editScreen,onChange,onPayoff
    {screen===1&&<section>
     <h1 ref={heading} tabIndex={-1}>What fills your week?</h1>
     <p className="lm-sub">Pick anything that’s regularly part of your life.</p>
-    <div className="lm-tiles">{lifeContexts.map((c:LifeContext)=>{const card=contextCards[c],art=illustrationFor(card.image);const on=map.contexts.includes(c);
+    <div className="lm-tiles">{lifeContexts.map((c:LifeContext)=>{const card=contextCards[c];const on=map.contexts.includes(c);
      return <button key={c} type="button" className="lm-tile" aria-pressed={on} onClick={()=>change({...map,contexts:toggle(map.contexts,c)})}>
-      <span className="lm-tile-art"><img src={art.src} alt="" loading="lazy"/></span>
+      <span className="lm-tile-art"><Illustration category={card.image}/></span>
       <span className="lm-tile-text"><strong>{card.title}</strong><small>{card.text}</small></span>
       <span className="lm-tick" aria-hidden="true">{on&&<Check size={14} strokeWidth={3}/>}</span>
      </button>})}</div>
@@ -99,9 +99,9 @@ export function LifeMapOnboarding({initial,feedback,editScreen,onChange,onPayoff
    {screen===4&&<section>
     <h1 ref={heading} tabIndex={-1}>What sounds least annoying?</h1>
     <p className="lm-sub">Forget workouts. What kinds of movement actually suit you?</p>
-    <div className="lm-tiles">{movementStyles.map((s:MovementStyle)=>{const card=styleCards[s],art=illustrationFor(card.image,1);const on=map.styles.includes(s);
+    <div className="lm-tiles">{movementStyles.map((s:MovementStyle)=>{const card=styleCards[s];const on=map.styles.includes(s);
      return <button key={s} type="button" className="lm-tile" aria-pressed={on} onClick={()=>change({...map,styles:toggle(map.styles,s)})}>
-      <span className="lm-tile-art"><img src={art.src} alt="" loading="lazy"/></span>
+      <span className="lm-tile-art"><Illustration category={card.image} variant={1}/></span>
       <span className="lm-tile-text"><strong>{card.title}</strong><small>{card.text}</small></span>
       <span className="lm-tick" aria-hidden="true">{on&&<Check size={14} strokeWidth={3}/>}</span>
      </button>})}</div>

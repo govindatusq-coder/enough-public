@@ -208,3 +208,36 @@ final class RegionAndMovementTests: XCTestCase {
         XCTAssertTrue(IdeaMovement.describesMovement(mode: "seated", text: "Stretch your arms and shoulders slowly"))
     }
 }
+
+/// The website stores fields this app doesn't model yet (the Life Map,
+/// opportunity feedback and "did it happen" moments). Saving from the app must
+/// send them back untouched, never erase them.
+final class AccountPreservationTests: XCTestCase {
+    func testKnownFieldsMatchTheModel() {
+        XCTAssertEqual(AccountFields.known, ["version", "weeklyReviews", "aiConsent", "costs", "movementSettings", "profile", "saved", "entries", "demo", "today", "generated", "passes", "tuning"])
+    }
+
+    func testWebOnlyFieldsSurviveAnAppSave() throws {
+        let lifeMap: [String: Any] = ["version": 1, "contexts": ["kids", "calls"], "onboardingCompleted": true]
+        let feedback: [[String: Any]] = [["id": "f1", "opportunityId": "call-listening-walk", "response": "accept"]]
+        var stateObject = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder.account.encode(AppState.empty)) as? [String: Any])
+        stateObject["lifeMap"] = lifeMap
+        stateObject["opportunityFeedback"] = feedback
+        let account = try JSONSerialization.data(withJSONObject: ["revision": 3, "state": stateObject])
+
+        let extras = AccountFields.extras(fromAccountJSON: account)
+        XCTAssertEqual(Set(extras.keys), ["lifeMap", "opportunityFeedback"])
+
+        var edited = AppState.empty
+        edited.saved = [1]
+        let merged = try AccountFields.merged(JSONEncoder.account.encode(edited), extras: extras)
+        XCTAssertEqual(merged["saved"] as? [Int], [1], "the app's own fields win")
+        XCTAssertEqual((merged["lifeMap"] as? [String: Any])?["contexts"] as? [String], ["kids", "calls"])
+        XCTAssertEqual((merged["opportunityFeedback"] as? [[String: Any]])?.first?["opportunityId"] as? String, "call-listening-walk")
+    }
+
+    func testAnAccountWithoutWebFieldsHasNoExtras() throws {
+        let account = try JSONSerialization.data(withJSONObject: ["revision": 1, "state": try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder.account.encode(AppState.empty)))])
+        XCTAssertTrue(AccountFields.extras(fromAccountJSON: account).isEmpty)
+    }
+}

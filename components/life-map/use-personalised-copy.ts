@@ -16,7 +16,8 @@ export function usePersonalisedCopy(r:Ranked|null,enabled:boolean,situation?:Sit
  useEffect(()=>{
   setCopy(null);
   if(!r||!enabled)return;
-  try{const cached=sessionStorage.getItem(key);if(cached){setCopy(JSON.parse(cached));return;}}catch{}
+  // A cached 'template' marker means today's request already failed or was refused: don't ask again.
+  try{const cached=sessionStorage.getItem(key);if(cached){if(cached!=='template')setCopy(JSON.parse(cached));return;}}catch{}
   let live=true;
   void personaliseWithFallback(r,async()=>{
    const res=await fetch('/api/personalise',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({opportunityId:r.opportunity.id,...(situation?{situation}:{}),...(extraAllowance!==undefined?{extraAllowance}:{})})});
@@ -24,7 +25,7 @@ export function usePersonalisedCopy(r:Ranked|null,enabled:boolean,situation?:Sit
    const data=await res.json() as {copy?:{title:string;body:string;why:string;minutes:number}|null};
    if(!data.copy)throw Error('no copy');
    return {headline:data.copy.title,body:data.copy.body,why:data.copy.why,minutes:data.copy.minutes};
-  }).then(result=>{if(!live||result.source!=='ai')return;setCopy(result);try{sessionStorage.setItem(key,JSON.stringify(result))}catch{}});
+  }).then(result=>{try{sessionStorage.setItem(key,result.source==='ai'?JSON.stringify(result):'template')}catch{}if(live&&result.source==='ai')setCopy(result);});
   return()=>{live=false};
  },[key,enabled]);
  return copy||base;

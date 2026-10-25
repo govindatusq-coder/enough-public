@@ -10,6 +10,7 @@ export async function POST(req:Request){
  return createPersonalisePost({
   authenticated:!!user,available:!!config().OPENAI_API_KEY,
   readAccount:async()=>{const {data,error}=await db.from('enough_accounts').select('state_json').eq('user_id',user!.id).maybeSingle();if(error)throw error;return data;},
+  allow:async()=>{const {data,error}=await db.rpc('enough_take_wording_slot');if(error)throw error;return data===true;},
   generate:async context=>{
    const response=await fetch('https://api.openai.com/v1/responses',{
     method:'POST',signal:AbortSignal.timeout(15000),headers:{Authorization:'Bearer '+config().OPENAI_API_KEY,'Content-Type':'application/json'},

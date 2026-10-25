@@ -151,7 +151,6 @@
  .lm-card.lm-hero{flex-direction:row}
  .lm-card.lm-hero .lm-art{flex:0 0 44%;aspect-ratio:auto}
  .lm-card.lm-hero .lm-card-body{padding:24px 26px}
- .lm-compact-list{grid-template-columns:repeat(2,minmax(0,1fr))}
  .lm-options{flex-direction:row;flex-wrap:wrap}.lm-options button{flex:1 1 30%}
 }
 @media (prefers-reduced-motion:reduce){.lm-tile,.lm-pills>button{transition:none}}
@@ -162,3 +161,4 @@
 .lm-classic-profile>.primary{margin:8px 0 12px}
 .lm-onboarding .primary{display:inline-flex;align-items:center;justify-content:center;gap:10px;border-radius:28px;min-height:48px;padding:12px 24px;font-size:15px;background:linear-gradient(130deg,#61a8e4,#087bf5);border:1px solid #98cafa;color:#fff;box-shadow:inset 0 1px 3px #ffffff70,0 4px 15px #2673be1f}
 .lm-onboarding .primary:disabled{opacity:.45}
+@media (min-width:1000px){.lm-compact-list{grid-template-columns:repeat(2,minmax(0,1fr))}}

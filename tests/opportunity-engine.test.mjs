@@ -7,7 +7,7 @@ import {rank,recommend,rightNow,payoff,exclusionReason,minutesFor,situationsFor,
 import {recordFeedback,addReason,planMoment,resolveMoment,movementGaveBack} from '../lib/opportunity-log.ts';
 import {nextProfilingQuestion,answerQuestion,dismissQuestion,profilingQuestions} from '../lib/profiling.ts';
 import {cardCopy,bannedCopy,validatePersonalised,personaliseWithFallback} from '../lib/opportunity-copy.ts';
-import {illustrationFor,illustrationFiles,illustrationLibrary} from '../lib/illustrations.ts';
+import {illustrationFor,illustrationFiles,illustrationLibrary,plannedIllustrations} from '../lib/illustrations.ts';
 import {createPersonalisePost} from '../lib/personalise-http.ts';
 import {validateState} from '../lib/account-validation.ts';
 import {emptyState,restore} from '../lib/journey.ts';
@@ -39,7 +39,8 @@ test('the curated library is substantial, unique and well formed',()=>{
 
 test('every opportunity resolves to an existing illustration and unknown categories fall back',()=>{
  for(const file of illustrationFiles())assert.ok(existsSync(new URL(`../public/illustrations/${file}.webp`,import.meta.url)),file);
- for(const o of opportunities){const art=illustrationFor(o.imageCategory,o.imageVariant);assert.ok(existsSync(new URL('../public'+art.src,import.meta.url)),o.id);assert.ok(art.alt.length>10);}
+ for(const o of opportunities){const art=illustrationFor(o.imageCategory,o.imageVariant);assert.ok(existsSync(new URL('../public'+art.src,import.meta.url))||(art.fallback&&existsSync(new URL('../public'+art.fallback,import.meta.url))),`${o.id} has a painting or a working fallback`);assert.ok(art.alt.length>10);}
+ for(const p of plannedIllustrations())assert.match(p.file,/^[a-z-]+$/);
  const missing=illustrationFor('not-a-category');assert.ok(missing.placeholder&&existsSync(new URL('../public'+missing.src,import.meta.url)));
  assert.ok(Object.values(illustrationLibrary).every(e=>e.variants.length>=1));
 });
@@ -174,14 +175,20 @@ test('AI wording is validated, and any AI failure falls back to deterministic co
  assert.deepEqual(await personaliseWithFallback(r,()=>new Promise(()=>{}),20),base);
  const state=emptyState();state.lifeMap=personaA();state.aiConsent=createAiConsent('full');
  const request=body=>new Request('https://enough.test/api/personalise',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://enough.test','Sec-Fetch-Site':'same-origin'},body:JSON.stringify(body)});
- const post=generate=>createPersonalisePost({authenticated:true,available:true,readAccount:async()=>({state_json:JSON.parse(JSON.stringify(state))}),generate,now:()=>now});
+ const post=(generate,allow=async()=>true)=>createPersonalisePost({authenticated:true,available:true,readAccount:async()=>({state_json:JSON.parse(JSON.stringify(state))}),allow,generate,now:()=>now});
  const failed=await (await post(async()=>{throw Error('OpenAI down')})(request({opportunityId:r.opportunity.id}))).json();
  assert.equal(failed.copy,null,'the app keeps its template copy');
  const ok=await (await post(async()=>good)(request({opportunityId:r.opportunity.id}))).json();
  assert.equal(ok.copy.source,'ai');
  const excluded=await (await post(async()=>good)(request({opportunityId:'kids-playground-join'}))).json();
  assert.equal(excluded.copy,null,'never personalises something the person’s constraints exclude');
- assert.equal((await createPersonalisePost({authenticated:false,available:true,readAccount:async()=>null,generate:async()=>good})(request({opportunityId:r.opportunity.id}))).status,401);
+ assert.equal((await createPersonalisePost({authenticated:false,available:true,readAccount:async()=>null,allow:async()=>true,generate:async()=>good})(request({opportunityId:r.opportunity.id}))).status,401);
+ let calls=0;const counting=async()=>{calls++;return good;};
+ const limited=await (await post(counting,async()=>false)(request({opportunityId:r.opportunity.id}))).json();
+ assert.equal(limited.copy,null);assert.equal(limited.limited,true);
+ const quotaDown=await (await post(counting,async()=>{throw Error('rpc missing')})(request({opportunityId:r.opportunity.id}))).json();
+ assert.equal(quotaDown.copy,null,'fails closed when the allowance cannot be checked');
+ assert.equal(calls,0,'no model request without an allowance slot');
 });
 
 test('progressive profiling asks one useful question, remembers answers and changes rankings',()=>{

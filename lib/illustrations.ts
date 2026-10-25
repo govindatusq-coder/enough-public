@@ -7,6 +7,9 @@
  * To add or replace artwork: drop a webp into `public/illustrations/` and add
  * its name to the category below. Recommendation logic never changes.
  * `dedicated: false` marks categories still borrowing a neighbouring painting.
+ * Those name a `planned` file: drop that exact file into public/illustrations
+ * and it appears automatically; until then the page falls back to the
+ * borrowed painting when the planned file fails to load.
  */
 export const illustrationCategories=['phone-call','children-school','children-sport','waiting','desk-work','outdoor-work','errands','groceries','home','cooking','television','transport','walking','nature','social','pets','neighbourhood','commuting','low-energy','playful'] as const;
 export type IllustrationCategory=typeof illustrationCategories[number];
@@ -30,23 +33,24 @@ const art={
  stillLife:{file:'pins-artwork',alt:'A cup of tea, earphones, keys and a notebook on a table'}
 } satisfies Record<string,Art>;
 
-export const illustrationLibrary:Record<IllustrationCategory,{variants:Art[];dedicated:boolean}>={
+type Entry={variants:Art[];dedicated:boolean;planned?:Art};
+export const illustrationLibrary:Record<IllustrationCategory,Entry>={
  'phone-call':{variants:[art.call,art.welcomeCall],dedicated:true},
  'children-school':{variants:[art.school,art.parentChild],dedicated:true},
- 'children-sport':{variants:[art.parentChild],dedicated:false},
- waiting:{variants:[art.busStop,art.street],dedicated:false},
- 'desk-work':{variants:[art.office],dedicated:false},
- 'outdoor-work':{variants:[art.welcomeCall],dedicated:false},
+ 'children-sport':{variants:[art.parentChild],dedicated:false,planned:{file:'kids-sport',alt:'A parent walking the edge of a suburban sports field while children train'}},
+ waiting:{variants:[art.busStop,art.street],dedicated:false,planned:{file:'waiting',alt:'Someone strolling outside a quiet medical centre while they wait'}},
+ 'desk-work':{variants:[art.office],dedicated:false,planned:{file:'desk-sitting',alt:'Someone standing up from a desk by a window, stretching gently'}},
+ 'outdoor-work':{variants:[art.welcomeCall],dedicated:false,planned:{file:'outdoor-work',alt:'A worker in a hi-vis vest walking across a building site at dawn'}},
  errands:{variants:[art.shopping,art.street],dedicated:true},
- groceries:{variants:[art.shopping],dedicated:true},
+ groceries:{variants:[art.shopping],dedicated:false,planned:{file:'supermarket',alt:'Someone carrying a shopping basket down a quiet supermarket aisle'}},
  home:{variants:[art.kitchenBench,art.stillLife],dedicated:true},
  cooking:{variants:[art.kitchen,art.kitchenBench],dedicated:true},
- television:{variants:[art.stillLife],dedicated:false},
+ television:{variants:[art.stillLife],dedicated:false,planned:{file:'tv-evening',alt:'A living room in the evening glow of the television, a cup of tea on the arm of the sofa'}},
  transport:{variants:[art.busStop],dedicated:true},
  walking:{variants:[art.hero,art.coast],dedicated:true},
  nature:{variants:[art.coast,art.hero],dedicated:true},
  social:{variants:[art.catchup],dedicated:true},
- pets:{variants:[art.busStop],dedicated:false},
+ pets:{variants:[art.busStop],dedicated:false,planned:{file:'pets-dog-walk',alt:'A person walking a dog along a leafy suburban street'}},
  neighbourhood:{variants:[art.street,art.shopping],dedicated:true},
  commuting:{variants:[art.office,art.busStop],dedicated:true},
  'low-energy':{variants:[art.stillLife],dedicated:true},
@@ -55,11 +59,14 @@ export const illustrationLibrary:Record<IllustrationCategory,{variants:Art[];ded
 export const fallbackIllustration:Art=art.coast;
 
 /** Resolves a category and optional variant to a file that exists. Never throws, never returns a broken path. */
-export function illustrationFor(category:string,variant?:string|number):{src:string;alt:string;placeholder:boolean}{
- const entry=(illustrationLibrary as Record<string,{variants:Art[];dedicated:boolean}>)[category];
+export function illustrationFor(category:string,variant?:string|number):{src:string;alt:string;placeholder:boolean;fallback?:string}{
+ const entry=(illustrationLibrary as Record<string,Entry>)[category];
  if(!entry||!entry.variants.length)return {src:`/illustrations/${fallbackIllustration.file}.webp`,alt:fallbackIllustration.alt,placeholder:true};
  const index=typeof variant==='number'?variant:variant?[...variant].reduce((n,c)=>(n*31+c.charCodeAt(0))>>>0,7):0;
  const chosen=entry.variants.find(v=>v.file===variant)||entry.variants[index%entry.variants.length];
+ if(entry.planned)return {src:`/illustrations/${entry.planned.file}.webp`,alt:entry.planned.alt,placeholder:true,fallback:`/illustrations/${chosen.file}.webp`};
  return {src:`/illustrations/${chosen.file}.webp`,alt:chosen.alt,placeholder:!entry.dedicated};
 }
 export const illustrationFiles=()=>[...new Set(Object.values(illustrationLibrary).flatMap(e=>e.variants.map(v=>v.file)).concat(fallbackIllustration.file))];
+/** Dedicated paintings still to be made, by category. */
+export const plannedIllustrations=()=>Object.entries(illustrationLibrary).flatMap(([category,e])=>e.planned?[{category,...e.planned}]:[]);

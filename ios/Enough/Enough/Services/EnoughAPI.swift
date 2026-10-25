@@ -9,6 +9,30 @@ struct AccountResponse: Decodable {
     var state: AppState?
     var revision: Int
     var updatedAt: String?
+    /// Top-level account fields this version of the app doesn't model (for
+    /// example the website's Life Map). Kept and sent back untouched on save.
+    var stateExtras: [String: Any] = [:]
+
+    enum CodingKeys: String, CodingKey { case user, state, revision, updatedAt }
+}
+
+/// Account fields the app understands. Anything else in the saved account is
+/// preserved rather than silently dropped when the app saves.
+enum AccountFields {
+    static var known: Set<String> { Set(Mirror(reflecting: AppState.empty).children.compactMap(\.label)) }
+
+    static func extras(fromAccountJSON data: Data) -> [String: Any] {
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let state = root["state"] as? [String: Any] else { return [:] }
+        let known = AccountFields.known
+        return state.filter { !known.contains($0.key) }
+    }
+
+    /// The state the app encodes, plus preserved fields it doesn't model. The app's own fields always win.
+    static func merged(_ encoded: Data, extras: [String: Any]) throws -> [String: Any] {
+        guard var object = try JSONSerialization.jsonObject(with: encoded) as? [String: Any] else { throw EnoughError.message("Your changes could not be prepared.") }
+        for (key, value) in extras where object[key] == nil { object[key] = value }
+        return object
+    }
 }
 
 struct SaveResponse: Decodable { var revision: Int }
@@ -102,12 +126,14 @@ final class EnoughAPI {
     func account() async throws -> AccountResponse {
         let (data, http) = try await request("/api/account")
         guard http.statusCode == 200 else { throw failure(data, http, fallback: "Your account could not be loaded. Please try again.") }
-        return try JSONDecoder().decode(AccountResponse.self, from: data)
+        var account = try JSONDecoder().decode(AccountResponse.self, from: data)
+        account.stateExtras = AccountFields.extras(fromAccountJSON: data)
+        return account
     }
 
-    func saveAccount(_ state: AppState, revision: Int) async throws -> Int {
-        struct Body: Encodable { var revision: Int; var state: AppState }
-        let body = try JSONEncoder.account.encode(Body(revision: revision, state: state))
+    func saveAccount(_ state: AppState, revision: Int, extras: [String: Any] = [:]) async throws -> Int {
+        let stateObject = try AccountFields.merged(JSONEncoder.account.encode(state), extras: extras)
+        let body = try JSONSerialization.data(withJSONObject: ["revision": revision, "state": stateObject], options: [.sortedKeys, .withoutEscapingSlashes])
         let (data, http) = try await request("/api/account", method: "PUT", body: body, contentType: "application/json")
         guard http.statusCode == 200 else { throw failure(data, http, fallback: "Your changes could not be saved. Please try again.") }
         return try JSONDecoder().decode(SaveResponse.self, from: data).revision

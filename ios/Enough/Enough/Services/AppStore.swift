@@ -32,6 +32,8 @@ final class AppStore: ObservableObject {
     private var pending: AppState?
     private var pumping = false
     private var blocked = false
+    /// Account fields from the website this app doesn't model yet, sent back untouched.
+    private var cloudExtras: [String: Any] = [:]
     private var saveTimer: Task<Void, Never>?
     private var cancellables: Set<AnyCancellable> = []
 
@@ -321,6 +323,7 @@ final class AppStore: ObservableObject {
         cloudStatus = .checking
         do {
             let account = try await api.account()
+            cloudExtras = account.stateExtras
             accountEmail = account.user?.email ?? auth.email
             revision = account.revision
             if let remote = account.state {
@@ -354,7 +357,7 @@ final class AppStore: ObservableObject {
             var snapshot = next.accountSnapshot()
             snapshot.demo = false
             do {
-                revision = try await api.saveAccount(snapshot, revision: revision)
+                revision = try await api.saveAccount(snapshot, revision: revision, extras: cloudExtras)
                 cloudError = ""
                 if pending == nil { synced = true; cloudStatus = .saved }
             } catch {
@@ -381,6 +384,7 @@ final class AppStore: ObservableObject {
             }
             var snapshot = importLocal ? state.accountSnapshot() : AppState.empty
             snapshot.demo = false
+            cloudExtras = [:]
             revision = try await api.saveAccount(snapshot, revision: 0)
             blocked = false; pending = nil
             cloud = true; accountHasCloudProfile = true
@@ -431,6 +435,7 @@ final class AppStore: ObservableObject {
 
     /// Back to the device-only state, showing what this device held before sign-in.
     private func detachAccount() {
+        cloudExtras = [:]
         saveTimer?.cancel()
         cloud = false; accountHasCloudProfile = false; accountEmail = nil
         cloudStatus = .local; cloudError = ""; synced = false
