@@ -39,3 +39,7 @@ bundle identifier before uploading, or Xcode will offer to create it.
 ## App icon
 
 Use `public/bear/art/icon-master-square.png` (1024×1024, full square, no rounded corners) for the Xcode AppIcon. iOS rounds the corners itself. `public/bear/art/icon-master.png` has rounded corners baked in, so it would show black slivers.
+
+## Share to Load Bear
+
+The iPhone Share Extension lives in `ShareExtension/`. See `docs/load-bear/08-share-extension.md` for how it works, the Xcode set-up and the test checklist. It is not built or tested yet.

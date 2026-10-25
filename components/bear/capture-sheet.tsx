@@ -41,11 +41,16 @@ const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;aut
  async function pasteFromClipboard(){setError(null);try{const t=await navigator.clipboard.readText();if(!t.trim()){setError('Your clipboard is empty. Copy a message first, then tap Paste.');return;}setText(x=>x.trim()?x.trimEnd()+'\n'+t:t);document.getElementById('quick-text')?.focus();}catch{setError("Bear couldn't read your clipboard. Press and hold in the box and choose Paste instead.");}}
  async function submitText(method:'text'|'manual'|'voice',body:string){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);setPreview({kind:'text',text:body});
   try{finish(await apiSend<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string}}>('/api/bear/captures',{method,text:body}));}catch(e){setMode(method);setError((e as ApiError).message);setPreview(null);}}
- async function submitFile(file:File,method:string){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);
+ async function submitFile(file:File,method:string,extraText?:string|null){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);
   const url=file.type.startsWith('image/')?URL.createObjectURL(file):null;setPreview(url?{kind:'image',url}:null);
   const upload=await shrinkImage(file);
-  const form=new FormData();form.append('file',upload);form.append('method',method);
+  const form=new FormData();form.append('file',upload);form.append('method',method);if(extraText)form.append('text',extraText);
   try{finish(await apiForm<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string}}>('/api/bear/captures',form));}catch(e){setMode('menu');setError((e as ApiError).message);setPreview(null);}}
+ // Something was shared to Load Bear from another app on the iPhone: give it straight to Bear, no extra tap.
+ useEffect(()=>{
+  const take=()=>{const inbox=window.__bearInbox;if(!inbox)return;window.__bearInbox=undefined;setTimeout(()=>{if(inbox.files[0])void submitFile(inbox.files[0],'upload',inbox.text);else if(inbox.text)void submitText('text',inbox.text);},0);};
+  take();window.addEventListener('bear-share',take);return()=>window.removeEventListener('bear-share',take);
+ });
  const pick=(o:typeof options[number])=>{if('unavailable' in o&&o.unavailable)return;if(o.key==='voice'){setMode('voice');return;}setPending({method:o.key,accept:o.accept,capture:'capture' in o?o.capture:undefined});setTimeout(()=>fileRef.current?.click(),0);};
  const manualText=()=>[manual.what,manual.who?`For ${manual.who}`:'',manual.when?`Due date: ${manual.when}`:'',manual.amount?`Total amount due: ${manual.amount.startsWith('$')?manual.amount:'$'+manual.amount}`:''].filter(Boolean).join('\n');
  function startListening(){const Ctor=recognitionCtor();if(!Ctor)return;const r=new Ctor();r.lang='en-AU';r.continuous=true;r.interimResults=true;

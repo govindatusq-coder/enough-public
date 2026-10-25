@@ -393,3 +393,13 @@ test('the web app manifest accepts shares from other apps and lands inside its o
  const m=JSON.parse(readFileSync('public/bear/manifest.webmanifest','utf8'));
  assert.equal(m.share_target.action,'/bear/share');assert.ok(m.share_target.action.startsWith(m.scope));assert.equal(m.share_target.method,'GET');assert.deepEqual(Object.keys(m.share_target.params).sort(),['text','title','url']);
 });
+
+import {payloadToInbox} from '../lib/bear/client-share.ts';
+test('what the iPhone app hands over becomes text and real files, and anything unsafe or unreadable is dropped',()=>{
+ const png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+ const r=payloadToInbox({text:'  Return the form  ',files:[{name:'photo 1.jpg',mime:'image/jpeg',b64:png},{name:'bad.exe',mime:'application/x-msdownload',b64:png},{name:'empty.pdf',mime:'application/pdf',b64:''},{name:'nonsense.png',mime:'image/png',b64:'***'}]});
+ assert.equal(r.text,'Return the form');assert.equal(r.files.length,1);assert.equal(r.files[0].name,'photo 1.jpg');assert.equal(r.files[0].type,'image/jpeg');assert.ok(r.files[0].size>20);
+ assert.deepEqual(payloadToInbox(null),{text:null,files:[]});assert.equal(payloadToInbox({text:'x'.repeat(30000)}).text.length,20000);
+ const many=payloadToInbox({files:Array.from({length:9},(_,i)=>({name:`p${i}.png`,mime:'image/png',b64:png}))});assert.equal(many.files.length,5,'at most five files');
+ const cleaned=payloadToInbox({files:[{name:'../../etc/passwd.png',mime:'image/png',b64:png}]}).files[0].name;assert.ok(!cleaned.includes('/'),'no folder tricks in names: '+cleaned);
+});
