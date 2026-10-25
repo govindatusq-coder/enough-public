@@ -360,3 +360,24 @@ test('an overdue bill is flagged with its amount',async()=>{
  await confirmBill(store,{extractionId:extraction.id,corrections:{biller:'AGL',amountDueCents:18460,dueDate:'2026-11-05',category:'electricity',isRecurring:false},confirmedFields:['biller','amountDueCents','dueDate','category','isRecurring'],allowDuplicate:false});
  const home=await homeView(store,NOW);assert.equal(home.overdue.length,1);assert.equal(home.overdue[0].title,'Electricity bill');assert.equal(home.overdue[0].amount,'$184.60');assert.equal(home.overdue[0].days,5);assert.ok(home.overdue[0].billId);
 });
+
+test('My Wins: each win carries its area for colour coding, and every number has a breakdown behind it; nothing is invented',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {auto}=await listTask(store);const {done}=await paidElectricityBill(store);
+ await completeTask(store,{taskId:auto.task.id,method:null,expectNext:false},NOW);
+ await setWinSaving(store,done.win.id,{cents:1500,reason:'early_discount_used'},NOW);
+ const view=await winsView(store);
+ assert.equal(view.cards.find(c=>c.title.includes('Bunnings')).areaKey,'home');assert.equal(view.cards.find(c=>c.title.includes('Bunnings')).areaLabel,'Home');
+ assert.equal(view.cards.find(c=>/bill paid/.test(c.title)).areaKey,'money');
+ assert.equal(view.breakdown.money.length,1);assert.deepEqual([view.breakdown.money[0].reason,view.breakdown.money[0].cents,view.breakdown.money[0].mine],['Early payment discount',1500,true]);
+ assert.equal(view.totals.moneyCents,view.breakdown.money.reduce((s,m)=>s+m.cents,0),'the number equals the sum of what is listed');
+ assert.deepEqual(view.breakdown.time,[],'no time is claimed that was not measured');
+ assert.equal(view.totals.handled,view.cards.filter(c=>!c.isDemo).length);
+ assert.ok(!view.reinforcement||!/got the rest/.test(view.reinforcement));
+});
+test('things for me counts real wins marked for the person, not guesses',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:"Book my GP appointment for 18 November 2026",referenceYear:2026});
+ const {task}=await maybeAutoSetup(store,extraction,NOW);await completeTask(store,{taskId:task.id,method:null,expectNext:false},NOW);
+ const view=await winsView(store);assert.equal(view.totals.forMe,view.breakdown.forMe.length);
+});

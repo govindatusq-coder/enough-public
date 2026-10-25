@@ -11,7 +11,7 @@ export const brand={
  winsHeading:'My Wins',winsSub:"The work you do shouldn't be invisible.",winsEmpty:'Your wins will show up here.',
  ideasHeading:'Bear noticed…',ideasEmpty:"Nothing to suggest right now. When Bear notices a pattern worth acting on, it'll show up here.",
  chaosReply:"Got you. I'll only bring you things that genuinely can't wait.",
- reinforcement:['One less thing to carry.',"Bear's got the rest.","That's sorted."],
+ reinforcement:['One less thing to carry.',"That's sorted."],
 };
 export const banned=/overdue!|you missed|you still haven|tasks overdue/i;
 export function greeting(hour:number,name:string){const part=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';return name?`${part}, ${name}.`:`${part}.`;}
