@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
+import {useEffect,useState} from 'react';
 const icon=(d:string)=><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d}/></svg>;
 const tabs=[
  {href:'/bear/home',label:'My Bear',icon:icon('M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z')},
@@ -12,6 +13,9 @@ const tabs2=[
 ];
 export function BottomNav(){
  const path=usePathname();
- const item=(t:{href:string;label:string;icon:React.ReactNode})=><Link key={t.href} href={t.href} aria-current={path.startsWith(t.href)?'page':undefined}>{t.icon}<span>{t.label}</span></Link>;
+ // Bear Ideas shows a small number when Bear has noticed something (set when My Bear loads).
+ const [ideas,setIdeas]=useState(0);
+ useEffect(()=>{const read=()=>{try{setIdeas(Number(sessionStorage.getItem('bear-ideas'))||0);}catch{setIdeas(0);}};read();window.addEventListener('bear-ideas',read);return()=>window.removeEventListener('bear-ideas',read);},[]);
+ const item=(t:{href:string;label:string;icon:React.ReactNode})=><Link key={t.href} href={t.href} aria-current={path.startsWith(t.href)?'page':undefined}>{t.icon}<span>{t.label}</span>{t.href==='/bear/ideas'&&ideas>0&&<i className="nav-badge" aria-label={`${ideas} new`}>{ideas}</i>}</Link>;
  return <nav className="bear-nav" aria-label="Main"><div className="bar glass-strong">{tabs.map(item)}<Link href="/bear/capture" className="plus-wrap" aria-label="Give it to Bear"><span className="plus" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg></span><span>+ Bear</span></Link>{tabs2.map(item)}</div></nav>;
 }

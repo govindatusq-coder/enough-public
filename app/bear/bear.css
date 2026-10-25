@@ -326,3 +326,36 @@
 .bear .area-title{font-family:var(--font-display);font-weight:400;font-size:31px;line-height:1.05;letter-spacing:-.005em;color:var(--navy);overflow-wrap:anywhere;}
 .bear .area-count{margin:8px 0 0;font-size:15px;line-height:1.3;font-weight:600;color:var(--ink-2);}
 .bear .area-count span{display:block;}
+
+/* Area tiles: unread-style numbers for things that need you */
+.bear .area-img{position:relative;}
+.bear .badge{position:absolute;top:8px;right:8px;min-width:26px;height:26px;padding:0 7px;display:grid;place-items:center;border-radius:999px;font-weight:800;font-size:14px;line-height:1;box-shadow:0 0 0 3px #fff,0 6px 14px -6px rgba(16,42,67,.5);}
+.bear .badge.late{background:var(--coral);color:#fff;}
+.bear .badge.soon{background:var(--mustard);color:var(--navy);}
+.bear .badge-dot{position:absolute;top:12px;right:12px;width:12px;height:12px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 3px #fff;}
+.bear .areas-need{color:var(--coral);}
+.bear .pill.need{background:#FFE1DE;color:#B42318;}
+.bear .pill.soft{background:var(--teal-tint);color:#0d7a71;}
+
+/* My Bear fits one screen: greeting banner, six area tiles, Bear's handling. */
+.bear .home-screen{display:flex;flex-direction:column;gap:12px;}
+.bear .home-screen>.section{margin:0;}
+.bear .home-screen .hero-banner{margin:0 -4px;min-height:0;flex:none;}
+.bear .hero-alert{display:inline-flex;align-items:center;gap:6px;margin:2px 0 0;padding:5px 10px;border-radius:999px;background:var(--coral);color:#fff;font-size:12.5px;font-weight:700;line-height:1.2;align-self:flex-start;}
+.bear .how-row .glass{padding:8px 12px !important;}
+.bear .home-tiles{flex:1 1 auto;min-height:196px;display:flex;flex-direction:column;gap:8px;}
+.bear .area-grid.six{flex:1;min-height:0;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:10px;}
+.bear .area-grid.six .area-tile{min-height:0;padding:0 0 8px;}
+.bear .area-grid.six .area-img{flex:1 1 auto;min-height:56px;height:auto;}
+.bear .area-grid.six .area-label{padding:6px 10px 0;font-size:16px;line-height:1.1;}
+.bear .area-grid.six .area-sub{padding:0 10px;font-size:12px;line-height:1.2;color:var(--ink-3);font-weight:600;}
+.bear .area-grid.six .badge{top:6px;right:6px;min-width:24px;height:24px;font-size:13px;}
+.bear .wish-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-radius:var(--r-md);background:var(--glass);border:1px solid var(--glass-border);color:inherit;text-decoration:none;font-weight:700;}
+.bear .home-screen .stats-banner{margin:0 -4px;min-height:104px;flex:none;}
+.bear .nav-badge{position:absolute;top:2px;right:calc(50% - 22px);min-width:18px;height:18px;padding:0 5px;display:grid;place-items:center;border-radius:999px;background:var(--coral);color:#fff;font-style:normal;font-size:11px;font-weight:800;line-height:1;box-shadow:0 0 0 2px #fff;}
+.bear .bear-nav a{position:relative;}
+.bear-screen.home-screen,.bear .bear-screen.home-screen{padding-bottom:calc(var(--safe-bottom) + 128px);}
+.bear .home-screen .stats-banner{min-height:92px;padding-top:10px;padding-bottom:10px;}
+.bear .area-grid.six .area-img{min-height:40px;}
+.bear .home-tiles{min-height:176px;}
+.bear .home-screen{gap:10px;}

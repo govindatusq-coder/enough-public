@@ -454,3 +454,28 @@ test('How is today: it counts only for today, and is a plain setting that clears
  assert.equal(activeDayMode(p,p.dayModeSetAt.slice(0,10)),'full');assert.equal(activeDayMode(p,'2099-01-01'),null,'not carried over to another day');
  await setDayMode(store,null);assert.equal(activeDayMode(await ep(store),p.dayModeSetAt.slice(0,10)),null);
 });
+
+test('area tiles carry a count of what needs you, split into overdue, and gentle nudges never make a number',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Return the library books by 1/11/2026',referenceYear:2026});
+ const {task}=await maybeAutoSetup(store,extraction,NOW);
+ let home=await homeView(store,NOW);let tile=home.areas.find(a=>a.key==='home');
+ assert.equal(tile.needs,1);assert.equal(tile.overdue,1);assert.equal(tile.soft,false);
+ assert.ok(home.areas.filter(a=>a.key!=='home').every(a=>a.needs===0),'other areas stay quiet');
+ // a task due soon (not overdue) counts as needing you, but not as overdue
+ const soon=await createCapture(store,null,{method:'text',text:'Pay the school photo order by 11/11/2026',referenceYear:2026});await maybeAutoSetup(store,soon.extraction,NOW);
+ home=await homeView(store,NOW);tile=home.areas.reduce((m,a)=>a.needs>m.needs?a:m);assert.ok(tile.needs>=1);
+ // marking it no rush clears it
+ await setRead(store,null,task.id,{timing:'flexible'},NOW);home=await homeView(store,NOW);assert.equal(home.areas.find(a=>a.key==='home').overdue,0);
+ // area rows say which ones need you
+ const view=await areaView(store,'home',NOW);assert.ok(view.current.every(i=>typeof i.needs==='boolean'));
+});
+test('a gentle nudge marks its area with a quiet dot, never a number, and its row says so',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Look into new curtains for the lounge room',referenceYear:2026});
+ const {task}=await maybeAutoSetup(store,extraction,NOW);await setNudge(store,task.id,{choice:'every',every:'week'},NOW);
+ const at=new Date('2026-11-17T10:45:00+11:00');
+ const home=await homeView(store,at);const tile=home.areas.find(a=>a.key==='me');
+ assert.equal(tile.needs,0,'no number for a gentle nudge');assert.equal(tile.soft,true,'a quiet dot instead');
+ const row=(await areaView(store,'me',at)).current[0];assert.equal(row.soft,true);assert.equal(row.needs,false);assert.ok(row.reminderId);
+});

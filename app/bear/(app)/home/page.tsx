@@ -8,72 +8,45 @@ import {pickGreeting,type Greeting} from '@/lib/bear/domain/greetings';
 import {formatAU} from '@/lib/bear/domain/dates';
 import {overdueLabel} from '@/lib/bear/domain/overdue';
 import type {DayMode} from '@/lib/bear/domain/types';
-import type {HomeView,NeedsYouItem} from '@/lib/bear/services/home';
+import type {HomeView} from '@/lib/bear/services/home';
 import {Art} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
-import {Button,ErrorCard,OverdueAlert,Skeleton,Toast,useOnline} from '@/components/bear/ui';
+import {Button,ErrorCard,Skeleton,Toast,useOnline} from '@/components/bear/ui';
 import {showLocalReminder} from '@/components/bear/runtime';
 
 const modes:{key:DayMode;label:string}[]=[{key:'good',label:'Good'},{key:'full',label:'Full'},{key:'wiped',label:'Wiped'},{key:'chaos',label:'Chaos'}];
 export default function Home(){
  const router=useRouter();const online=useOnline();
- const [home,setHome]=useState<HomeView|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [busy,setBusy]=useState<string|null>(null);const [aiAvailable,setAiAvailable]=useState(true);
+ const [home,setHome]=useState<HomeView|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [busy,setBusy]=useState<string|null>(null);
  const delivered=useRef(new Set<string>());const [greet,setGreet]=useState<Greeting|null>(null);const greetKey=useRef('');
- const load=useCallback(()=>apiGet<{home?:HomeView;onboarding?:boolean;aiAvailable?:boolean}>('/api/bear/home').then(res=>{if(res.onboarding){router.replace('/bear/onboarding');return;}setHome(res.home!);{const hour=new Date().getHours();const key=`${hour<12?'m':hour<17?'a':'e'}:${res.home!.dayMode||''}`;if(key!==greetKey.current){greetKey.current=key;let last:string|null=null;try{last=localStorage.getItem('bear-greeting');}catch{/* no storage */}const g=pickGreeting({hour,mode:res.home!.dayMode,last});try{localStorage.setItem('bear-greeting',g.id);}catch{/* no storage */}setGreet(g);}}setAiAvailable(res.aiAvailable!==false);setError(null);
+ const load=useCallback(()=>apiGet<{home?:HomeView;onboarding?:boolean;aiAvailable?:boolean}>('/api/bear/home').then(res=>{if(res.onboarding){router.replace('/bear/onboarding');return;}setHome(res.home!);{const hour=new Date().getHours();const key=`${hour<12?'m':hour<17?'a':'e'}:${res.home!.dayMode||''}`;if(key!==greetKey.current){greetKey.current=key;let last:string|null=null;try{last=localStorage.getItem('bear-greeting');}catch{/* no storage */}const g=pickGreeting({hour,mode:res.home!.dayMode,last});try{localStorage.setItem('bear-greeting',g.id);}catch{/* no storage */}setGreet(g);}}try{sessionStorage.setItem('bear-ideas',String(res.home!.ideasCount));window.dispatchEvent(new Event('bear-ideas'));}catch{/* no storage */}setError(null);
    for(const item of res.home!.needsYou){if(item.reminderId&&!delivered.current.has(item.reminderId)){delivered.current.add(item.reminderId);apiSend('/api/bear/reminders/delivered',{reminderId:item.reminderId,via:'in_app'}).catch(()=>{});showLocalReminder(item.reminderId,item.message||`${item.title} needs you.`,`/bear/bills/${item.billId}?reminder=${item.reminderId}`).then(ok=>{if(ok)apiSend('/api/bear/reminders/delivered',{reminderId:item.reminderId,via:'local'}).catch(()=>{});});}}
   }).catch(e=>{const err=e as {status?:number;message:string};if(err.status===401)router.replace('/bear/signin');else setError(err.message);}),[router]);
  useEffect(()=>{load();const onVis=()=>{if(document.visibilityState==='visible')load();};document.addEventListener('visibilitychange',onVis);return()=>document.removeEventListener('visibilitychange',onVis);},[load]);
  async function setMode(mode:DayMode){setBusy('mode');try{const res=await apiSend<{reply:string|null}>('/api/bear/day',{mode:home?.dayMode===mode?null:mode});setToast(res.reply||'Noted.');await load();}catch(e){setError((e as Error).message);}finally{setBusy(null);}}
- const linkFor=(item:NeedsYouItem)=>item.billId?`/bear/bills/${item.billId}`:`/bear/tasks/${item.taskId}`;
- async function act(item:NeedsYouItem,key:string){if(!item.reminderId){router.push(linkFor(item));return;}
-  if(key==='help'||key==='break_down'){router.push(`${linkFor(item)}?reminder=${item.reminderId}`);return;}
-  if(key==='stop_nudges'){setBusy(item.reminderId);try{await apiSend(`/api/bear/tasks/${item.taskId}/nudge`,{choice:'none'});setToast("Done. Bear won't remind you about that one.");await load();}catch(e){setError((e as Error).message);}finally{setBusy(null);}return;}
-  setBusy(item.reminderId);
-  try{if(key==='tonight')await apiSend('/api/bear/reminders/interact',{reminderId:item.reminderId,action:'snoozed',detail:'tonight'});
-   else if(key==='another_time')await apiSend('/api/bear/reminders/interact',{reminderId:item.reminderId,action:'snoozed',detail:'tomorrow'});
-   else if(key==='drop'){if(!confirm('Tell Bear this is not important anymore?'))return;await apiSend('/api/bear/reminders/interact',{reminderId:item.reminderId,action:'not_important'});}
-   setToast(key==='drop'?'Let go. One less thing.':"No worries. Bear will find another time.");await load();}
-  catch(e){setError((e as Error).message);}finally{setBusy(null);}}
  async function demo(){setBusy('demo');try{const res=await apiSend<{capture:{id:string}}>('/api/bear/demo',{});router.push(`/bear/verify/${res.capture.id}`);}catch(e){setError((e as Error).message);setBusy(null);}}
  if(error&&!home)return <main id="main" className="bear-screen"><ErrorCard message={error} retry={load}/></main>;
  if(!home)return <main id="main" className="bear-screen"><div className="skeleton" style={{minHeight:40,maxWidth:220,marginBottom:16}}/><Skeleton/></main>;
- const needs=home.needsYou;
  return (
-  <main id="main" className="bear-screen">
+  <main id="main" className="bear-screen home-screen">
    <header className="hero-banner">
     <div className="hero-text">
      <h1 className="hero-greeting">{home.greeting}</h1>
      <p className="hero-line hand">{greet?greet.line:brand.gotYou}</p>
+     {home.overdue.length>0&&<p className="hero-alert" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/></svg><span>{home.overdue.length} overdue. See the red numbers.</span></p>}
     </div>
     <div className="hero-art" aria-hidden="true"><Art file={greet?greet.art:'hero-bear'} className="hero-img" style={{objectPosition:greet?greet.focus:'60% 22%',...(greet?.zoom?{transform:`scale(${greet.zoom})`,transformOrigin:'25% 100%'}:{})}}/></div>
    </header>
    {!online&&<p className="note" style={{marginTop:14}} role="status">You&rsquo;re offline. Showing what Bear last knew.</p>}
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
-   {home.overdue.length>0&&<section className="section" aria-labelledby="overdue"><OverdueAlert title={`${home.overdue.length} ${home.overdue.length===1?'thing is':'things are'} overdue`}>
-    <p id="overdue" className="small muted">It isn&rsquo;t too late. Open one and Bear will help you sort it.</p>
-    <div className="alert-rows">{home.overdue.slice(0,3).map(o=><Link key={o.taskId} href={o.billId?`/bear/bills/${o.billId}`:`/bear/tasks/${o.taskId}`} className="alert-row"><span><b>{o.title}</b>{o.amount?<> · {o.amount}</>:null}<br/><span className="overdue-text small">{o.label}</span></span><span className="small" style={{fontWeight:700,color:'var(--coral)'}}>Open</span></Link>)}{home.overdue.length>3&&<p className="small muted" style={{paddingTop:6}}>And {home.overdue.length-3} more in your areas.</p>}</div>
-   </OverdueAlert></section>}
    {/* Once today's level is rated the card goes away; the reply shows as a note, and it can be changed in Settings. */}
-   {!home.dayMode&&<section className="section" aria-labelledby="how">
+   {!home.dayMode&&<section className="section how-row" aria-labelledby="how">
     <div className="glass" style={{padding:'12px 16px',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}><span id="how" className="small" style={{fontWeight:600}}>How&rsquo;s today?</span><div className="chips" style={{gap:6}}>{modes.map(m=><button key={m.key} type="button" className="chip" style={{minHeight:38,padding:'0 12px',fontSize:14}} aria-pressed={home.dayMode===m.key} disabled={busy==='mode'} onClick={()=>setMode(m.key)}>{m.label}</button>)}</div></div>
    </section>}
-   <section className="section" aria-labelledby="needs">
-    <p id="needs" className="eyebrow coral">Needs you{needs.length?` · ${needs.length} ${needs.length===1?'thing':'things'}`:''}</p>
-    {needs.length===0&&<div className="card" style={{display:'flex',gap:14,alignItems:'center',paddingLeft:10}}><Art file="home-calm" width={110}/><div><p style={{fontWeight:600}}>{brand.emptyNeeds}</p><p className="muted small">{brand.emptyNeedsSub}</p></div></div>}
-    {needs.map(item=><div key={item.taskId} className="card" style={{borderColor:item.essential?'rgba(255,81,71,.35)':undefined}}>
-     <div style={{display:'flex',justifyContent:'space-between',gap:10}}><div><p style={{fontWeight:700,fontSize:18}}>{item.title}</p><p className="muted small">{item.amount}{item.amount?' · ':''}{item.overdueDays>0?<b className="overdue-text">{overdueLabel(item.overdueDays)}</b>:item.dueLabel} · ~{item.minutes} min</p></div>{item.isDemo&&<span className="demo-tag">Example</span>}</div>
-     {item.message&&<p className="hand" style={{fontSize:20,marginTop:10}}>{item.message}</p>}
-     <div className="btn-row">
-      {item.actions.length?item.actions.map(a=><Button key={a.key} className="sm" variant={a.key==='help'?'coral':'ghost'} disabled={busy===item.reminderId} onClick={()=>act(item,a.key)}>{a.label}</Button>):<Button className="sm" variant="coral" href={linkFor(item)}>Sort it with Bear</Button>}
-     </div>
-    </div>)}
+   <section className="home-tiles" aria-label="Your areas">
+    <div className="area-grid six">{home.areas.map(a=><Link key={a.key} href={`/bear/areas/${a.key}`} className="area-tile" aria-label={`${a.label}: ${a.open} current${a.needs?`, ${a.needs} need you${a.overdue?`, ${a.overdue} overdue`:''}`:''}`}><span className="area-img"><Art file={`area-${a.key}`} className="area-photo"/>{a.needs>0&&<span className={`badge ${a.overdue>0?'late':'soon'}`} aria-hidden="true">{a.needs}</span>}{a.needs===0&&a.soft&&<span className="badge-dot" aria-hidden="true"/>}</span><span className="area-label">{a.label}</span><span className="area-sub">{a.open===0?'Nothing current':`${a.open} current`}</span></Link>)}</div>
+    {home.wishlist.count>0&&<Link href="/bear/wishlist" className="wish-row" aria-label={`Wishlist: ${home.wishlist.count} waiting`}><span>Wishlist</span><span className="small muted">{home.wishlist.count} waiting{home.wishlist.next?` · back ${formatAU(home.wishlist.next,'short')}`:''}</span></Link>}
    </section>
-   {(home.areas.length>0||home.wishlist.count>0)&&<section className="section" aria-labelledby="areas">
-    <p id="areas" className="eyebrow">Your areas</p>
-    <div className="area-grid">{home.areas.map(a=><Link key={a.key} href={`/bear/areas/${a.key}`} className="area-tile" aria-label={`${a.label}: ${a.open} current`}><span className="area-img"><Art file={`area-${a.key}`} className="area-photo"/></span><span className="area-label">{a.label}</span><span className="small muted">{a.open===0?'Nothing current':`${a.open} current`}</span></Link>)}{home.wishlist.count>0&&<Link href="/bear/wishlist" className="area-tile" aria-label={`Wishlist: ${home.wishlist.count} waiting`}><span className="area-img"><Art file="ledger-wealth" className="area-photo"/></span><span className="area-label">Wishlist</span><span className="small muted">{home.wishlist.count} waiting{home.wishlist.next?` · back ${formatAU(home.wishlist.next,'short')}`:''}</span></Link>}</div>
-   </section>}
-   {home.ideasCount>0&&<section className="section"><Link href="/bear/ideas" className="glass" style={{display:'flex',padding:'14px 16px',alignItems:'center',gap:12}}><span className="icon-dot mustard" aria-hidden="true">✦</span><span className="grow"><strong>Bear noticed {home.ideasCount===1?'something':`${home.ideasCount} things`}.</strong><br/><span className="faint">Have a look when you have a minute.</span></span></Link></section>}
-   {!aiAvailable&&<p className="faint" style={{marginTop:20}}>Photo and PDF reading is off until the AI service is connected. Pasted, typed and spoken things work.</p>}
    {home.demoAvailable&&<section className="section"><div className="glass" style={{padding:18}}><p className="eyebrow teal" style={{marginBottom:6}}>New here?</p><p className="small">Bills, school notes, to-dos, lists. Want to see how it works first? Bear can walk you through an <strong>example</strong> electricity bill.</p><div className="btn-row"><Button className="sm" variant="ghost" disabled={busy==='demo'} onClick={demo}>Try the example bill</Button><Button className="sm" variant="coral" href="/bear/capture">Give Bear something real</Button></div></div></section>}
    <section className="stats-banner" aria-labelledby="handling">
     <div className="stats-art" aria-hidden="true"><Art file="empty-rhythm" className="hero-img" style={{objectPosition:'50% 30%'}}/></div>
