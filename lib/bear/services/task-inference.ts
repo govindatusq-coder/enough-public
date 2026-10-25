@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {addDays,formatAU,isValidISODate,parseISODate} from '../domain/dates.ts';
 import {areaKeys,billCategories,paymentMethods,recurrences,traced,type Area,type Bill,type BillFieldKey,type BillFields,type Project,type Task,type TaskDependency,type Traced,type UserCorrection} from '../domain/types.ts';
 import {areaLabels} from '../domain/labels.ts';
-import {stamp,type BearStore} from '../store/store.ts';
+import {newId,stamp,type BearStore} from '../store/store.ts';
 import {recordBehaviour} from './behaviour.ts';
 import {keyFields} from './bill-extraction.ts';
 import {ensureProfile} from './profile.ts';
@@ -24,7 +24,7 @@ const corrections=z.object({
 }).strict();
 export const confirmBillSchema=z.object({extractionId:z.string().uuid(),corrections:corrections.default({}),confirmedFields:z.array(z.string().max(40)).max(30).default([]),allowDuplicate:z.boolean().default(false),forPerson:z.string().trim().max(40).nullable().default(null)}).strict();
 export type ConfirmBillInput=z.infer<typeof confirmBillSchema>;
-export const confirmTaskSchema=z.object({extractionId:z.string().uuid(),corrections:z.object({title:z.string().trim().min(1).max(120).optional(),area:z.enum(areaKeys).optional(),when:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),timeOfDay:z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),person:z.string().trim().max(80).nullable().optional(),location:z.string().trim().max(160).nullable().optional(),isRecurring:z.boolean().optional(),notes:z.string().trim().max(1000).nullable().optional()}).strict().default({}),confirmedFields:z.array(z.string().max(40)).max(20).default([]),includeSteps:z.boolean().default(true)}).strict();
+export const confirmTaskSchema=z.object({extractionId:z.string().uuid(),corrections:z.object({title:z.string().trim().min(1).max(120).optional(),area:z.enum(areaKeys).optional(),when:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),timeOfDay:z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),person:z.string().trim().max(80).nullable().optional(),location:z.string().trim().max(160).nullable().optional(),isRecurring:z.boolean().optional(),notes:z.string().trim().max(1000).nullable().optional()}).strict().default({}),confirmedFields:z.array(z.string().max(40)).max(20).default([]),includeSteps:z.boolean().default(true),setupBy:z.enum(['bear','user']).default('user')}).strict();
 export type ConfirmTaskInput=z.infer<typeof confirmTaskSchema>;
 const kindToTask:Record<string,Task['kind']>={appointment:'appointment',school:'school',form:'form',errand:'errand',shopping:'shopping',message:'message',note:'note',event:'event',other:'custom',bill:'custom'};
 export class ConfirmError extends Error{readonly status:number;readonly code:string;constructor(message:string,status=400,code='invalid'){super(message);this.name='ConfirmError';this.status=status;this.code=code;}}
@@ -91,7 +91,7 @@ export async function confirmTask(store:BearStore,input:ConfirmTaskInput){
  const capture=await store.get('captures',extraction.captureId);
  const project=await store.insert('projects',stamp<Project>(store.userId,{areaKey,title:g.title.value,status:'active',dueAt:g.when.value,resourceDocumentIds:capture?.documentId?[capture.documentId]:[],billId:null}));
  const minutes=g.estimatedMinutes||(g.kind==='form'?10:g.kind==='shopping'?20:g.kind==='appointment'||g.kind==='event'?30:5);
- const task=await store.insert('tasks',stamp<Task>(store.userId,{projectId:project.id,kind:kindToTask[g.kind]||'custom',title:g.title.value,status:'open',dueAt:g.when.value,dueTime:g.timeOfDay.value,location:g.location.value,notes:input.corrections.notes??(g.summary||null),estimatedMinutes:minutes,cognitiveEffort:g.steps.length>2?'medium':'low',forPerson:g.person.value,isDemo:!!capture?.isDemo}));
+ const task=await store.insert('tasks',stamp<Task>(store.userId,{projectId:project.id,kind:kindToTask[g.kind]||'custom',title:g.title.value,status:'open',dueAt:g.when.value,dueTime:g.timeOfDay.value,location:g.location.value,notes:input.corrections.notes??(g.items?.length?null:(g.summary||null)),estimatedMinutes:minutes,cognitiveEffort:g.steps.length>2?'medium':'low',forPerson:g.person.value,isDemo:!!capture?.isDemo,setupBy:input.setupBy,...(g.items?.length?{items:g.items.map(i=>({id:newId(),name:i.name,quantity:i.quantity,estimatedCents:i.estimatedCents,done:false,doneAt:null})),estimatedCents:g.estimatedCostCents??null}:{})}));
  const steps:Task[]=[];
  if(input.includeSteps&&profile.pins.preferences.planningDetail!=='just_the_task')for(const s of g.steps.slice(0,5)){const t=await store.insert('tasks',stamp<Task>(store.userId,{projectId:project.id,kind:'custom',title:s,status:'open',dueAt:g.when.value,estimatedMinutes:5,cognitiveEffort:'low',forPerson:g.person.value,isDemo:!!capture?.isDemo}));await store.insert('task_dependencies',stamp<TaskDependency>(store.userId,{taskId:task.id,dependsOnTaskId:t.id}));steps.push(t);}
  await store.update('extractions',extraction.id,{status:'verified',general:g});

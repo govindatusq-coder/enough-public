@@ -21,7 +21,7 @@ export const profilePatchSchema=z.object({
  onboardingComplete:z.boolean().optional(),onboardingStep:z.number().int().min(0).max(20).optional(),
  areas:z.array(z.enum(areaKeys)).max(6).optional(),
  people:z.array(z.object({role:z.enum(personRoles),name:z.string().trim().max(40)}).strict()).max(20).optional(),
- pins:z.object({preferences:z.object({reminderLeadTime:z.enum(leadTimeOptions),nudgeTolerance:z.enum(nudgeToleranceOptions),planningDetail:z.enum(planningDetailOptions),proactiveSuggestions:z.enum(proactiveOptions),tone:z.enum(toneOptions)}).strict(),interests:z.array(z.string().max(60)).max(20),needs:z.array(z.string().max(60)).max(20),strengths:z.array(z.string().max(60)).max(20)}).strict().optional(),
+ pins:z.object({preferences:z.object({reminderLeadTime:z.enum(leadTimeOptions),nudgeTolerance:z.enum(nudgeToleranceOptions),planningDetail:z.enum(planningDetailOptions),autoSetup:z.boolean().optional(),proactiveSuggestions:z.enum(proactiveOptions),tone:z.enum(toneOptions)}).strict(),interests:z.array(z.string().max(60)).max(20),needs:z.array(z.string().max(60)).max(20),strengths:z.array(z.string().max(60)).max(20)}).strict().optional(),
  lifeRhythm:z.object({timezone:z.string().max(60),blocks:z.array(block).max(40)}).strict().optional(),
  emptyMoments:z.array(z.enum(emptyMomentOptions)).max(7).optional(),
  notification:z.object({pushEnabled:z.boolean(),quietStartMinute:z.number().int().min(0).max(1439),quietEndMinute:z.number().int().min(0).max(1439),permission:z.enum(['unknown','granted','denied'])}).strict().optional(),

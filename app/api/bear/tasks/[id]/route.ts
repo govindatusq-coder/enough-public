@@ -1,5 +1,6 @@
-import {json,withBear} from '@/lib/bear/server/context';
+import {json,readJson,withBear} from '@/lib/bear/server/context';
 import {recommendPlan} from '@/lib/bear/services/reminder-planning';
+import {updateTask,updateTaskSchema} from '@/lib/bear/services/task-edit';
 export const dynamic='force-dynamic';
 export const GET=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(req,async({store})=>{
  const {id}=await params;const task=await store.get('tasks',id);if(!task)return json({error:"Bear couldn't find that."},404);
@@ -14,3 +15,4 @@ export const GET=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(
  const documentId=project?.resourceDocumentIds[0]||null;
  return json({task,project,reminders,steps,plan,documentUrl:documentId?`/api/bear/documents/${documentId}`:null});
 });
+export const PATCH=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(req,async({store})=>{const {id}=await params;return json({task:await updateTask(store,id,updateTaskSchema.parse(await readJson(req)))});});

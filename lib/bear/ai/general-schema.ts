@@ -19,6 +19,7 @@ export const generalOutputSchema=z.object({
  location:field(z.string().max(160)),
  isRecurring:field(z.boolean()),
  steps:z.array(z.string().max(120)).max(6),
+ items:z.array(z.object({name:z.string().max(80),quantity:z.string().max(20).nullable(),estimatedCents:z.number().int().min(0).max(100000000).nullable()}).strict()).max(40).default([]),
  estimatedMinutes:z.number().int().min(1).max(600).nullable(),
  extractedText:z.string().max(6000).nullable(),
  bill:billOutputSchema.nullable(),
@@ -27,10 +28,11 @@ export type GeneralOutput=z.infer<typeof generalOutputSchema>;
 
 const nullable=(t:Record<string,unknown>)=>({anyOf:[t,{type:'null'}]});
 const f=(t:Record<string,unknown>)=>({type:'object',additionalProperties:false,required:['value','confidence','evidence'],properties:{value:nullable(t),confidence:{type:'number',minimum:0,maximum:1},evidence:nullable({type:'string'})}});
-export const generalOutputJsonSchema={type:'object',additionalProperties:false,required:['kind','summary','title','area','when','timeOfDay','person','location','isRecurring','steps','estimatedMinutes','extractedText','bill'],properties:{
+export const generalOutputJsonSchema={type:'object',additionalProperties:false,required:['kind','summary','title','area','when','timeOfDay','person','location','isRecurring','steps','items','estimatedMinutes','extractedText','bill'],properties:{
  kind:{type:'string',enum:[...captureKinds]},summary:{type:'string'},title:f({type:'string'}),area:f({type:'string',enum:[...areaKeys]}),
  when:f({type:'string',pattern:'^\\d{4}-\\d{2}-\\d{2}$'}),timeOfDay:f({type:'string',pattern:'^\\d{2}:\\d{2}$'}),person:f({type:'string'}),location:f({type:'string'}),isRecurring:f({type:'boolean'}),
- steps:{type:'array',items:{type:'string'}},estimatedMinutes:nullable({type:'integer',minimum:1}),extractedText:nullable({type:'string'}),
+ steps:{type:'array',items:{type:'string'}},
+ items:{type:'array',description:'For shopping lists and anything with things to buy or get: one entry per item.',items:{type:'object',additionalProperties:false,required:['name','quantity','estimatedCents'],properties:{name:{type:'string'},quantity:nullable({type:'string',description:'e.g. 2, 1kg, 3 packs'}),estimatedCents:nullable({type:'integer',minimum:0,description:'Rough typical Australian retail price for this item in AUD cents (e.g. 450 for milk). Empty if you genuinely cannot estimate.'})}}},estimatedMinutes:nullable({type:'integer',minimum:1}),extractedText:nullable({type:'string'}),
  bill:nullable(billOutputJsonSchema),
 }} as const;
 
@@ -42,6 +44,7 @@ Rules:
 - when: the date the person must act by (a due date, the event date, an RSVP date). yyyy-mm-dd. Australian text prints day-first. Null when no date is readable. timeOfDay HH:MM 24h when printed.
 - person: the family member it concerns, if named. location when printed.
 - steps: 1–5 concrete sub-steps only when the task genuinely needs them, otherwise an empty list.
+- items: for shopping lists, hardware or supply runs, party or school supply lists: every item to buy or get, one per entry, with quantity when written and a rough typical Australian price in cents. It is a rough estimate to help budgeting, never a quote. Empty list when nothing is to be bought.
 - extractedText: the readable text of the input, cleaned, up to 6000 characters. For spoken notes, the transcript.
 - bill: when kind is bill, fill the full bill reading using the bill rules; otherwise null.
 - Never invent values. When something is unknown, leave it empty rather than guessing, and list any field you are unsure about in uncertain. Never output card numbers, CVVs or passwords.

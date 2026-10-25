@@ -4,7 +4,9 @@ import {useRouter,useSearchParams} from 'next/navigation';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import {formatAU,formatWhen,relativeDay,todayISO} from '@/lib/bear/domain/dates';
 import {areaLabels} from '@/lib/bear/domain/labels';
-import type {Project,Reminder,Task} from '@/lib/bear/domain/types';
+import {formatAUD} from '@/lib/bear/domain/money';
+import {formatItemLine,LARGE_PURCHASE_CENTS,parseItemLines} from '@/lib/bear/domain/items';
+import type {Project,Reminder,ShoppingItem,Task} from '@/lib/bear/domain/types';
 import type {PlanRecommendation} from '@/lib/bear/services/reminder-planning';
 import {RoundBadge} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
@@ -16,7 +18,8 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
  const {id}=use(params);const router=useRouter();const search=useSearchParams();
  const [data,setData]=useState<Loaded|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [busy,setBusy]=useState(false);
  const [custom,setCustom]=useState('');const [followUp,setFollowUp]=useState(true);const [showPlan,setShowPlan]=useState(search.get('plan')==='1');
- const reminderId=search.get('reminder');
+ const reminderId=search.get('reminder');const autoSetup=search.get('auto')==='1';
+ const [showEdit,setShowEdit]=useState(false);const [showSplit,setShowSplit]=useState(false);const [edit,setEdit]=useState({title:'',dueAt:'',dueTime:'',forPerson:'',location:'',notes:'',list:''});const [estimating,setEstimating]=useState(false);
  const load=useCallback(()=>apiGet<Loaded>(`/api/bear/tasks/${id}`).then(d=>{if(d.redirect){router.replace(d.redirect);return;}setData(d);setError(null);if(d.plan)setShowPlan(true);}).catch(e=>{if(e.status===401)router.replace('/bear/signin');else setError(e.message);}),[id,router]);
  useEffect(()=>{load();},[load]);
  useEffect(()=>{if(reminderId)apiSend('/api/bear/reminders/interact',{reminderId,action:'opened'}).catch(()=>{});},[reminderId]);
@@ -24,11 +27,24 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
  if(!data)return <main id="main" className="bear-screen"><TopBar back={{href:'/bear/home'}}/><Skeleton/></main>;
  const {task,project,reminders,steps,plan}=data;const today=todayISO();const done=task.status==='done';const dropped=task.status==='dropped';
  const active=reminders.filter(r=>['scheduled','snoozed'].includes(r.status));
+ const items=task.items||[];const hasSteps=steps.length>0;const openItems=items.filter(i=>!i.done);const missingPrices=items.some(i=>i.estimatedCents===null);const cost=task.estimatedCents??null;
+ const stepsDone=hasSteps&&steps.every(x=>x.status==='done');
  async function acceptPlan(key:string,when:string|null,label:string,rationale:string){if(!when){setToast('Pick a time first.');return;}setBusy(true);
   try{await apiSend(`/api/bear/tasks/${id}/plan`,{when:new Date(when).toISOString(),label,rationale,key,followUpIfUnpaid:followUp});setShowPlan(false);setToast("Bear's got it. You can stop thinking about this one.");await load();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
  async function markDone(){setBusy(true);try{const res=await apiSend<{win:{detail:string}}>(`/api/bear/tasks/${task.id}/complete`,{method:null,expectNext:false});if(reminderId)apiSend('/api/bear/reminders/interact',{reminderId,action:'helped'}).catch(()=>{});router.replace(`/bear/wins?just=${encodeURIComponent(task.title+' · '+res.win.detail)}`);}catch(e){setError((e as Error).message);setBusy(false);}}
  async function stepDone(s:Task){try{await apiSend(`/api/bear/tasks/${s.id}/complete`,{method:null,expectNext:false});setToast('Step done.');await load();}catch(e){setError((e as Error).message);}}
  async function drop(){if(!confirm('Tell Bear this is not important anymore? Reminders will stop.'))return;setBusy(true);try{await apiSend(`/api/bear/tasks/${task.id}/drop`,{});router.replace('/bear/home');}catch(e){setError((e as Error).message);setBusy(false);}}
+
+ function openEdit(){setEdit({title:task.title,dueAt:task.dueAt||'',dueTime:task.dueTime||'',forPerson:task.forPerson||'',location:task.location||'',notes:task.notes||'',list:(task.items||[]).map(formatItemLine).join('\n')});setShowEdit(true);}
+ async function saveEdit(){if(!edit.title.trim()){setToast('Give it a name first.');return;}setBusy(true);
+  const before=new Map((task.items||[]).map(i=>[i.name.trim().toLowerCase(),i]));
+  const items=parseItemLines(edit.list).map(i=>{const prev=before.get(i.name.trim().toLowerCase());return {id:prev?.id,name:i.name,quantity:i.quantity,estimatedCents:prev?.estimatedCents??null,done:prev?.done??false};});
+  try{await apiSend(`/api/bear/tasks/${id}`,{title:edit.title.trim(),dueAt:edit.dueAt||null,dueTime:edit.dueTime||null,forPerson:edit.forPerson.trim()||null,location:edit.location.trim()||null,notes:edit.notes.trim()||null,...(edit.list.trim()||task.items?.length?{items}:{})},'PATCH');setShowEdit(false);setToast('Saved.');await load();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ async function reopen(){setBusy(true);try{await apiSend(`/api/bear/tasks/${id}/reopen`,{});setToast('Back on your list.');await load();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ async function tick(item:ShoppingItem){try{const res=await apiSend<{completed:boolean;win:{detail:string}|null}>(`/api/bear/tasks/${id}/items`,{itemId:item.id,done:!item.done});if(res.completed){router.replace(`/bear/wins?just=${encodeURIComponent(task.title+' · '+(res.win?.detail||'Done'))}`);return;}await load();}catch(e){setError((e as Error).message);}}
+ async function gotEverything(){setBusy(true);try{const res=await apiSend<{win:{detail:string}|null}>(`/api/bear/tasks/${id}/items`,{all:true});router.replace(`/bear/wins?just=${encodeURIComponent(task.title+' · '+(res.win?.detail||'Done'))}`);}catch(e){setError((e as Error).message);setBusy(false);}}
+ async function estimate(){setEstimating(true);setError(null);try{await apiSend(`/api/bear/tasks/${id}/estimate`,{});await load();setToast('Rough prices added. They are estimates, not quotes.');}catch(e){setError((e as Error).message);}finally{setEstimating(false);}}
+ async function split(parts:number){setBusy(true);try{await apiSend(`/api/bear/tasks/${id}/split`,{parts});setShowSplit(false);setToast(`Split into ${parts} purchases.`);await load();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
  return (
   <main id="main" className="bear-screen">
    <TopBar back={{href:'/bear/home'}} right={task.isDemo?<span className="demo-tag">Example</span>:null}/>
@@ -38,13 +54,21 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
     <p className="muted" style={{marginTop:6}}>{task.dueAt?`${formatAU(task.dueAt)}${task.dueTime?' · '+task.dueTime:''}${/^(today|tomorrow|yesterday|[A-Z])/.test(relativeDay(task.dueAt,today))?' · '+relativeDay(task.dueAt,today):''}`:'No date'}</p>
     {task.forPerson&&<span className="pill" style={{marginTop:10,marginRight:6}}>For {task.forPerson}</span>}{task.location&&<span className="pill" style={{marginTop:10}}>{task.location}</span>}
     {task.notes&&<p className="small muted" style={{marginTop:12}}>{task.notes}</p>}
+    {!dropped&&<div className="btn-row" style={{marginTop:12}}><Button className="sm" variant="ghost" onClick={openEdit}>Edit</Button></div>}
    </div>
+   {autoSetup&&task.setupBy==='bear'&&!done&&<div className="glass" style={{padding:16,marginTop:14,background:'var(--teal-tint)'}}><p className="eyebrow teal" style={{marginBottom:4}}>Bear set this up</p><p className="small">Filed under <strong>{project?areaLabels[project.areaKey]:'Me'}</strong>{active[0]||task.dueAt?'':', with no date, so no reminder yet'}. Not right? Tap Edit and change anything.</p></div>}
    {!done&&!dropped&&<>
     {active.length>0&&!showPlan&&<div className="glass" style={{padding:16}}><p className="eyebrow teal">Bear&rsquo;s handling it</p><p><strong>Bringing it back {formatWhen(active[0].scheduledFor)}</strong></p><p className="small muted" style={{marginTop:4}}>{active[0].plan.rationale}</p><button type="button" className="btn quiet sm" style={{marginTop:8}} onClick={()=>setShowPlan(true)}>Change the plan</button></div>}
-    {steps.length>0&&<div className="section"><p className="eyebrow">Steps</p><div className="card">{steps.map(s=><div key={s.id} className="row"><button type="button" className="icon-dot" aria-label={s.status==='done'?'Done':'Mark step done'} disabled={s.status==='done'} onClick={()=>stepDone(s)} style={{background:s.status==='done'?'var(--teal-tint)':'rgba(16,42,67,.06)'}}>{s.status==='done'?'✓':''}</button><span className="grow" style={{textDecoration:s.status==='done'?'line-through':'none',color:s.status==='done'?'var(--ink-3)':undefined}}>{s.title}</span></div>)}</div></div>}
+    {items.length>0&&!hasSteps&&<div className="section"><p className="eyebrow">The list{cost!==null?` · about ${formatAUD(cost)} (rough estimate)`:''}</p><div className="card">
+     {items.map(it=><div key={it.id} className="row"><button type="button" className="icon-dot" aria-label={it.done?`Un-tick ${it.name}`:`Got ${it.name}`} onClick={()=>tick(it)} style={{background:it.done?'var(--teal-tint)':'rgba(16,42,67,.06)'}}>{it.done?'✓':''}</button><span className="grow" style={{textDecoration:it.done?'line-through':'none',color:it.done?'var(--ink-3)':undefined}}>{formatItemLine(it)}</span>{it.estimatedCents!==null&&<span className="small faint">~{formatAUD(it.estimatedCents)}</span>}</div>)}
+     <p className="small muted" style={{marginTop:8}}>{items.length-openItems.length} of {items.length} got. Tick things off as you go, in one trip or several. The last tick finishes it.</p>
+     <div className="btn-row" style={{marginTop:8}}><Button className="sm" variant="primary" disabled={busy} onClick={gotEverything}>Got everything</Button>{missingPrices&&<Button className="sm" variant="ghost" disabled={estimating} onClick={estimate}>{estimating?'Estimating…':cost===null?'Estimate the cost':'Estimate the rest'}</Button>}{openItems.length>=2&&<Button className="sm" variant="ghost" onClick={()=>setShowSplit(true)}>Split into purchases</Button>}</div>
+     {cost!==null&&cost>=LARGE_PURCHASE_CENTS&&<p className="small" style={{marginTop:10}}>That is a bigger spend. Splitting it into a few purchases can make it easier on the budget.</p>}
+    </div></div>}
+    {hasSteps&&<div className="section"><p className="eyebrow">{items.length>0?`Purchases${cost!==null?` · about ${formatAUD(cost)} in all`:''}`:'Steps'}</p><div className="card">{steps.map(s=><div key={s.id} className="row"><button type="button" className="icon-dot" aria-label={s.status==='done'?'Done':'Mark done'} disabled={s.status==='done'} onClick={()=>stepDone(s)} style={{background:s.status==='done'?'var(--teal-tint)':'rgba(16,42,67,.06)'}}>{s.status==='done'?'✓':''}</button><span className="grow" style={{textDecoration:s.status==='done'?'line-through':'none',color:s.status==='done'?'var(--ink-3)':undefined}}>{s.title}{s.dueAt?<span className="small faint"> · by {formatAU(s.dueAt,'short')}</span>:null}</span>{s.estimatedCents!=null&&<span className="small faint">~{formatAUD(s.estimatedCents)}</span>}</div>)}{stepsDone&&<p className="small" style={{marginTop:8}}>That is every purchase. Mark it done below.</p>}</div></div>}
     <div className="btn-stack" style={{marginTop:24}}><Button variant="coral" onClick={markDone} disabled={busy}>Done, it&rsquo;s sorted</Button><Button variant="quiet" onClick={drop} disabled={busy}>Not important anymore</Button></div>
    </>}
-   {done&&<div className="glass" style={{padding:18,textAlign:'center'}}><RoundBadge size={120}/><BearSays>That&rsquo;s sorted.</BearSays><div className="btn-stack"><Button href="/bear/wins" variant="ghost">See it in My Wins</Button></div></div>}
+   {done&&<div className="glass" style={{padding:18,textAlign:'center'}}><RoundBadge size={120}/><BearSays>That&rsquo;s sorted.</BearSays><div className="btn-stack"><Button href="/bear/wins" variant="ghost">See it in My Wins</Button><Button variant="quiet" disabled={busy} onClick={reopen}>Not actually done</Button></div></div>}
    {data.documentUrl&&<p style={{marginTop:16}}><a className="pill" href={data.documentUrl} target="_blank" rel="noreferrer">Original</a></p>}
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
    {showPlan&&plan&&<Sheet onClose={()=>setShowPlan(false)} label="When should Bear bring this back?">
@@ -54,6 +78,22 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
     <div className="field"><label htmlFor="custom-when">Choose a time</label><div style={{display:'flex',gap:8}}><input id="custom-when" type="datetime-local" value={custom} onChange={e=>setCustom(e.target.value)}/><Button variant="ghost" disabled={!custom||busy} onClick={()=>acceptPlan('custom',custom,new Date(custom).toLocaleString('en-AU',{weekday:'long',hour:'numeric',minute:'2-digit'}),'You chose this time.')}>Set</Button></div></div>
     <label style={{display:'flex',gap:10,alignItems:'center',marginTop:16}}><input type="checkbox" checked={followUp} onChange={e=>setFollowUp(e.target.checked)} style={{width:22,height:22}}/> Remind me again if it isn&rsquo;t done.</label>
     <div className="btn-stack"><Button variant="quiet" onClick={()=>setShowPlan(false)}>No reminder, just hold it</Button></div>
+   </Sheet>}
+   {showEdit&&<Sheet onClose={()=>setShowEdit(false)} label="Edit this">
+    <h2>Edit</h2>
+    <div className="field"><label htmlFor="e-title">What is it?</label><input id="e-title" value={edit.title} maxLength={120} onChange={e=>setEdit(x=>({...x,title:e.target.value}))}/></div>
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}><div className="field"><label htmlFor="e-date">Date</label><input id="e-date" type="date" value={edit.dueAt} onChange={e=>setEdit(x=>({...x,dueAt:e.target.value}))}/></div><div className="field"><label htmlFor="e-time">Time</label><input id="e-time" type="time" value={edit.dueTime} onChange={e=>setEdit(x=>({...x,dueTime:e.target.value}))}/></div></div>
+    <div className="field"><label htmlFor="e-who">Who it&rsquo;s for</label><input id="e-who" value={edit.forPerson} maxLength={80} onChange={e=>setEdit(x=>({...x,forPerson:e.target.value}))}/></div>
+    <div className="field"><label htmlFor="e-where">Where</label><input id="e-where" value={edit.location} maxLength={160} onChange={e=>setEdit(x=>({...x,location:e.target.value}))}/></div>
+    {(task.kind==='shopping'||items.length>0)&&!hasSteps&&<div className="field"><label htmlFor="e-list">The list</label><textarea id="e-list" value={edit.list} style={{minHeight:130}} onChange={e=>setEdit(x=>({...x,list:e.target.value}))}/><span className="hint">One item per line. Put a number first for how many, like &ldquo;2 bags potting mix&rdquo;.</span></div>}
+    <div className="field"><label htmlFor="e-notes">Notes</label><textarea id="e-notes" value={edit.notes} maxLength={1000} style={{minHeight:80}} onChange={e=>setEdit(x=>({...x,notes:e.target.value}))}/></div>
+    <div className="btn-stack"><Button variant="coral" disabled={busy||!edit.title.trim()} onClick={saveEdit}>Save</Button><Button variant="quiet" onClick={()=>setShowEdit(false)}>Cancel</Button></div>
+   </Sheet>}
+   {showSplit&&<Sheet onClose={()=>setShowSplit(false)} label="Split into purchases">
+    <h2>Split into purchases</h2>
+    <p className="muted" style={{marginTop:8}}>{cost!==null?`The list comes to about ${formatAUD(cost)}. `:''}Bear shares the items out so each purchase costs about the same, and spaces them out{task.dueAt?` before ${formatAU(task.dueAt)}`:' over the next few weeks'}. You can still tick each one off.</p>
+    <div className="chips" style={{marginTop:14}}>{[2,3,4].filter(n=>n<=openItems.length).map(n=><button key={n} type="button" className="chip" disabled={busy} onClick={()=>split(n)}>{n} purchases</button>)}</div>
+    <div className="btn-stack"><Button variant="quiet" onClick={()=>setShowSplit(false)}>Keep it as one</Button></div>
    </Sheet>}
    <Toast message={toast} onDone={()=>setToast(null)}/>
   </main>

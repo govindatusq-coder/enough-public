@@ -33,20 +33,20 @@ export function CaptureSheet(){
  const first=params.get('first')==='1';
  useEffect(()=>{apiGet<{aiAvailable:boolean}>('/api/bear/profile').then(p=>setAiAvailable(p.aiAvailable)).catch(e=>{if(e.status===401)router.replace('/bear/signin');else setAiAvailable(false);});},[router]);
  const close=useCallback(()=>router.push(first?'/bear/home':'/bear/home'),[router,first]);
-const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity})=>{
+const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string}})=>{
   const f=result.extraction.fields;const g=result.extraction.general;const out:{label:string;value:string}[]=[];
   if(result.extraction.kind!=='bill'){if(g.title.value)out.push({label:'Task',value:g.title.value.toUpperCase()});if(g.when.value)out.push({label:'When',value:formatAU(g.when.value,'long').toUpperCase()});if(g.area.value)out.push({label:'Area',value:g.area.value.toUpperCase()});if(g.person.value)out.push({label:'For',value:g.person.value.toUpperCase()});}
   else if(f.biller.value)out.push({label:'Biller',value:f.biller.value.toUpperCase()});if(f.amountDueCents.value!==null)out.push({label:'Amount',value:formatAUD(f.amountDueCents.value)});if(f.dueDate.value)out.push({label:'Due',value:formatAU(f.dueDate.value,'long').toUpperCase()});if(f.category.value)out.push({label:'Category',value:f.category.value.replace('_',' ').toUpperCase()});if(f.paymentMethods.value?.length)out.push({label:'Pay by',value:f.paymentMethods.value[0].toUpperCase()});
   setFields(out);
-  setTimeout(()=>router.replace(`/bear/verify/${result.capture.id}`),Math.min(2600,700+out.length*400));
+  setTimeout(()=>router.replace(result.auto?`/bear/tasks/${result.auto.taskId}?auto=1`:`/bear/verify/${result.capture.id}`),Math.min(2600,700+out.length*400));
  },[router]);
  async function submitText(method:'text'|'manual'|'voice',body:string){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);setPreview({kind:'text',text:body});
-  try{finish(await apiSend<{capture:Capture;extraction:ExtractedEntity}>('/api/bear/captures',{method,text:body}));}catch(e){setMode(method);setError((e as ApiError).message);setPreview(null);}}
+  try{finish(await apiSend<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string}}>('/api/bear/captures',{method,text:body}));}catch(e){setMode(method);setError((e as ApiError).message);setPreview(null);}}
  async function submitFile(file:File,method:string){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);
   const url=file.type.startsWith('image/')?URL.createObjectURL(file):null;setPreview(url?{kind:'image',url}:null);
   const upload=await shrinkImage(file);
   const form=new FormData();form.append('file',upload);form.append('method',method);
-  try{finish(await apiForm<{capture:Capture;extraction:ExtractedEntity}>('/api/bear/captures',form));}catch(e){setMode('menu');setError((e as ApiError).message);setPreview(null);}}
+  try{finish(await apiForm<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string}}>('/api/bear/captures',form));}catch(e){setMode('menu');setError((e as ApiError).message);setPreview(null);}}
  const pick=(o:typeof options[number])=>{if('unavailable' in o&&o.unavailable)return;if(o.key==='voice'){setMode('voice');return;}if(!o.file){setMode(o.key as Mode);return;}setPending({method:o.key,accept:o.accept,capture:'capture' in o?o.capture:undefined});setTimeout(()=>fileRef.current?.click(),0);};
  const manualText=()=>[manual.what,manual.who?`For ${manual.who}`:'',manual.when?`Due date: ${manual.when}`:'',manual.amount?`Total amount due: ${manual.amount.startsWith('$')?manual.amount:'$'+manual.amount}`:''].filter(Boolean).join('\n');
  function startListening(){const Ctor=recognitionCtor();if(!Ctor)return;const r=new Ctor();r.lang='en-AU';r.continuous=true;r.interimResults=true;

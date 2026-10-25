@@ -1,4 +1,5 @@
 import {type BillOutput} from '../ai/bill-schema.ts';
+import {totalCost} from '../domain/items.ts';
 import {generalOutputJsonSchema,generalOutputSchema,generalSystemPrompt,type GeneralOutput} from '../ai/general-schema.ts';
 import {understandWithRules} from '../ai/general-rules.ts';
 import {ProviderError,type StructuredModelProvider} from '../ai/provider.ts';
@@ -75,7 +76,8 @@ export async function findDuplicate(store:BearStore,f:BillFields):Promise<Bill|n
 // Reconcile the model's general understanding (or the rule-based one) into traced fields.
 export function reconcileGeneral(model:GeneralOutput|null,rules:GeneralOutput,at:string):GeneralFields{
  const pickG=<T,>(key:'title'|'area'|'when'|'timeOfDay'|'person'|'location'|'isRecurring'):Traced<T>=>{const m=model?(model[key] as {value:T|null;confidence:number}):null;const r=rules[key] as {value:T|null;confidence:number};return pick<T>(m,r,at);};
- return {kind:model?.kind||rules.kind,summary:model?.summary||rules.summary,title:pickG<string>('title'),area:pickG<AreaKey>('area'),when:pickG<string>('when'),timeOfDay:pickG<string>('timeOfDay'),person:pickG<string>('person'),location:pickG<string>('location'),isRecurring:pickG<boolean>('isRecurring'),steps:model?.steps||[],estimatedMinutes:model?.estimatedMinutes??null};
+ const items=(model?.items?.length?model.items:rules.items)||[];
+ return {kind:model?.kind||rules.kind,summary:model?.summary||rules.summary,title:pickG<string>('title'),area:pickG<AreaKey>('area'),when:pickG<string>('when'),timeOfDay:pickG<string>('timeOfDay'),person:pickG<string>('person'),location:pickG<string>('location'),isRecurring:pickG<boolean>('isRecurring'),steps:model?.steps||[],items,estimatedCostCents:totalCost(items),estimatedMinutes:model?.estimatedMinutes??null};
 }
 export function generalQuestions(g:GeneralFields):VerificationQuestion[]{
  const q:VerificationQuestion[]=[];
