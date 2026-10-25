@@ -368,3 +368,9 @@
 .bear .area-grid.six .area-label{bottom:20px;}
 .bear .area-grid.six .area-sub{bottom:6px;color:rgba(255,255,255,.9);font-size:11px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bear .area-grid.six .badge,.bear .area-grid.six .badge-dot{z-index:3;}
+/* My Wins tiles: the picture fills the tile, like the area tiles on My Bear. */
+.bear .metrics .metric{position:relative;overflow:hidden;min-height:168px;justify-content:flex-end;padding:14px;border:1px solid rgba(255,255,255,.5);background:#102A43;}
+.bear .metric-pic{position:absolute;inset:0;background:var(--tile-img) center/cover no-repeat;}
+.bear .metrics .metric::after{content:"";position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(180deg,rgba(16,42,67,0) 0%,rgba(16,42,67,.78) 100%);pointer-events:none;}
+.bear .metrics .metric b,.bear .metrics .metric span:not(.metric-pic),.bear .metrics .metric i{position:relative;z-index:2;color:#fff;text-shadow:0 1px 6px rgba(16,42,67,.6);}
+.bear .metrics .metric i{color:#FFD9A0;}
