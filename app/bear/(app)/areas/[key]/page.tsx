@@ -14,7 +14,7 @@ function Row({item}:{item:AreaItem}){
  return <Link href={href} className="row" style={{textDecoration:'none',color:'inherit'}}><span className="grow"><span className="title">{item.title}{item.needs&&<span className="pill need" style={{marginLeft:8}}>{item.overdueDays>0?'Overdue':'Needs you'}</span>}{item.soft&&!item.needs&&<span className="pill soft" style={{marginLeft:8}}>Gentle reminder</span>}{item.isDemo&&<span className="demo-tag" style={{marginLeft:8}}>Example</span>}</span><br/><span className="faint">{bits.map((b,i)=><span key={i}>{i>0?' · ':''}{b==='__overdue__'?<b className="overdue-text">{item.dueLabel}</b>:b}</span>)}</span></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{color:'var(--ink-3)'}}><path d="M9 6l6 6-6 6"/></svg></Link>;
 }
 // Where each picture is cropped so its subject stays in view beside the title.
-const focus:Record<string,string>={work:'80% 50%',family:'65% 40%',home:'73% 50%',money:'40% 50%',health:'60% 50%',me:'68% 30%'};
+const focus:Record<string,string>={work:'50% 55%',family:'50% 25%',home:'50% 50%',money:'40% 45%',health:'45% 45%',me:'55% 25%'};
 export default function AreaPage({params}:{params:Promise<{key:string}>}){
  const {key}=use(params);const router=useRouter();
  const [data,setData]=useState<AreaDetail|null>(null);const [error,setError]=useState<string|null>(null);
@@ -27,7 +27,7 @@ export default function AreaPage({params}:{params:Promise<{key:string}>}){
    {!data&&!error&&<Skeleton/>}
    {data&&<>
     <header className="area-banner" data-area={key}>
-     <div className="area-art" aria-hidden="true"><Art file={`area-${key}`} className="area-hero-img" style={{objectPosition:focus[key]||'50% 50%'}}/></div>
+     <div className="area-art" aria-hidden="true"><Art file={`tile-${key}`} className="area-hero-img" style={{objectPosition:focus[key]||'50% 50%'}}/></div>
      <div className="area-text"><h1 className="area-title">{data.label}</h1><p className="area-count"><span>{data.current.length===0?'Nothing current':`${data.current.length} current`}</span>{data.done.length>0&&<span>{data.done.length} done</span>}</p></div>
     </header>
     <section className="section"><p className="eyebrow">Current{data.current.length?` · ${data.current.length}`:''}</p>
