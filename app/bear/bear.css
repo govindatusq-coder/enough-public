@@ -385,3 +385,10 @@
 .bear .area-grid.six .area-label{color:var(--navy);text-shadow:none;}
 .bear .area-grid.six .area-sub{color:var(--ink-3);text-shadow:none;}
 .bear .tile-anim::before{display:block;opacity:.42;filter:blur(24px) saturate(1.1);}
+/* Final: the picture simply fills the tile. */
+.bear .area-grid.six .area-tile{background:#102A43;border:1px solid rgba(255,255,255,.5);}
+.bear .tile-anim::before{display:none;}
+.bear .tile-anim::after{content:"";position:absolute;inset:0;top:0;transform:none;aspect-ratio:auto;mix-blend-mode:normal;-webkit-mask-image:none;mask-image:none;background:var(--tile-img) center/cover no-repeat;}
+.bear .area-grid.six .area-tile::after{display:block;content:"";position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(180deg,rgba(16,42,67,0) 0%,rgba(16,42,67,.7) 100%);pointer-events:none;}
+.bear .area-grid.six .area-label{color:#fff;text-shadow:0 1px 6px rgba(16,42,67,.6);}
+.bear .area-grid.six .area-sub{color:rgba(255,255,255,.9);text-shadow:0 1px 6px rgba(16,42,67,.6);}
