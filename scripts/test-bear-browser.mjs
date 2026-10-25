@@ -19,7 +19,7 @@ let browser;const failures=[];let billUrl=null;
 try{
  await waitForServer();
  browser=await chromium.launch({executablePath,headless:true});
- const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:'en-AU',timezoneId:'Australia/Sydney'});
+ const context=await browser.newContext({viewport:{width:390,height:Number(process.env.BEAR_TEST_HEIGHT||844)},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:'en-AU',timezoneId:'Australia/Sydney'});
  context.setDefaultTimeout(10000);const page=await context.newPage();
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('response',r=>{if(r.status()>=400&&!/favicon|manifest/.test(r.url()))console.log('HTTP',r.status(),r.request().method(),r.url(),r.request().headers()['origin']);});let expect503=0;page.on('console',m=>{if(m.type()!=='error')return;if(expect503>0&&/503/.test(m.text())){expect503--;return;}errors.push(m.text());});
  const shot=async(name)=>{await page.screenshot({path:resolve(results,name+'.png'),fullPage:true});};
