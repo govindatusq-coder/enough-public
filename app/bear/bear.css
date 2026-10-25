@@ -376,3 +376,11 @@
 .bear .tile-anim::after{content:"";position:absolute;left:0;right:0;top:50%;aspect-ratio:4/5;transform:translateY(-50%);background:var(--tile-img) center/cover no-repeat;}
 .bear .tile-anim::before{filter:blur(22px) saturate(1.15);}
 .bear .tile-anim::after{-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.6) 9%,#000 20%,#000 80%,rgba(0,0,0,.6) 91%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.6) 9%,#000 20%,#000 80%,rgba(0,0,0,.6) 91%,transparent 100%);}
+/* Tiles share the greeting banner's look: the picture melts into the warm tile colour at its edges. */
+.bear .area-grid.six .area-tile{background:linear-gradient(135deg,#FFF3E6 0%,#FFEFC9 100%);border:1px solid var(--glass-border);}
+.bear .area-grid.six .area-tile::after{display:none;}
+.bear .tile-anim::before{display:none;}
+.bear .tile-anim{background:none !important;}
+.bear .tile-anim::after{left:0;right:0;mix-blend-mode:multiply;background:var(--tile-img) center/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 24%,#000 70%,transparent 100%),linear-gradient(to right,transparent 0%,#000 16%,#000 84%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,#000 24%,#000 70%,transparent 100%),linear-gradient(to right,transparent 0%,#000 16%,#000 84%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect;}
+.bear .area-grid.six .area-label{color:var(--navy);text-shadow:none;}
+.bear .area-grid.six .area-sub{color:var(--ink-3);text-shadow:none;}
