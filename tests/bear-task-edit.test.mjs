@@ -131,3 +131,36 @@ test('a paid bill can be made current again, and its saving goes with the win',a
  const view=await winsView(store);assert.equal(view.cards.length,0);assert.equal(view.totals.moneyCents,0);
  assert.equal((await areaView(store,'money',NOW)).current.length,1);
 });
+
+import {setTimeZone,isValidTimeZone} from '../lib/bear/services/timezone.ts';
+import {recommendPlan,acceptPlan} from '../lib/bear/services/reminder-planning.ts';
+import {localParts} from '../lib/bear/domain/dates.ts';
+
+test('Bear follows the phone: a new time zone is saved and waiting reminders are planned again for local time',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ assert.equal(isValidTimeZone('Australia/Perth'),true);assert.equal(isValidTimeZone('Not/AZone'),false);assert.equal(isValidTimeZone(''),false);
+ const {auto}=await listTask(store);
+ const before=(await store.list('reminders')).filter(r=>r.status==='scheduled'&&r.kind==='planned')[0];
+ assert.ok(before,'a reminder was planned in Sydney time');
+ const same=await setTimeZone(store,'Australia/Sydney',NOW);assert.equal(same.changed,false);
+ const moved=await setTimeZone(store,'Australia/Perth',NOW);assert.equal(moved.changed,true);assert.equal(moved.replanned,1);
+ assert.equal((await ensureProfile(store)).lifeRhythm.timezone,'Australia/Perth');
+ const waiting=(await store.list('reminders')).filter(r=>r.status==='scheduled'&&r.kind==='planned');assert.equal(waiting.length,1,'old reminder replaced, not duplicated');
+ const hour=localParts(waiting[0].scheduledFor,'Australia/Perth').hour;assert.ok(hour>=7&&hour<22,'planned at a waking hour in Perth, not at night: '+hour);
+ assert.equal((await store.list('reminders')).filter(r=>r.status==='cancelled').length>=1,true);
+});
+
+test('a bill reminder reads as a date people recognise, not a raw ISO date',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);const {task,bill}=await (async()=>{const {extraction}=await createCapture(store,null,{method:'text',text:'AGL electricity bill. Amount due $184.60. Due 28/11/2026. BPAY biller 12345 ref 998877',referenceYear:2026});return confirmBill(store,{extractionId:extraction.id,corrections:{biller:'AGL',amountDueCents:18460,dueDate:'2026-11-28',category:'electricity',isRecurring:false},confirmedFields:['biller','amountDueCents','dueDate','category','isRecurring'],allowDuplicate:false});})();
+ const plan=await recommendPlan(store,bill,task,NOW);const [r]=await acceptPlan(store,{billId:bill.id,when:plan.suggested.when,label:plan.suggested.label,rationale:'',key:'bear',followUpIfUnpaid:true},NOW);
+ assert.match(r.message,/28 November 2026/);assert.doesNotMatch(r.message,/2026-11-28/);
+});
+
+test('a freshly set-up list is priced straight away when the AI service is connected',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const provider=new FakeProvider(input=>({prices:input.text.split('\n').map(n=>({name:n,cents:1000}))}));
+ const {extraction}=await createCapture(store,null,{method:'text',text:LIST,referenceYear:2026});
+ const auto=await maybeAutoSetup(store,extraction,NOW,provider);
+ assert.ok(auto.task.items.every(i=>i.estimatedCents===1000));assert.equal(auto.task.estimatedCents,7000,'2 bags + 1 + 3 + 1 = 7 units at $10 each');
+ assert.equal(provider.calls.length,1);
+});

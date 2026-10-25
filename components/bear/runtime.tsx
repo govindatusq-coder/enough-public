@@ -15,6 +15,9 @@ export function BearRuntime(){
  const check=useCallback(()=>{checkForUpdate().then(r=>{if(r==='update')setUpdate(true);});},[]);
  useEffect(()=>{
   if('serviceWorker' in navigator)navigator.serviceWorker.register('/bear/sw.js',{scope:'/bear/'}).catch(()=>{/* unsupported: in-app reminders still work */});
+  // Keep Bear on the phone's clock: tell the server the device's time zone once per session
+  // (and again if the phone moves to a new one), so reminders are planned for local time.
+  try{const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;if(tz&&sessionStorage.getItem('bear-tz')!==tz){fetch('/api/bear/timezone',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({timeZone:tz})}).then(r=>{if(r.ok)sessionStorage.setItem('bear-tz',tz);}).catch(()=>{});}}catch{/* private mode or no Intl: the saved zone stands */}
   check();const onVis=()=>{if(document.visibilityState==='visible')check();};document.addEventListener('visibilitychange',onVis);
   const t=setInterval(check,10*60*1000);return()=>{document.removeEventListener('visibilitychange',onVis);clearInterval(t);};
  },[check]);

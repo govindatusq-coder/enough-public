@@ -17,7 +17,7 @@ export interface HomeView{
  ledgers:{health:{headline:string;lines:string[]};wealth:{headline:string|null;lines:string[]};happiness:{headline:string|null;lines:string[]}};
  ideasCount:number;demoAvailable:boolean;hasAnyBill:boolean;
 }
-export async function homeView(store:BearStore,now=new Date()):Promise<HomeView>{
+export async function homeView(store:BearStore,now=new Date(),fallbackName=''):Promise<HomeView>{
  const profile=await ensureProfile(store);const tz=profile.lifeRhythm.timezone||'Australia/Sydney';const today=todayISO(tz,now);const dayMode=activeDayMode(profile,today);
  const bills=await store.list('bills',{where:[{column:'status',op:'in',value:['watching','due_soon']}],orderBy:{column:'due_at'}});
  const allOpen=await store.list('tasks',{where:[{column:'status',value:'open'}]});
@@ -40,7 +40,7 @@ export async function homeView(store:BearStore,now=new Date()):Promise<HomeView>
  const ledgerRows=await store.list('value_ledger',{orderBy:{column:'occurred_at',ascending:false},limit:200});
  const covered=bills.length+otherHeld+scheduled.length+expectations.length+suggestions.length;
  const hour=localParts(now,tz).hour;
- return {greeting:greeting(hour,profile.name),name:profile.name,coveredCount:covered,dayMode,today,needsYou,areas:await areaTiles(store,profile.areas),handling:{watching,remindersReady:ready,expectedSoon,lines},ledgers:ledgers(ledgerRows,today,tasks),ideasCount:suggestions.length,demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
+ return {greeting:greeting(hour,profile.name||fallbackName),name:profile.name||fallbackName,coveredCount:covered,dayMode,today,needsYou,areas:await areaTiles(store,profile.areas),handling:{watching,remindersReady:ready,expectedSoon,lines},ledgers:ledgers(ledgerRows,today,tasks),ideasCount:suggestions.length,demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
 }
 function needsYouItems(bills:Bill[],tasks:Task[],due:DueReminder[],today:string,dayMode:DayMode|null):NeedsYouItem[]{
  const items:NeedsYouItem[]=[];

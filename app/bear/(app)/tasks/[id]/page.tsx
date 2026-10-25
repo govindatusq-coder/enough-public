@@ -54,7 +54,8 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
     <p className="muted" style={{marginTop:6}}>{task.dueAt?`${formatAU(task.dueAt)}${task.dueTime?' · '+task.dueTime:''}${/^(today|tomorrow|yesterday|[A-Z])/.test(relativeDay(task.dueAt,today))?' · '+relativeDay(task.dueAt,today):''}`:'No date'}</p>
     {task.forPerson&&<span className="pill" style={{marginTop:10,marginRight:6}}>For {task.forPerson}</span>}{task.location&&<span className="pill" style={{marginTop:10}}>{task.location}</span>}
     {task.notes&&<p className="small muted" style={{marginTop:12}}>{task.notes}</p>}
-    {!dropped&&<div className="btn-row" style={{marginTop:12}}><Button className="sm" variant="ghost" onClick={openEdit}>Edit</Button></div>}
+    {items.length>0&&<p style={{marginTop:12,fontWeight:700,fontSize:19}}>{(cost??0)>0?`About ${formatAUD(cost)}`:'No cost estimate yet'}<span className="small muted" style={{fontWeight:400}}>{(cost??0)>0?(missingPrices?' · rough estimate, some items not priced':' · rough estimate, not a quote'):''}</span></p>}
+    <div className="btn-row" style={{marginTop:12}}>{!dropped&&<Button className="sm" variant="ghost" onClick={openEdit}>Edit</Button>}{items.length>0&&missingPrices&&!done&&<Button className="sm" variant="primary" disabled={estimating} onClick={estimate}>{estimating?'Estimating…':(cost??0)>0?'Price the rest':'Estimate the cost'}</Button>}</div>
    </div>
    {autoSetup&&task.setupBy==='bear'&&!done&&<div className="glass" style={{padding:16,marginTop:14,background:'var(--teal-tint)'}}><p className="eyebrow teal" style={{marginBottom:4}}>Bear set this up</p><p className="small">Filed under <strong>{project?areaLabels[project.areaKey]:'Me'}</strong>{active[0]||task.dueAt?'':', with no date, so no reminder yet'}. Not right? Tap Edit and change anything.</p></div>}
    {!done&&!dropped&&<>

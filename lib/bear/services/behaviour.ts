@@ -6,7 +6,9 @@ import {stamp,type BearStore} from '../store/store.ts';
 // probabilistic signals. It optimises for completion and fewer interruptions, never
 // for engagement.
 export async function recordBehaviour(store:BearStore,type:BehaviourType,detail:Record<string,unknown>={},at=new Date()){
- const {hour,weekday}=localParts(at);
+ // Local hour in the person's own zone, so learned reminder timing matches their day.
+ const tz=(await store.list('profiles',{limit:1}))[0]?.lifeRhythm?.timezone||undefined;
+ const {hour,weekday}=localParts(at,tz);
  return store.insert('behaviour_events',stamp<BehaviourEvent>(store.userId,{type,at:at.toISOString(),hourLocal:hour,weekday,detail}));
 }
 export interface BehaviourSignals{

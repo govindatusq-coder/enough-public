@@ -1,6 +1,9 @@
 // Australian date handling. Dates are stored as yyyy-mm-dd; times as ISO timestamps.
 import type {Weekday} from './types.ts';
 export const AU_TIMEZONE='Australia/Sydney';
+// In the browser, times are shown in the phone's own time zone. The server always passes the
+// person's saved zone explicitly, and falls back to Sydney only when none is saved.
+export const DEFAULT_TZ:string=typeof window!=='undefined'?(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||AU_TIMEZONE;}catch{return AU_TIMEZONE;}})():AU_TIMEZONE;
 const MONTHS=['january','february','march','april','may','june','july','august','september','october','november','december'];
 const pad=(n:number)=>String(n).padStart(2,'0');
 export const toISODate=(d:Date)=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -17,8 +20,8 @@ export function formatAU(iso:string|null|undefined,style:'long'|'short'|'weekday
  if(style==='weekday')return d.toLocaleDateString('en-AU',{weekday:'long'});
  return d.toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
 }
-export function formatTime(isoDateTime:string,timeZone=AU_TIMEZONE){return new Date(isoDateTime).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit',timeZone}).replace(/\s?([ap]m)/i,' $1').toLowerCase();}
-export function formatWhen(isoDateTime:string,timeZone=AU_TIMEZONE){const d=new Date(isoDateTime);return d.toLocaleDateString('en-AU',{weekday:'long',timeZone})+' · '+formatTime(isoDateTime,timeZone);}
+export function formatTime(isoDateTime:string,timeZone=DEFAULT_TZ){return new Date(isoDateTime).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit',timeZone}).replace(/\s?([ap]m)/i,' $1').toLowerCase();}
+export function formatWhen(isoDateTime:string,timeZone=DEFAULT_TZ){const d=new Date(isoDateTime);return d.toLocaleDateString('en-AU',{weekday:'long',timeZone})+' · '+formatTime(isoDateTime,timeZone);}
 // Relative label: Today / Tomorrow / Friday / 28 Nov
 export function relativeDay(iso:string,today:string){const n=daysBetween(today,iso);if(n===null)return '';if(n===0)return 'today';if(n===1)return 'tomorrow';if(n===-1)return 'yesterday';if(n>1&&n<7)return formatAU(iso,'weekday');return formatAU(iso,'short');}
 
@@ -38,10 +41,10 @@ function finish(y:number,m:number,d:number){if(y<2000||y>2100||m<1||m>12||d<1||d
 // Regex that finds date-like spans in free text (used by the rule-based extractor).
 export const DATE_SPAN=/\b(\d{1,2}(?:st|nd|rd|th)?[\/.\- ](?:\d{1,2}|[A-Za-z]{3,9})[\/.\- ,]+\d{2,4}|\d{4}-\d{2}-\d{2}|(?:[A-Za-z]{3,9})\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}|\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]{3,9})\b/g;
 
-export function todayISO(timeZone=AU_TIMEZONE,now=new Date()){const parts=new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);const get=(k:string)=>parts.find(p=>p.type===k)!.value;return `${get('year')}-${get('month')}-${get('day')}`;}
-export function localParts(isoDateTime:string|Date,timeZone=AU_TIMEZONE){const d=typeof isoDateTime==='string'?new Date(isoDateTime):isoDateTime;const parts=new Intl.DateTimeFormat('en-AU',{timeZone,hour:'numeric',minute:'numeric',weekday:'short',hour12:false}).formatToParts(d);const get=(k:string)=>parts.find(p=>p.type===k)?.value||'';const hour=+get('hour')%24,minute=+get('minute');const weekday=get('weekday').slice(0,3).toLowerCase() as Weekday;return {hour,minute,weekday,minuteOfDay:hour*60+minute,date:todayISO(timeZone,d)};}
+export function todayISO(timeZone=DEFAULT_TZ,now=new Date()){const parts=new Intl.DateTimeFormat('en-CA',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);const get=(k:string)=>parts.find(p=>p.type===k)!.value;return `${get('year')}-${get('month')}-${get('day')}`;}
+export function localParts(isoDateTime:string|Date,timeZone=DEFAULT_TZ){const d=typeof isoDateTime==='string'?new Date(isoDateTime):isoDateTime;const parts=new Intl.DateTimeFormat('en-AU',{timeZone,hour:'numeric',minute:'numeric',weekday:'short',hour12:false}).formatToParts(d);const get=(k:string)=>parts.find(p=>p.type===k)?.value||'';const hour=+get('hour')%24,minute=+get('minute');const weekday=get('weekday').slice(0,3).toLowerCase() as Weekday;return {hour,minute,weekday,minuteOfDay:hour*60+minute,date:todayISO(timeZone,d)};}
 // Build an ISO timestamp for a local date + minute-of-day in a timezone without a tz library.
-export function zonedDateTime(isoDate:string,minuteOfDay:number,timeZone=AU_TIMEZONE){
+export function zonedDateTime(isoDate:string,minuteOfDay:number,timeZone=DEFAULT_TZ){
  const [y,m,d]=isoDate.split('-').map(Number);const guess=Date.UTC(y,m-1,d,Math.floor(minuteOfDay/60),minuteOfDay%60);
  const offset=(date:number)=>{const p=new Intl.DateTimeFormat('en-US',{timeZone,hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).formatToParts(new Date(date));const g=(k:string)=>+p.find(x=>x.type===k)!.value;return Date.UTC(g('year'),g('month')-1,g('day'),g('hour')%24,g('minute'))-date;};
  let utc=guess-offset(guess);utc=guess-offset(utc);return new Date(utc).toISOString();
