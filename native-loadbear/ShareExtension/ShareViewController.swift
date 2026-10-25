@@ -1,5 +1,6 @@
 import UIKit
 import UniformTypeIdentifiers
+import UserNotifications
 
 // Share to Load Bear.
 //
@@ -112,7 +113,7 @@ final class ShareViewController: UIViewController {
         }
         do {
             try save(text: text, files: files)
-            let note = skipped > 0 ? "Open Load Bear to see it. Some items could not be sent." : "Open Load Bear to see it."
+            let note = skipped > 0 ? "Tap the Bear notification to see it. Some items could not be sent." : "Tap the Bear notification to see it."
             finish(success: true, title: "Given to Bear", detail: note)
         } catch {
             finish(success: false, title: "Bear couldn't save that", detail: "Open Load Bear once, then try sharing again.")
@@ -227,10 +228,29 @@ final class ShareViewController: UIViewController {
         iconView.image = UIImage(systemName: success ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
         titleLabel.text = title
         detailLabel.text = detail
-        if success { openHostApp(URL(string: "loadbear://share")!) }
+        if success {
+            notifyOpenApp()
+            openHostApp(URL(string: "loadbear://share")!)
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + (success ? 1.1 : 1.8)) {
             self.extensionContext?.completeRequest(returningItems: nil)
         }
+    }
+
+    // iOS does not let a share extension open its app. What it does allow is a notification: tapping it
+    // opens Load Bear, which then picks up the shared item. This uses the notification permission that
+    // Load Bear itself asks for the first time it opens.
+    private func notifyOpenApp() {
+        let content = UNMutableNotificationContent()
+        content.title = "Given to Bear"
+        content.body = "Tap to open Load Bear and see it."
+        content.interruptionLevel = .active
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
+        )
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
     }
 
     // Best effort: ask iOS to bring Load Bear to the front. Apple does not officially let a share extension

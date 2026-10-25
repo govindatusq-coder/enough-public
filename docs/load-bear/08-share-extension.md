@@ -14,8 +14,10 @@ no extra taps.
 1. `ShareExtension/ShareViewController.swift` runs inside the share sheet. It never uses the network. It saves
    text, links, photos (shrunk to 2000 px JPEG, which also converts HEIC) and PDFs into the shared App Group
    `group.au.loadbear.app`, in `inbox/<id>/`, writing `payload.json` last.
-2. It then asks iOS to bring Load Bear to the front through `loadbear://share` (best effort; Apple does not
-   officially allow this from an extension).
+2. iOS does not let a share extension open its app (confirmed on a real iPhone running iOS 26: the automatic
+   switch does not happen). So the extension posts a local notification, "Given to Bear. Tap to open Load Bear",
+   and also tries the `loadbear://share` route as a best effort. The app asks for notification permission the first
+   time it opens.
 3. `ios/App/App/SceneDelegate.swift` (`ShareInbox`) runs whenever the app becomes active. It reads the inbox, and
    calls `window.__bearShare(payload)` in the web app. The item is deleted only after the web app accepts it,
    with retries for 20 seconds while the page loads.
