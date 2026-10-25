@@ -359,16 +359,3 @@
 .bear .area-grid.six .area-img{min-height:40px;}
 .bear .home-tiles{min-height:176px;}
 .bear .home-screen{gap:10px;}
-/* Tile pictures: show the whole illustration, not a zoomed crop. */
-.bear .area-grid.six .area-img{background:#FFF7E8;}
-.bear .area-grid.six .area-photo{object-fit:contain;object-position:center;}
-.bear .area-grid.six .area-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-
-/* Premium navy tiles so each area stands out from the cream page. */
-.bear .area-grid.six .area-tile{background:linear-gradient(165deg,#1B4468 0%,#102A43 100%);border:1px solid rgba(255,255,255,.14);box-shadow:0 14px 28px -14px rgba(16,42,67,.75),inset 0 1px 0 rgba(255,255,255,.16);padding:6px 6px 8px;overflow:hidden;}
-.bear .area-grid.six .area-img{border-radius:12px;box-shadow:inset 0 0 0 1px rgba(16,42,67,.08);}
-.bear .area-grid.six .area-label{color:#fff;padding:7px 6px 0;}
-.bear .area-grid.six .area-sub{color:rgba(255,255,255,.72);padding:0 6px;}
-.bear .area-grid.six .badge-dot{box-shadow:0 0 0 3px #102A43;}
-.bear .area-grid.six .badge{box-shadow:0 0 0 2px #102A43,0 4px 10px -2px rgba(0,0,0,.4);}
-.bear .area-grid.six .area-img{background:linear-gradient(180deg,#FFFDF8,#FFF1DA);}
