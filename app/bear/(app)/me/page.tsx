@@ -57,6 +57,7 @@ export default function Me(){
    <div style={{marginTop:32,textAlign:'center'}}><Art file="wordmark" className="wordmark-img" alt="Load Bear"/><Tagline size={20}/></div>
    <Toast message={toast} onDone={()=>setToast(null)}/>
    <span className="sr-only" data-tick={permTick}/>
+   <p className="faint small" style={{textAlign:'center',marginTop:18}}>Version {(CURRENT_BUILD||'dev').slice(0,7)}</p>
   </main>
  );
 }
