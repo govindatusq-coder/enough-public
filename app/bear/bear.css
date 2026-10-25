@@ -381,6 +381,7 @@
 .bear .area-grid.six .area-tile::after{display:none;}
 .bear .tile-anim::before{display:none;}
 .bear .tile-anim{background:none !important;}
-.bear .tile-anim::after{left:0;right:0;mix-blend-mode:multiply;background:var(--tile-img) center/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 24%,#000 70%,transparent 100%),linear-gradient(to right,transparent 0%,#000 16%,#000 84%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,#000 24%,#000 70%,transparent 100%),linear-gradient(to right,transparent 0%,#000 16%,#000 84%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect;}
+.bear .tile-anim::after{left:0;right:0;mix-blend-mode:multiply;background:var(--tile-img) center/cover no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 11%,#000 80%,transparent 100%),linear-gradient(to right,transparent 0%,#000 7%,#000 93%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,#000 11%,#000 80%,transparent 100%),linear-gradient(to right,transparent 0%,#000 7%,#000 93%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect;}
 .bear .area-grid.six .area-label{color:var(--navy);text-shadow:none;}
 .bear .area-grid.six .area-sub{color:var(--ink-3);text-shadow:none;}
+.bear .tile-anim::before{display:block;opacity:.42;filter:blur(24px) saturate(1.1);}
