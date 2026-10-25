@@ -359,19 +359,10 @@
 .bear .area-grid.six .area-img{min-height:40px;}
 .bear .home-tiles{min-height:176px;}
 .bear .home-screen{gap:10px;}
-/* Area tiles: a short looping bear scene, mostly still with a gentle moment of motion. */
-@keyframes tile-scene{0%,38%{background-position:0% 0;}42%{background-position:33.333% 0;}48%{background-position:66.666% 0;}54%{background-position:100% 0;}62%{background-position:66.666% 0;}68%{background-position:33.333% 0;}74%,100%{background-position:0% 0;}}
-.bear .tile-anim{display:block;width:100%;height:100%;background-size:400% auto;background-position:0% 0;background-repeat:no-repeat;background-color:var(--cream);animation:tile-scene 4.5s steps(1,end) infinite;}
-.bear .area-tile:nth-child(2) .tile-anim{animation-delay:-.7s;}
-.bear .area-tile:nth-child(3) .tile-anim{animation-delay:-1.4s;}
-.bear .area-tile:nth-child(4) .tile-anim{animation-delay:-2.1s;}
-.bear .area-tile:nth-child(5) .tile-anim{animation-delay:-2.8s;}
-.bear .area-tile:nth-child(6) .tile-anim{animation-delay:-3.5s;}
-@media (prefers-reduced-motion:reduce){.bear .tile-anim{animation:none;}}
 /* Scene tiles: the picture fills the tile; the name sits on a soft scrim at the bottom. */
 .bear .area-grid.six .area-tile{position:relative;display:block;padding:0;overflow:hidden;}
 .bear .area-grid.six .area-img{position:absolute;inset:0;height:100%;min-height:0;}
-.bear .tile-anim{background-size:400% 100%;}
+.bear .tile-anim{display:block;width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat;background-color:var(--cream);}
 .bear .area-grid.six .area-tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:52%;background:linear-gradient(180deg,rgba(16,42,67,0) 0%,rgba(16,42,67,.78) 100%);pointer-events:none;}
 .bear .area-grid.six .area-label,.bear .area-grid.six .area-sub{position:absolute;left:0;right:0;z-index:2;color:#fff;text-shadow:0 1px 6px rgba(16,42,67,.6);}
 .bear .area-grid.six .area-label{bottom:20px;padding:0 10px;}
