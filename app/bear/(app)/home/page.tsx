@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import {brand,dayModeReply} from '@/lib/bear/domain/copy';
+import {pickGreeting,type Greeting} from '@/lib/bear/domain/greetings';
 import type {DayMode} from '@/lib/bear/domain/types';
 import type {HomeView,NeedsYouItem} from '@/lib/bear/services/home';
 import {Art,TileImage} from '@/components/bear/art';
@@ -15,8 +16,8 @@ const modes:{key:DayMode;label:string}[]=[{key:'good',label:'Good'},{key:'full',
 export default function Home(){
  const router=useRouter();const online=useOnline();
  const [home,setHome]=useState<HomeView|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [busy,setBusy]=useState<string|null>(null);const [aiAvailable,setAiAvailable]=useState(true);
- const delivered=useRef(new Set<string>());const [needsName,setNeedsName]=useState(false);const [nameInput,setNameInput]=useState('');
- const load=useCallback(()=>apiGet<{home?:HomeView;onboarding?:boolean;aiAvailable?:boolean;needsName?:boolean}>('/api/bear/home').then(res=>{if(res.onboarding){router.replace('/bear/onboarding');return;}setHome(res.home!);setNeedsName(!!res.needsName);setAiAvailable(res.aiAvailable!==false);setError(null);
+ const delivered=useRef(new Set<string>());const [greet,setGreet]=useState<Greeting|null>(null);const greetKey=useRef('');
+ const load=useCallback(()=>apiGet<{home?:HomeView;onboarding?:boolean;aiAvailable?:boolean}>('/api/bear/home').then(res=>{if(res.onboarding){router.replace('/bear/onboarding');return;}setHome(res.home!);{const hour=new Date().getHours();const key=`${hour<12?'m':hour<17?'a':'e'}:${res.home!.dayMode||''}`;if(key!==greetKey.current){greetKey.current=key;let last:string|null=null;try{last=localStorage.getItem('bear-greeting');}catch{/* no storage */}const g=pickGreeting({hour,mode:res.home!.dayMode,last});try{localStorage.setItem('bear-greeting',g.id);}catch{/* no storage */}setGreet(g);}}setAiAvailable(res.aiAvailable!==false);setError(null);
    for(const item of res.home!.needsYou){if(item.reminderId&&!delivered.current.has(item.reminderId)){delivered.current.add(item.reminderId);apiSend('/api/bear/reminders/delivered',{reminderId:item.reminderId,via:'in_app'}).catch(()=>{});showLocalReminder(item.reminderId,item.message||`${item.title} needs you.`,`/bear/bills/${item.billId}?reminder=${item.reminderId}`).then(ok=>{if(ok)apiSend('/api/bear/reminders/delivered',{reminderId:item.reminderId,via:'local'}).catch(()=>{});});}}
   }).catch(e=>{const err=e as {status?:number;message:string};if(err.status===401)router.replace('/bear/signin');else setError(err.message);}),[router]);
  useEffect(()=>{load();const onVis=()=>{if(document.visibilityState==='visible')load();};document.addEventListener('visibilitychange',onVis);return()=>document.removeEventListener('visibilitychange',onVis);},[load]);
@@ -30,7 +31,6 @@ export default function Home(){
    else if(key==='drop'){if(!confirm('Tell Bear this is not important anymore?'))return;await apiSend('/api/bear/reminders/interact',{reminderId:item.reminderId,action:'not_important'});}
    setToast(key==='drop'?'Let go. One less thing.':"No worries. Bear will find another time.");await load();}
   catch(e){setError((e as Error).message);}finally{setBusy(null);}}
- async function saveName(){const name=nameInput.trim();if(!name)return;try{await apiSend('/api/bear/profile',{name},'PUT');setNeedsName(false);await load();}catch(e){setError((e as Error).message);}}
  async function demo(){setBusy('demo');try{const res=await apiSend<{capture:{id:string}}>('/api/bear/demo',{});router.push(`/bear/verify/${res.capture.id}`);}catch(e){setError((e as Error).message);setBusy(null);}}
  if(error&&!home)return <main id="main" className="bear-screen"><ErrorCard message={error} retry={load}/></main>;
  if(!home)return <main id="main" className="bear-screen"><div className="skeleton" style={{minHeight:40,maxWidth:220,marginBottom:16}}/><Skeleton/></main>;
@@ -39,12 +39,10 @@ export default function Home(){
   <main id="main" className="bear-screen">
    <header className="hero-banner">
     <div className="hero-text">
-     <p className="eyebrow coral" style={{marginBottom:6}}>Your Bear</p>
      <h1 className="hero-greeting">{home.greeting}</h1>
-     <p className="hero-sub">{home.coveredCount>0?`Bear's got ${home.coveredCount} ${home.coveredCount===1?'thing':'things'} covered.`:"Bear's ready when you are."}</p>
-     {needsName&&<form className="hero-name" onSubmit={e=>{e.preventDefault();saveName();}}><label htmlFor="hero-name-input" className="small">What should Bear call you?</label><div style={{display:'flex',gap:8,marginTop:6}}><input id="hero-name-input" value={nameInput} maxLength={40} placeholder="Your first name" onChange={e=>setNameInput(e.target.value)}/><Button className="sm" variant="primary" type="submit" disabled={!nameInput.trim()}>Save</Button></div></form>}
+     <p className="hero-line hand">{greet?greet.line:brand.gotYou}</p>
     </div>
-    <Art file="hero-bear" className="hero-bear" alt="Mama Bear" width={190}/>
+    <div className="hero-art" aria-hidden="true"><Art file={greet?greet.art:'hero-bear'} className="hero-img" style={{objectPosition:greet?greet.focus:'60% 22%',...(greet?.zoom?{transform:`scale(${greet.zoom})`,transformOrigin:'25% 100%'}:{})}}/></div>
    </header>
    {!online&&<p className="note" style={{marginTop:14}} role="status">You&rsquo;re offline. Showing what Bear last knew.</p>}
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
@@ -75,7 +73,6 @@ export default function Home(){
    </section>
    {home.ideasCount>0&&<section className="section"><Link href="/bear/ideas" className="glass" style={{display:'flex',padding:'14px 16px',alignItems:'center',gap:12}}><span className="icon-dot mustard" aria-hidden="true">✦</span><span className="grow"><strong>Bear noticed {home.ideasCount===1?'something':`${home.ideasCount} things`}.</strong><br/><span className="faint">Have a look when you have a minute.</span></span></Link></section>}
    {!aiAvailable&&<p className="faint" style={{marginTop:20}}>Photo and PDF reading is off until the AI service is connected. Pasted, typed and spoken things work.</p>}
-   <BearSays size={20}>{brand.gotYou}</BearSays>
    <Toast message={toast} onDone={()=>setToast(null)}/>
   </main>
  );

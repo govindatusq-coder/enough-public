@@ -1,4 +1,5 @@
 import 'server-only';
+import {firstName} from '../domain/names.ts';
 import {signedIn} from '@/lib/supabase/server';
 import {SupabaseStore} from '@/lib/bear/store/supabase';
 import {MemoryBackend} from '@/lib/bear/store/memory';
@@ -20,5 +21,6 @@ export async function bearSession(req?:Request):Promise<{store:BearStore;user:{i
  if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return null;
  const {db,user}=await signedIn(req);if(!user)return null;
  const store=new SupabaseStore(user.id,db);
- return {store,user:{id:user.id,email:user.email||null,name:user.user_metadata?.name||''},loadProfile:()=>loadProfile(store)};
+ return {store,user:{id:user.id,email:user.email||null,name:firstName(user.user_metadata)},loadProfile:()=>loadProfile(store)};
 }
+

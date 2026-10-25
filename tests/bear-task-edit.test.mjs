@@ -164,3 +164,22 @@ test('a freshly set-up list is priced straight away when the AI service is conne
  assert.ok(auto.task.items.every(i=>i.estimatedCents===1000));assert.equal(auto.task.estimatedCents,7000,'2 bags + 1 + 3 + 1 = 7 units at $10 each');
  assert.equal(provider.calls.length,1);
 });
+
+import {firstName} from '../lib/bear/domain/names.ts';
+test('the name comes from the login: first name from sign-up or Google, nothing invented',()=>{
+ assert.equal(firstName({name:'Govind'}),'Govind');assert.equal(firstName({full_name:'Govind Kumar'}),'Govind');assert.equal(firstName({given_name:'Ava',full_name:'Ava Lee'}),'Ava');
+ assert.equal(firstName({}),'');assert.equal(firstName(null),'');assert.equal(firstName({name:42}),'');
+});
+
+import {pickGreeting,greetingPool,eligible,partOfDay} from '../lib/bear/domain/greetings.ts';
+import {banned} from '../lib/bear/domain/copy.ts';
+import {existsSync} from 'node:fs';
+test('the banner greeting changes each visit, suits the day, and only uses real artwork and kind words',()=>{
+ for(const g of greetingPool){assert.ok(existsSync(`public/bear/art/${g.art}.webp`),g.art+' exists');assert.ok(!banned.test(g.line),g.line);assert.ok(g.line.length<=44,'short enough to fit the banner: '+g.line);}
+ assert.equal(partOfDay(9),'morning');assert.equal(partOfDay(13),'afternoon');assert.equal(partOfDay(20),'evening');
+ const seen=new Set();for(let i=0;i<40;i++)seen.add(pickGreeting({hour:9,mode:null,random:()=>i/40}).id);assert.ok(seen.size>=3,'varies: '+[...seen]);
+ assert.notEqual(pickGreeting({hour:9,mode:null,last:'got-you',random:()=>0}).id,'got-you','never the same line twice running');
+ for(const mode of ['wiped','chaos'])for(const h of [8,14,21])assert.ok(eligible(partOfDay(h),mode).every(g=>g.modes?.includes(mode)),'hard days get only gentle lines');
+ assert.ok(eligible('evening',null).every(g=>!g.modes),'no mode-specific lines without a mode');
+ assert.ok(eligible('morning','good').some(g=>g.id==='head-start'));
+});
