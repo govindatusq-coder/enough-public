@@ -51,7 +51,7 @@ const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;aut
   const take=()=>{const inbox=window.__bearInbox;if(!inbox)return;window.__bearInbox=undefined;setTimeout(()=>{if(inbox.files[0])void submitFile(inbox.files[0],'upload',inbox.text);else if(inbox.text)void submitText('text',inbox.text);},0);};
   take();window.addEventListener('bear-share',take);return()=>window.removeEventListener('bear-share',take);
  });
- const pick=(o:typeof options[number])=>{if('unavailable' in o&&o.unavailable)return;if(o.key==='voice'){setMode('voice');return;}setPending({method:o.key,accept:o.accept,capture:'capture' in o?o.capture:undefined});setTimeout(()=>fileRef.current?.click(),0);};
+ const pick=(o:typeof options[number])=>{if('unavailable' in o&&o.unavailable)return;if(o.key==='voice'){setMode('voice');if(voiceSupported)startListening();return;}setPending({method:o.key,accept:o.accept,capture:'capture' in o?o.capture:undefined});setTimeout(()=>fileRef.current?.click(),0);};
  const manualText=()=>[manual.what,manual.who?`For ${manual.who}`:'',manual.when?`Due date: ${manual.when}`:'',manual.amount?`Total amount due: ${manual.amount.startsWith('$')?manual.amount:'$'+manual.amount}`:''].filter(Boolean).join('\n');
  function startListening(){const Ctor=recognitionCtor();if(!Ctor)return;const r=new Ctor();r.lang='en-AU';r.continuous=true;r.interimResults=true;
   r.onresult=e=>{let finalText='',interimText='';for(let i=0;i<e.results.length;i++){const res=e.results[i];const t=res[0].transcript;if(res.isFinal)finalText+=t+' ';else interimText+=t;}if(finalText)setTranscript(x=>(x+' '+finalText).replace(/\s+/g,' ').trim());setInterim(interimText);};

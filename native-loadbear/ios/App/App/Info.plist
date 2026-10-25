@@ -79,6 +79,10 @@
 	<string>Take a photo of a paper bill to give it to Bear.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose a screenshot or photo of a bill to give it to Bear.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Say what is on your mind and Bear will turn it into words.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Bear turns what you say into text so you do not have to type.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
