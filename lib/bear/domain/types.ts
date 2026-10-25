@@ -134,7 +134,7 @@ export interface Project extends Owned{areaKey:AreaKey;title:string;status:'acti
 export const taskKinds=['pay_bill','check_balance','confirm_discount','confirm_discrepancy','transfer_money','save_receipt','appointment','school','form','errand','shopping','message','note','event','custom'] as const;
 export type TaskKind=typeof taskKinds[number];
 export interface ShoppingItem{id:string;name:string;quantity:string|null;estimatedCents:number|null;done:boolean;doneAt:ISODateTime|null}
-export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;status:'open'|'done'|'dropped'|'archived';dueAt:ISODate|null;dueTime?:string|null;location?:string|null;notes?:string|null;estimatedMinutes:number;cognitiveEffort:'low'|'medium'|'high';forPerson:string|null;isDemo:boolean;items?:ShoppingItem[];estimatedCents?:number|null;setupBy?:'bear'|'user'}
+export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;status:'open'|'done'|'dropped'|'archived';dueAt:ISODate|null;dueTime?:string|null;location?:string|null;notes?:string|null;estimatedMinutes:number;cognitiveEffort:'low'|'medium'|'high';forPerson:string|null;isDemo:boolean;items?:ShoppingItem[];estimatedCents?:number|null;setupBy?:'bear'|'user';part?:{of:Id;index:number;total:number}|null;buyWhen?:'now'|null;wishlist?:{since:ISODate;checkBackAt:ISODate|null}|null}
 export interface TaskDependency extends Owned{taskId:Id;dependsOnTaskId:Id}
 
 // ---------- Bill ----------

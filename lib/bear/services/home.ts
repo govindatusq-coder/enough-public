@@ -13,7 +13,7 @@ import {refreshSuggestions} from './suggestions.ts';
 export interface NeedsYouItem{taskId:string;billId:string|null;kind:string;title:string;amount:string|null;due:string|null;dueLabel:string;minutes:number;reminderId:string|null;message:string|null;actions:{key:string;label:string}[];essential:boolean;isDemo:boolean}
 export interface HomeView{
  greeting:string;name:string;coveredCount:number;dayMode:DayMode|null;today:string;
- needsYou:NeedsYouItem[];areas:AreaTile[];handling:{watching:number;remindersReady:number;expectedSoon:number;lines:string[]};
+ needsYou:NeedsYouItem[];areas:AreaTile[];wishlist:{count:number;next:string|null};handling:{watching:number;remindersReady:number;expectedSoon:number;lines:string[]};
  ledgers:{health:{headline:string;lines:string[]};wealth:{headline:string|null;lines:string[]};happiness:{headline:string|null;lines:string[]}};
  ideasCount:number;demoAvailable:boolean;hasAnyBill:boolean;
 }
@@ -22,7 +22,8 @@ export async function homeView(store:BearStore,now=new Date(),fallbackName=''):P
  const bills=await store.list('bills',{where:[{column:'status',op:'in',value:['watching','due_soon']}],orderBy:{column:'due_at'}});
  const allOpen=await store.list('tasks',{where:[{column:'status',value:'open'}]});
  const stepIds=new Set((await store.list('task_dependencies')).map(d=>d.dependsOnTaskId));
- const tasks=allOpen.filter(t=>!stepIds.has(t.id));
+ const wished=allOpen.filter(t=>t.wishlist&&!stepIds.has(t.id));
+ const tasks=allOpen.filter(t=>!stepIds.has(t.id)&&!t.wishlist);
  const scheduled=await store.list('reminders',{where:[{column:'status',op:'in',value:['scheduled','snoozed']}]});
  const expectations=await store.list('recurring_expectations',{where:[{column:'status',value:'expecting'}]});
  const due=await dueReminders(store,now);
@@ -40,7 +41,7 @@ export async function homeView(store:BearStore,now=new Date(),fallbackName=''):P
  const ledgerRows=await store.list('value_ledger',{orderBy:{column:'occurred_at',ascending:false},limit:200});
  const covered=bills.length+otherHeld+scheduled.length+expectations.length+suggestions.length;
  const hour=localParts(now,tz).hour;
- return {greeting:greeting(hour,profile.name||fallbackName),name:profile.name||fallbackName,coveredCount:covered,dayMode,today,needsYou,areas:await areaTiles(store,profile.areas),handling:{watching,remindersReady:ready,expectedSoon,lines},ledgers:ledgers(ledgerRows,today,tasks),ideasCount:suggestions.length,demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
+ return {greeting:greeting(hour,profile.name||fallbackName),name:profile.name||fallbackName,coveredCount:covered,dayMode,today,needsYou,areas:await areaTiles(store,profile.areas),wishlist:{count:wished.length,next:wished.map(t=>t.wishlist!.checkBackAt).filter((d):d is string=>!!d).sort()[0]||null},handling:{watching,remindersReady:ready,expectedSoon,lines},ledgers:ledgers(ledgerRows,today,tasks),ideasCount:suggestions.length,demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
 }
 function needsYouItems(bills:Bill[],tasks:Task[],due:DueReminder[],today:string,dayMode:DayMode|null):NeedsYouItem[]{
  const items:NeedsYouItem[]=[];

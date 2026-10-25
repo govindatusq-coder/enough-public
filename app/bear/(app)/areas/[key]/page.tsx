@@ -9,7 +9,7 @@ import {Button,ErrorCard,Skeleton,TopBar} from '@/components/bear/ui';
 const kindLabel:Record<string,string>={bill:'Bill',appointment:'Appointment',school:'School',form:'Form',errand:'Errand',shopping:'Shopping',message:'From a message',note:'Note',event:'Event',custom:'Task'};
 function Row({item}:{item:AreaItem}){
  const href=item.billId?`/bear/bills/${item.billId}`:`/bear/tasks/${item.taskId}`;
- const bits=[kindLabel[item.kind]||'Task',item.dueLabel,item.amount,item.estimate,item.stepsLeft?`${item.stepsLeft} ${item.stepsLeft===1?'purchase':'purchases'} left`:item.itemsLeft?`${item.itemsLeft} to get`:null].filter(Boolean);
+ const bits=[kindLabel[item.kind]||'Task',item.part?`Part ${item.part}`:null,item.dueLabel,item.amount,item.estimate,item.stepsLeft?`${item.stepsLeft} ${item.stepsLeft===1?'purchase':'purchases'} left`:item.itemsLeft?`${item.itemsLeft} to get`:null].filter(Boolean);
  return <Link href={href} className="row" style={{textDecoration:'none',color:'inherit'}}><span className="grow"><span className="title">{item.title}{item.isDemo&&<span className="demo-tag" style={{marginLeft:8}}>Example</span>}</span><br/><span className="faint">{bits.join(' · ')}</span></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{color:'var(--ink-3)'}}><path d="M9 6l6 6-6 6"/></svg></Link>;
 }
 export default function AreaPage({params}:{params:Promise<{key:string}>}){

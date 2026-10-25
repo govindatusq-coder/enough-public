@@ -11,7 +11,7 @@ export const GET=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(
  const deps=await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]});
  const steps=(await Promise.all(deps.map(d=>store.get('tasks',d.dependsOnTaskId)))).filter(Boolean);
  const active=reminders.filter(r=>['scheduled','snoozed','delivered'].includes(r.status));
- const plan=task.status==='open'&&active.length===0?await recommendPlan(store,null,task):null;
+ const plan=task.status==='open'&&active.length===0&&!task.wishlist?await recommendPlan(store,null,task):null;
  const documentId=project?.resourceDocumentIds[0]||null;
  return json({task,project,reminders,steps,plan,documentUrl:documentId?`/api/bear/documents/${documentId}`:null});
 });

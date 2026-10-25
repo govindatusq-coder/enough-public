@@ -5,6 +5,7 @@ import {useRouter} from 'next/navigation';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import {brand,dayModeReply} from '@/lib/bear/domain/copy';
 import {pickGreeting,type Greeting} from '@/lib/bear/domain/greetings';
+import {formatAU} from '@/lib/bear/domain/dates';
 import type {DayMode} from '@/lib/bear/domain/types';
 import type {HomeView,NeedsYouItem} from '@/lib/bear/services/home';
 import {Art,TileImage} from '@/components/bear/art';
@@ -61,9 +62,9 @@ export default function Home(){
      </div>
     </div>)}
    </section>
-   {home.areas.length>0&&<section className="section" aria-labelledby="areas">
+   {(home.areas.length>0||home.wishlist.count>0)&&<section className="section" aria-labelledby="areas">
     <p id="areas" className="eyebrow">Your areas</p>
-    <div className="area-grid">{home.areas.map(a=><Link key={a.key} href={`/bear/areas/${a.key}`} className="area-tile" aria-label={`${a.label}: ${a.open} current`}><span className="area-img"><TileImage file={`area-${a.key}`}/></span><span className="area-label">{a.label}</span><span className="small muted">{a.open===0?'Nothing current':`${a.open} current`}</span></Link>)}</div>
+    <div className="area-grid">{home.areas.map(a=><Link key={a.key} href={`/bear/areas/${a.key}`} className="area-tile" aria-label={`${a.label}: ${a.open} current`}><span className="area-img"><TileImage file={`area-${a.key}`}/></span><span className="area-label">{a.label}</span><span className="small muted">{a.open===0?'Nothing current':`${a.open} current`}</span></Link>)}{home.wishlist.count>0&&<Link href="/bear/wishlist" className="area-tile" aria-label={`Wishlist: ${home.wishlist.count} waiting`}><span className="area-img"><TileImage file="ledger-wealth"/></span><span className="area-label">Wishlist</span><span className="small muted">{home.wishlist.count} waiting{home.wishlist.next?` · back ${formatAU(home.wishlist.next,'short')}`:''}</span></Link>}</div>
    </section>}
    <section className="section" aria-labelledby="handling">
     <p id="handling" className="eyebrow teal">Bear&rsquo;s handling</p>

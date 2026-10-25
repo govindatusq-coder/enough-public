@@ -1,13 +1,15 @@
 import {z} from 'zod';
-import {addDays,todayISO} from '../domain/dates.ts';
+import {addDays,formatWhen,todayISO,zonedDateTime} from '../domain/dates.ts';
+import {formatAUD} from '../domain/money.ts';
 import {itemCost,totalCost} from '../domain/items.ts';
-import type {ShoppingItem,Task,TaskDependency} from '../domain/types.ts';
+import type {Project,Reminder,ReminderPlan,ShoppingItem,Task} from '../domain/types.ts';
 import {newId,stamp,type BearStore} from '../store/store.ts';
 import type {StructuredModelProvider} from '../ai/provider.ts';
 import {ProviderError} from '../ai/provider.ts';
 import {completeTask} from './completion.ts';
 import {ensureProfile} from './profile.ts';
 import {ConfirmError} from './task-inference.ts';
+import {acceptPlan,recommendPlan} from './reminder-planning.ts';
 
 // Editing a task (open or done), ticking list items off across several trips, estimating the
 // cost of a list, splitting a large list into several purchases, and reopening a done task.
@@ -90,29 +92,75 @@ export async function estimateTaskCost(store:BearStore,provider:StructuredModelP
  return store.update('tasks',task.id,{items:next,estimatedCents:totalCost(next)});
 }
 
-// Split a list into several purchases: each becomes a step (with its own items, cost and date),
-// balanced by cost where prices exist and by count otherwise.
+// Split a list into several purchases. Each purchase becomes its own task, with its own
+// project, items, cost, date and reminder, so five trips are five things on the list and each
+// can be finished (and counted in My Wins) on its own. Items are shared out balanced by cost
+// where prices exist and by count otherwise. The original list is archived, not deleted.
 export async function splitIntoPurchases(store:BearStore,taskId:string,parts:number,now=new Date()){
  const task=await loadEditable(store,taskId);const items=(task.items||[]).filter(i=>!i.done);
  if(task.status!=='open')throw new ConfirmError('Only open lists can be split.',400,'not_open');
+ if(task.part)throw new ConfirmError('This is already one of the purchases.',409,'already_split');
  if((await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})).length)throw new ConfirmError('This is already split into purchases.',409,'already_split');
- const n=Math.min(Math.max(2,Math.round(parts)),Math.min(6,items.length));
  if(items.length<2)throw new ConfirmError('Add at least two items to split a list.',400,'too_few');
+ const n=Math.min(Math.max(2,Math.round(parts)),Math.min(8,items.length));
  const priced=items.filter(i=>i.estimatedCents!==null).length>=items.length/2;
  const weight=(i:ShoppingItem)=>priced?Math.max(1,itemCost(i)):1;
  const bins:ShoppingItem[][]=Array.from({length:n},()=>[]);const loads=Array(n).fill(0);
  for(const it of [...items].sort((a,b)=>weight(b)-weight(a))){const k=loads.indexOf(Math.min(...loads));bins[k].push(it);loads[k]+=weight(it);}
+ const original=await store.get('projects',task.projectId);const areaKey=original?.areaKey||'me';
  const profile=await ensureProfile(store);const today=todayISO(profile.lifeRhythm.timezone||'Australia/Sydney',now);
  const span=task.dueAt&&task.dueAt>today?Math.max(n,Math.round((new Date(task.dueAt).getTime()-new Date(today).getTime())/86400000)):n*7;
- const steps:Task[]=[];
+ const base=task.title.replace(/\s*\(\d+ of \d+\)$/,'');const tasks:Task[]=[];
  for(let k=0;k<n;k++){
-  const group=bins[k];const cost=totalCost(group);
-  const due=addDays(today,Math.max(1,Math.round(((k+1)*span)/n)));
+  const group=bins[k].map(i=>({...i,id:newId(),done:false,doneAt:null}));const cost=totalCost(group);
+  const rawDue=addDays(today,Math.max(1,Math.round(((k+1)*span)/n)));const due=task.dueAt&&rawDue>task.dueAt?task.dueAt:rawDue;
   const names=group.slice(0,3).map(i=>i.name).join(', ')+(group.length>3?` +${group.length-3} more`:'');
-  const step=await store.insert('tasks',stamp<Task>(store.userId,{projectId:task.projectId,kind:'shopping',title:`Purchase ${k+1} of ${n}: ${names}`,status:'open',dueAt:task.dueAt&&due>task.dueAt?task.dueAt:due,estimatedMinutes:20,cognitiveEffort:'low',forPerson:task.forPerson,isDemo:task.isDemo,items:group,estimatedCents:cost,setupBy:'bear'}));
-  await store.insert('task_dependencies',stamp<TaskDependency>(store.userId,{taskId:task.id,dependsOnTaskId:step.id}));steps.push(step);
+  const title=`${base}: ${names}`.slice(0,120);
+  const project=await store.insert('projects',stamp<Project>(store.userId,{areaKey,title:`${title} (${k+1} of ${n})`.slice(0,120),status:'active',dueAt:due,resourceDocumentIds:original?.resourceDocumentIds||[],billId:null}));
+  const t=await store.insert('tasks',stamp<Task>(store.userId,{projectId:project.id,kind:'shopping',title,status:'open',dueAt:due,dueTime:null,location:task.location??null,notes:null,estimatedMinutes:20,cognitiveEffort:'low',forPerson:task.forPerson,isDemo:task.isDemo,items:group,estimatedCents:cost,setupBy:'bear',part:{of:task.id,index:k+1,total:n}}));
+  tasks.push(t);
+  try{const plan=await recommendPlan(store,null,t,now);if(plan.suggested.when)await acceptPlan(store,{taskId:t.id,when:plan.suggested.when,label:plan.suggested.label,rationale:plan.suggested.rationale,key:'bear',followUpIfUnpaid:false},now);}catch{/* the task stands without a reminder */}
  }
- return {task,steps};
+ for(const r of await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed']}]}))await store.update('reminders',r.id,{status:'cancelled'});
+ const archived=await store.update('tasks',task.id,{status:'archived',notes:`Split into ${n} purchases.`});
+ if(original)await store.update('projects',original.id,{status:'archived'});
+ return {original:archived,tasks,areaKey};
+}
+
+// ---------- Big spends: when could this comfortably be bought? ----------
+// Asked once, for a spend of BIG_SPEND_CENTS or more. "Now" keeps it current. Anything else moves
+// it to the wishlist, which lives with the areas and stays off the busy screens until its check-back
+// day, when it comes back as one gentle reminder.
+export const affordSchema=z.object({mode:z.enum(['now','date','check_back','wishlist']),date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),days:z.number().int().min(1).max(730).optional()}).strict();
+export type AffordInput=z.infer<typeof affordSchema>;
+export async function answerAfford(store:BearStore,taskId:string,input:AffordInput,now=new Date()){
+ const task=await loadEditable(store,taskId);
+ if(task.status!=='open')throw new ConfirmError('Only open things can go on the wishlist.',400,'not_open');
+ const profile=await ensureProfile(store);const tz=profile.lifeRhythm.timezone||'Australia/Sydney';const today=todayISO(tz,now);
+ // Whatever was planned before no longer applies.
+ for(const r of await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed']}]}))await store.update('reminders',r.id,{status:'cancelled'});
+ if(input.mode==='now'){
+  const next=await store.update('tasks',task.id,{buyWhen:'now',wishlist:null});
+  try{const plan=await recommendPlan(store,null,next,now);if(plan.suggested.when)await acceptPlan(store,{taskId:next.id,when:plan.suggested.when,label:plan.suggested.label,rationale:plan.suggested.rationale,key:'bear',followUpIfUnpaid:true},now);}catch{/* held without a reminder */}
+  return next;
+ }
+ let checkBackAt:string|null=null;
+ if(input.mode==='date'){if(!input.date||input.date<=today)throw new ConfirmError('Pick a day that is still ahead of you.',400,'invalid_date');checkBackAt=input.date;}
+ if(input.mode==='check_back'){if(!input.days)throw new ConfirmError('Say how long to wait.',400,'invalid_days');checkBackAt=addDays(today,input.days);}
+ const next=await store.update('tasks',task.id,{buyWhen:null,wishlist:{since:task.wishlist?.since||today,checkBackAt}});
+ if(checkBackAt){
+  const when=zonedDateTime(checkBackAt,10*60,tz);const cost=next.estimatedCents?` It came to about ${formatAUD(next.estimatedCents)}.`:'';
+  const plan:ReminderPlan={scheduledFor:when,label:formatWhen(when,tz),rationale:'You asked Bear to check back.',windowId:null,score:0};
+  await store.insert('reminders',stamp<Reminder>(store.userId,{taskId:task.id,billId:null,kind:'planned',status:'scheduled',scheduledFor:when,plan,followUpIfUnpaid:false,attempts:0,deliveredAt:null,deliveredVia:[],message:`Is now a good time to buy ${task.title}?${cost}`}));
+ }
+ return next;
+}
+
+export interface WishlistView{items:{taskId:string;title:string;estimate:string|null;checkBackAt:string|null;since:string;areaKey:string|null}[]}
+export async function wishlistView(store:BearStore):Promise<WishlistView>{
+ const [tasks,projects]=await Promise.all([store.list('tasks',{where:[{column:'status',value:'open'}]}),store.list('projects')]);
+ const area=new Map(projects.map(p=>[p.id,p.areaKey]));
+ return {items:tasks.filter(t=>t.wishlist).map(t=>({taskId:t.id,title:t.title,estimate:t.estimatedCents?formatAUD(t.estimatedCents):null,checkBackAt:t.wishlist!.checkBackAt,since:t.wishlist!.since,areaKey:area.get(t.projectId)||null})).sort((a,b)=>(a.checkBackAt||'9999')<(b.checkBackAt||'9999')?-1:1)};
 }
 
 // Undo "done": the task, its project and its dependencies open again; the Win and Completion are

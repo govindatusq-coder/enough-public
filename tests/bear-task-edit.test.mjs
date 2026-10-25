@@ -66,16 +66,30 @@ test('"got everything" completes a list in one go',async()=>{
  const r=await setItemDone(store,auto.task.id,{all:true},NOW);assert.equal(r.completed,true);assert.ok(r.task.items.every(i=>i.done));
 });
 
-test('a larger list splits into balanced purchases that are steps of the main task',async()=>{
+test('splitting a list makes separate tasks, each with its own project, items, date and reminder',async()=>{
  const store=new MemoryBackend().for(USER);await onboard(store);const {auto}=await listTask(store);
  await updateTask(store,auto.task.id,{items:auto.task.items.map((i,k)=>({...i,estimatedCents:[9000,3000,2500,1500][k]}))});
- const {steps}=await splitIntoPurchases(store,auto.task.id,2,NOW);
- assert.equal(steps.length,2);assert.equal(steps.reduce((s,t)=>s+t.items.length,0),4);
- const costs=steps.map(t=>t.estimatedCents).sort((x,y)=>x-y);assert.deepEqual(costs,[12000,18000],'2 bags of mix (18000) alone vs the other three (12000): balanced by cost, not count');
- assert.ok(steps.every(t=>t.dueAt<='2026-12-05'&&t.dueAt>'2026-11-10'));
- assert.equal((await store.list('task_dependencies',{where:[{column:'task_id',value:auto.task.id}]})).length,2);
- await assert.rejects(splitIntoPurchases(store,auto.task.id,2,NOW),e=>e.code==='already_split');
- const r=await setItemDone(store,auto.task.id,{itemId:auto.task.items[0].id},NOW);assert.equal(r.completed,false,'a split list finishes from its purchases');
+ const split=await splitIntoPurchases(store,auto.task.id,2,NOW);
+ assert.equal(split.tasks.length,2);assert.equal(split.areaKey,'home');assert.equal(split.original.status,'archived');
+ assert.equal(split.tasks.reduce((s,t)=>s+t.items.length,0),4);
+ assert.deepEqual(split.tasks.map(t=>t.part.index+'/'+t.part.total),['1/2','2/2']);assert.ok(split.tasks.every(t=>t.part.of===auto.task.id));
+ const costs=split.tasks.map(t=>t.estimatedCents).sort((x,y)=>x-y);assert.deepEqual(costs,[12000,18000],'2 bags of mix (18000) alone vs the other three (12000): balanced by cost, not count');
+ assert.ok(split.tasks.every(t=>t.dueAt<='2026-12-05'&&t.dueAt>'2026-11-10'));
+ assert.equal((await store.list('task_dependencies')).length,0,'separate tasks, not steps');
+ const projects=await store.list('projects');assert.equal(projects.filter(p=>p.status==='active').length,2);assert.equal(projects.find(p=>p.id===auto.task.projectId).status,'archived');
+ const live=(await store.list('reminders')).filter(r=>r.status==='scheduled'&&r.kind==='planned');assert.equal(live.length,2,'each purchase has its own reminder');assert.ok(live.every(r=>split.tasks.some(t=>t.id===r.taskId)));
+ await assert.rejects(splitIntoPurchases(store,auto.task.id,2,NOW),e=>e.code==='not_open');
+ await assert.rejects(splitIntoPurchases(store,split.tasks[0].id,2,NOW),e=>e.code==='already_split'||e.code==='too_few');
+ // each purchase finishes on its own and is counted on its own
+ await completeTask(store,{taskId:split.tasks[0].id,method:null,expectNext:false},NOW);
+ const view=await areaView(store,'home',NOW);assert.equal(view.current.length,1);assert.equal(view.done.length,1);assert.equal((await winsView(store)).cards.length,1);
+});
+
+test('five purchases are five tasks',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:'Bunnings: deck boards, outdoor paint, drill, screws, brushes, sandpaper, gloves',referenceYear:2026});
+ const auto=await maybeAutoSetup(store,extraction,NOW);const split=await splitIntoPurchases(store,auto.task.id,5,NOW);
+ assert.equal(split.tasks.length,5);assert.equal((await areaView(store,'home',NOW)).current.length,5);assert.equal(split.tasks.reduce((s,t)=>s+t.items.length,0),7);
 });
 
 test('a completed task can be edited, and reopened without leaving a stale win',async()=>{
@@ -94,11 +108,10 @@ import {setWinSaving} from '../lib/bear/services/win-edit.ts';
 import {confirmBill} from '../lib/bear/services/task-inference.ts';
 import {homeView} from '../lib/bear/services/home.ts';
 
-test('areas list what is current in each, without listing steps twice, and move tasks to done',async()=>{
+test('areas list what is current in each and move tasks to done',async()=>{
  const store=new MemoryBackend().for(USER);await onboard(store);const {auto}=await listTask(store);
  await updateTask(store,auto.task.id,{items:auto.task.items.map(i=>({...i,estimatedCents:1000}))});
- await splitIntoPurchases(store,auto.task.id,2,NOW);
- const home=await areaView(store,'home',NOW);assert.equal(home.current.length,1,'purchases are steps of the main task');assert.equal(home.current[0].taskId,auto.task.id);assert.equal(home.current[0].stepsLeft,2);assert.match(home.current[0].estimate,/about \$70/);
+ const home=await areaView(store,'home',NOW);assert.equal(home.current.length,1);assert.equal(home.current[0].taskId,auto.task.id);assert.match(home.current[0].estimate,/about \$70/);assert.equal(home.current[0].part,null);
  const tiles=await areaTiles(store,['family','home','money']);assert.equal(tiles.find(t=>t.key==='home').open,1);assert.equal(tiles.find(t=>t.key==='money').open,0);
  assert.equal((await homeView(store,NOW)).areas.find(a=>a.key==='home').open,1);
  await completeTask(store,{taskId:auto.task.id,method:null,expectNext:false},NOW);
@@ -195,4 +208,50 @@ test('app icons are full-bleed squares of the supplied artwork, the manifest poi
  const py="from PIL import Image\nimport sys\nfor f in sys.argv[1:]:\n im=Image.open(f).convert('RGB');w,h=im.size\n for p in [(0,0),(w-1,0),(0,h-1),(w-1,h-1)]:\n  r,g,b=im.getpixel(p)\n  print(f,p,'BLACK' if max(r,g,b)<12 else 'ok')\n";
  const out=execFileSync('python3',['-c',py,'public/bear/apple-touch-icon.png','public/bear/icon-192.png','public/bear/icon-512.png','public/bear/art/icon-master-square.png']).toString();
  assert.ok(!out.includes('BLACK'),'icon corners are clean:\n'+out);
+});
+
+
+import {answerAfford,wishlistView} from '../lib/bear/services/task-edit.ts';
+import {dueReminders} from '../lib/bear/services/reminders.ts';
+import {parseItemLine,formatItemLine,BIG_SPEND_CENTS} from '../lib/bear/domain/items.ts';
+
+test('a price can be typed after an item and survives a round trip through the edit box',()=>{
+ const i=parseItemLine('2 bags potting mix - $18.50 each');assert.deepEqual([i.name,i.quantity,i.estimatedCents],['potting mix','2 bags',1850]);
+ assert.equal(formatItemLine(i),'2 bags potting mix $18.50');assert.equal(parseItemLine(formatItemLine(i)).estimatedCents,1850);
+ assert.equal(formatItemLine({name:'drill',quantity:null,estimatedCents:2500}),'drill $25');assert.equal(parseItemLine('milk').estimatedCents,null);
+});
+
+async function bigList(store){
+ const {auto}=await listTask(store);
+ await updateTask(store,auto.task.id,{items:auto.task.items.map((i,k)=>({...i,estimatedCents:[9000,3000,2500,1500][k]}))});
+ return store.get('tasks',auto.task.id);
+}
+test('a big spend asks when it is affordable: now keeps it current, a date or check-back moves it to the wishlist with one reminder',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);let task=await bigList(store);
+ assert.ok(task.estimatedCents>=BIG_SPEND_CENTS,'above the threshold that triggers the question');
+ // not sure → check back in 30 days
+ task=await answerAfford(store,task.id,{mode:'check_back',days:30},NOW);
+ assert.equal(task.wishlist.checkBackAt,'2026-12-10');assert.equal(task.buyWhen,null);
+ const live=(await store.list('reminders')).filter(r=>r.status==='scheduled');assert.equal(live.length,1,'the earlier plan is replaced by one check-back');
+ {const l=localParts(live[0].scheduledFor,'Australia/Sydney');assert.equal(l.date,'2026-12-10');assert.equal(l.hour,10,'10 am local');}assert.match(live[0].message,/Is now a good time to buy/);assert.match(live[0].message,/\$/);
+ // off the busy screens
+ const home=await homeView(store,NOW);assert.equal(home.needsYou.length,0);assert.equal(home.areas.find(a=>a.key==='home').open,0);assert.equal(home.wishlist.count,1);assert.equal(home.wishlist.next,'2026-12-10');
+ assert.ok(!home.handling.lines.some(l=>/other thing/.test(l)),'not counted as held for you');
+ assert.equal((await areaView(store,'home',NOW)).current.length,0);
+ const wl=await wishlistView(store);assert.equal(wl.items.length,1);assert.equal(wl.items[0].checkBackAt,'2026-12-10');assert.equal(wl.items[0].areaKey,'home');
+ // it comes back as one reminder on the check-back day
+ const due=await dueReminders(store,new Date('2026-12-10T10:30:00+11:00'));assert.equal(due.length,1);assert.equal(due[0].reminder.taskId,task.id);
+ // checking back: ready now → current again with a plan
+ task=await answerAfford(store,task.id,{mode:'now'},new Date('2026-12-10T10:31:00+11:00'));assert.equal(task.wishlist,null);assert.equal(task.buyWhen,'now');
+ assert.equal((await wishlistView(store)).items.length,0);assert.equal((await areaView(store,'home',NOW)).current.length,1);
+});
+
+test('a known date, or no date at all, are both valid wishlist answers; past dates are not',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);const task=await bigList(store);
+ await assert.rejects(answerAfford(store,task.id,{mode:'date',date:'2026-11-01'},NOW),e=>e.code==='invalid_date');
+ await assert.rejects(answerAfford(store,task.id,{mode:'check_back'},NOW),e=>e.code==='invalid_days');
+ const dated=await answerAfford(store,task.id,{mode:'date',date:'2027-02-14'},NOW);assert.equal(dated.wishlist.checkBackAt,'2027-02-14');
+ const open=await answerAfford(store,task.id,{mode:'wishlist'},NOW);assert.equal(open.wishlist.checkBackAt,null);assert.equal(open.wishlist.since,dated.wishlist.since,'since is kept');
+ assert.equal((await store.list('reminders')).filter(r=>r.status==='scheduled').length,0,'no date, no reminder: it simply waits on the wishlist');
+ assert.equal((await homeView(store,NOW)).wishlist.next,null);
 });
