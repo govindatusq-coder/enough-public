@@ -6,10 +6,10 @@
  *
  * To add or replace artwork: drop a webp into `public/illustrations/` and add
  * its name to the category below. Recommendation logic never changes.
- * `dedicated: false` marks categories still borrowing a neighbouring painting.
- * Those name a `planned` file: drop that exact file into public/illustrations
- * and it appears automatically; until then the page falls back to the
- * borrowed painting when the planned file fails to load.
+ * `dedicated: false` marks a category still borrowing a neighbouring painting.
+ * A new category can name a `planned` file: drop that exact file into
+ * public/illustrations and it appears automatically; until then the page
+ * falls back to the borrowed painting when the planned file fails to load.
  */
 export const illustrationCategories=['phone-call','children-school','children-sport','waiting','desk-work','outdoor-work','errands','groceries','home','cooking','television','transport','walking','nature','social','pets','neighbourhood','commuting','low-energy','playful'] as const;
 export type IllustrationCategory=typeof illustrationCategories[number];
@@ -37,20 +37,20 @@ type Entry={variants:Art[];dedicated:boolean;planned?:Art};
 export const illustrationLibrary:Record<IllustrationCategory,Entry>={
  'phone-call':{variants:[art.call,art.welcomeCall],dedicated:true},
  'children-school':{variants:[art.school,art.parentChild],dedicated:true},
- 'children-sport':{variants:[art.parentChild],dedicated:false,planned:{file:'kids-sport',alt:'A parent walking the edge of a suburban sports field while children train'}},
- waiting:{variants:[art.busStop,art.street],dedicated:false,planned:{file:'waiting',alt:'Someone strolling outside a quiet medical centre while they wait'}},
- 'desk-work':{variants:[art.office],dedicated:false,planned:{file:'desk-sitting',alt:'Someone standing up from a desk by a window, stretching gently'}},
- 'outdoor-work':{variants:[art.welcomeCall],dedicated:false,planned:{file:'outdoor-work',alt:'A worker in a hi-vis vest walking across a building site at dawn'}},
+ 'children-sport':{variants:[{file:'kids-sport',alt:'A parent walking the path beside a suburban sports oval while children train at sunset'},art.parentChild],dedicated:true},
+ waiting:{variants:[{file:'waiting',alt:'A woman strolling past a small clinic with her phone, a bench and a quiet waiting room behind her'},art.busStop,art.street],dedicated:true},
+ 'desk-work':{variants:[{file:'desk-sitting',alt:'A woman standing up from her desk by the window to stretch'},art.office],dedicated:true},
+ 'outdoor-work':{variants:[{file:'outdoor-work',alt:'A worker in a hi-vis vest crossing a building site at dawn with a coffee and clipboard'},art.welcomeCall],dedicated:true},
  errands:{variants:[art.shopping,art.street],dedicated:true},
- groceries:{variants:[art.shopping],dedicated:false,planned:{file:'supermarket',alt:'Someone carrying a shopping basket down a quiet supermarket aisle'}},
+ groceries:{variants:[{file:'supermarket',alt:'A woman carrying a shopping basket past the fruit and vegetables in a quiet supermarket'},art.shopping],dedicated:true},
  home:{variants:[art.kitchenBench,art.stillLife],dedicated:true},
  cooking:{variants:[art.kitchen,art.kitchenBench],dedicated:true},
- television:{variants:[art.stillLife],dedicated:false,planned:{file:'tv-evening',alt:'A living room in the evening glow of the television, a cup of tea on the arm of the sofa'}},
+ television:{variants:[{file:'tv-evening',alt:'A woman getting up from the sofa with her mug in a lamp-lit living room, the television on'},art.stillLife],dedicated:true},
  transport:{variants:[art.busStop],dedicated:true},
  walking:{variants:[art.hero,art.coast],dedicated:true},
  nature:{variants:[art.coast,art.hero],dedicated:true},
  social:{variants:[art.catchup],dedicated:true},
- pets:{variants:[art.busStop],dedicated:false,planned:{file:'pets-dog-walk',alt:'A person walking a dog along a leafy suburban street'}},
+ pets:{variants:[{file:'pets-dog-walk',alt:'A woman walking her dog down a jacaranda-lined suburban street'},art.busStop],dedicated:true},
  neighbourhood:{variants:[art.street,art.shopping],dedicated:true},
  commuting:{variants:[art.office,art.busStop],dedicated:true},
  'low-energy':{variants:[art.stillLife],dedicated:true},
