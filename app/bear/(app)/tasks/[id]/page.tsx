@@ -14,8 +14,9 @@ import {Button,Chip,ErrorCard,OverdueAlert,Sheet,Skeleton,Toast,TopBar} from '@/
 import {overdueDays,overdueLabel} from '@/lib/bear/domain/overdue';
 import type {LoadView} from '@/lib/bear/load/view';
 import {LoadPanel} from '@/components/bear/load-panel';
+import {WhyThisMatters,type PriorityView} from '@/components/bear/why-this-matters';
 
-type Loaded={task:Task;project:Project|null;reminders:Reminder[];steps:Task[];plan:PlanRecommendation|null;documentUrl:string|null;redirect?:string;load:LoadView|null};
+type Loaded={task:Task;project:Project|null;reminders:Reminder[];steps:Task[];plan:PlanRecommendation|null;documentUrl:string|null;redirect?:string;load:LoadView|null;priority?:PriorityView|null};
 const kindLabel:Record<string,string>={appointment:'Appointment',school:'School',form:'Form',errand:'Errand',shopping:'Shopping',message:'From a message',note:'Note',event:'Event',custom:'Task'};
 export default function TaskPage({params}:{params:Promise<{id:string}>}){
  const {id}=use(params);const router=useRouter();const search=useSearchParams();
@@ -74,6 +75,7 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
     <div className="btn-row" style={{marginTop:12}}>{!dropped&&<Button className="sm" variant="ghost" onClick={openEdit}>Edit</Button>}{items.length>0&&missingPrices&&!done&&<Button className="sm" variant="primary" disabled={estimating} onClick={estimate}>{estimating?'Estimating…':(cost??0)>0?'Price the rest':'Estimate the cost'}</Button>}</div>
    </div>
    {data.load&&!dropped&&!onWishlist&&(!done||data.load.state==='resolved')&&<LoadPanel taskId={task.id} view={data.load} onNeedInfo={openEdit} onSaid={setToast} onChanged={d=>{if(d){router.replace(`/bear/wins?just=${encodeURIComponent(task.title+' · Sorted')}`);return;}load();}}/>}
+   {data.priority&&!done&&!dropped&&!onWishlist&&<WhyThisMatters taskId={task.id} p={data.priority} onChanged={load}/>}
    {!done&&!dropped&&!onWishlist&&overdueDays(task.dueAt,today,task.timing)>0&&<div style={{marginTop:14}}><OverdueAlert title={`This is overdue. ${overdueLabel(overdueDays(task.dueAt,today,task.timing))}.`}><p className="small muted">The date was {formatAU(task.dueAt!)}. It isn&rsquo;t too late: do it now, change the date with Edit, or choose No rush below if it can wait.</p></OverdueAlert></div>}
    {askAfford&&<div className="glass" style={{padding:16,marginTop:14,background:'var(--mustard-tint)'}}>
     <p className="eyebrow" style={{marginBottom:4}}>That&rsquo;s a bigger spend</p>

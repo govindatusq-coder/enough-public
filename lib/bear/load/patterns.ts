@@ -44,7 +44,7 @@ const BILL_PAYMENT:LoadPattern={
 const SCHOOL_EVENT:LoadPattern={
  id:'SCHOOL_EVENT',name:'School event',domain:'kids',description:'An excursion, carnival, camp or other school activity with its own admin.',
  recognition:{signals:[sig(/\b(excursion|incursion|carnival|camp\b|school camp|athletics|swimming carnival|cross country|sports day|book week|book parade|school (?:event|disco|concert|fete|photos?|play)|assembly|permission (?:note|slip)|year \d|kindergarten|kindy|prep\b|the school|students|parents and carers|dear parents|our class)\b/i,2),sig(/\b(teacher|principal|uniform|hat|water bottle|students|class|graduation|formal|compass|seesaw|sentral|qkr|operoo|term \d)\b/i,0.6)],entityHints:['eventDate','dueDate','person','items'],confidenceThreshold:0.5,competingPatterns:['INVITATION_EVENT','FORM_APPLICATION'],captureKinds:['school'],dominates:[{pattern:'INVITATION_EVENT',when:/\b(year \d+|kindy|kindergarten|prep|school|class|students)\b/i},{pattern:'FORM_APPLICATION',when:/\b(year \d+|kindy|kindergarten|excursion|camp|carnival|graduation)\b/i}]},
- interpretation:{requiredEntities:['eventDate'],optionalEntities:['dueDate','person','items','amountCents','location']},
+ interpretation:{requiredEntities:['eventDate'],optionalEntities:['dueDate','person','items','amountCents','location'],waivers:{eventDate:['consent','payment','cancelled']}},
  cognitiveOperations:['understand','anticipate','plan','remember','coordinate','close'],
  decomposition:{steps:[
   bear('read','understand','Worked out what the school needs'),

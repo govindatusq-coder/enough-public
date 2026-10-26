@@ -12,6 +12,7 @@ import {Button,ErrorCard,Skeleton,Toast} from '@/components/bear/ui';
 import {areaLabels} from '@/lib/bear/domain/labels';
 import {domainOptions,handoverOptions,struggleOptions} from '@/lib/bear/load/loadmap';
 import {browserClient,linkClient} from '@/lib/supabase/client';
+import {ValuesEditor} from '@/components/bear/values-editor';
 type Loaded={profile:Profile;user:{email:string|null;name:string};emailConfirmed?:boolean;aiAvailable:boolean;pushAvailable:boolean;dayMode:'good'|'full'|'wiped'|'chaos'|null};
 export default function Me(){
  const router=useRouter();const [data,setData]=useState<Loaded|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [push,setPush]=useState<{available:boolean;publicKey:string|null;subscriptions:number}|null>(null);const [updateState,setUpdateState]=useState<'idle'|'checking'|'current'|'update'|'unknown'>('idle');const perm=useSyncExternalStore(subscribePerm,()=>typeof Notification==='undefined'?'unknown':Notification.permission,()=>'unknown');const [permTick,setPermTick]=useState(0);
@@ -63,6 +64,7 @@ export default function Me(){
      return rows.map(([t,v])=><div key={t} className="row"><span className="grow"><span className="title">{t}</span><br/><span className="faint">{v}</span></span></div>);})()}
     <div className="btn-row"><Button className="sm" variant="ghost" onClick={async()=>{await apiSend('/api/bear/profile',{onboardingStep:0},'PUT');router.push('/bear/onboarding');}}>Change my Load Map</Button>{(p.loadMap?.learned&&Object.keys(p.loadMap.learned).length>0||!!p.loadMap?.providers?.length)&&<Button className="sm" variant="quiet" onClick={async()=>{await apiSend('/api/bear/profile',{loadMap:{...p.loadMap!,learned:{},providers:[]}},'PUT');setToast('Bear has forgotten what it learned.');load();}}>Reset what Bear learned</Button>}</div>
    </div></section>
+   <ValuesEditor onSaid={setToast}/>
    <section className="section"><p className="eyebrow">Today</p><div className="card"><p className="small">How&rsquo;s today? Bear goes gentler when you say it&rsquo;s a hard one. It asks again tomorrow.</p><div className="chips" role="group" aria-label="How's today" style={{marginTop:10}}>{(['good','full','wiped','chaos'] as const).map(m=><button key={m} type="button" className="chip" aria-pressed={data.dayMode===m} onClick={async()=>{await apiSend('/api/bear/day',{mode:data.dayMode===m?null:m});await load();}}>{{good:'Good',full:'Full',wiped:'Wiped',chaos:'Chaos'}[m]}</button>)}</div></div></section>
    <section className="section"><p className="eyebrow">Reminders</p><div className="card">
     <p className="small">Bear only gets in touch when it can make something easier. Reminders always show up on My Bear{perm==='granted'?', and as notifications on this device':''}.</p>

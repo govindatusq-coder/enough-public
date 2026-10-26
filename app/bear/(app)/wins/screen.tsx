@@ -36,6 +36,15 @@ export function WinsScreen(){
      <button type="button" className="metric" onClick={()=>setMetric('time')} aria-label="Time protected. See how."><span className="metric-pic" style={{['--tile-img' as string]:'url(/bear/art/scene-home.webp)'}} aria-hidden="true"/><b>{minutes?`${Math.floor(minutes/60)}h ${minutes%60}m`:'—'}</b><span>Time protected</span><i aria-hidden="true">See how</i></button>
      <button type="button" className="metric" onClick={()=>setMetric('forMe')} aria-label="Things for me. See what."><span className="metric-pic" style={{['--tile-img' as string]:'url(/bear/art/scene-health.webp)'}} aria-hidden="true"/><b>{data.totals.forMe||'—'}</b><span>Things for me</span><i aria-hidden="true">See what</i></button>
     </div>
+    {data.pressure&&data.pressure.offMind>0&&<section className="card pressure-card" aria-labelledby="pressure-title" style={{marginTop:14}}>
+     <p className="eyebrow" id="pressure-title" style={{marginBottom:6}}>Pressure prevented</p>
+     <ul className="pressure-list">
+      {data.pressure.early>0&&<li><b>{data.pressure.early}</b> {data.pressure.early===1?'thing':'things'} handled before {data.pressure.early===1?'it':'they'} got urgent</li>}
+      {data.pressure.rushes>0&&<li><b>{data.pressure.rushes}</b> last-minute {data.pressure.rushes===1?'rush':'rushes'} avoided</li>}
+      {data.pressure.followUps>0&&<li><b>{data.pressure.followUps}</b> {data.pressure.followUps===1?'follow-up':'follow-ups'} Bear remembered for you</li>}
+      <li><b>{data.pressure.offMind}</b> {data.pressure.offMind===1?'thing':'things'} you didn&rsquo;t have to keep in your head</li>
+     </ul>
+    </section>}
     <div className="section">
      {data.cards.length===0&&<div className="card" style={{textAlign:'center'}}><EmptyArt file="empty-wins"/><p style={{fontWeight:700,fontSize:19}}>{brand.winsEmpty}</p><p className="muted small" style={{marginTop:4}}>{brand.winsSub}</p><BearSays size={22}>{brand.oneLess}</BearSays></div>}
      {data.cards.some(c=>c.isDemo)&&<p className="faint" style={{marginBottom:10}}>Example bills show here so you can see how it works, but they never count towards your totals.</p>}

@@ -54,3 +54,10 @@ Last updated: 25 October 2026.
 - Existing items are mapped conservatively (bills → BILL_PAYMENT; others → UNKNOWN_LOAD, untouched). No SQL migration needed.
 - Tests: 232 unit tests pass; browser walkthrough passes at 390×844 and 1280×900.
 - Also: Log out in Settings, an opening screen before My Bear, and How's today now sticks before 11am Sydney time.
+
+
+## Priority Engine V1 (preview only, behind priorityEngineV1)
+- Values + goals map, priority vector, latest safe / latest comfortable action, future pressure, pressure prevention, dependency leverage, gates, global vs action priority, one-thing selection, explanations. See `docs/load-bear/10-priority-engine.md`.
+- My Bear: "One thing worth doing now" card (fits one screen); Why this one?; Not today with gentle learning. Item: Why this matters + timeline. Areas: calm timing labels and priority order. My Wins: Pressure prevented. Settings: What matters to you.
+- 110 prioritisation fixtures (10 per pattern + conflicts A–J): 110/110. 356 unit tests pass. Walkthrough passes at 390×844 and 1280×900.
+- Pushed to the preview branch only; production (main) unchanged until reviewed.

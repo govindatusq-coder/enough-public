@@ -31,3 +31,20 @@ export function minimumHumanAction(graph:LoadGraph,today:string):MinimumHumanAct
  const c=humanCandidates(graph,today)[0];if(!c)return null;
  return {nodeId:c.node.id,stepId:c.step.id,kind:c.step.human||'confirmation',headline:labelFor(c.step,c.node),cta:c.step.cta||'Done',dueAt:c.step.dueAt,choices:c.step.choices};
 }
+
+// The next thing only the person can do, whether or not it has surfaced yet. The Priority Engine
+// uses this to decide when it is worth surfacing (sometimes earlier than the pattern's default).
+export function nextHumanStep(graph:LoadGraph){
+ const out:{node:LoadNode;step:LoadStep}[]=[];
+ for(const node of graph.nodes){if(node.state==='resolved')continue;for(const step of node.steps)if(step.owner==='human'&&stepActive(step,node,graph))out.push({node,step});}
+ const rank=(c:{step:LoadStep})=>c.step.key.startsWith('need_')||c.step.key==='safe'?0:1;
+ return out.sort((a,b)=>rank(a)-rank(b)||(a.step.surfaceFrom||'0000').localeCompare(b.step.surfaceFrom||'0000')||(a.step.dueAt||'9999').localeCompare(b.step.dueAt||'9999'))[0]||null;
+}
+// How many pending steps (here and in attached loads) are waiting on this step being done.
+export function downstreamOf(graph:LoadGraph,stepId:string){
+ const all=graph.nodes.flatMap(n=>n.steps.map(s=>({n,s})));const seen=new Set<string>([stepId]);let grew=true;
+ while(grew){grew=false;for(const {s} of all)if(!seen.has(s.id)&&s.status==='pending'&&s.dependsOn.some(d=>seen.has(d))){seen.add(s.id);grew=true;}}
+ const node=graph.nodes.find(n=>n.steps.some(s=>s.id===stepId));
+ const gated=node?graph.nodes.filter(n=>n.parentId===node.id&&n.gate?.evidence).length:0;
+ return seen.size-1+gated;
+}

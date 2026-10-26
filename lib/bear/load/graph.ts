@@ -54,7 +54,7 @@ function fill(template:string,e:LoadEntities,title:string,today:string,text:stri
   contactLabel:flags.includes('rental')?'Let the property manager know':e.provider?`Contact the ${e.provider.toLowerCase().replace(/^dr /,'Dr ')}`:'Get someone in to look at it',
   buyLabel:flags.includes('gift')?`Choose and get a present${e.person?' for '+e.person:''}${by}`:items?`Get ${items}${by}`:`Get ${title.toLowerCase()}${by}`,
   keepLabel:flags.includes('price_increase')?'It’s going up in price. Renew, or let it go?':flags.includes('not_wanted')?`Do you still want ${title.toLowerCase()}?`:'Renew as it is, or shop around first?',
-  renewLabel:flags.includes('expired')?`${title} has expired. Renew it now`:`Renew ${title.toLowerCase()}${by}`,
+  renewLabel:flags.includes('expired')?`${title.replace(/^renew\s+/i,'').replace(/^\w/,c=>c.toUpperCase())} has expired. Renew it now`:/^renew\b/i.test(title)?`${title}${/\bby\b/i.test(title)?'':by}`:`Renew ${title.toLowerCase()}${by}`,
   prereq,getLabel:flags.includes('medication')?`Refill ${items||title.toLowerCase()}`:flags.includes('essential')||flags.includes('urgent')?`Get ${items||title.toLowerCase()} today`:`Add ${items||title.toLowerCase()} to the next shop`,
   range:friendlyRange(e.eventDate,e.eventEndDate,today),
  };

@@ -315,7 +315,7 @@ test('a flexible task that mentions a date is never treated as urgent',async()=>
  const {extraction}=await createCapture(store,null,{method:'text',text:'Return the permission form for Max by 12/11/2026',referenceYear:2026});
  const {task}=await maybeAutoSetup(store,extraction,NOW);await setRead(store,null,task.id,{timing:'flexible'},NOW);
  const home=await homeView(store,new Date('2026-11-11T09:00:00+11:00'));assert.equal(home.needsYou.length,0,'no deadline protection for something marked no rush');
- assert.equal((await areaView(store,'family',NOW)).current[0].dueLabel,'No rush');
+ assert.equal((await areaView(store,'family',NOW)).current[0].dueLabel,'Later is fine','the calm replacement for "No rush"');
 });
 
 test('bigger tasks are broken into small steps by the AI service, only when asked or deduced, and never invented without it',async()=>{

@@ -1,4 +1,5 @@
 import type {LoadGraph,LoadMap} from '../load/types.ts';
+import type {ValuesGoalsMap} from '../priority/types.ts';
 // Load Bear domain model. PARA is internal (Area → Project → Resource → Archive);
 // the UI never shows the acronym. Every AI-derived value is a Traced<T> so the
 // origin, confidence and verification state of each field is auditable.
@@ -75,6 +76,8 @@ export interface Profile extends Owned{
  loadMap?:LoadMap;
  // Set when the person opened a sign-in link sent to their email: proof they own the address.
  emailVerifiedAt?:ISODateTime|null;
+ // What matters to this person: values, goals, responsibilities, non-negotiables (editable).
+ valuesMap?:ValuesGoalsMap;
 }
 
 // ---------- Capture ----------
@@ -143,7 +146,9 @@ export interface Project extends Owned{areaKey:AreaKey;title:string;status:'acti
 export const taskKinds=['pay_bill','check_balance','confirm_discount','confirm_discrepancy','transfer_money','save_receipt','appointment','school','form','errand','shopping','message','note','event','custom'] as const;
 export type TaskKind=typeof taskKinds[number];
 export interface ShoppingItem{id:string;name:string;quantity:string|null;estimatedCents:number|null;done:boolean;doneAt:ISODateTime|null}
-export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;status:'open'|'done'|'dropped'|'archived';dueAt:ISODate|null;dueTime?:string|null;location?:string|null;notes?:string|null;estimatedMinutes:number;cognitiveEffort:'low'|'medium'|'high';forPerson:string|null;isDemo:boolean;items?:ShoppingItem[];estimatedCents?:number|null;setupBy?:'bear'|'user';part?:{of:Id;index:number;total:number}|null;timing?:'time_sensitive'|'flexible';size?:'one_go'|'bigger';nudge?:{every:'week'|'fortnight'|'month'}|null;nudgeChoice?:'none'|'nudge'|'day'|null;buyWhen?:'now'|null;wishlist?:{since:ISODate;checkBackAt:ISODate|null}|null;load?:LoadGraph|null;order?:number}
+export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;status:'open'|'done'|'dropped'|'archived';dueAt:ISODate|null;dueTime?:string|null;location?:string|null;notes?:string|null;estimatedMinutes:number;cognitiveEffort:'low'|'medium'|'high';forPerson:string|null;isDemo:boolean;items?:ShoppingItem[];estimatedCents?:number|null;setupBy?:'bear'|'user';part?:{of:Id;index:number;total:number}|null;timing?:'time_sensitive'|'flexible';size?:'one_go'|'bigger';nudge?:{every:'week'|'fortnight'|'month'}|null;nudgeChoice?:'none'|'nudge'|'day'|null;buyWhen?:'now'|null;wishlist?:{since:ISODate;checkBackAt:ISODate|null}|null;load?:LoadGraph|null;order?:number;
+ // Priority Engine state: "Not today" snoozes, how often it was put off, and the person's own say on importance.
+ snoozedUntil?:ISODate|null;postpones?:number;importance?:'very'|'nice'|'not'|null}
 export interface TaskDependency extends Owned{taskId:Id;dependsOnTaskId:Id}
 
 // ---------- Bill ----------
@@ -165,7 +170,9 @@ export type SuggestionKind=typeof suggestionKinds[number];
 export interface Suggestion extends Owned{kind:SuggestionKind;status:'open'|'accepted'|'rejected'|'expired';dedupeKey:string;title:string;body:string;actionLabel:string;payload:Record<string,unknown>}
 
 // ---------- Completion, Win, Ledger ----------
-export interface Completion extends Owned{taskId:Id;billId:Id|null;completedAt:ISODateTime;daysBeforeDue:number|null;method:string|null}
+export interface Completion extends Owned{taskId:Id;billId:Id|null;completedAt:ISODateTime;daysBeforeDue:number|null;method:string|null;
+ // Snapshot from the Priority Engine at the moment it was done (for "pressure prevented").
+ timing?:{latestSafe:ISODate|null;latestComfortable:ISODate|null;deadline:ISODate|null;bearSteps:number}|null}
 export type WinCategory='handled'|'money'|'time'|'me';
 export interface Win extends Owned{completionId:Id;category:WinCategory;title:string;detail:string;amountCents:number|null;minutes:number|null;billId:Id|null;isDemo:boolean}
 export type LedgerKind='wealth'|'health'|'happiness';
@@ -173,7 +180,7 @@ export type WealthReason='late_fee_avoided'|'early_discount_used'|'subscription_
 export interface ValueLedgerEntry extends Owned{kind:LedgerKind;reason:WealthReason|'care_task'|'protected_time';label:string;amountCents:number|null;minutes:number|null;occurredAt:ISODateTime;sourceTaskId:Id|null;sourceBillId:Id|null;defensible:boolean;isDemo:boolean;source?:'user'}
 
 // ---------- Behaviour ----------
-export const behaviourTypes=['suggestion_accepted','suggestion_rejected','task_completed','reminder_delivered','reminder_opened','reminder_snoozed','reminder_dismissed','capture_created','capture_rejected','field_corrected','task_dropped','day_mode_set','rhythm_changed','assist_used','plan_accepted','plan_changed','pattern_unknown','load_action'] as const;
+export const behaviourTypes=['suggestion_accepted','suggestion_rejected','task_completed','reminder_delivered','reminder_opened','reminder_snoozed','reminder_dismissed','capture_created','capture_rejected','field_corrected','task_dropped','day_mode_set','rhythm_changed','assist_used','plan_accepted','plan_changed','pattern_unknown','load_action','priority_later','priority_importance'] as const;
 export type BehaviourType=typeof behaviourTypes[number];
 export interface BehaviourEvent extends Owned{type:BehaviourType;at:ISODateTime;hourLocal:number;weekday:Weekday;detail:Record<string,unknown>}
 

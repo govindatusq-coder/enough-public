@@ -21,10 +21,13 @@ export async function completeTask(store:BearStore,input:CompleteInput,now=new D
  const today=input.paidOn||todayISO(tz,now);
  const bills=await store.list('bills',{where:[{column:'task_id',value:task.id}]});const bill=bills[0]||null;
  const daysBeforeDue=task.dueAt?daysBetween(today,task.dueAt):null;
+ // Snapshot the timing before closing, so My Wins can honestly say what was done before it got tight.
+ let timing:Completion['timing']=null;
+ try{const {prioritiseOpen,priorityEnabled,noteChoice}=await import('./priority.ts');if(priorityEnabled()&&task.load){const r=(await prioritiseOpen(store,now)).results.get(task.id);if(r)timing={latestSafe:r.latestSafeActionAt,latestComfortable:r.latestComfortableActionAt,deadline:r.deadline,bearSteps:r.bearSteps};await noteChoice(store,task,now);}}catch{/* timing is a nice-to-have */}
  await store.update('tasks',task.id,{status:'done'});
  if(input.method!=='load')await resolveLoad(store,task,now);
  await syncNextInProject(store,task.projectId,now);
- const completion=await store.insert('completions',stamp<Completion>(store.userId,{taskId:task.id,billId:bill?.id||null,completedAt:now.toISOString(),daysBeforeDue,method:input.method}));
+ const completion=await store.insert('completions',stamp<Completion>(store.userId,{taskId:task.id,billId:bill?.id||null,completedAt:now.toISOString(),daysBeforeDue,method:input.method,timing}));
  // Cancel outstanding reminders quietly and close dependencies.
  for(const r of await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed','delivered']}]}))await store.update('reminders',r.id,{status:'actioned'});
  for(const d of await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})){const dep=await store.get('tasks',d.dependsOnTaskId);if(dep&&dep.status==='open')await store.update('tasks',dep.id,{status:'done'});}

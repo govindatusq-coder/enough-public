@@ -13,6 +13,7 @@ import {Art} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
 import {Button,ErrorCard,Skeleton,Toast,useOnline} from '@/components/bear/ui';
 import {showLocalReminder} from '@/components/bear/runtime';
+import {OneThingCard} from '@/components/bear/one-thing';
 
 const modes:{key:DayMode;label:string}[]=[{key:'good',label:'Good'},{key:'full',label:'Full'},{key:'wiped',label:'Wiped'},{key:'chaos',label:'Chaos'}];
 export default function Home(){
@@ -34,8 +35,8 @@ export default function Home(){
     <div className="hero-text">
      <h1 className="hero-greeting">{home.greeting}</h1>
      <p className="hero-line hand">{greet?greet.line:brand.gotYou}</p>
-     {home.overdue.length>0&&<p className="hero-alert" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/></svg><span>{home.overdue.length} overdue. See the red numbers.</span></p>}
-     {home.overdue.length===0&&firstNeed&&<Link className="hero-alert needs" href={firstNeed.billId?`/bear/bills/${firstNeed.billId}`:`/bear/tasks/${firstNeed.taskId}`}><span>{home.handling.needs===1?'1 thing needs you':`${home.handling.needs} things need you`}: {firstNeed.message||firstNeed.title}</span></Link>}
+     {home.overdue.length>0&&<p className="hero-alert" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/></svg><span>{home.overdue.length} overdue · see the red numbers</span></p>}
+     {home.overdue.length===0&&firstNeed&&!home.oneThing&&<Link className="hero-alert needs" href={firstNeed.billId?`/bear/bills/${firstNeed.billId}`:`/bear/tasks/${firstNeed.taskId}`}><span>{home.handling.needs===1?'1 thing needs you':`${home.handling.needs} things need you`}: {firstNeed.message||firstNeed.title}</span></Link>}
     </div>
     <div className="hero-art" aria-hidden="true"><Art file={greet?greet.art:'hero-bear'} className="hero-img" style={{objectPosition:greet?greet.focus:'60% 22%',...(greet?.zoom?{transform:`scale(${greet.zoom})`,transformOrigin:'25% 100%'}:{})}}/></div>
    </header>
@@ -45,6 +46,7 @@ export default function Home(){
    {!home.dayMode&&<section className="section how-row" aria-labelledby="how">
     <div className="glass" style={{padding:'12px 16px',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}><span id="how" className="small" style={{fontWeight:600}}>How&rsquo;s today?</span><div className="chips" style={{gap:6}}>{modes.map(m=><button key={m.key} type="button" className="chip" style={{minHeight:38,padding:'0 12px',fontSize:14}} aria-pressed={home.dayMode===m.key} disabled={busy==='mode'} onClick={()=>setMode(m.key)}>{m.label}</button>)}</div></div>
    </section>}
+   {home.oneThing&&<OneThingCard item={home.oneThing} onChanged={load} onSaid={setToast}/>}
    <section className="home-tiles" aria-label="Your areas">
     <div className="area-grid six">{home.areas.map(a=><Link key={a.key} href={`/bear/areas/${a.key}`} className="area-tile" aria-label={`${a.label}: ${a.open} current${a.needs?`, ${a.needs} need you${a.overdue?`, ${a.overdue} overdue`:''}`:''}`}><span className="area-img"><span className="tile-anim" style={{['--tile-img' as string]:`url(/bear/art/scene-${a.key}.webp)`}} role="img" aria-hidden="true"/>{a.needs>0&&<span className={`badge ${a.overdue>0?'late':'soon'}`} aria-hidden="true">{a.needs}</span>}{a.needs===0&&a.soft&&<span className="badge-dot" aria-hidden="true"/>}</span><span className="area-label">{a.label}</span><span className="area-sub">{a.open===0?'Nothing current':`${a.open} current`}</span></Link>)}</div>
     {home.wishlist.count>0&&<Link href="/bear/wishlist" className="wish-row" aria-label={`Wishlist: ${home.wishlist.count} waiting`}><span>Wishlist</span><span className="small muted">{home.wishlist.count} waiting{home.wishlist.next?` · back ${formatAU(home.wishlist.next,'short')}`:''}</span></Link>}

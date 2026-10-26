@@ -6,6 +6,7 @@ import {AU_TIMEZONE} from '../domain/dates.ts';
 import {stamp,type BearStore} from '../store/store.ts';
 import {recordBehaviour} from './behaviour.ts';
 import {loadMapSchema} from '../load/loadmap.ts';
+import {valuesMapSchema} from '../priority/schema.ts';
 
 export {areaLabels,rhythmPresets} from '../domain/labels.ts';
 export function defaultProfile(userId:string):Profile{
@@ -29,6 +30,7 @@ export const profilePatchSchema=z.object({
  notification:z.object({pushEnabled:z.boolean(),quietStartMinute:z.number().int().min(0).max(1439),quietEndMinute:z.number().int().min(0).max(1439),permission:z.enum(['unknown','granted','denied'])}).strict().optional(),
  demoOffered:z.boolean().optional(),
  loadMap:loadMapSchema.optional(),
+ valuesMap:valuesMapSchema.optional(),
 }).strict();
 export type ProfilePatch=z.infer<typeof profilePatchSchema>;
 
