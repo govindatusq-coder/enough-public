@@ -1,11 +1,15 @@
 import {HttpError,json,withBear} from '@/lib/bear/server/context';
 import {captureTextSchema,createCapture,MAX_FILE_BYTES} from '@/lib/bear/services/capture';
 import {maybeAutoSetup} from '@/lib/bear/services/auto-setup';
+import {isBrainDump,setupBrainDump} from '@/lib/bear/services/dump';
 import type {BearStore} from '@/lib/bear/store/store';
 import type {StructuredModelProvider} from '@/lib/bear/ai/provider';
 import type {ExtractedEntity} from '@/lib/bear/domain/types';
 // Non-bill captures Bear understood are set up straight away; anything else goes to verification.
-async function withAuto<T extends {extraction:ExtractedEntity}>(store:BearStore,provider:StructuredModelProvider|null,result:T){const auto=await maybeAutoSetup(store,result.extraction,new Date(),provider).catch(()=>null);return auto?{...result,auto:{taskId:auto.task.id,title:auto.task.title,area:auto.area,planned:auto.planned,dueAt:auto.task.dueAt}}:result;}
+async function withAuto<T extends {extraction:ExtractedEntity}>(store:BearStore,provider:StructuredModelProvider|null,result:T){
+ // A page of projects (a brain dump) is filed as projects with their to-dos, then lined up together.
+ if(result.extraction.kind==='task'&&isBrainDump(result.extraction.general))return {...result,dump:await setupBrainDump(store,result.extraction)};
+ const auto=await maybeAutoSetup(store,result.extraction,new Date(),provider).catch(()=>null);return auto?{...result,auto:{taskId:auto.task.id,title:auto.task.title,area:auto.area,planned:auto.planned,dueAt:auto.task.dueAt}}:result;}
 export const dynamic='force-dynamic';
 export const maxDuration=120;
 // Accepts JSON {method,text} or multipart form-data with `file` (+ optional `method`, `text`).

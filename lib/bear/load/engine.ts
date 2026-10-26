@@ -13,7 +13,9 @@ import {usualProvider} from './loadmap.ts';
 // input → extraction → recognition → composite detection → decomposition → Load Map
 // personalisation → ownership → minimum human action → state. Deterministic throughout;
 // an AI reading, when there is one, only contributes entities and a kind hint.
-export interface UnderstandInput{text:string;today:string;title?:string|null;kindHint?:string|null;entities?:LoadEntities|null;caps:Capabilities;loadMap?:LoadMap|null;forcePattern?:PatternId|null}
+export interface UnderstandInput{text:string;today:string;title?:string|null;kindHint?:string|null;entities?:LoadEntities|null;caps:Capabilities;loadMap?:LoadMap|null;forcePattern?:PatternId|null;
+ // A line from a list the person wrote themselves: if it is not a known pattern it is simply a to-do.
+ asTodo?:boolean}
 export interface Understood{graph:LoadGraph;recognition:Recognition}
 
 const PLAIN_TODO=/^(?:i need to |need to |must |have to |remember to |don'?t forget to )?(return|call|ring|phone|email|text|message|send|post|drop off|pick up|collect|clean|tidy|wash|book|cancel|organise|organize|sort out|ask|tell|take|bring|fix|write|finish|print|sign|change|move|update|check)\b/i;
@@ -49,7 +51,7 @@ export function understand(input:UnderstandInput):Understood{
  let graph=buildGraph(recognition,entities,{text,today:input.today,title:input.title,loadMap:input.loadMap});
  // A plain to-do ("Return the library books by Friday") is already clear: it is something to get
  // done. Asking "what would make this feel sorted?" would only add friction.
- if(recognition.primary==='UNKNOWN_LOAD'&&PLAIN_TODO.test(text.trim())){const p=graph.nodes[0];graph=applyAction(recompute(graph,input.today,input.caps,input.loadMap),{stepId:`${p.id}:clarify`,evidence:'clarified:Get something done'},input.today,input.caps,input.loadMap).graph;}
+ if(recognition.primary==='UNKNOWN_LOAD'&&(input.asTodo||PLAIN_TODO.test(text.trim()))){const p=graph.nodes[0];graph=applyAction(recompute(graph,input.today,input.caps,input.loadMap),{stepId:`${p.id}:clarify`,evidence:'clarified:Get something done'},input.today,input.caps,input.loadMap).graph;}
  return {graph:recompute(graph,input.today,input.caps,input.loadMap),recognition};
 }
 
@@ -147,7 +149,8 @@ export function withEntities(graph:LoadGraph,nodeId:string,patch:LoadEntities,to
  const fresh=buildNode(old.pattern,{...old.entities,...patch},{title:old.title,text:'',today,role:old.role,parentId:old.parentId,confidence:old.confidence,loadMap:map,gate:old.gate,id:old.id});
  fresh.steps=fresh.steps.map(s=>{const prev=old.steps.find(o=>o.key===s.key);return prev?{...s,status:prev.status,surfaceFrom:prev.status==='pending'&&prev.surfaceFrom&&prev.surfaceFrom>(s.surfaceFrom||'')&&prev.key==='heard'?prev.surfaceFrom:s.surfaceFrom}:s;});
  // Extra steps added along the way (a follow-up, the next expiry) carry over too.
- for(const s of old.steps)if(!fresh.steps.some(f=>f.key===s.key)&&!s.key.startsWith('need_'))fresh.steps.push(s);
+ // Their dates follow the load's date when they were tied to it.
+ for(const s of old.steps)if(!fresh.steps.some(f=>f.key===s.key)&&!s.key.startsWith('need_'))fresh.steps.push(s.dueAt===(old.entities.dueDate??null)&&patch.dueDate!==undefined?{...s,dueAt:patch.dueDate??null}:s);
  g.nodes[i]={...fresh,evidence:old.evidence,clarification:old.clarification,resolvedAt:old.resolvedAt};
  return recompute(g,today,caps,map);
 }

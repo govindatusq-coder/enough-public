@@ -31,7 +31,8 @@ export function CaptureSheet(){
  const first=params.get('first')==='1';
  useEffect(()=>{apiGet<{aiAvailable:boolean}>('/api/bear/profile').then(p=>setAiAvailable(p.aiAvailable)).catch(e=>{if(e.status===401)router.replace('/bear/signin');else setAiAvailable(false);});},[router]);
  const close=useCallback(()=>router.push(first?'/bear/home':'/bear/home'),[router,first]);
-const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string}})=>{
+const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string};dump?:{captureId:string;projects:{title:string;count:number}[]}})=>{
+  if(result.dump){const d=result.dump;setFields([{label:'Projects',value:String(d.projects.length)},{label:'Things to do',value:String(d.projects.reduce((n,p)=>n+p.count,0))},...d.projects.slice(0,3).map(p=>({label:'Project',value:p.title.toUpperCase()}))]);setTimeout(()=>router.replace(`/bear/sort/${d.captureId}`),1800);return;}
   const f=result.extraction.fields;const g=result.extraction.general;const out:{label:string;value:string}[]=[];
   if(result.extraction.kind!=='bill'){if(g.title.value)out.push({label:'Task',value:g.title.value.toUpperCase()});if(g.when.value)out.push({label:'When',value:formatAU(g.when.value,'long').toUpperCase()});if(g.area.value)out.push({label:'Area',value:g.area.value.toUpperCase()});if(g.person.value)out.push({label:'For',value:g.person.value.toUpperCase()});}
   else if(f.biller.value)out.push({label:'Biller',value:f.biller.value.toUpperCase()});if(f.amountDueCents.value!==null)out.push({label:'Amount',value:formatAUD(f.amountDueCents.value)});if(f.dueDate.value)out.push({label:'Due',value:formatAU(f.dueDate.value,'long').toUpperCase()});if(f.category.value)out.push({label:'Category',value:f.category.value.replace('_',' ').toUpperCase()});if(f.paymentMethods.value?.length)out.push({label:'Pay by',value:f.paymentMethods.value[0].toUpperCase()});
@@ -40,12 +41,12 @@ const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;aut
  },[router]);
  async function pasteFromClipboard(){setError(null);try{const t=await navigator.clipboard.readText();if(!t.trim()){setError('Your clipboard is empty. Copy a message first, then tap Paste.');return;}setText(x=>x.trim()?x.trimEnd()+'\n'+t:t);document.getElementById('quick-text')?.focus();}catch{setError("Bear couldn't read your clipboard. Press and hold in the box and choose Paste instead.");}}
  async function submitText(method:'text'|'manual'|'voice',body:string){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);setPreview({kind:'text',text:body});
-  try{finish(await apiSend<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string}}>('/api/bear/captures',{method,text:body}));}catch(e){setMode(method);setError((e as ApiError).message);setPreview(null);}}
+  try{finish(await apiSend<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string};dump?:{captureId:string;projects:{title:string;count:number}[]}}>('/api/bear/captures',{method,text:body}));}catch(e){setMode(method);setError((e as ApiError).message);setPreview(null);}}
  async function submitFile(file:File,method:string,extraText?:string|null){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);
   const url=file.type.startsWith('image/')?URL.createObjectURL(file):null;setPreview(url?{kind:'image',url}:null);
   const upload=await shrinkImage(file);
   const form=new FormData();form.append('file',upload);form.append('method',method);if(extraText)form.append('text',extraText);
-  try{finish(await apiForm<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string}}>('/api/bear/captures',form));}catch(e){setMode('menu');setError((e as ApiError).message);setPreview(null);}}
+  try{finish(await apiForm<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string};dump?:{captureId:string;projects:{title:string;count:number}[]}}>('/api/bear/captures',form));}catch(e){setMode('menu');setError((e as ApiError).message);setPreview(null);}}
  // Something was shared to Load Bear from another app on the iPhone: give it straight to Bear, no extra tap.
  useEffect(()=>{
   const take=()=>{const inbox=window.__bearInbox;if(!inbox)return;window.__bearInbox=undefined;setTimeout(()=>{if(inbox.files[0])void submitFile(inbox.files[0],'upload',inbox.text);else if(inbox.text)void submitText('text',inbox.text);},0);};

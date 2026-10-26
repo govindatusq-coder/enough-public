@@ -35,7 +35,7 @@ export function understandWithRules(text:string,referenceYear=new Date().getFull
  const size=bigger?'bigger':'one_go';
  const shopTitle=items.length>=2?listTitle(clean):null;
  const title=shopTitle?shopTitle:bill&&bill.biller.value?`Pay ${bill.category.value?bill.category.value.replace('_',' '):bill.biller.value} bill`:sentence?sentence.charAt(0).toUpperCase()+sentence.slice(1):null;
- return {kind,summary:first.slice(0,200),title:conf(title,bill?0.8:0.55),area:conf(area,bill?0.9:0.55),when:conf(when,when?0.6:0),timeOfDay:conf(timeOfDay,0.6),person:conf(person,0.5),location:conf(null,0),isRecurring:conf(bill?bill.isRecurring.value:null,0.4),timing:conf(timing,timingConf),size:conf(size,0.5),steps:[],items,estimatedMinutes:null,extractedText:clean.slice(0,6000),bill:bill&&bill.documentType!=='not_a_bill'?bill:null,...(rel?{whenHint:rel[1].toLowerCase()}:{})} as GeneralOutput;
+ return {kind,summary:first.slice(0,200),title:conf(title,bill?0.8:0.55),area:conf(area,bill?0.9:0.55),when:conf(when,when?0.6:0),timeOfDay:conf(timeOfDay,0.6),person:conf(person,0.5),location:conf(null,0),isRecurring:conf(bill?bill.isRecurring.value:null,0.4),timing:conf(timing,timingConf),size:conf(size,0.5),steps:[],items,estimatedMinutes:null,projects:listProjects(clean),extractedText:clean.slice(0,6000),bill:bill&&bill.documentType!=='not_a_bill'?bill:null,...(rel?{whenHint:rel[1].toLowerCase()}:{})} as GeneralOutput;
 }
 
 // A shopping list typed or spoken as lines, bullets or commas becomes items. No prices are
@@ -54,4 +54,20 @@ export function listTitle(text:string):string{
  if(head==='groceries'||head==='grocery list')return 'Groceries';
  if(head==='shopping'||head==='shopping list')return 'Shopping list';
  return head.charAt(0).toUpperCase()+head.slice(1)+' run';
+}
+
+// A typed brain dump: headings ending in a colon, with lines (or dashes) under each.
+// "PhD: - Ayla: CoC - Belinda: Flup" → project PhD with two tasks.
+export function listProjects(text:string):{name:string;tasks:string[]}[]{
+ const out:{name:string;tasks:string[]}[]=[];
+ for(const raw of text.split('\n')){
+  const line=raw.trim();if(!line)continue;
+  const head=/^([A-Z][\w &/+.'()-]{1,40}?)\s*:\s*(.*)$/.exec(line);
+  const bullet=/^[-•*·]\s*(.+)$/.exec(line);
+  // "Name: thing" under a heading is a task; only a bare heading (or one with bullets after it) starts a project.
+  if(head&&!bullet&&(head[2]===''||/:$/.test(head[2])||/^[-•*·]/.test(head[2])||!out.length)&&!/^\d/.test(head[1])){out.push({name:head[1].trim(),tasks:/:$/.test(head[2])?[]:head[2].split(/\s+[-•*·]\s+|^[-•*·]\s*/).map(t=>t.trim()).filter(Boolean)});continue;}
+  if(out.length)out[out.length-1].tasks.push((bullet?bullet[1]:line).trim());
+ }
+ const real=out.filter(p=>p.tasks.length>0);
+ return real.length>=2&&real.reduce((n,p)=>n+p.tasks.length,0)>=3?real.slice(0,30).map(p=>({name:p.name.slice(0,80),tasks:p.tasks.slice(0,40).map(t=>t.slice(0,160))})):[];
 }

@@ -38,8 +38,13 @@ export async function homeView(store:BearStore,now=new Date(),fallbackName=''):P
  const loads=new Map<string,LoadView>();
  // "No rush" stays no rush: those loads are held quietly and only nudge if the person asked.
  for(const t of tasks)if(t.load&&!t.load.migrated)loads.set(t.id,describe(recompute(t.load,today,caps(),profile.loadMap),today,{quiet:t.timing==='flexible'}));
- const urgent=new Map([...loads].filter(([id])=>tasks.find(t=>t.id===id)?.timing!=='flexible'));
- const needsYou=needsYouItems(bills,tasks,due,today,dayMode,urgent);
+ // A brain-dump project brings back only its next to-do, never the whole list.
+ const dumpProjects=new Map((await store.list('projects')).filter(p=>p.captureId).map(p=>[p.id,p]));
+ const nextInProject=new Set<string>();
+ for(const pid of dumpProjects.keys()){const first=tasks.filter(t=>t.projectId===pid).sort((a,b)=>(a.order??0)-(b.order??0))[0];if(first)nextInProject.add(first.id);}
+ const urgent=new Map([...loads].filter(([id])=>{const t=tasks.find(x=>x.id===id);return t?.timing!=='flexible'&&(!dumpProjects.has(t?.projectId||'')||nextInProject.has(id));}).map(([id,v])=>{const t=tasks.find(x=>x.id===id)!;const p=dumpProjects.get(t.projectId);return [id,p?{...v,title:p.title}:v];}));
+ const quietDump=new Set(tasks.filter(t=>dumpProjects.has(t.projectId)&&!nextInProject.has(t.id)).map(t=>t.id));
+ const needsYou=needsYouItems(bills,tasks.filter(t=>!quietDump.has(t.id)),due.filter(d=>!quietDump.has(d.reminder.taskId)),today,dayMode,urgent);
  const overdue=overdueItems(bills,tasks,today,urgent);
  const needsTaskIds=new Set(needsYou.map(n=>n.taskId));
  const watching=bills.filter(b=>!needsTaskIds.has(b.taskId)).length;

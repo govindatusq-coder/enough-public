@@ -23,6 +23,7 @@ export const generalOutputSchema=z.object({
  steps:z.array(z.string().max(120)).max(6),
  items:z.array(z.object({name:z.string().max(80),quantity:z.string().max(20).nullable(),estimatedCents:z.number().int().min(0).max(100000000).nullable()}).strict()).max(40).default([]),
  estimatedMinutes:z.number().int().min(1).max(600).nullable(),
+ projects:z.array(z.object({name:z.string().max(80),tasks:z.array(z.string().max(160)).max(40)}).strict()).max(30).default([]),
  extractedText:z.string().max(6000).nullable(),
  bill:billOutputSchema.nullable(),
 }).strict();
@@ -30,12 +31,12 @@ export type GeneralOutput=z.infer<typeof generalOutputSchema>;
 
 const nullable=(t:Record<string,unknown>)=>({anyOf:[t,{type:'null'}]});
 const f=(t:Record<string,unknown>)=>({type:'object',additionalProperties:false,required:['value','confidence','evidence'],properties:{value:nullable(t),confidence:{type:'number',minimum:0,maximum:1},evidence:nullable({type:'string'})}});
-export const generalOutputJsonSchema={type:'object',additionalProperties:false,required:['kind','summary','title','area','when','timeOfDay','person','location','isRecurring','timing','size','steps','items','estimatedMinutes','extractedText','bill'],properties:{
+export const generalOutputJsonSchema={type:'object',additionalProperties:false,required:['kind','summary','title','area','when','timeOfDay','person','location','isRecurring','timing','size','steps','items','estimatedMinutes','projects','extractedText','bill'],properties:{
  kind:{type:'string',enum:[...captureKinds]},summary:{type:'string'},title:f({type:'string'}),area:f({type:'string',enum:[...areaKeys]}),
  when:f({type:'string',pattern:'^\\d{4}-\\d{2}-\\d{2}$'}),timeOfDay:f({type:'string',pattern:'^\\d{2}:\\d{2}$'}),person:f({type:'string'}),location:f({type:'string'}),isRecurring:f({type:'boolean'}),
  timing:f({type:'string',enum:['time_sensitive','flexible']}),size:f({type:'string',enum:['one_go','bigger']}),
  steps:{type:'array',items:{type:'string'}},
- items:{type:'array',items:{type:'object',additionalProperties:false,required:['name','quantity','estimatedCents'],properties:{name:{type:'string'},quantity:nullable({type:'string',description:'e.g. 2, 1kg, 3 packs'}),estimatedCents:nullable({type:'integer',minimum:0,description:'AUD cents for one unit'})}}},estimatedMinutes:nullable({type:'integer',minimum:1}),extractedText:nullable({type:'string'}),
+ items:{type:'array',items:{type:'object',additionalProperties:false,required:['name','quantity','estimatedCents'],properties:{name:{type:'string'},quantity:nullable({type:'string',description:'e.g. 2, 1kg, 3 packs'}),estimatedCents:nullable({type:'integer',minimum:0,description:'AUD cents for one unit'})}}},estimatedMinutes:nullable({type:'integer',minimum:1}),projects:{type:'array',items:{type:'object',additionalProperties:false,required:['name','tasks'],properties:{name:{type:'string'},tasks:{type:'array',items:{type:'string'}}}}},extractedText:nullable({type:'string'}),
  bill:nullable(billOutputJsonSchema),
 }} as const;
 
@@ -49,6 +50,7 @@ Rules:
 - timing: time_sensitive only when there is a real deadline, appointment or event, or something that goes wrong or costs more if it waits. Be conservative: an idea, a want, maintenance or a 'sometime' task is flexible, even if it mentions a date. Never decide something is urgent because the wording is pushy.
 - size: one_go when a person can do it in a single sitting; bigger when it needs several separate steps, sessions or people (a project, a party, a clean-out, tax, a trip). For bigger tasks give 3–6 small concrete steps, each a few minutes, in steps. Otherwise steps is an empty list.
 - items: for shopping lists, hardware or supply runs, party or school supply lists: every item to buy or get, one per entry, with quantity when written and a rough typical Australian price in cents. It is a rough estimate to help budgeting, never a quote. Empty list when nothing is to be bought.
+- projects: when the input is a brain dump or work list with several headings (often highlighted or underlined, ending in a colon) and tasks under each, return every heading as a project, in order, with each task under it as a short task title, keeping names and initials as written ("Ayla: CoC" stays "Ayla: CoC"). Include every task; never merge projects. Empty list when it is one thing.
 - extractedText: the readable text of the input, cleaned, up to 6000 characters. For spoken notes, the transcript.
 - bill: when kind is bill, fill the full bill reading using the bill rules; otherwise null.
 - Never invent values. When something is unknown, leave it empty rather than guessing, and list any field you are unsure about in uncertain. Never output card numbers, CVVs or passwords.

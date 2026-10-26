@@ -93,3 +93,48 @@ test('people who forget until it is urgent get things back earlier',()=>{
  const early=understand({text,today:'2026-10-26',caps,loadMap:{domains:{},cognitiveProfile:{remembering:5}}}).graph.nodes[0].steps.find(s=>s.key==='pay').surfaceFrom;
  assert.equal(plain,'2026-11-07');assert.equal(early,'2026-11-05');
 });
+
+const DUMP=`Collab: - Flup with Jenny from Limerick - Swedish recovery group
+PhD:
+- Ayla: CoC
+- Belinda: Flup
+- Nick: Email resp
+Papers:
+- BERA: Cass quant article
+- Current Q: Cass quant
+- School MH: TIBS
+QMAC:
+- Peer review of ethics
+- Ethics`;
+
+test('a brain dump becomes projects with their to-dos, not one task',async()=>{
+ const {isBrainDump,setupBrainDump,dumpView}=await import('../lib/bear/services/dump.ts');
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:DUMP,referenceYear:2026});
+ assert.ok(isBrainDump(extraction.general),'recognised as a brain dump');
+ const res=await setupBrainDump(store,extraction,NOW);
+ assert.deepEqual(res.projects.map(p=>p.title),['Collab','PhD','Papers','QMAC']);
+ assert.deepEqual(res.projects.map(p=>p.count),[2,3,3,2]);
+ const view=await dumpView(store,res.captureId);assert.equal(view.projects[1].tasks[0].title,'Ayla: CoC');
+ const tasks=await store.list('tasks');assert.ok(tasks.every(t=>t.timing==='flexible'&&!t.dueAt),'nothing is dated until the person says');
+ const home=await homeView(store,NOW);assert.equal(home.needsYou.length,0,'no pressure before lining them up');
+});
+
+test('lining up projects dates only what the person chose, and Home brings back one next thing per project',async()=>{
+ const {setupBrainDump,sortDump,dateForPriority}=await import('../lib/bear/services/dump.ts');
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,null,{method:'text',text:DUMP,referenceYear:2026});
+ const res=await setupBrainDump(store,extraction,NOW);
+ const [collab,phd,papers,qmac]=res.projects;
+ await sortDump(store,res.captureId,{projects:[{id:phd.id,priority:'now'},{id:papers.id,priority:'soon'},{id:collab.id,priority:'later'},{id:qmac.id,priority:'none'}]},NOW);
+ assert.equal(dateForPriority('now','2026-10-26'),'2026-10-30','this week means by Friday');
+ const phdTasks=(await store.list('tasks',{where:[{column:'project_id',value:phd.id}]}));assert.ok(phdTasks.every(t=>t.dueAt==='2026-10-30'&&t.timing==='time_sensitive'));
+ const collabTasks=(await store.list('tasks',{where:[{column:'project_id',value:collab.id}]}));assert.ok(collabTasks.every(t=>!t.dueAt&&t.timing==='flexible'),'later stays quiet');
+ const reminders=(await store.list('reminders')).filter(r=>r.status==='scheduled');
+ assert.equal(reminders.length,2,'one reminder per dated project, for its next to-do only: '+reminders.map(r=>r.message).join(' | '));
+ // Finishing the next to-do moves the reminder on to the one after it.
+ const first=phdTasks.sort((a,b)=>a.order-b.order)[0];
+ await completeTask(store,{taskId:first.id,method:null,expectNext:false},NOW);
+ const after=(await store.list('reminders')).filter(r=>r.status==='scheduled'&&phdTasks.some(t=>t.id===r.taskId));
+ assert.equal(after.length,1);assert.notEqual(after[0].taskId,first.id);
+});

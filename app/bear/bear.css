@@ -400,3 +400,7 @@
 .bear .hand-tiles .tile.side .label{font-size:14px;min-width:0;overflow-wrap:anywhere;hyphens:auto;}
 .bear .hand-tiles .tile.side .art{width:46px;height:46px;margin-right:10px;}
 .bear .hand-tiles .tile.side .label{font-size:13.5px;overflow-wrap:normal;hyphens:manual;padding-right:4px;letter-spacing:-.01em;}
+/* Brain dump: one card per project. */
+.bear .sort-head{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:44px;background:none;border:0;padding:0;text-align:left;color:inherit;}
+.bear .sort-head .title{font-weight:700;font-size:17px;}
+.bear .sort-tasks{margin:6px 0 0;padding-left:18px;display:grid;gap:4px;color:var(--ink-2);}

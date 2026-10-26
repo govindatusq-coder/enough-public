@@ -86,6 +86,10 @@ export async function reopenLoad(store:BearStore,task:Task,now=new Date()){
 // back on X" because this reminder exists.
 export async function syncLoadReminder(store:BearStore,task:Task,graph:LoadGraph,profile:Profile,now=new Date()){
  if(task.status!=='open'||graph.migrated)return;
+ // In a brain-dump project only the next to-do is ever brought back.
+ const project=await store.get('projects',task.projectId);
+ if(project?.captureId){const open=(await store.list('tasks',{where:[{column:'project_id',value:project.id},{column:'status',value:'open'}]})).sort((a,b)=>(a.order??0)-(b.order??0));
+  if(open[0]&&open[0].id!==task.id){for(const r of (await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed']}]})).filter(r=>r.plan.windowId==='load'))await store.update('reminders',r.id,{status:'cancelled'});return;}}
  const tz=tzOf(profile);const today=todayISO(tz,now);
  // "No rush" items get no reminder from Bear; the person chooses nudges themselves.
  const view=describe(graph,today,{quiet:task.timing==='flexible'});
@@ -110,4 +114,11 @@ export async function relayLoadDate(store:BearStore,task:Task,date:string|null,n
  const graph=withEntities(g,primary.id,{[dateEntityFor(primary)]:date},today,caps(),profile.loadMap);
  await syncLoadReminder(store,{...task,load:graph},graph,profile,now);
  return graph;
+}
+
+// When a to-do in a brain-dump project is done, the next one takes its place.
+export async function syncNextInProject(store:BearStore,projectId:string,now=new Date()){
+ const project=await store.get('projects',projectId);if(!project?.captureId)return;
+ const next=(await store.list('tasks',{where:[{column:'project_id',value:projectId},{column:'status',value:'open'}]})).sort((a,b)=>(a.order??0)-(b.order??0))[0];
+ if(next?.load)await syncLoadReminder(store,next,next.load,await ensureProfile(store),now);
 }
