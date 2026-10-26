@@ -47,6 +47,8 @@ export function describe(graph:LoadGraph,today:string,opts:{quiet?:boolean}={}):
  const nextBringBack=[...comingUp.map(c=>c.date),...graph.nodes.map(n=>n.waiting?.nextCheckAt).filter((d):d is string=>!!d)].sort()[0]||null;
  const t=the(primary.title);
  const acted=graph.nodes.some(n=>n.steps.some(s=>s.owner==='human'&&s.status==='done'));
- const headline=state==='resolved'?'All sorted. Off your mind.':state==='captured'&&!needsYou?`I’m holding onto ${t}.`:acted&&(state==='covered'||state==='waiting')?`${sentence(primary.title)} covered.`:`I’ve got ${t}.`;
+ // A title that is already an action ("Return the permission form") reads badly after "I've got the".
+ const action=/^(return|pay|book|buy|get|call|ring|email|send|sign|fill|complete|renew|fix|pick|drop|collect|organi[sz]e|sort|check|finish|write|clean|take|bring|order|cancel|reply|rsvp|find|ask|tell|make|update|submit|lodge)\b/i.test(primary.title);
+ const headline=state==='resolved'?'All sorted. Off your mind.':state==='captured'&&!needsYou?(action?'I’m holding onto this.':`I’m holding onto ${t}.`):acted&&(state==='covered'||state==='waiting')?(action?'All covered.':`${sentence(primary.title)} covered.`):action?'I’ve got this.':`I’ve got ${t}.`;
  return {state,title:primary.title,headline,needsYou,nothingForYou:!needsYou&&state!=='resolved',covered:uniq,waiting,comingUp:comingUp.map(c=>({line:opts.quiet?`${c.line} will be here when you want it`:/^\w+ing\b/.test(c.line)?`${c.line} will come back ${friendlyDate(c.date,today)}`:`Back ${friendlyDate(c.date,today)}: ${c.line}`,date:c.date})),nextBringBack:opts.quiet?null:nextBringBack};
 }

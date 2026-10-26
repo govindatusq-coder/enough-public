@@ -45,7 +45,7 @@ export function GeneralVerify({extraction,documentUrl,isDemo}:{extraction:Extrac
    <p className="eyebrow">The details</p>
    <div className={`field ${unsure('title')?'unsure':''}`}><label htmlFor="g-title">What is it?{unsure('title')&&<span className="pill mustard" style={{marginLeft:8}}>Not sure</span>}</label><input id="g-title" value={String(v.title)} onChange={e=>set('title',e.target.value)} maxLength={120} placeholder="Book Ava's dentist"/></div>
    <div className={`field ${unsure('area')?'unsure':''}`}><label htmlFor="g-area">Part of life</label><select id="g-area" value={String(v.area)} onChange={e=>set('area',e.target.value||null)}><option value="">Choose…</option>{Object.entries(areaLabels).map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></div>
-   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+   <div className="pair-row">
     <div className={`field ${unsure('when')?'unsure':''}`}><label htmlFor="g-when">When{unsure('when')&&<span className="pill mustard" style={{marginLeft:8}}>Not sure</span>}</label><input id="g-when" type="date" value={String(v.when)} onChange={e=>set('when',e.target.value)}/><span className="hint">Leave blank if there&rsquo;s no date.</span></div>
     <div className="field"><label htmlFor="g-time">Time</label><input id="g-time" type="time" value={String(v.timeOfDay)} onChange={e=>set('timeOfDay',e.target.value)}/></div>
    </div>

@@ -404,3 +404,10 @@
 .bear .sort-head{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:44px;background:none;border:0;padding:0;text-align:left;color:inherit;}
 .bear .sort-head .title{font-weight:700;font-size:17px;}
 .bear .sort-tasks{margin:6px 0 0;padding-left:18px;display:grid;gap:4px;color:var(--ink-2);}
+/* iPhone Safari gives date and time inputs a built-in minimum width; side by side they overlapped.
+   Let them shrink to their column, everywhere. */
+.bear .field{min-width:0;}
+.bear input[type="date"],.bear input[type="time"],.bear input[type="datetime-local"]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;width:100%;box-sizing:border-box;}
+.bear input[type="date"]::-webkit-date-and-time-value,.bear input[type="time"]::-webkit-date-and-time-value{text-align:left;margin:0;}
+.bear .pair-row{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:10px;}
+@media (max-width:359px){.bear .pair-row{grid-template-columns:minmax(0,1fr);gap:0;}}
