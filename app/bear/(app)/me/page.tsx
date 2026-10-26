@@ -11,12 +11,14 @@ import {applyUpdate,checkForUpdate,CURRENT_BUILD} from '@/components/bear/runtim
 import {Button,ErrorCard,Skeleton,Toast} from '@/components/bear/ui';
 import {areaLabels} from '@/lib/bear/domain/labels';
 import {domainOptions,handoverOptions,struggleOptions} from '@/lib/bear/load/loadmap';
-import {browserClient} from '@/lib/supabase/client';
-type Loaded={profile:Profile;user:{email:string|null;name:string};aiAvailable:boolean;pushAvailable:boolean;dayMode:'good'|'full'|'wiped'|'chaos'|null};
+import {browserClient,linkClient} from '@/lib/supabase/client';
+type Loaded={profile:Profile;user:{email:string|null;name:string};emailConfirmed?:boolean;aiAvailable:boolean;pushAvailable:boolean;dayMode:'good'|'full'|'wiped'|'chaos'|null};
 export default function Me(){
  const router=useRouter();const [data,setData]=useState<Loaded|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [push,setPush]=useState<{available:boolean;publicKey:string|null;subscriptions:number}|null>(null);const [updateState,setUpdateState]=useState<'idle'|'checking'|'current'|'update'|'unknown'>('idle');const perm=useSyncExternalStore(subscribePerm,()=>typeof Notification==='undefined'?'unknown':Notification.permission,()=>'unknown');const [permTick,setPermTick]=useState(0);
  const [nameDraft,setNameDraft]=useState<string|null>(null);
  const [loggingOut,setLoggingOut]=useState<'idle'|'confirm'|'busy'>('idle');
+ const [confirmSent,setConfirmSent]=useState<'idle'|'sending'|'sent'>('idle');
+ async function sendConfirm(email:string){setConfirmSent('sending');try{const {error}=await linkClient().auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:window.location.origin+'/auth/callback?next=%2Fbear'}});if(error)throw error;setConfirmSent('sent');}catch(e){setConfirmSent('idle');setToast('Bear couldn’t send that just now. Try again in a minute.'+((e as Error).message?` (${(e as Error).message})`:''));}}
  async function logOut(){setLoggingOut('busy');try{await browserClient().auth.signOut({scope:'local'});}catch{/* no auth service here: still leave */}try{sessionStorage.clear();}catch{/* no storage */}// eslint-disable-next-line @next/next/no-location-assign-relative-destination -- full reload clears everything held in memory after logging out
  window.location.assign('/bear/welcome');}
  const [aiTest,setAiTest]=useState<'idle'|'running'|'done'>('idle');const [aiResult,setAiResult]=useState<string|null>(null);
@@ -75,6 +77,7 @@ export default function Me(){
     {updateState==='current'&&<p className="faint" style={{marginTop:8}}>You&rsquo;re on the latest Bear.</p>}{updateState==='unknown'&&<p className="faint" style={{marginTop:8}}>Couldn&rsquo;t check right now. Try again when you&rsquo;re online.</p>}</div></section>
    <section className="section"><p className="eyebrow">Account</p><div className="card">
     <p className="small">Signed in as <strong>{data.user.email}</strong>. Everything you&rsquo;ve given Bear stays safe and will be here when you log back in.</p>
+    {data.emailConfirmed===false&&data.user.email&&<div className="note" role="status" style={{marginTop:12,background:'var(--mustard-tint)'}}><div><p className="small"><strong>Confirm your email when you get a chance.</strong> No rush, Bear works either way. It just means you can always get back in if you forget your password.</p>{confirmSent==='sent'?<p className="small" style={{marginTop:6}}>Sent to {data.user.email}. Open the email on any device and tap the link.</p>:<div className="btn-row" style={{marginTop:8}}><Button className="sm" variant="ghost" disabled={confirmSent==='sending'} onClick={()=>sendConfirm(data.user.email!)}>{confirmSent==='sending'?'Sending…':'Send me the link'}</Button></div>}</div></div>}
     <div className="btn-row">{loggingOut==='idle'?<Button className="sm" variant="ghost" onClick={()=>setLoggingOut('confirm')}>Log out</Button>:<><Button className="sm" variant="coral" disabled={loggingOut==='busy'} onClick={logOut}>{loggingOut==='busy'?'Logging out…':'Yes, log out'}</Button><Button className="sm" variant="quiet" disabled={loggingOut==='busy'} onClick={()=>setLoggingOut('idle')}>Stay logged in</Button></>}</div>
    </div></section>
    <div style={{marginTop:32,textAlign:'center'}}><Art file="wordmark" className="wordmark-img" alt="Load Bear"/><Tagline size={20}/></div>

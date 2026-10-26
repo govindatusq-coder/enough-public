@@ -8,7 +8,7 @@ import {CaptureError} from '@/lib/bear/services/capture';
 import {ConfirmError} from '@/lib/bear/services/task-inference';
 
 export const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'private, no-store'}});
-export interface BearContext{store:BearStore;provider:StructuredModelProvider|null;user:{id:string;email:string|null;name:string};aiAvailable:boolean}
+export interface BearContext{store:BearStore;provider:StructuredModelProvider|null;user:{id:string;email:string|null;name:string;emailConfirmed?:boolean};aiAvailable:boolean}
 export class HttpError extends Error{readonly status:number;constructor(message:string,status:number){super(message);this.status=status;}}
 
 // Every /api/bear route: verify the user, build a request-scoped store (RLS applies),

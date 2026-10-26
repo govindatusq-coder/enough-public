@@ -73,6 +73,8 @@ export interface Profile extends Owned{
  revision:number;
  // The person and household Bear is carrying for (built up progressively; never required).
  loadMap?:LoadMap;
+ // Set when the person opened a sign-in link sent to their email: proof they own the address.
+ emailVerifiedAt?:ISODateTime|null;
 }
 
 // ---------- Capture ----------

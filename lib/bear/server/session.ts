@@ -16,11 +16,14 @@ export function devStore():{store:BearStore;user:{id:string;email:string|null;na
  const id=process.env.BEAR_DEV_USER_ID||'00000000-0000-4000-8000-000000000001';
  return {store:g.__bearDevBackend.for(id),user:{id,email:'dev@loadbear.local',name:''}};
 }
-export async function bearSession(req?:Request):Promise<{store:BearStore;user:{id:string;email:string|null;name:string};loadProfile:()=>ReturnType<typeof loadProfile>}|null>{
+export async function bearSession(req?:Request):Promise<{store:BearStore;user:{id:string;email:string|null;name:string;emailConfirmed?:boolean};loadProfile:()=>ReturnType<typeof loadProfile>}|null>{
  const dev=devStore();if(dev)return {...dev,loadProfile:()=>loadProfile(dev.store)};
  if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return null;
  const {db,user}=await signedIn(req);if(!user)return null;
  const store=new SupabaseStore(user.id,db);
- return {store,user:{id:user.id,email:user.email||null,name:firstName(user.user_metadata)},loadProfile:()=>loadProfile(store)};
+ // With "Confirm email" off, Supabase marks accounts confirmed at sign-up; only a confirmation
+ // that came later (the person clicked a link) proves the address.
+ const confirmed=!!user.email_confirmed_at&&new Date(user.email_confirmed_at).getTime()-new Date(user.created_at).getTime()>10000;
+ return {store,user:{id:user.id,email:user.email||null,name:firstName(user.user_metadata),emailConfirmed:confirmed},loadProfile:()=>loadProfile(store)};
 }
 
