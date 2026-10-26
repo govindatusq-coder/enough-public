@@ -5,22 +5,21 @@ import {apiGet,apiSend} from '@/lib/bear/client';
 import type {PersonRole,Preferences,Profile} from '@/lib/bear/domain/types';
 import type {LoadDomain,LoadMap} from '@/lib/bear/load/types';
 import {areasFromDomains,cognitiveProfileFrom,domainOptions,handoverOptions,struggleOptions} from '@/lib/bear/load/loadmap';
-import {CaptureBear,Art,prefArt} from '@/components/bear/art';
+import {CaptureBear,Art,prefArt,TileImage} from '@/components/bear/art';
 import {Horizon} from '@/components/bear/horizon';
 import {Button,Chip,Progress,Tile,Toast,TopBar} from '@/components/bear/ui';
-import {AreaArt,InterestArt,NeedArt} from '@/components/bear/tile-art';
+import {NeedArt} from '@/components/bear/tile-art';
 
 // Onboarding builds the Load Map: short, progressive and skippable at every step. It ends by
 // giving Bear one real thing, processed by the real Load Pattern Engine, not a demo.
 const steps=['carry','glance','struggles','handover','behave','first'] as const;
 type Step=typeof steps[number];
-const domainArt:Record<LoadDomain,React.ReactNode>={kids:<NeedArt label="School & childcare"/>,home:<AreaArt area="home"/>,work:<AreaArt area="work"/>,money:<AreaArt area="money"/>,health:<AreaArt area="health"/>,people:<NeedArt label="Birthdays & presents"/>,life_admin:<NeedArt label="Forms & admin"/>,pets:<InterestArt label="Outdoors"/>,other:<NeedArt label="Things I just forget"/>};
 const struggleArt:Record<string,string>={forget_until_urgent:'Things I just forget',wrong_time:'Family calendar',too_many_steps:'Forms & admin',putting_off:'Housework',lost_in_messages:'Appointments',too_much:'Work deadlines',following_up:'Bills & money',coordinating:'Activities & sport'};
 const tints=['#E3F1FB','#FFE6E7','#FFEFC9','#D5F3F0','#FFE1DE','#E4DDFB'];
-const household=[{key:'just_me',label:'Just me'},{key:'partner',label:'Partner or other adult'},{key:'children',label:'Children'},{key:'dependants',label:'Other dependants'}] as const;
+const household=[{key:'just_me',label:'Just me',icon:undefined},{key:'partner',label:'Partner or other adult',icon:'ob-who-partner'},{key:'children',label:'Children',icon:'ob-who-children'},{key:'dependants',label:'Other dependants',icon:'ob-who-support'}] as const;
 const ages=['0-4','5-11','12-17','18+'] as const;
 const work=[{key:'full_time',label:'Full-time'},{key:'part_time',label:'Part-time'},{key:'shift',label:'Shift or irregular'},{key:'study',label:'Study'},{key:'not_working',label:'Not working right now'},{key:'other',label:'Other'}] as const;
-const caring=[{key:'children',label:'Children'},{key:'older_family',label:'Older family'},{key:'support_needs',label:'Someone with support needs'},{key:'pets',label:'Pets'},{key:'none',label:'None'}] as const;
+const caring=[{key:'children',label:'Children',icon:'ob-who-children'},{key:'older_family',label:'Older family',icon:'ob-who-older'},{key:'support_needs',label:'Someone with support needs',icon:'ob-who-support'},{key:'pets',label:'Pets',icon:'ob-who-pets'},{key:'none',label:'None',icon:undefined}] as const;
 const regions:Record<string,string[]>={Australia:['NSW','VIC','QLD','WA','SA','TAS','ACT','NT'],'New Zealand':[],'United Kingdom':[],'United States':[],Other:[]};
 const behave:{key:'canWait'|'urgent'|'ignored';q:string;art:string;options:{value:string;label:string}[]}[]=[
  {key:'canWait',q:'If something can wait',art:prefArt.nudgeTolerance,options:[{value:'leave',label:'Leave it alone'},{value:'gentle',label:'Gentle reminder'},{value:'visible',label:'Keep it visible'}]},
@@ -52,19 +51,19 @@ export default function Onboarding(){
    {step!=='first'&&<div style={{textAlign:'right',marginTop:6}}><button type="button" className="btn quiet sm" disabled={busy} onClick={()=>finish(map)}>Skip the rest for now</button></div>}
    {step==='carry'&&<section>
     <h1>What&rsquo;s yours to carry?</h1><p className="muted" style={{marginTop:8}}>Pick everything you look after. Just the broad strokes.</p>
-    <div className="tiles section">{domainOptions.map((d,i)=><Tile key={d.key} photo tint={tints[i%tints.length]} label={d.label} sub={d.sub} selected={!!map.domains[d.key]} onToggle={()=>setMap(m=>({...m,domains:{...m.domains,[d.key]:!m.domains[d.key]}}))} art={domainArt[d.key]}/>)}</div>
+    <div className="tiles section">{domainOptions.map((d,i)=><Tile key={d.key} photo tint={tints[i%tints.length]} label={d.label} sub={d.sub} selected={!!map.domains[d.key]} onToggle={()=>setMap(m=>({...m,domains:{...m.domains,[d.key]:!m.domains[d.key]}}))} art={<TileImage file={`ob-domain-${d.key}`}/>}/>)}</div>
     <div className="btn-stack"><Button disabled={busy||!Object.values(map.domains).some(Boolean)} onClick={()=>save({loadMap:map,areas:areasFromDomains(map.domains)},'glance')}>Next</Button></div>
    </section>}
    {step==='glance'&&<section>
     <h1>Your life at a glance</h1><p className="muted" style={{marginTop:8}}>A few broad strokes so Bear asks fewer questions later. Skip anything.</p>
     <div className="field"><label htmlFor="myname">What should Bear call you?</label><input id="myname" placeholder="Your first name" value={profile.name} maxLength={40} onChange={e=>setProfile({...profile,name:e.target.value})}/></div>
     <div className="card pref-card" style={{marginTop:14}}><Art file="people-header"/><div><h3>Who&rsquo;s at home?</h3>
-     <div className="chips" style={{marginTop:10}} role="group" aria-label="Who's at home">{household.map(h=><Chip key={h.key} label={h.label} selected={shape.includes(h.key)} onToggle={()=>setMap(m=>{const next=h.key==='just_me'?(shape.includes('just_me')?[]:['just_me' as const]):toggle(shape.filter(x=>x!=='just_me'),h.key);return {...m,household:{...m.household,shape:next,children:next.includes('children')?(m.household?.children||[]):[]}};})}/>)}</div>
+     <div className="chips" style={{marginTop:10}} role="group" aria-label="Who's at home">{household.map(h=><Chip key={h.key} icon={h.icon} label={h.label} selected={shape.includes(h.key)} onToggle={()=>setMap(m=>{const next=h.key==='just_me'?(shape.includes('just_me')?[]:['just_me' as const]):toggle(shape.filter(x=>x!=='just_me'),h.key);return {...m,household:{...m.household,shape:next,children:next.includes('children')?(m.household?.children||[]):[]}};})}/>)}</div>
      {shape.includes('children')&&<><p className="small muted" style={{marginTop:12}}>Ages, if you like (tap once per child)</p><div className="chips" style={{marginTop:6}}>{ages.map(a=>{const n=(map.household?.children||[]).filter(c=>c.ageBand===a).length;return <Chip key={a} label={n?`${a} ×${n}`:a} selected={n>0} onToggle={()=>setMap(m=>({...m,household:{...m.household,children:[...(m.household?.children||[]),{ageBand:a}]}}))}/>;})}{(map.household?.children||[]).length>0&&<button type="button" className="chip" onClick={()=>setMap(m=>({...m,household:{...m.household,children:[]}}))}>Clear ages</button>}</div></>}
     </div></div>
     <div className="card pref-card" style={{marginTop:14}}><Art file={prefArt.planningDetail}/><div><h3>Work</h3><div className="chips" style={{marginTop:10}} role="group" aria-label="Work">{work.map(w=><Chip key={w.key} label={w.label} selected={map.workPattern?.type===w.key} onToggle={()=>setMap(m=>({...m,workPattern:{...m.workPattern,type:m.workPattern?.type===w.key?undefined:w.key}}))}/>)}</div></div></div>
-    <div className="card pref-card" style={{marginTop:14}}><Art file={prefArt.tone}/><div><h3>Anyone you care for?</h3><div className="chips" style={{marginTop:10}} role="group" aria-label="Caring">{caring.map(c=><Chip key={c.key} label={c.label} selected={!!map.caringResponsibilities?.includes(c.key)} onToggle={()=>setMap(m=>({...m,caringResponsibilities:c.key==='none'?(m.caringResponsibilities?.includes('none')?[]:['none']):toggle((m.caringResponsibilities||[]).filter(x=>x!=='none'),c.key)}))}/>)}</div></div></div>
-    <div className="card pref-card" style={{marginTop:14}}><Art file={prefArt.proactiveSuggestions}/><div><h3>Where are you?</h3><p className="small muted">Country and state only. Bear uses it for the right terms and systems, never your exact location.</p>
+    <div className="card pref-card" style={{marginTop:14}}><Art file={prefArt.tone}/><div><h3>Anyone you care for?</h3><div className="chips" style={{marginTop:10}} role="group" aria-label="Caring">{caring.map(c=><Chip key={c.key} icon={c.icon} label={c.label} selected={!!map.caringResponsibilities?.includes(c.key)} onToggle={()=>setMap(m=>({...m,caringResponsibilities:c.key==='none'?(m.caringResponsibilities?.includes('none')?[]:['none']):toggle((m.caringResponsibilities||[]).filter(x=>x!=='none'),c.key)}))}/>)}</div></div></div>
+    <div className="card pref-card" style={{marginTop:14}}><Art file={map.locationContext?.country==='Australia'?'ob-loc-au':map.locationContext?.country&&map.locationContext.country!=='Other'?'ob-loc-other':'ob-loc-custom'}/><div><h3>Where are you?</h3><p className="small muted">Country and state only. Bear uses it for the right terms and systems, never your exact location.</p>
      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:8}}>
       <div className="field" style={{marginTop:0}}><label htmlFor="country">Country</label><select id="country" value={map.locationContext?.country||''} onChange={e=>setMap(m=>({...m,locationContext:{...m.locationContext,country:e.target.value||undefined,region:undefined}}))}><option value="">Skip</option>{Object.keys(regions).map(c=><option key={c}>{c}</option>)}</select></div>
       <div className="field" style={{marginTop:0}}><label htmlFor="region">State</label><select id="region" value={map.locationContext?.region||''} disabled={!regions[map.locationContext?.country||'']?.length} onChange={e=>setMap(m=>({...m,locationContext:{...m.locationContext,region:e.target.value||undefined}}))}><option value="">Skip</option>{(regions[map.locationContext?.country||'']||[]).map(r=><option key={r}>{r}</option>)}</select></div>
@@ -78,8 +77,7 @@ export default function Onboarding(){
    </section>}
    {step==='handover'&&<section>
     <h1>What would you happily hand over to Bear?</h1><p className="muted" style={{marginTop:8}}>Bear only takes what it can genuinely carry. You can change this any time.</p>
-    <div className="chips section" role="group" aria-label="Hand over">{handoverOptions.map(o=><Chip key={o.key} label={o.label} selected={!!map.handover?.includes(o.key)} onToggle={()=>setMap(m=>({...m,handover:o.key==='all'?(m.handover?.includes('all')?[]:['all']):toggle((m.handover||[]).filter(x=>x!=='all'),o.key as string)}))}/>)}</div>
-    <div style={{marginTop:24}}><CaptureBear width={150}/></div>
+    <div className="tiles section hand-tiles" role="group" aria-label="Hand over">{handoverOptions.map(o=><Tile key={o.key} compact side tint="#FFFDF8" label={o.label} selected={!!map.handover?.includes(o.key)} onToggle={()=>setMap(m=>({...m,handover:o.key==='all'?(m.handover?.includes('all')?[]:['all']):toggle((m.handover||[]).filter(x=>x!=='all'),o.key as string)}))} art={<TileImage file={`ob-hand-${o.key}`}/>}/>)}</div>
     <div className="btn-stack"><Button disabled={busy} onClick={()=>save({loadMap:map},'behave')}>Next</Button></div>
    </section>}
    {step==='behave'&&<section>

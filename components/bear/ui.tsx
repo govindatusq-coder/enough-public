@@ -1,12 +1,13 @@
 'use client';
 import Link from 'next/link';
+import {ChipIcon} from './art';
 import {useEffect,useState,useSyncExternalStore} from 'react';
 import {createPortal} from 'react-dom';
 export function Button({children,variant='primary',className='',href,...rest}:{children:React.ReactNode;variant?:'primary'|'coral'|'glass'|'ghost'|'quiet';className?:string;href?:string}&React.ButtonHTMLAttributes<HTMLButtonElement>){
  if(href)return <Link href={href} className={`btn ${variant} ${className}`} role="button">{children}</Link>;
  return <button type="button" className={`btn ${variant} ${className}`} {...rest}>{children}</button>;
 }
-export function Chip({label,selected,onToggle}:{label:string;selected:boolean;onToggle:()=>void}){return <button type="button" className="chip" aria-pressed={selected} onClick={onToggle}>{selected&&<Check/>}{label}</button>;}
+export function Chip({label,selected,onToggle,icon}:{label:string;selected:boolean;onToggle:()=>void;icon?:string}){return <button type="button" className={`chip${icon?' with-icon':''}`} aria-pressed={selected} onClick={onToggle}>{icon?<ChipIcon file={icon}/>:null}{selected&&<Check/>}{label}</button>;}
 export function Check({size=16}:{size?:number}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>;}
 export function Tile({label,sub,selected,onToggle,art,compact,photo,side,tint}:{label:string;sub?:string;selected:boolean;onToggle:()=>void;art:React.ReactNode;compact?:boolean;photo?:boolean;side?:boolean;tint?:string}){
  return <button type="button" className={`tile ${compact&&!photo&&!side?'compact':''} ${photo?'photo':''} ${photo&&sub?'has-sub':''} ${side?'side':''}`} style={tint?{['--tile' as string]:tint}:undefined} aria-pressed={selected} onClick={onToggle}><span className="art" aria-hidden="true">{art}</span><span className="check" aria-hidden="true"><Check size={15}/></span><span className="label">{label}</span>{sub&&<span className="sub">{sub}</span>}</button>;

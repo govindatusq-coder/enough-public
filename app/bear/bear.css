@@ -387,3 +387,16 @@
 .bear .hero-alert.needs{background:var(--navy);text-decoration:none;max-width:100%;}
 .bear .hero-alert.needs span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .bear .stats-note a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px;}
+/* Chips that carry a small round picture (who's at home, who you care for). */
+.bear .chip.with-icon{padding-left:6px;}
+.bear .chip-icon{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:none;background:#FFF7E8;}
+.bear .chip-icon{mix-blend-mode:normal;box-shadow:0 0 0 2px #fff;}
+/* Hand-over tiles: a small icon on the right, the tick in the corner, nothing cropped. */
+.bear .hand-tiles .tile.side .art{width:58px;height:58px;margin-right:12px;border-radius:14px;overflow:hidden;}
+.bear .hand-tiles .tile.side .art img{padding:0 !important;mix-blend-mode:normal !important;}
+.bear .hand-tiles .tile.side .check{top:8px;bottom:auto;left:auto;right:8px;}
+.bear .pref-card .chip-icon,.bear .chip .chip-icon{width:34px;height:34px;object-fit:cover;mix-blend-mode:normal;margin-top:0;}
+.bear .hand-tiles .tile.side{padding-left:12px;}
+.bear .hand-tiles .tile.side .label{font-size:14px;min-width:0;overflow-wrap:anywhere;hyphens:auto;}
+.bear .hand-tiles .tile.side .art{width:46px;height:46px;margin-right:10px;}
+.bear .hand-tiles .tile.side .label{font-size:13.5px;overflow-wrap:normal;hyphens:manual;padding-right:4px;letter-spacing:-.01em;}

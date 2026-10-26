@@ -27,3 +27,5 @@ export function HeroVertical(){return <img src={base+'hero-vertical.webp'} alt="
 export const prefArt:Record<string,string>={reminderLeadTime:'pref-lead',nudgeTolerance:'pref-nudge',planningDetail:'pref-detail',proactiveSuggestions:'pref-suggest',tone:'pref-tone'};
 export const strengthArt:Record<string,string>={'Planning ahead':'planning-ahead','Getting things done':'getting-things-done','Looking after people':'looking-after-people','Money':'money','Work':'work','Routines':'routines','Cooking':'cooking','Staying active':'staying-active','Problem solving':'problem-solving','Asking for help':'asking-for-help','Keeping calm in chaos':'keeping-calm'};
 export function TileImage({file,alt=''}:{file:string;alt?:string}){return <img src={base+file+'.webp'} alt={alt} style={{width:'100%',height:'100%',objectFit:'contain',objectPosition:'center',display:'block',padding:'6px 8px 2px',boxSizing:'border-box',mixBlendMode:'multiply'}} loading="lazy"/>;}
+
+export function ChipIcon({file}:{file:string}){return <img className="chip-icon" src={base+file+'.webp'} alt="" aria-hidden="true"/>;}
