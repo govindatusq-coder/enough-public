@@ -6,16 +6,28 @@ import {cardCopy} from '@/lib/opportunity-copy';
 import {plannedMoments,type FeedbackEvent,type OpportunityMoment,type Situation} from '@/lib/opportunity-log';
 import {opportunityById,fillMinutes} from '@/lib/opportunities';
 import {nextProfilingQuestion} from '@/lib/profiling';
+import {illustrationFor} from '@/lib/illustrations';
+import {liveCommitments,type AdaptiveMovementCommitment} from '@/lib/goal-fitting';
+import type {FollowThroughEvent,DayLoad} from '@/lib/follow-through';
+import type {CardCopy} from '@/lib/opportunity-copy';
+import {FollowThroughToday} from './follow-through';
+import type {FitTarget} from './goal-fitting-flow';
 import {OpportunityCard} from './opportunity-card';
 import {usePersonalisedCopy} from './use-personalised-copy';
 import type {OpportunityActions} from './actions';
 
-type Props={lifeMap?:LifeMap;feedback?:FeedbackEvent[];moments?:OpportunityMoment[];now:number;name?:string;aiWording:boolean;actions:OpportunityActions;onStart:()=>void};
+/** Follow-through (adaptiveGoalFittingV1). Absent means the flag is off and Home behaves exactly as before. */
+type Adaptive={commitments?:AdaptiveMovementCommitment[];events?:FollowThroughEvent[];dayLoad?:DayLoad;onFit:(target:FitTarget)=>void};
+type Props={lifeMap?:LifeMap;feedback?:FeedbackEvent[];moments?:OpportunityMoment[];now:number;name?:string;aiWording:boolean;actions:OpportunityActions;onStart:()=>void;adaptive?:Adaptive};
+/** What the person saw when they tapped "I'd do that", kept with their commitment. */
+export function fitTarget(r:Ranked,copy:CardCopy):FitTarget{
+ return {opportunityId:r.opportunity.id,matchedMoment:r.matchedMoment,snapshot:{title:copy.title,description:copy.body,movementMinutes:copy.minutes,extraMinutes:copy.extraMinutes,imageReference:illustrationFor(r.opportunity.imageCategory,r.opportunity.imageVariant).src}};
+}
 
 function greeting(now:Date){const h=now.getHours();return h<12?'Good morning':h<17?'Good afternoon':'Good evening';}
 
 /** Home: where could movement fit today? Three strong ideas, not a feed. */
-export function OpportunityHome({lifeMap,feedback,moments,now,name,aiWording,actions,onStart}:Props){
+export function OpportunityHome({lifeMap,feedback,moments,now,name,aiWording,actions,onStart,adaptive}:Props){
  const date=new Date(now),ready=hasLifeMap(lifeMap),map=lifeMap||emptyLifeMap();
  const input={lifeMap:map,feedback,moments,now:date};
  // Planned ideas live in their own list below, so Home always has fresh ones.
@@ -24,7 +36,10 @@ export function OpportunityHome({lifeMap,feedback,moments,now,name,aiWording,act
  const question=ready?nextProfilingQuestion(map,top,date):null;
  const [best,...others]=picks;
  const bestCopy=usePersonalisedCopy(best||null,aiWording&&ready);
- const planned=plannedMoments(moments).slice(-4).reverse();
+ // With follow-through on, ideas adopted as "one of yours" are answered in their own check-in instead of this list.
+ const linked=new Set(liveCommitments(adaptive?.commitments).map(c=>c.plannedMomentId));
+ const planned=plannedMoments(moments).filter(m=>!adaptive||!linked.has(m.id)).slice(-4).reverse();
+ const adopted=(r:Ranked,copy:CardCopy,note:string)=>{if(adaptive)adaptive.onFit(fitTarget(r,copy));else setNotice(note);};
  const [notice,setNotice]=useState('');
 
  return <div className="lm-home">
@@ -39,24 +54,26 @@ export function OpportunityHome({lifeMap,feedback,moments,now,name,aiWording,act
   <p className="lm-notice" role="status">{notice}</p>
   {best&&bestCopy&&<section aria-labelledby="best-fit-label">
    <h2 id="best-fit-label" className="lm-section-label">{ready?'Best fit':'A few that fit most weeks'}</h2>
-   <OpportunityCard key={best.opportunity.id} ranked={best} copy={bestCopy} variant="hero" eyebrow={best.matchedMoment?undefined:'WORTH A LOOK'} askReason onAccept={()=>{actions.accept(best,'home');setNotice(`“${bestCopy.title}” is in your list below. Tap “It happened” when it does.`);}} onReject={reason=>actions.reject(best,'home',undefined,reason)}/>
+   <OpportunityCard key={best.opportunity.id} ranked={best} copy={bestCopy} variant="hero" eyebrow={best.matchedMoment?undefined:'WORTH A LOOK'} askReason onAccept={()=>{actions.accept(best,'home');adopted(best,bestCopy,`“${bestCopy.title}” is in your list below. Tap “It happened” when it does.`);}} onReject={reason=>actions.reject(best,'home',undefined,reason)}/>
   </section>}
 
   {others.length>0&&<section aria-labelledby="other-ways-label">
    <h2 id="other-ways-label" className="lm-section-label">Other ways movement could fit</h2>
-   <div className="lm-compact-list">{others.map(r=><OpportunityCard key={r.opportunity.id} ranked={r} copy={cardCopy(r)} variant="compact" askReason onAccept={()=>{actions.accept(r,'home');setNotice(`“${r.opportunity.title}” is in your list below. Tap “It happened” when it does.`);}} onReject={reason=>actions.reject(r,'home',undefined,reason)}/>)}</div>
+   <div className="lm-compact-list">{others.map(r=><OpportunityCard key={r.opportunity.id} ranked={r} copy={cardCopy(r)} variant="compact" askReason onAccept={()=>{actions.accept(r,'home');adopted(r,cardCopy(r),`“${r.opportunity.title}” is in your list below. Tap “It happened” when it does.`);}} onReject={reason=>actions.reject(r,'home',undefined,reason)}/>)}</div>
   </section>}
 
   {ready&&!picks.length&&<section className="glass-panel lm-empty"><h2>Room to breathe.</h2><p>Nothing in the library fits your answers right now, and that’s fine. You can loosen anything in My Enough if life changes.</p></section>}
 
-  <RightNow lifeMap={map} feedback={feedback} moments={moments} now={now} aiWording={aiWording&&ready} actions={actions}/>
+  {adaptive&&<FollowThroughToday commitments={adaptive.commitments} events={adaptive.events} moments={moments} lifeMap={map} dayLoad={adaptive.dayLoad} now={now} actions={actions}/>}
+
+  <RightNow lifeMap={map} feedback={feedback} moments={moments} now={now} aiWording={aiWording&&ready} actions={actions} onFit={adaptive?.onFit}/>
 
   {planned.length>0&&<section className="glass-panel lm-planned" aria-labelledby="planned-label">
    <h2 id="planned-label">You said you’d do these</h2>
    <p className="lm-note">Did any of them happen? Only the ones that did show up in My Wins.</p>
    <ul>{planned.map(m=>{const o=opportunityById(m.opportunityId);if(!o)return null;return <li key={m.id}>
     <div><strong>{o.title}</strong><span>{fillMinutes(o.action,m.minutes)}</span></div>
-    <div className="lm-planned-actions"><button type="button" className="secondary" onClick={()=>actions.resolve(m.id,true)}>It happened</button><button type="button" className="lm-quiet" onClick={()=>actions.resolve(m.id,false)}>Not this time</button></div>
+    <div className="lm-planned-actions"><button type="button" className="secondary" onClick={()=>actions.resolve(m.id,true)}>It happened</button><button type="button" className="lm-quiet" onClick={()=>actions.resolve(m.id,false)}>Not this time</button>{adaptive&&<button type="button" className="text-button" onClick={()=>adaptive.onFit({opportunityId:o.id,plannedMomentId:m.id,snapshot:{title:o.title,description:fillMinutes(o.descriptionTemplate,m.minutes),movementMinutes:m.minutes,extraMinutes:m.extraMinutes,imageReference:illustrationFor(o.imageCategory,o.imageVariant).src}})}>Make it one of yours</button>}</div>
    </li>})}</ul>
   </section>}
 
@@ -72,7 +89,7 @@ export function OpportunityHome({lifeMap,feedback,moments,now,name,aiWording,act
 }
 
 /** "Find something that fits right now": one question, maybe two, one answer. */
-export function RightNow({lifeMap,feedback,moments,now,aiWording,actions}:{lifeMap:LifeMap;feedback?:FeedbackEvent[];moments?:OpportunityMoment[];now:number;aiWording:boolean;actions:OpportunityActions}){
+export function RightNow({lifeMap,feedback,moments,now,aiWording,actions,onFit}:{lifeMap:LifeMap;feedback?:FeedbackEvent[];moments?:OpportunityMoment[];now:number;aiWording:boolean;actions:OpportunityActions;onFit?:(target:FitTarget)=>void}){
  const [open,setOpen]=useState(false),[situation,setSituation]=useState<Situation|null>(null),[steal,setSteal]=useState<number|null>(null),[skipped,setSkipped]=useState<string[]>([]);
  const result:Ranked|null=useMemo(()=>{
   if(!situation||steal===null)return null;
@@ -89,7 +106,7 @@ export function RightNow({lifeMap,feedback,moments,now,aiWording,actions}:{lifeM
   {!situation&&<><p>What’s happening?</p><div className="lm-pills">{situationsFor(lifeMap).map(s=><button key={s} type="button" onClick={()=>setSituation(s)}>{situationLabels[s]}</button>)}</div></>}
   {situation&&steal===null&&<><p>How much time can movement steal?</p><div className="lm-pills">{stealOptions.map(o=><button key={o.id} type="button" onClick={()=>setSteal(o.minutes)}>{o.label}</button>)}</div><button type="button" className="text-button" onClick={()=>setSituation(null)}>Back</button></>}
   {situation&&steal!==null&&(result&&copy?<>
-   <OpportunityCard key={result.opportunity.id} ranked={result} copy={copy} variant="hero" eyebrow={situationLabels[situation].toUpperCase()} onAccept={()=>actions.accept(result,'right-now',situation)} askReason onReject={reason=>{actions.reject(result,'right-now',situation,reason);setSkipped([...skipped,result.opportunity.id]);}}/>
+   <OpportunityCard key={result.opportunity.id} ranked={result} copy={copy} variant="hero" eyebrow={situationLabels[situation].toUpperCase()} onAccept={()=>{actions.accept(result,'right-now',situation);onFit?.(fitTarget(result,copy));}} askReason onReject={reason=>{actions.reject(result,'right-now',situation,reason);setSkipped([...skipped,result.opportunity.id]);}}/>
    <button type="button" className="text-button" onClick={reset}>Something else is happening</button>
   </>:<><p>Nothing fits that moment within your answers. Sometimes the right amount of movement is none.</p><button type="button" className="text-button" onClick={reset}>Try a different moment</button></>)}
  </section>;

@@ -38,6 +38,10 @@ Each signed-in person gets 40 rewordings per UTC day, enforced in Postgres by `p
 
 The iPhone app doesn't show the Life Map yet. It keeps any account fields it doesn't model and sends them back untouched on save (`AccountFields` in `ios/Enough/Enough/Services/EnoughAPI.swift`), so using both on one account doesn't erase the Life Map, feedback or moments.
 
+## After "I'd do that"
+
+Goal fitting, invitations, check-ins and learning are documented in `docs/goal-fitting.md`. They sit behind the `adaptiveGoalFittingV1` flag and never change the suggestions described here.
+
 ## Automatic AI pictures
 
 Bespoke AI pictures for classic AI ideas are off. Set `ENOUGH_AI_PICTURES=on` on the server to turn them back on.

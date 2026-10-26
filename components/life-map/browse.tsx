@@ -6,13 +6,15 @@ import {cardCopy} from '@/lib/opportunity-copy';
 import {plannedMoments,type FeedbackEvent,type OpportunityMoment} from '@/lib/opportunity-log';
 import {OpportunityCard} from './opportunity-card';
 import type {OpportunityActions} from './actions';
+import type {FitTarget} from './goal-fitting-flow';
+import {fitTarget} from './home';
 
 const filters=['All','No extra time','Under 5 minutes','With people','Useful'] as const;
 type Filter=typeof filters[number];
 const keep=(r:Ranked,f:Filter)=>f==='No extra time'?r.extraMinutes===0:f==='Under 5 minutes'?r.minutes<=5:f==='With people'?r.opportunity.movementTypes.includes('people'):f==='Useful'?r.opportunity.movementTypes.includes('useful'):true;
 
 /** My Moves → Explore: everything that fits, grouped by the moment it lives in. */
-export function OpportunityBrowse({lifeMap,feedback,moments,now,actions,onClassic}:{lifeMap?:LifeMap;feedback?:FeedbackEvent[];moments?:OpportunityMoment[];now:number;actions:OpportunityActions;onClassic:()=>void}){
+export function OpportunityBrowse({lifeMap,feedback,moments,now,actions,onClassic,onFit}:{lifeMap?:LifeMap;feedback?:FeedbackEvent[];moments?:OpportunityMoment[];now:number;actions:OpportunityActions;onClassic:()=>void;onFit?:(target:FitTarget)=>void}){
  const [filter,setFilter]=useState<Filter>('All');
  const [accepted,setAccepted]=useState<string[]>([]);
  const map=lifeMap||emptyLifeMap();
@@ -28,7 +30,7 @@ export function OpportunityBrowse({lifeMap,feedback,moments,now,actions,onClassi
   {[...groups.entries()].map(([moment,items])=><div key={moment} className="lm-group">
    <h2 className="lm-section-label">{momentLabels[moment]}</h2>
    <div className="lm-compact-list">{items.map(r=><OpportunityCard key={r.opportunity.id} ranked={r} copy={cardCopy(r)} variant="compact" accepted={planned.has(r.opportunity.id)||accepted.includes(r.opportunity.id)} askReason
-    onAccept={()=>{actions.accept(r,'browse');setAccepted([...accepted,r.opportunity.id]);}} onReject={reason=>actions.reject(r,'browse',undefined,reason)}/>)}</div>
+    onAccept={()=>{actions.accept(r,'browse');setAccepted([...accepted,r.opportunity.id]);onFit?.(fitTarget(r,cardCopy(r)));}} onReject={reason=>actions.reject(r,'browse',undefined,reason)}/>)}</div>
   </div>)}
   {!shown.length&&<div className="glass-empty"><h2>Nothing with that filter.</h2><button type="button" className="secondary" onClick={()=>setFilter('All')}>Show everything that fits</button></div>}
   <p className="lm-classic"><button type="button" className="text-button" onClick={onClassic}>Browse the classic idea library</button></p>

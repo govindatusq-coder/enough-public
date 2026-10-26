@@ -4,7 +4,8 @@ import type {IllustrationCategory} from './illustrations.ts';
 /**
  * The Life Map: an explicit, structured picture of the shape of someone's
  * week. Every answer here is a ranking or filtering signal for the
- * opportunity engine; nothing is buried in free text or an AI conversation.
+ * opportunity engine, except `fitting`, which only shapes follow-through.
+ * Nothing is buried in free text or an AI conversation.
  *
  * Nothing here is "known context" about today. It describes what tends to
  * happen, so copy built from it must stay conditional ("next time…", "if…").
@@ -113,6 +114,33 @@ export const extraTimeOptions:Record<ExtraTime,{title:string;text:string;typical
  more:{title:'Sometimes more',text:'I’ll occasionally spend 10–15 minutes if the idea is worth it.',typical:8,maximum:15}
 };
 
+// ── Goal fitting (System B) ─────────────────────────────────────────────────
+// These answers shape what happens after "I'd do that": how much is enough,
+// when Enough speaks up and how it words things. The suggestion engine never
+// reads them, so they cannot change which ideas are suggested.
+export const frictions=['time','fatigue','childcare','unpredictable-work','preparation','cost','pain','cant-leave','dislike-exercise'] as const;
+export type Friction=typeof frictions[number];
+export const frictionLabels:Record<Friction,string>={time:'Not enough time',fatigue:'Being tired','childcare':'Looking after kids or someone else','unpredictable-work':'Work that changes a lot',preparation:'Getting changed or organised',cost:'Cost',pain:'Pain or a physical limit','cant-leave':'Not being able to get away','dislike-exercise':'Not liking formal exercise'};
+export const goalFeelings=['helpful','flexible','resist','told-what-to-do','depends'] as const;
+export type GoalFeel=typeof goalFeelings[number];
+export const goalFeelLabels:Record<GoalFeel,string>={helpful:'Helpful',flexible:'Fine if they’re flexible',resist:'I start resisting them','told-what-to-do':'I don’t like being told what to do',depends:'Depends on the day'};
+export const suggestStyles=['options','nudge','commit','low-pressure'] as const;
+export type SuggestStyle=typeof suggestStyles[number];
+export const suggestStyleLabels:Record<SuggestStyle,string>={options:'Just show me options',nudge:'A gentle nudge',commit:'Help me commit','low-pressure':'Keep it very low-pressure'};
+export const workPatterns=['regular','some-weeks','shifts'] as const;
+export type WorkPattern=typeof workPatterns[number];
+export type FittingProfile={
+ friction?:Friction[];
+ frictionAnswered?:boolean;
+ goalFeel?:GoalFeel;
+ suggestStyle?:SuggestStyle;
+ /** "Depends on the day" on the extra-time screen. The engine still receives `extraTime` ("A few minutes"). */
+ extraTimeVaries?:boolean;
+ workPattern?:WorkPattern;
+ /** Answers to goal-fitting questions, by question id. Never copied into `profiling`. */
+ answers?:Record<string,string>;
+};
+
 // ── The model ───────────────────────────────────────────────────────────────
 export type LifeMap={
  version:1;
@@ -131,6 +159,8 @@ export type LifeMap={
  profilingMeta:{dismissed:Record<string,string>;lastAsked?:string};
  onboardingCompleted:boolean;
  updatedAt:string;
+ /** Goal-fitting answers (System B). Optional; ignored by the suggestion engine. */
+ fitting?:FittingProfile;
 };
 export const emptyLifeMap=():LifeMap=>({version:1,contexts:[],moments:[],permissions:{},styles:[],hardNos:[],hardNosAnswered:false,extraTime:'few',profiling:{},profilingMeta:{dismissed:{}},onboardingCompleted:false,updatedAt:new Date(0).toISOString()});
 
@@ -149,7 +179,16 @@ export const lifeMapSchema=z.object({
  profiling:z.record(z.string().max(40),z.string().max(40)).refine(r=>Object.keys(r).length<=40,'Too many answers'),
  profilingMeta:z.object({dismissed:z.record(z.string().max(40),iso).refine(r=>Object.keys(r).length<=40,'Too many dismissals'),lastAsked:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional()}).strict(),
  onboardingCompleted:z.boolean(),
- updatedAt:iso
+ updatedAt:iso,
+ fitting:z.object({
+  friction:unique(z.enum(frictions),frictions.length).optional(),
+  frictionAnswered:z.boolean().optional(),
+  goalFeel:z.enum(goalFeelings).optional(),
+  suggestStyle:z.enum(suggestStyles).optional(),
+  extraTimeVaries:z.boolean().optional(),
+  workPattern:z.enum(workPatterns).optional(),
+  answers:z.record(z.string().max(40),z.string().max(40)).refine(r=>Object.keys(r).length<=40,'Too many answers').optional()
+ }).strict().optional()
 }).strict();
 
 export function burdenTolerance(map:Pick<LifeMap,'extraTime'>){const o=extraTimeOptions[map.extraTime];return {typicalExtraMinutes:o.typical,maximumExtraMinutes:o.maximum};}
