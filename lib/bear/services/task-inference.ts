@@ -45,7 +45,7 @@ export function applyCorrections(fields:BillFields,input:ConfirmBillInput['corre
 export function projectTitle(f:BillFields){const due=f.dueDate.value?parseISODate(f.dueDate.value):null;const month=due?due.toLocaleDateString('en-AU',{month:'long'}):'';const cat=categoryLabels[f.category.value||'other'].toLowerCase();return `Pay ${month?month+' ':''}${cat==='bill'?(f.biller.value||'bill'):cat+' bill'}`.replace(/\s+/g,' ');}
 export function taskTitle(f:BillFields){const cat=f.category.value;return cat&&cat!=='other'?`Pay ${categoryLabels[cat].toLowerCase()} bill`:`Pay ${f.biller.value||'bill'}`;}
 
-export async function confirmBill(store:BearStore,input:ConfirmBillInput){
+export async function confirmBill(store:BearStore,input:ConfirmBillInput,now=new Date()){
  const extraction=await store.get('extractions',input.extractionId);
  if(!extraction)throw new ConfirmError('That capture could not be found.',404,'not_found');
  if(extraction.status==='verified')throw new ConfirmError("Bear already has this one.",409,'already_confirmed');
@@ -72,12 +72,12 @@ export async function confirmBill(store:BearStore,input:ConfirmBillInput){
  if(capture)await store.update('captures',capture.id,{status:'verified'});
  const dependencies=await planDependencies(store,task,bill,profile.pins.preferences.planningDetail);
  // Every bill is a BILL_PAYMENT load: Bear holds the date; the person only pays.
- const loaded=await attachLoad(store,task,{text:extraction.sourceText||capture?.text||'',title:task.title,kindHint:'bill',entities:entitiesFromBill(bill),forcePattern:'BILL_PAYMENT'});
+ const loaded=await attachLoad(store,task,{text:extraction.sourceText||capture?.text||'',title:task.title,kindHint:'bill',entities:entitiesFromBill(bill),forcePattern:'BILL_PAYMENT'},now);
  return {bill,task:loaded.task,project,dependencies};
 }
 
 // A verified non-bill capture becomes Area → Project → Task with the original as the Resource.
-export async function confirmTask(store:BearStore,input:ConfirmTaskInput){
+export async function confirmTask(store:BearStore,input:ConfirmTaskInput,now=new Date()){
  const extraction=await store.get('extractions',input.extractionId);
  if(!extraction)throw new ConfirmError('That capture could not be found.',404,'not_found');
  if(extraction.status==='verified')throw new ConfirmError('Bear already has this one.',409,'already_confirmed');
@@ -100,7 +100,7 @@ export async function confirmTask(store:BearStore,input:ConfirmTaskInput){
  await store.update('extractions',extraction.id,{status:'verified',general:g});
  if(capture)await store.update('captures',capture.id,{status:'verified'});
  // Run it through the Load Pattern Engine: what it is, what Bear carries, what needs the person.
- const loaded=await attachLoad(store,task,{text:[extraction.sourceText,capture?.text].find(t=>t&&t.trim())||g.summary||g.title.value||'',title:g.title.value,kindHint:g.kind,entities:entitiesFromReading(g)});
+ const loaded=await attachLoad(store,task,{text:[extraction.sourceText,capture?.text].find(t=>t&&t.trim())||g.summary||g.title.value||'',title:g.title.value,kindHint:g.kind,entities:entitiesFromReading(g)},now);
  return {task:loaded.task,project,steps};
 }
 

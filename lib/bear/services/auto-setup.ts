@@ -20,7 +20,7 @@ export async function maybeAutoSetup(store:BearStore,extraction:ExtractedEntity,
  if(!g.title.value||g.title.confidence<0.5)return null;
  const area=g.area.value||defaultArea[g.kind]||'me';
  const confirmedFields=['title','when','timeOfDay','person','location','isRecurring'].filter(k=>(g as unknown as Record<string,{value:unknown}>)[k].value!==null);
- const {task}=await confirmTask(store,{extractionId:extraction.id,corrections:g.area.value?{}:{area},confirmedFields:[...confirmedFields,...(g.area.value?['area']:[])],includeSteps:true,setupBy:'bear'});
+ const {task}=await confirmTask(store,{extractionId:extraction.id,corrections:g.area.value?{}:{area},confirmedFields:[...confirmedFields,...(g.area.value?['area']:[])],includeSteps:true,setupBy:'bear'},now);
  // A list with no prices yet is priced straight away when the AI service is connected, so the total is already there when the task opens.
  let task2=task;
  if(provider&&task.items?.some(i=>i.estimatedCents===null)){try{task2=await estimateTaskCost(store,provider,task.id);}catch{/* the list stands; the Estimate button is on the task */}}
