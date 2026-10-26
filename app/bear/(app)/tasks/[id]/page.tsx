@@ -12,8 +12,10 @@ import {RoundBadge} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
 import {Button,Chip,ErrorCard,OverdueAlert,Sheet,Skeleton,Toast,TopBar} from '@/components/bear/ui';
 import {overdueDays,overdueLabel} from '@/lib/bear/domain/overdue';
+import type {LoadView} from '@/lib/bear/load/view';
+import {LoadPanel} from '@/components/bear/load-panel';
 
-type Loaded={task:Task;project:Project|null;reminders:Reminder[];steps:Task[];plan:PlanRecommendation|null;documentUrl:string|null;redirect?:string};
+type Loaded={task:Task;project:Project|null;reminders:Reminder[];steps:Task[];plan:PlanRecommendation|null;documentUrl:string|null;redirect?:string;load:LoadView|null};
 const kindLabel:Record<string,string>={appointment:'Appointment',school:'School',form:'Form',errand:'Errand',shopping:'Shopping',message:'From a message',note:'Note',event:'Event',custom:'Task'};
 export default function TaskPage({params}:{params:Promise<{id:string}>}){
  const {id}=use(params);const router=useRouter();const search=useSearchParams();
@@ -71,6 +73,7 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
     {items.length>0&&<p style={{marginTop:12,fontWeight:700,fontSize:19}}>{(cost??0)>0?`About ${formatAUD(cost)}`:'No cost estimate yet'}<span className="small muted" style={{fontWeight:400}}>{(cost??0)>0?(missingPrices?' · rough estimate, some items not priced':' · rough estimate, not a quote'):''}</span></p>}
     <div className="btn-row" style={{marginTop:12}}>{!dropped&&<Button className="sm" variant="ghost" onClick={openEdit}>Edit</Button>}{items.length>0&&missingPrices&&!done&&<Button className="sm" variant="primary" disabled={estimating} onClick={estimate}>{estimating?'Estimating…':(cost??0)>0?'Price the rest':'Estimate the cost'}</Button>}</div>
    </div>
+   {data.load&&!dropped&&!onWishlist&&(!done||data.load.state==='resolved')&&<LoadPanel taskId={task.id} view={data.load} onNeedInfo={openEdit} onSaid={setToast} onChanged={d=>{if(d){router.replace(`/bear/wins?just=${encodeURIComponent(task.title+' · Sorted')}`);return;}load();}}/>}
    {!done&&!dropped&&!onWishlist&&overdueDays(task.dueAt,today,task.timing)>0&&<div style={{marginTop:14}}><OverdueAlert title={`This is overdue. ${overdueLabel(overdueDays(task.dueAt,today,task.timing))}.`}><p className="small muted">The date was {formatAU(task.dueAt!)}. It isn&rsquo;t too late: do it now, change the date with Edit, or choose No rush below if it can wait.</p></OverdueAlert></div>}
    {askAfford&&<div className="glass" style={{padding:16,marginTop:14,background:'var(--mustard-tint)'}}>
     <p className="eyebrow" style={{marginBottom:4}}>That&rsquo;s a bigger spend</p>
@@ -87,6 +90,7 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
     <div className="chips" style={{marginTop:10}} role="group" aria-label="Check back later"><button type="button" className="chip" disabled={busy} onClick={()=>afford({mode:'check_back',days:14})}>Ask me in 2 weeks</button><button type="button" className="chip" disabled={busy} onClick={()=>afford({mode:'check_back',days:30})}>In a month</button><button type="button" className="chip" disabled={busy} onClick={()=>afford({mode:'check_back',days:90})}>In 3 months</button></div>
    </div>}
    {!done&&!dropped&&!onWishlist&&!askAfford&&active.length===0&&plan&&!showPlan&&<div className="btn-row" style={{marginTop:12}}><Button className="sm" variant="ghost" onClick={()=>setShowPlan(true)}>Set a reminder</Button></div>}
+   {!done&&!dropped&&<details className="load-details" open={!data.load||search.get('details')==='1'||undefined}><summary>Details</summary>
    {!done&&!dropped&&!onWishlist&&!task.part&&<div className="glass read-card">
     <p className="eyebrow">How I read this</p>
     <p className="small muted">Filed under <strong>{project?areaLabels[project.areaKey]:'Me'}</strong>. Change any of it with a tap, or just leave it.</p>
@@ -104,19 +108,20 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
     {task.timing==='flexible'&&task.nudgeChoice==null&&nudgeStep===null&&<p className="small muted" style={{marginTop:8}}>No reminders are set. Choose one only if you&rsquo;d like it.</p>}
     {task.timing==='flexible'&&task.nudgeChoice==='nudge'&&task.nudge&&<p className="small muted" style={{marginTop:8}}>A quiet nudge about every {task.nudge.every==='week'?'week':task.nudge.every==='fortnight'?'fortnight':'month'}. You can stop it any time.</p>}
    </div>}
+   {(hasSteps||(task.size==='bigger'&&items.length===0&&!task.part))&&<div className="section"><p className="eyebrow">{items.length>0?`Purchases${cost!==null?` · about ${formatAUD(cost)} in all`:''}`:'Steps'}</p><div className="card">
+     {steps.map(s=><div key={s.id} className="row"><button type="button" className="icon-dot" aria-label={s.status==='done'?'Done':`Mark done: ${s.title}`} disabled={s.status==='done'} onClick={()=>stepDone(s)} style={{background:s.status==='done'?'var(--teal-tint)':'rgba(16,42,67,.06)'}}>{s.status==='done'?'✓':''}</button><span className="grow" style={{textDecoration:s.status==='done'?'line-through':'none',color:s.status==='done'?'var(--ink-3)':undefined}}>{s.title}{s.dueAt&&task.timing!=='flexible'?<span className="small faint"> · by {formatAU(s.dueAt,'short')}</span>:null}</span>{s.estimatedCents!=null&&<span className="small faint">~{formatAUD(s.estimatedCents)}</span>}{items.length===0&&!done&&<button type="button" className="step-x" aria-label={`Remove step: ${s.title}`} disabled={stepBusy} onClick={()=>removeMyStep(s.id)}>×</button>}</div>)}
+     {steps.length===0&&<p className="small muted" style={{margin:'4px 0 8px'}}>No steps yet. Add your own below{task.size==='bigger'?', or ask Bear to suggest some above':''}.</p>}
+     {stepsDone&&<p className="small" style={{marginTop:8}}>That is every step. Mark it done below.</p>}
+     {items.length===0&&!done&&<form className="add-step" onSubmit={e=>{e.preventDefault();addMyStep();}}><label htmlFor="add-step" className="sr-only">Add a step</label><input id="add-step" aria-label="Add a step" placeholder="Add a step of your own" maxLength={120} value={stepText} onChange={e=>setStepText(e.target.value)}/><Button type="submit" variant="primary" className="sm" disabled={stepBusy||!stepText.trim()}>Add</Button></form>}
+    </div></div>}
+   </details>}
    {!done&&!dropped&&<>
-    {active.length>0&&!showPlan&&!onWishlist&&<div className="glass" style={{padding:16}}><p className="eyebrow teal">Bear&rsquo;s handling it</p><p><strong>Bringing it back {formatWhen(active[0].scheduledFor)}</strong></p><p className="small muted" style={{marginTop:4}}>{active[0].plan.rationale}</p><button type="button" className="btn quiet sm" style={{marginTop:8}} onClick={()=>setShowPlan(true)}>Change the plan</button></div>}
+    {active.length>0&&!showPlan&&!onWishlist&&!data.load&&<div className="glass" style={{padding:16}}><p className="eyebrow teal">Bear&rsquo;s handling it</p><p><strong>Bringing it back {formatWhen(active[0].scheduledFor)}</strong></p><p className="small muted" style={{marginTop:4}}>{active[0].plan.rationale}</p><button type="button" className="btn quiet sm" style={{marginTop:8}} onClick={()=>setShowPlan(true)}>Change the plan</button></div>}
     {items.length>0&&!hasSteps&&<div className="section"><p className="eyebrow">The list{cost!==null?` · about ${formatAUD(cost)} (rough estimate)`:''}</p><div className="card">
      {items.map(it=><div key={it.id} className="row"><button type="button" className="icon-dot" aria-label={it.done?`Un-tick ${it.name}`:`Got ${it.name}`} onClick={()=>tick(it)} style={{background:it.done?'var(--teal-tint)':'rgba(16,42,67,.06)'}}>{it.done?'✓':''}</button><span className="grow" style={{textDecoration:it.done?'line-through':'none',color:it.done?'var(--ink-3)':undefined}}>{formatItemLine(it)}</span>{it.estimatedCents!==null&&<span className="small faint">~{formatAUD(it.estimatedCents)}</span>}</div>)}
      <p className="small muted" style={{marginTop:8}}>{items.length-openItems.length} of {items.length} got. Tick things off as you go, in one trip or several. The last tick finishes it.</p>
      <div className="btn-row" style={{marginTop:8}}><Button className="sm" variant="primary" disabled={busy} onClick={gotEverything}>Got everything</Button>{missingPrices&&<Button className="sm" variant="ghost" disabled={estimating} onClick={estimate}>{estimating?'Estimating…':cost===null?'Estimate the cost':'Estimate the rest'}</Button>}{openItems.length>=2&&<Button className="sm" variant="ghost" onClick={()=>setShowSplit(true)}>Split into separate tasks</Button>}</div>
      {cost!==null&&cost>=LARGE_PURCHASE_CENTS&&<p className="small" style={{marginTop:10}}>That is a bigger spend. Splitting it into a few separate tasks can make it easier on the budget.</p>}
-    </div></div>}
-    {(hasSteps||(task.size==='bigger'&&items.length===0&&!task.part))&&<div className="section"><p className="eyebrow">{items.length>0?`Purchases${cost!==null?` · about ${formatAUD(cost)} in all`:''}`:'Steps'}</p><div className="card">
-     {steps.map(s=><div key={s.id} className="row"><button type="button" className="icon-dot" aria-label={s.status==='done'?'Done':`Mark done: ${s.title}`} disabled={s.status==='done'} onClick={()=>stepDone(s)} style={{background:s.status==='done'?'var(--teal-tint)':'rgba(16,42,67,.06)'}}>{s.status==='done'?'✓':''}</button><span className="grow" style={{textDecoration:s.status==='done'?'line-through':'none',color:s.status==='done'?'var(--ink-3)':undefined}}>{s.title}{s.dueAt&&task.timing!=='flexible'?<span className="small faint"> · by {formatAU(s.dueAt,'short')}</span>:null}</span>{s.estimatedCents!=null&&<span className="small faint">~{formatAUD(s.estimatedCents)}</span>}{items.length===0&&!done&&<button type="button" className="step-x" aria-label={`Remove step: ${s.title}`} disabled={stepBusy} onClick={()=>removeMyStep(s.id)}>×</button>}</div>)}
-     {steps.length===0&&<p className="small muted" style={{margin:'4px 0 8px'}}>No steps yet. Add your own below{task.size==='bigger'?', or ask Bear to suggest some above':''}.</p>}
-     {stepsDone&&<p className="small" style={{marginTop:8}}>That is every step. Mark it done below.</p>}
-     {items.length===0&&!done&&<form className="add-step" onSubmit={e=>{e.preventDefault();addMyStep();}}><label htmlFor="add-step" className="sr-only">Add a step</label><input id="add-step" aria-label="Add a step" placeholder="Add a step of your own" maxLength={120} value={stepText} onChange={e=>setStepText(e.target.value)}/><Button type="submit" variant="primary" className="sm" disabled={stepBusy||!stepText.trim()}>Add</Button></form>}
     </div></div>}
     <div className="btn-stack" style={{marginTop:24}}><Button variant="coral" onClick={markDone} disabled={busy}>Done, it&rsquo;s sorted</Button><Button variant="quiet" onClick={drop} disabled={busy}>Not important anymore</Button></div>
    </>}

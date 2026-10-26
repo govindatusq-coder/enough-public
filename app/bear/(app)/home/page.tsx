@@ -27,6 +27,7 @@ export default function Home(){
  async function demo(){setBusy('demo');try{const res=await apiSend<{capture:{id:string}}>('/api/bear/demo',{});router.push(`/bear/verify/${res.capture.id}`);}catch(e){setError((e as Error).message);setBusy(null);}}
  if(error&&!home)return <main id="main" className="bear-screen"><ErrorCard message={error} retry={load}/></main>;
  if(!home)return <main id="main" className="bear-screen"><div className="skeleton" style={{minHeight:40,maxWidth:220,marginBottom:16}}/><Skeleton/></main>;
+ const firstNeed=home.needsYou.filter(n=>!n.soft).sort((a,b)=>(b.overdueDays-a.overdueDays)||((a.due||'9999')<(b.due||'9999')?-1:1))[0]||null;
  return (
   <main id="main" className="bear-screen home-screen">
    <header className="hero-banner">
@@ -34,6 +35,7 @@ export default function Home(){
      <h1 className="hero-greeting">{home.greeting}</h1>
      <p className="hero-line hand">{greet?greet.line:brand.gotYou}</p>
      {home.overdue.length>0&&<p className="hero-alert" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/></svg><span>{home.overdue.length} overdue. See the red numbers.</span></p>}
+     {home.overdue.length===0&&firstNeed&&<Link className="hero-alert needs" href={firstNeed.billId?`/bear/bills/${firstNeed.billId}`:`/bear/tasks/${firstNeed.taskId}`}><span>{home.handling.needs===1?'1 thing needs you':`${home.handling.needs} things need you`}: {firstNeed.message||firstNeed.title}</span></Link>}
     </div>
     <div className="hero-art" aria-hidden="true"><Art file={greet?greet.art:'hero-bear'} className="hero-img" style={{objectPosition:greet?greet.focus:'60% 22%',...(greet?.zoom?{transform:`scale(${greet.zoom})`,transformOrigin:'25% 100%'}:{})}}/></div>
    </header>
@@ -53,11 +55,11 @@ export default function Home(){
     <div className="stats-body">
      <p id="handling" className="hand stats-title">Bear&rsquo;s handling</p>
      <div className="stats-nums">
-      <div><b>{home.handling.watching}</b><span>Bills watched</span></div>
-      <div><b>{home.handling.held}</b><span>Things held</span></div>
-      <div><b>{home.handling.remindersReady}</b><span>Reminders set</span></div>
+      <div><b>{home.handling.covered}</b><span>Covered</span></div>
+      <div><b>{home.handling.waiting}</b><span>Waiting</span></div>
+      <div><b>{home.handling.needs}</b><span>Need you</span></div>
      </div>
-     {home.handling.watching+home.handling.held+home.handling.remindersReady===0&&<p className="stats-note">Give Bear anything and these start to grow.</p>}
+     {home.handling.covered+home.handling.waiting+home.handling.needs===0?<p className="stats-note">Give Bear anything and these start to grow.</p>:home.handling.needs===0?<p className="stats-note">Nothing for you to do right now. <Link href="/bear/me/everything">See what&rsquo;s covered</Link></p>:<p className="stats-note"><Link href="/bear/me/everything">See what Bear has covered</Link></p>}
     </div>
    </section>
    <Toast message={toast} onDone={()=>setToast(null)}/>

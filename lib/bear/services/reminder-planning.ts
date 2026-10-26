@@ -1,3 +1,4 @@
+import {learnBillLead} from '../load/loadmap.ts';
 import {z} from 'zod';
 import {addDays,daysBetween,formatAU,formatWhen,localParts,parseISODate,todayISO,zonedDateTime} from '../domain/dates.ts';
 import type {Bill,CapacityWindow,Profile,Reminder,ReminderPlan,Task} from '../domain/types.ts';
@@ -65,6 +66,8 @@ export async function acceptPlan(store:BearStore,input:AcceptPlanInput,now=new D
  const plan:ReminderPlan={scheduledFor:when.toISOString(),label:input.label,rationale:input.rationale,windowId:null,score:0};
  const reminder=await store.insert('reminders',stamp<Reminder>(store.userId,{taskId:task.id,billId:bill?.id||null,kind:'planned',status:'scheduled',scheduledFor:plan.scheduledFor,plan,followUpIfUnpaid:input.followUpIfUnpaid,attempts:0,deliveredAt:null,deliveredVia:[],message:bearLine(bill,task)}));
  const reminders=[reminder];
+ // Learning: a bill reminder the person moved themselves tells Bear how much notice they like.
+ if(bill&&bill.dueAt&&input.key!=='bear'){const prof=await ensureProfile(store);const lead=daysBetween(when.toISOString().slice(0,10),bill.dueAt);if(lead!==null&&lead>=1&&lead<=14)await store.update('profiles',prof.id,{loadMap:learnBillLead(prof.loadMap||{domains:{}},lead)});}
  const dueAt=bill?.dueAt||task.dueAt;
  if(input.followUpIfUnpaid&&dueAt){
   const profile=await ensureProfile(store);const tz=profile.lifeRhythm.timezone||'Australia/Sydney';

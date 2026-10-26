@@ -1,5 +1,7 @@
 'use client';
 import {use,useCallback,useEffect,useState} from 'react';
+import type {LoadView} from '@/lib/bear/load/view';
+import {LoadPanel} from '@/components/bear/load-panel';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import {formatAUD} from '@/lib/bear/domain/money';
@@ -13,7 +15,7 @@ import {BearSays} from '@/components/bear/brand';
 import {Button,ErrorCard,OverdueAlert,Sheet,Skeleton,Toast,TopBar} from '@/components/bear/ui';
 import {overdueDays,overdueLabel} from '@/lib/bear/domain/overdue';
 
-type Loaded={bill:Bill;task:Task;reminders:Reminder[];steps:Task[];plan:PlanRecommendation|null;assistance:{options:AssistOption[];explanation:string;contactDraft:string|null;increase:{previousCents:number;deltaCents:number}|null};expectation:RecurringExpectation|null;documentUrl:string|null};
+type Loaded={bill:Bill;task:Task;reminders:Reminder[];steps:Task[];plan:PlanRecommendation|null;assistance:{options:AssistOption[];explanation:string;contactDraft:string|null;increase:{previousCents:number;deltaCents:number}|null};expectation:RecurringExpectation|null;documentUrl:string|null;load?:LoadView|null};
 export default function BillPage({params}:{params:Promise<{id:string}>}){
  const {id}=use(params);const router=useRouter();const search=useSearchParams();
  const [data,setData]=useState<Loaded|null>(null);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [busy,setBusy]=useState(false);
@@ -44,6 +46,7 @@ export default function BillPage({params}:{params:Promise<{id:string}>}){
     <p className="muted" style={{marginTop:6}}>{bill.dueAt?`Due ${formatAU(bill.dueAt)}${/^(today|tomorrow|yesterday|[A-Z])/.test(relativeDay(bill.dueAt,today))?' · '+relativeDay(bill.dueAt,today):''}`:'No due date'}</p>
     {task.forPerson&&<span className="pill" style={{marginTop:10}}>For {task.forPerson}</span>}
    </div>
+   {data.load&&!dropped&&<LoadPanel taskId={task.id} view={data.load} readOnly hideComingUp onChanged={()=>load()}/>}
    {!paid&&!dropped&&overdueDays(bill.dueAt,today)>0&&<div style={{marginTop:14}}><OverdueAlert title={`This bill is overdue. ${overdueLabel(overdueDays(bill.dueAt,today))}.`}><p className="small muted">It was due {formatAU(bill.dueAt!)}. It isn&rsquo;t too late: pay it now, or ask the biller about more time or a late fee. Bear can help with either.</p></OverdueAlert></div>}
    {!paid&&!dropped&&<>
     {active.length>0&&!showPlan&&<div className="glass" style={{padding:16}}>

@@ -10,6 +10,7 @@ import {Art} from '@/components/bear/art';
 import {applyUpdate,checkForUpdate,CURRENT_BUILD} from '@/components/bear/runtime';
 import {Button,ErrorCard,Skeleton,Toast} from '@/components/bear/ui';
 import {areaLabels} from '@/lib/bear/domain/labels';
+import {domainOptions,handoverOptions,struggleOptions} from '@/lib/bear/load/loadmap';
 import {browserClient} from '@/lib/supabase/client';
 type Loaded={profile:Profile;user:{email:string|null;name:string};aiAvailable:boolean;pushAvailable:boolean;dayMode:'good'|'full'|'wiped'|'chaos'|null};
 export default function Me(){
@@ -44,6 +45,21 @@ export default function Me(){
     <div className="row"><span className="grow"><span className="title">Tone</span><br/><span className="faint">{{warm:'Warm & encouraging',direct:'Straight to the point',cheeky:'A little cheeky'}[p.pins.preferences.tone]}</span></span></div>
     <div className="row"><span className="grow"><span className="title">Set things up for me</span><br/><span className="faint">{p.pins.preferences.autoSetup===false?'Off: Bear checks each thing with you first':'On: Bear files, plans and reminds without asking, and you can change anything after. Bills are always checked with you.'}</span></span><Button className="sm" variant="ghost" onClick={async()=>{await apiSend('/api/bear/profile',{pins:{...p.pins,preferences:{...p.pins.preferences,autoSetup:p.pins.preferences.autoSetup===false}}},'PUT');await load();}}>{p.pins.preferences.autoSetup===false?'Turn on':'Turn off'}</Button></div>
     <div className="btn-row"><Button className="sm" variant="ghost" onClick={async()=>{await apiSend('/api/bear/profile',{onboardingStep:0},'PUT');router.push('/bear/onboarding');}}>Adjust these</Button><Button className="sm" variant="ghost" href="/bear/me/everything">Everything Bear is holding</Button></div>
+   </div></section>
+   <section className="section" aria-labelledby="loadmap"><p className="eyebrow" id="loadmap">My Load Map</p><div className="card">
+    {(()=>{const m=p.loadMap;const label=(list:readonly {key:string;label:string}[],keys?:string[])=>keys?.length?keys.map(k=>list.find(o=>o.key===k)?.label||k).join(' · '):'Not set';
+     const rows:[string,string][]=[
+      ['What you carry',m?Object.entries(m.domains).filter(([,v])=>v).map(([k])=>domainOptions.find(d=>d.key===k)?.label||k).join(' · ')||'Not set':'Not set'],
+      ['Household',m?.household?.shape?.length?[m.household.shape.map(x=>({just_me:'Just me',partner:'Partner',children:'Children',dependants:'Other dependants'} as Record<string,string>)[x]).join(' · '),m.household.children?.length?`ages ${m.household.children.map(c=>c.ageBand).join(', ')}`:''].filter(Boolean).join(', '):'Not set'],
+      ['What tends to get you',label(struggleOptions,m?.struggles)],
+      ['What Bear carries for you',label(handoverOptions,m?.handover)],
+      ['How Bear behaves',m?.preferences?[m.preferences.canWait&&({leave:'Leaves what can wait',gentle:'Gentle reminders',visible:'Keeps things visible'} as Record<string,string>)[m.preferences.canWait],m.preferences.urgent&&({tell:'tells you when urgent',persistent:'persistent when urgent',help:'helps when urgent'} as Record<string,string>)[m.preferences.urgent]].filter(Boolean).join(', ')||'Not set':'Not set'],
+      ['Where',[m?.locationContext?.region,m?.locationContext?.country].filter(Boolean).join(', ')||'Not set'],
+      ['Usual providers',m?.providers?.filter(x=>x.uses>=2).map(x=>x.name).join(' · ')||'None yet'],
+      ['What Bear has learned',[m?.learned?.billLeadDays?`Bills come back ${m.learned.billLeadDays} days before they’re due`:'',m?.learned?.followUpDays?`Checks back after ${m.learned.followUpDays} days`:''].filter(Boolean).join('. ')||'Nothing yet'],
+     ];
+     return rows.map(([t,v])=><div key={t} className="row"><span className="grow"><span className="title">{t}</span><br/><span className="faint">{v}</span></span></div>);})()}
+    <div className="btn-row"><Button className="sm" variant="ghost" onClick={async()=>{await apiSend('/api/bear/profile',{onboardingStep:0},'PUT');router.push('/bear/onboarding');}}>Change my Load Map</Button>{(p.loadMap?.learned&&Object.keys(p.loadMap.learned).length>0||!!p.loadMap?.providers?.length)&&<Button className="sm" variant="quiet" onClick={async()=>{await apiSend('/api/bear/profile',{loadMap:{...p.loadMap!,learned:{},providers:[]}},'PUT');setToast('Bear has forgotten what it learned.');load();}}>Reset what Bear learned</Button>}</div>
    </div></section>
    <section className="section"><p className="eyebrow">Today</p><div className="card"><p className="small">How&rsquo;s today? Bear goes gentler when you say it&rsquo;s a hard one. It asks again tomorrow.</p><div className="chips" role="group" aria-label="How's today" style={{marginTop:10}}>{(['good','full','wiped','chaos'] as const).map(m=><button key={m} type="button" className="chip" aria-pressed={data.dayMode===m} onClick={async()=>{await apiSend('/api/bear/day',{mode:data.dayMode===m?null:m});await load();}}>{{good:'Good',full:'Full',wiped:'Wiped',chaos:'Chaos'}[m]}</button>)}</div></div></section>
    <section className="section"><p className="eyebrow">Reminders</p><div className="card">

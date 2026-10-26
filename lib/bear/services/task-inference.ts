@@ -7,6 +7,7 @@ import {recordBehaviour} from './behaviour.ts';
 import {keyFields} from './bill-extraction.ts';
 import {ensureProfile} from './profile.ts';
 import {slug} from '../ai/rules.ts';
+import {attachLoad,entitiesFromBill,entitiesFromReading} from './load.ts';
 
 // TaskInferenceService + DependencyPlanningService. A verified bill becomes
 // Area Money → Project "Pay November electricity bill" → Task "Pay electricity bill"
@@ -70,7 +71,9 @@ export async function confirmBill(store:BearStore,input:ConfirmBillInput){
  await store.update('extractions',extraction.id,{status:'verified',fields});
  if(capture)await store.update('captures',capture.id,{status:'verified'});
  const dependencies=await planDependencies(store,task,bill,profile.pins.preferences.planningDetail);
- return {bill,task,project,dependencies};
+ // Every bill is a BILL_PAYMENT load: Bear holds the date; the person only pays.
+ const loaded=await attachLoad(store,task,{text:extraction.sourceText||capture?.text||'',title:task.title,kindHint:'bill',entities:entitiesFromBill(bill),forcePattern:'BILL_PAYMENT'});
+ return {bill,task:loaded.task,project,dependencies};
 }
 
 // A verified non-bill capture becomes Area → Project → Task with the original as the Resource.
@@ -96,7 +99,9 @@ export async function confirmTask(store:BearStore,input:ConfirmTaskInput){
  if(input.includeSteps&&profile.pins.preferences.planningDetail!=='just_the_task'&&g.size?.value!=='one_go')for(const s of g.steps.slice(0,5)){const t=await store.insert('tasks',stamp<Task>(store.userId,{projectId:project.id,kind:'custom',title:s,status:'open',dueAt:g.when.value,estimatedMinutes:5,cognitiveEffort:'low',forPerson:g.person.value,isDemo:!!capture?.isDemo}));await store.insert('task_dependencies',stamp<TaskDependency>(store.userId,{taskId:task.id,dependsOnTaskId:t.id}));steps.push(t);}
  await store.update('extractions',extraction.id,{status:'verified',general:g});
  if(capture)await store.update('captures',capture.id,{status:'verified'});
- return {task,project,steps};
+ // Run it through the Load Pattern Engine: what it is, what Bear carries, what needs the person.
+ const loaded=await attachLoad(store,task,{text:[extraction.sourceText,capture?.text].find(t=>t&&t.trim())||g.summary||g.title.value||'',title:g.title.value,kindHint:g.kind,entities:entitiesFromReading(g)});
+ return {task:loaded.task,project,steps};
 }
 
 // Only dependencies the bill actually warrants. The user never sees PM complexity otherwise.

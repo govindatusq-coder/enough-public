@@ -5,6 +5,7 @@ import type {Bill,Completion,RecurringExpectation,Suggestion,ValueLedgerEntry,Wi
 import {stamp,type BearStore} from '../store/store.ts';
 import {recordBehaviour} from './behaviour.ts';
 import {ensureProfile} from './profile.ts';
+import {resolveLoad} from './load.ts';
 
 // CompletionService + ValueLedgerService + recurring intelligence.
 // Marking a bill paid closes the task, writes the Completion and Win, records a
@@ -21,6 +22,7 @@ export async function completeTask(store:BearStore,input:CompleteInput,now=new D
  const bills=await store.list('bills',{where:[{column:'task_id',value:task.id}]});const bill=bills[0]||null;
  const daysBeforeDue=task.dueAt?daysBetween(today,task.dueAt):null;
  await store.update('tasks',task.id,{status:'done'});
+ if(input.method!=='load')await resolveLoad(store,task,now);
  const completion=await store.insert('completions',stamp<Completion>(store.userId,{taskId:task.id,billId:bill?.id||null,completedAt:now.toISOString(),daysBeforeDue,method:input.method}));
  // Cancel outstanding reminders quietly and close dependencies.
  for(const r of await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed','delivered']}]}))await store.update('reminders',r.id,{status:'actioned'});

@@ -378,3 +378,12 @@
 .bear-splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:calc(var(--safe-top) + 24px) 32px calc(var(--safe-bottom) + 24px);background:#FFF7E8;transition:opacity .45s ease;}
 .bear-splash.leaving{opacity:0;pointer-events:none;}
 .bear-splash-art{width:100%;max-width:360px;}
+/* Details fold on an item: the full plan is there if wanted, never the default view. */
+.bear .load-details{margin-top:14px;}
+.bear .load-details>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;min-height:44px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--ink-3);}
+.bear .load-details>summary::-webkit-details-marker{display:none;}
+.bear .load-details>summary::after{content:"›";font-size:18px;line-height:1;transition:transform .2s;}
+.bear .load-details[open]>summary::after{transform:rotate(90deg);}
+.bear .hero-alert.needs{background:var(--navy);text-decoration:none;max-width:100%;}
+.bear .hero-alert.needs span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bear .stats-note a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px;}

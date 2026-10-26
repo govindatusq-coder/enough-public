@@ -44,3 +44,13 @@ Last updated: 25 October 2026.
 ## My Bear on one screen
 - The Needs you list and the "Your areas" line are gone. The six area tiles carry a small number when something is due (red when overdue), and a dot for gentle reminders.
 - Greeting banner, six tiles and Bear's handling banner fit one phone screen with space above the nav bar. Overdue shows as a chip in the greeting banner.
+
+
+## Load Pattern Engine (architecture + onboarding refactor)
+- Every capture now runs through the Load Pattern Engine (`lib/bear/load`): 10 V1 patterns + UNKNOWN_LOAD, composite loads, ownership, minimum human action, waiting and closure engines. See `docs/load-bear/09-load-engine.md`.
+- 100-case stress test: 100/100 on recognition, decomposition, ownership, human burden and closure (curated fixtures written with the engine; not a blind test).
+- Onboarding content replaced (what you carry, life at a glance, what gets you, hand over, behaviour, one real thing) inside the existing onboarding shell. Settings has My Load Map.
+- Home keeps its layout; the numbers are Covered / Waiting / Need you and the greeting points to the one thing that needs you. Items show a Bear panel with the plan behind Details.
+- Existing items are mapped conservatively (bills → BILL_PAYMENT; others → UNKNOWN_LOAD, untouched). No SQL migration needed.
+- Tests: 232 unit tests pass; browser walkthrough passes at 390×844 and 1280×900.
+- Also: Log out in Settings, an opening screen before My Bear, and How's today now sticks before 11am Sydney time.

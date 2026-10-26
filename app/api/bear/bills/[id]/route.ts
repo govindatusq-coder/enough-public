@@ -1,6 +1,7 @@
 import {json,withBear} from '@/lib/bear/server/context';
 import {assistanceFor} from '@/lib/bear/services/assistance';
 import {recommendPlan} from '@/lib/bear/services/reminder-planning';
+import {readLoad} from '@/lib/bear/services/load';
 export const dynamic='force-dynamic';
 export const GET=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(req,async({store})=>{
  const {id}=await params;const bill=await store.get('bills',id);if(!bill)return json({error:"Bear couldn't find that bill."},404);
@@ -12,5 +13,6 @@ export const GET=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(
  const plan=task.status==='open'&&active.length===0?await recommendPlan(store,bill,task):null;
  const assistance=await assistanceFor(store,bill);
  const expectation=bill.recurringExpectationId?await store.get('recurring_expectations',bill.recurringExpectationId):null;
- return json({bill,task,reminders,steps,plan,assistance,expectation,documentUrl:bill.documentId?`/api/bear/documents/${bill.documentId}`:null});
+ const load=await readLoad(store,task);
+ return json({bill,task,reminders,steps,plan,assistance,expectation,load:load.view,documentUrl:bill.documentId?`/api/bear/documents/${bill.documentId}`:null});
 });
