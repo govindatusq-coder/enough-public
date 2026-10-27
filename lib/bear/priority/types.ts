@@ -49,6 +49,8 @@ export interface PriorityInput{
  text:string;                   // title + notes, for lead-time and keyword reading
  // The person marked it "no rush": held quietly, never pushed (labelled "Later is fine").
  quiet?:boolean;
+ // Waiting its turn behind the next to-do in the same project.
+ queued?:boolean;
 }
 export interface PriorityContext{
  today:string;availableMinutes:number|null;dayMode:'good'|'full'|'wiped'|'chaos'|null;

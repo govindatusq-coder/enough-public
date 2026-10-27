@@ -122,3 +122,14 @@ export async function syncNextInProject(store:BearStore,projectId:string,now=new
  const next=(await store.list('tasks',{where:[{column:'project_id',value:projectId},{column:'status',value:'open'}]})).sort((a,b)=>(a.order??0)-(b.order??0))[0];
  if(next?.load)await syncLoadReminder(store,next,next.load,await ensureProfile(store),now);
 }
+
+// A renamed task renames its load too, so "I've got …" and every step read the new name.
+export async function retitleLoad(store:BearStore,task:Task,title:string,now=new Date()){
+ const profile=await ensureProfile(store);const today=todayISO(tzOf(profile),now);const g=task.load!;
+ const primary=g.nodes.find(n=>n.id===g.primaryId)!;
+ // Bills are named from the action ("Pay electricity bill" → "Electricity bill").
+ const name=primary.pattern==='BILL_PAYMENT'?title.replace(/^pay\s+(?:the\s+)?/i,'').replace(/^\w/,c=>c.toUpperCase()):title;
+ const graph=withEntities(g,primary.id,{},today,caps(),profile.loadMap,name);
+ await syncLoadReminder(store,{...task,load:graph},graph,profile,now);
+ return graph;
+}

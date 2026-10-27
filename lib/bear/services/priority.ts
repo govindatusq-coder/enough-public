@@ -41,7 +41,7 @@ export async function prioritiseOpen(store:BearStore,now=new Date()):Promise<Pri
  const nextOf=new Map<string,string>();for(const t of open){const p=projectOf.get(t.projectId);if(!p?.captureId)continue;const cur=nextOf.get(p.id);const curT=cur?open.find(x=>x.id===cur):null;if(!curT||(t.order??0)<(curT.order??0))nextOf.set(p.id,t.id);}
  const inputs=open.map(t=>{const p=projectOf.get(t.projectId);const g=recompute(t.load!,ctx.today,caps(),profile.loadMap);
   const input=inputFromGraph(g,{id:t.id,title:t.title,area:(p?.areaKey||'me') as AreaKey,createdAt:t.createdAt,postpones:t.postpones,snoozedUntil:t.snoozedUntil,importanceOverride:t.importance||null,projectPriority:p?.captureId?(p.priority||null):null,notes:t.notes,dueAt:t.dueAt});
-  if(p?.captureId&&nextOf.get(p.id)!==t.id)input.human=null;
+  if(p?.captureId&&nextOf.get(p.id)!==t.id)input.queued=true;
   // "No rush" items are never pushed at the person unless they set a date themselves.
   if(t.timing==='flexible'&&!input.flags.some(f=>['urgent','safety','overdue'].includes(f)))input.quiet=true;
   return input;});

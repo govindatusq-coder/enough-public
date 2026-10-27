@@ -70,3 +70,18 @@ test('area pages use calm timing labels and put what is worth doing first',async
  assert.ok(area.current.length>=2,'both in the same area');assert.equal(area.current[0].taskId,kettle.id);
  assert.ok(area.current.every(i=>!/No rush/.test(i.dueLabel)));
 });
+
+test('Bear Ideas carries a few priority ideas, never the thing already on My Bear',async()=>{
+ const {priorityIdeas}=await import('../lib/bear/services/priority-ideas.ts');
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const top=await give(store,'Return the excursion permission note by 28 October.');
+ const passport=await give(store,'Passport renewal form, lodge by 1 December. Processing takes 3 weeks.');
+ for(const t of ['Need to buy a new phone charger.','Need to buy new goggles.','Need to buy a doormat.'])await give(store,t);
+ const ideas=await priorityIdeas(store,NOW);
+ assert.ok(ideas.length>=1&&ideas.length<=4,JSON.stringify(ideas.map(i=>i.kind)));
+ assert.ok(!ideas.some(i=>i.taskId===top.id),'the one on My Bear is not repeated');
+ assert.ok(ideas.some(i=>i.kind==='what_matters'),'asks what matters once there is enough to go on');
+ assert.ok(ideas.every(i=>i.href&&i.title&&i.body));
+ process.env.BEAR_PRIORITY_ENGINE_V1='off';try{assert.deepEqual(await priorityIdeas(store,NOW),[]);}finally{delete process.env.BEAR_PRIORITY_ENGINE_V1;}
+ void passport;
+});

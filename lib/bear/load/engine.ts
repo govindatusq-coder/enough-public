@@ -144,9 +144,9 @@ export {minimumHumanAction,humanCandidates};
 
 // New facts (a date the person added, a corrected amount): rebuild the node's plan from its
 // pattern with the new entities, keeping everything already done and every piece of evidence.
-export function withEntities(graph:LoadGraph,nodeId:string,patch:LoadEntities,today:string,caps:Capabilities,map?:LoadMap|null):LoadGraph{
+export function withEntities(graph:LoadGraph,nodeId:string,patch:LoadEntities,today:string,caps:Capabilities,map?:LoadMap|null,title?:string):LoadGraph{
  const g:LoadGraph=structuredClone(graph);const i=g.nodes.findIndex(n=>n.id===nodeId);if(i<0)return graph;const old=g.nodes[i];
- const fresh=buildNode(old.pattern,{...old.entities,...patch},{title:old.title,text:'',today,role:old.role,parentId:old.parentId,confidence:old.confidence,loadMap:map,gate:old.gate,id:old.id});
+ const fresh=buildNode(old.pattern,{...old.entities,...patch},{title:title??old.title,text:'',today,role:old.role,parentId:old.parentId,confidence:old.confidence,loadMap:map,gate:old.gate,id:old.id});
  fresh.steps=fresh.steps.map(s=>{const prev=old.steps.find(o=>o.key===s.key);return prev?{...s,status:prev.status,surfaceFrom:prev.status==='pending'&&prev.surfaceFrom&&prev.surfaceFrom>(s.surfaceFrom||'')&&prev.key==='heard'?prev.surfaceFrom:s.surfaceFrom}:s;});
  // Extra steps added along the way (a follow-up, the next expiry) carry over too.
  // Their dates follow the load's date when they were tied to it.

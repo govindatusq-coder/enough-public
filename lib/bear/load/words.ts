@@ -15,4 +15,4 @@ export function friendlyRange(start:string|null|undefined,end:string|null|undefi
 }
 export const money=(cents:number|null|undefined)=>cents?formatAUD(cents).replace(/\.00$/,''):'';
 export const sentence=(s:string)=>s?s[0].toUpperCase()+s.slice(1):s;
-export const the=(title:string)=>/^(the|a|an|my|your|our)\b/i.test(title)||/^[A-Z][a-z]+'s\b/.test(title)?title:'the '+(/^(Year|Dr|GP|[A-Z]{2,})\b/.test(title)?title:title.charAt(0).toLowerCase()+title.slice(1));
+export const the=(title:string)=>/^(the|a|an|my|your|our)\b/i.test(title)||/^[A-Z][a-z]+['’]s\b/.test(title)?title:'the '+(/^(Year|Dr|GP|[A-Z]{2,})\b/.test(title)?title:title.charAt(0).toLowerCase()+title.slice(1));

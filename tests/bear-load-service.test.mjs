@@ -138,3 +138,13 @@ test('lining up projects dates only what the person chose, and Home brings back 
  const after=(await store.list('reminders')).filter(r=>r.status==='scheduled'&&phdTasks.some(t=>t.id===r.taskId));
  assert.equal(after.length,1);assert.notEqual(after[0].taskId,first.id);
 });
+
+test('renaming a task renames what Bear says about it',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const {extraction}=await createCapture(store,campReader(),{method:'text',text:CAMP,referenceYear:2026});
+ const {task}=await maybeAutoSetup(store,extraction,NOW);
+ await updateTask(store,task.id,{title:'Leo’s Year 5 camp'});
+ const {view,graph}=await readLoad(store,await store.get('tasks',task.id),NOW);
+ assert.equal(graph.nodes[0].title,'Leo’s Year 5 camp');assert.match(view.headline,/Leo’s Year 5 camp/);
+ assert.ok(view.comingUp.some(c=>/Leo’s Year 5 camp/.test(c.line)),'steps use the new name too');
+});
