@@ -192,3 +192,10 @@ export async function setCapacity(store:BearStore,value:Capacity,now=new Date())
 }
 export const ideaEnabled=flags.bearIdeasIntelligenceV2;
 export type {Idea};
+
+// The number on the Bear Ideas tab: exactly the ideas the page would show.
+export async function ideasCount(store:BearStore,now=new Date()):Promise<number>{
+ if(ideaEnabled())return (await bearIdeas(store,now)).ideas.length;
+ const {priorityIdeas}=await import('./priority-ideas.ts');
+ return (await refreshSuggestions(store,now)).length+(flags.priorityEngineV1()?(await priorityIdeas(store,now).catch(()=>[])).length:0);
+}

@@ -66,6 +66,19 @@ try{
   await page.goto(base+'/bear/ideas');await page.waitForSelector('.eyebrow:has-text("Worth doing now")');const n=await page.$$eval('main .card',e=>e.length);assert.ok(n>=1&&n<=6,'a few ideas, not a list: '+n);await shot('51-ideas-worth-now');
   const card=page.locator('main .card',{has:page.locator('.eyebrow:has-text("Worth doing now")')});assert.equal(await card.locator('.why-list').count(),0,'rationale collapsed by default');await card.locator('button:has-text("Why this matters?")').click();await card.locator('.why-list .why-row').first().waitFor();const why=await card.locator('.why-list').textContent();assert.ok(!/score|power|threat|neglect|\d\.\d/i.test(why),'plain words only: '+why);await shot('52-why-this');await card.locator('button:has-text("Not now")').click();await page.waitForSelector('.eyebrow:has-text("Worth doing now")',{state:'detached',timeout:10000});});
  await step('Bear Ideas: one calm feed of a few ideas',async()=>{await page.goto(base+'/bear/ideas');await page.waitForSelector('main .card .eyebrow');const body=await page.textContent('main');assert.ok(!/overdue|behind|you should/i.test(body),'calm copy');await shot('54-ideas-feed');});
+ await step('the Bear Ideas badge stays in step with the ideas, everywhere',async()=>{
+  const badge=async()=>Number((await page.locator('.bear-nav .nav-badge').textContent({timeout:1500}).catch(()=>'0'))||0);
+  const settle=async(want)=>{await page.waitForFunction(w=>{const el=document.querySelector('.bear-nav .nav-badge');const n=el?Number(el.textContent):0;return w(n);},null,{timeout:10000,polling:200}).catch(()=>{});};
+  await page.goto(base+'/bear/ideas');await page.waitForSelector('main .card .eyebrow');await page.waitForTimeout(1200);
+  const cards=await page.$$eval('main .card .btn-row',e=>e.length);const before=await badge();assert.equal(before,cards,`badge ${before} vs ${cards} ideas on the page`);
+  await page.locator('main .card').first().locator('.btn-row button').last().click();
+  await page.waitForFunction(n=>{const el=document.querySelector('.bear-nav .nav-badge');return (el?Number(el.textContent):0)!==n;},before,{timeout:10000});
+  await page.waitForTimeout(2500);const after=await badge();const shown=await page.$$eval('main .card .btn-row',e=>e.length);assert.equal(after,shown,`after answering: badge ${after} vs ${shown} on the page`);
+  // A change made elsewhere (giving Bear something) refreshes the badge without visiting My Bear or Bear Ideas.
+  await page.goto(base+'/bear/wins');await page.waitForTimeout(1500);const onWins=await badge();
+  const fresh=Number((await page.evaluate(async()=>(await (await fetch('/api/bear/ideas/count')).json()).count)));assert.equal(onWins,fresh,`badge on My Wins ${onWins} vs server ${fresh}`);
+  await shot('55-badge');
+ });
  await step('Settings has What matters to you, with goals Bear can use',async()=>{await page.goto(base+'/bear/me');await page.waitForSelector('#matters');await page.click('[aria-label="Values"] button.chip:has-text("Parenting")');await page.waitForSelector('[aria-label="Values"] button.chip[aria-pressed="true"]:has-text("Parenting")');await page.fill('#goal-text','Maintain my professional registration');await page.click('#matters + .card button.chip:has-text("Must not slip")');await page.click('#matters + .card button:has-text("Add")');await page.waitForSelector('text=Maintain my professional registration');await page.locator('#matters').scrollIntoViewIfNeeded();await shot('53-matters');});
  await step('voice option is present',async()=>{await page.goto(base+'/bear/capture');await page.click('button:has-text("Say it")');await page.waitForSelector('#voicetext');await shot('28-voice');});
  await step('me screen',async()=>{await page.goto(base+'/bear/me');await page.waitForSelector('text=Reminders');await shot('24-me');});

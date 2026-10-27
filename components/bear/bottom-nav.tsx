@@ -13,9 +13,18 @@ const tabs2=[
 ];
 export function BottomNav(){
  const path=usePathname();
- // Bear Ideas shows a small number when Bear has noticed something (set when My Bear loads).
+ // Bear Ideas shows how many ideas the page would show right now. It refreshes on every screen change,
+ // after anything changes (a task done, an idea answered, something given to Bear) and when the app
+ // comes back to the front. Pages that already know the number share it straight away.
  const [ideas,setIdeas]=useState(0);
- useEffect(()=>{const read=()=>{try{setIdeas(Number(sessionStorage.getItem('bear-ideas'))||0);}catch{setIdeas(0);}};read();window.addEventListener('bear-ideas',read);return()=>window.removeEventListener('bear-ideas',read);},[]);
+ useEffect(()=>{
+  let timer:ReturnType<typeof setTimeout>|null=null;let alive=true;
+  const fetchCount=()=>{if(timer)clearTimeout(timer);timer=setTimeout(()=>{fetch('/api/bear/ideas/count',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}}).then(r=>r.ok?r.json():null).then(j=>{if(!alive||!j||typeof j.count!=='number')return;setIdeas(j.count);try{sessionStorage.setItem('bear-ideas',String(j.count));}catch{/* no storage */}}).catch(()=>{});},400);};
+  const shared=()=>{try{setIdeas(Number(sessionStorage.getItem('bear-ideas'))||0);}catch{/* no storage */}};
+  const onVis=()=>{if(document.visibilityState==='visible')fetchCount();};
+  shared();fetchCount();window.addEventListener('bear-changed',fetchCount);window.addEventListener('bear-ideas',shared);document.addEventListener('visibilitychange',onVis);window.addEventListener('focus',fetchCount);
+  return()=>{alive=false;if(timer)clearTimeout(timer);window.removeEventListener('bear-changed',fetchCount);window.removeEventListener('bear-ideas',shared);document.removeEventListener('visibilitychange',onVis);window.removeEventListener('focus',fetchCount);};
+ },[path]);
  const item=(t:{href:string;label:string;icon:React.ReactNode})=><Link key={t.href} href={t.href} aria-current={path.startsWith(t.href)?'page':undefined}>{t.icon}<span>{t.label}</span>{t.href==='/bear/ideas'&&ideas>0&&<i className="nav-badge" aria-label={`${ideas} new`}>{ideas}</i>}</Link>;
  return <nav className="bear-nav" aria-label="Main"><div className="bar glass-strong">{tabs.map(item)}<Link href="/bear/capture" className="plus-wrap" aria-label="Give it to Bear"><span className="plus" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg></span><span>+ Bear</span></Link>{tabs2.map(item)}</div></nav>;
 }
