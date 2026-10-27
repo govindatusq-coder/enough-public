@@ -1,7 +1,7 @@
 import {json,readJson,withBear} from '@/lib/bear/server/context';
 import {recommendPlan} from '@/lib/bear/services/reminder-planning';
 import {readLoad} from '@/lib/bear/services/load';
-import {prioritiseOpen,priorityEnabled} from '@/lib/bear/services/priority';
+import {prioritiseOpen,priorityEnabled,priorityView} from '@/lib/bear/services/priority';
 import {deleteTask,updateTask,updateTaskSchema} from '@/lib/bear/services/task-edit';
 export const dynamic='force-dynamic';
 export const GET=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(req,async({store})=>{
@@ -16,8 +16,9 @@ export const GET=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(
  const plan=task.status==='open'&&active.length===0&&!task.wishlist&&task.timing!=='flexible'?await recommendPlan(store,null,task):null;
  const documentId=project?.resourceDocumentIds[0]||null;
  const load=await readLoad(store,task);
- const pr=priorityEnabled()&&task.status==='open'?(await prioritiseOpen(store)).results.get(task.id)||null:null;
- const priority=pr?{label:pr.timingLabel,reasons:pr.explanation.reasons,headline:pr.explanation.headline,latestComfortable:pr.latestComfortableActionAt,latestSafe:pr.latestSafeActionAt,deadline:pr.deadline,minutes:pr.minutes,firstStep:pr.firstStep,askImportance:pr.askImportance,surfaceNow:pr.surfaceNow}:null;
+ const all=priorityEnabled()&&task.status==='open'?await prioritiseOpen(store):null;const pr=all?.results.get(task.id)||null;const relAsk=all?.relational.get(task.id)?.ask||null;
+ // Default view is minimal: no reasons, no scores. Reasons come from /why only when asked.
+ const priority=pr?priorityView(pr,relAsk):null;
  return json({priority,task:(await store.get('tasks',task.id))||task,project,reminders,steps,plan,load:load.migrated?null:load.view,documentUrl:documentId?`/api/bear/documents/${documentId}`:null});
 });
 export const PATCH=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(req,async({store})=>{const {id}=await params;return json({task:await updateTask(store,id,updateTaskSchema.parse(await readJson(req)))});});

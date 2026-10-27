@@ -34,8 +34,8 @@ test('an important project with no due date still gets attention once it stalls,
  const store=new MemoryBackend().for(USER);await onboard(store);const {p}=await project(store);
  const i=(await ideas(store)).find(x=>x.type==='protect_time');
  assert.ok(i,'protect-time idea');assert.equal(i.projectId,p.id);assert.match(i.title,/Grant application/);
- assert.match(i.body,/significance section/,'the next real step, not the tidy-up');
- for(const x of await ideas(store))assert.doesNotMatch(`${x.title} ${x.body}`,NO_PANIC);
+ assert.match(i.title,/significance section/,'the next real step, not the tidy-up');assert.equal(i.eyebrow,'Worth protecting time for');
+ for(const x of await ideas(store))assert.doesNotMatch(`${x.title} ${x.body} ${(x.why||[]).map(w=>w.title+' '+w.text).join(' ')}`,NO_PANIC);
  assert.equal((await store.get('projects',p.id)).dueAt,null,'no deadline manufactured');
 });
 
@@ -145,7 +145,7 @@ test('reactive-work bias: lots of upkeep done doesn’t make upkeep important or
  const store=new MemoryBackend().for(USER);await onboard(store);const {p}=await project(store);
  for(let k=0;k<6;k++){const t=await give(store,`Order school shoes size ${k}`);await complete(store,t.id,day(-1));}
  const i=(await ideas(store)).find(x=>x.projectId===p.id);assert.equal(i?.type,'protect_time');
- assert.match(i.body,/kept lots of everyday things running/);assert.doesNotMatch(i.body,/procrastinat|distract|busywork/i);
+ const why=i.why.map(w=>w.title+' '+w.text).join(' ');assert.match(why,/kept lots of everyday things running/);assert.doesNotMatch(why+i.body,/procrastinat|distract|busywork|neglect/i);
  // Dismissing strategic ideas many times can quieten them but never silence them, and never changes importance.
  assert.ok(learnedMultiplier('protect_time','strategic',{'idea_no:protect_time':20})>=0.75);
  assert.equal((await store.get('projects',p.id)).importance,'very');

@@ -69,6 +69,9 @@ export function importanceOf(i:PriorityInput,ctx:PriorityContext){
  else if(i.projectInferred!=null){importance=0.8*importance+0.2*i.projectInferred;evidence.push('project (inferred)');}
  if(i.areaPrior!=null){importance+=0.05*(i.areaPrior-0.5);}
  if(i.role==='progress'&&!i.lowLeverage){importance+=0.06;evidence.push('moves a goal forward');}
+ // Relational (gate 2, people) and power/loss/meaning: a small bounded lift from relational IMPORTANCE.
+ // Pressure from others never adds here, and seniority alone adds nothing.
+ if(i.relational?.lift){importance+=i.relational.lift;evidence.push('people and meaning');}
  if(i.lowLeverage){importance=Math.min(importance,0.4);evidence.push('small tidy-up work');}
  const inferredScore=clamp(importance);
  if(i.importanceOverride)importance=i.importanceOverride==='very'?0.95:i.importanceOverride==='nice'?0.6:0.2;
@@ -83,9 +86,11 @@ export function importanceOf(i:PriorityInput,ctx:PriorityContext){
 const effortByKind:Record<string,number>={decision:2,confirmation:1,information:3,signature:5,payment:3,physical:20,approval:2};
 export function effortMinutes(i:PriorityInput){
  if(!i.human)return 0;const t=`${i.human.label} ${i.title} ${i.text}`;
+ if(/\b(review|comment on|feedback on)\b/i.test(t)&&!/\b(write|draft)\b/i.test(t))return 20;
  if(/\b(write|draft|grant|paper|article|chapter|report|thesis|tax return|review of)\b/i.test(t))return 60;
  if(/\b(pack|clean|tidy|declutter|organi[sz]e|shop|groceries)\b/i.test(t))return 30;
- if(/\b(call|ring|phone|book|email|reply|rsvp|let .* know)\b/i.test(t))return 5;
+ if(/\b(review|comment on|feedback on|read through|mark)\b/i.test(t))return 20;
+ if(/\b(call|ring|phone|book|email|reply|rsvp|let .* know|send|forward|share)\b/i.test(t))return 5;
  if(i.pattern==='RENEWAL'&&i.human.kind==='payment')return 10;
  return effortByKind[i.human.kind]??10;
 }
@@ -131,7 +136,7 @@ export function timing(i:PriorityInput,ctx:PriorityContext,aversion:number,minut
  const safe=addDays(due,-(lead+handover+(minutes>=45?1:0)));
  const congestion=ctx.otherDeadlines.filter(d=>{const n=daysBetween(safe,d);return n!==null&&Math.abs(n)<=2;}).length;
  const essential=i.flags.includes('medication')||i.flags.includes('essential')?1:0;
- const buffer=1+essential+(aversion>=0.6?2:aversion>=0.35?1:0)+(congestion>=2?1:0)+(i.postpones>=2?1:0)+(lead>0?Math.ceil(lead*0.25):0)+(ctx.struggles.includes('forget_until_urgent')?1:0);
+ const buffer=1+essential+(aversion>=0.6?2:aversion>=0.35?1:0)+(congestion>=2?1:0)+(i.postpones>=2?1:0)+(lead>0?Math.ceil(lead*0.25):0)+(ctx.struggles.includes('forget_until_urgent')?1:0)+(i.relational?.actEarlierDays||0);
  return {due,lead,safe,comfortable:addDays(safe,-buffer),congestion};
 }
 
@@ -145,7 +150,8 @@ export function prioritise(i:PriorityInput,ctx:PriorityContext,at:string=ctx.tod
  // No deadline: important maintenance (the dentist) rises slowly with time and postponing, never to panic.
  const ageDays=Math.max(0,days(i.createdAt.slice(0,10),today)||0);
  const futureUrgency=toComfort===null?clamp((ageDays/90+i.postpones*0.08)*imp.importance,0,0.6):toComfort<=0?1:clamp(1/(1+toComfort/3));
- const dependencyLeverage=clamp(i.dependents/4);
+ // Someone else meaningfully waiting on this counts like steps waiting on it.
+ const dependencyLeverage=clamp(Math.max(i.dependents/4,i.relational?.waiting?i.relational.leverage:0));
  const waitingLeadTime=clamp(t.lead/14);
  const reversibility=i.human&&['payment','signature'].includes(i.human.kind)?0.4:0.8;
  const snoozed=!!i.snoozedUntil&&i.snoozedUntil>today;
@@ -172,15 +178,19 @@ export function prioritise(i:PriorityInput,ctx:PriorityContext,at:string=ctx.tod
  // Quick win: a small decision, signature or piece of information other people are waiting on,
  // due within a week. Two minutes now saves days of carrying it.
  const toDue=t.due?days(today,t.due)!:null;
+ // Someone is genuinely waiting, it's quick, and it matters enough: worth closing the loop.
+ const closingLoop=!!i.relational?.waiting&&!!i.human&&minutes<=20&&imp.importance>=(i.relational.leverage>=0.6?0.33:0.4);
  const quickWin=!!i.human&&minutes<=5&&toDue!==null&&toDue>=0&&(['signature','decision','information','approval'].includes(i.human.kind)?toDue<=7:i.human.kind==='payment'?toDue<=2:false);
- const surfaceNow=!i.quiet&&!i.queued&&!!i.human&&!notYet&&!i.resolved&&!snoozed&&importantEnough&&(tier===0||(toComfort!==null&&toComfort<=0)||gates.includes('overdue')||quickWin||(toComfort===null&&futureUrgency>=0.45&&imp.importance>=0.6)||(actionPriority>=0.42&&minutes<=10&&pressurePreventionValue>=0.45))&&(ctx.dayMode!=='chaos'||tier<=1||(toSafe!==null&&toSafe<=0));
- const support=i.bearSupport==='more'||(aversion>=0.5&&imp.importance>=0.45)?'prepare_more':'normal';
+ const core=!!i.human&&!notYet&&!i.resolved&&!snoozed&&importantEnough&&(tier===0||(toComfort!==null&&toComfort<=0)||gates.includes('overdue')||quickWin||(toComfort===null&&futureUrgency>=0.45&&imp.importance>=0.6)||(actionPriority>=0.42&&minutes<=10&&pressurePreventionValue>=0.45)||closingLoop)&&(ctx.dayMode!=='chaos'||tier<=1||(toSafe!==null&&toSafe<=0));
+ const surfaceNow=!i.quiet&&!i.queued&&core;
+ const support=i.bearSupport==='more'||!!i.relational?.breakDown||(aversion>=0.5&&imp.importance>=0.45)?'prepare_more':'normal';
  const at7=(d:number)=>{if(d===0)return actionPriority;const later=addDays(today,d);const tc=t.comfortable?daysBetween(later,t.comfortable)!:null;const tv=tc===null?0.25:tc<=0?1:tc<=3?0.55:0.25;return i.human?imp.importance*tv:0;};
- const label:TimingLabel=i.resolved?'Sorted':(!i.human||(notYet&&i.human.kind==='confirmation'))?(i.waitingOn?'Waiting':i.bearSteps?'Bear is handling it':'Nothing needed yet') :i.quiet?'Later is fine':i.queued?'Coming up':surfaceNow?'Worth doing now':snoozed?'Coming up':toComfort!==null&&toComfort<=7?'Good to do this week':toComfort!==null?'Coming up':imp.importance>=0.5?'Good to do this week':'Later is fine';
+ const labelFor=(queued:boolean,surf:boolean):TimingLabel=>i.resolved?'Sorted':(!i.human||(notYet&&i.human.kind==='confirmation'))?(i.waitingOn?'Waiting':i.bearSteps?'Bear is handling it':'Nothing needed yet') :i.quiet?'Later is fine':queued?'Coming up':surf?'Worth doing now':snoozed?'Coming up':toComfort!==null&&toComfort<=7?'Good to do this week':toComfort!==null?'Coming up':imp.importance>=0.5?'Good to do this week':'Later is fine';
+ const label=labelFor(!!i.queued,surfaceNow);const ownLabel=labelFor(false,!i.quiet&&core);
  const explanation=explain(i,imp,{gates,t,toComfort,minutes,dependencyLeverage,pressurePreventionValue,today,surfaceNow,due,support});
  const askImportance=!i.importanceOverride&&imp.confidence<0.45&&!!i.human&&(ctx.learned[`chose_low:${i.pattern}`]||0)>=2;
  const importanceSignal={explicit:i.importanceOverride||null,inferredScore:imp.inferredScore,inferredConfidence:i.importanceOverride?imp.confidence:imp.confidence*(i.projectImportance?1:0.8),evidence:imp.evidence};
- return {importanceSignal,role:i.role||null,id:i.id,vector,gates,tier,latestSafeActionAt:t.safe,latestComfortableActionAt:t.comfortable,futurePressureRisk,pressurePreventionValue,dependencyLeverage,importance:imp.importance,globalPriority,actionPriority,trajectory:{today:actionPriority,in7:at7(7),in14:at7(14)},surfaceNow,support,action:i.human?.label||null,deadline:t.due,bearSteps:i.bearSteps,firstStep:support==='prepare_more'?firstSteps[i.pattern]||null:null,minutes,timingLabel:label,explanation,askImportance:askImportance||(!i.importanceOverride&&imp.confidence<0.35&&surfaceNow)};
+ return {relationalStatus:i.relational?.status&&i.human?i.relational.status:null,ownLabel,importanceSignal,role:i.role||null,id:i.id,vector,gates,tier,latestSafeActionAt:t.safe,latestComfortableActionAt:t.comfortable,futurePressureRisk,pressurePreventionValue,dependencyLeverage,importance:imp.importance,globalPriority,actionPriority,trajectory:{today:actionPriority,in7:at7(7),in14:at7(14)},surfaceNow,support,action:i.human?.label||null,deadline:t.due,bearSteps:i.bearSteps,firstStep:support==='prepare_more'?firstSteps[i.pattern]||null:null,minutes,timingLabel:label,explanation,askImportance:askImportance||(!i.importanceOverride&&imp.confidence<0.35&&surfaceNow)};
 }
 
 const valueWords:Record<string,string>={family:'your family',relationships:'the people you care about',career:'your work',financial_security:'keeping money on track',health:'your health',home:'your home',learning:'learning',independence:'keeping life admin under control',community:'your community',rest:'rest',enjoyment:'enjoying life',creativity:'creativity',parenting:'your kids',caregiving:'caring for others'};
@@ -196,11 +206,13 @@ function explain(i:PriorityInput,imp:ReturnType<typeof importanceOf>,x:{gates:Ga
  if(x.due&&x.toComfort!==null&&x.toComfort<=0&&!x.gates.includes('overdue'))r.push({key:'pressure',title:'Prevents future pressure',text:`Doing it now avoids a last-minute rush before ${friendlyDate(x.due,x.today)}.`});
  if(x.dependencyLeverage>=0.25)r.push({key:'depends',title:'Other things depend on this',text:'Once it’s done, the next steps can happen.'});
  if(i.human&&x.minutes<=10)r.push({key:'window',title:'A quick one',text:`About ${x.minutes} minute${x.minutes===1?'':'s'} for you.`});
+ // Relational reasons, in plain words, slot in after safety and deadlines.
+ const rel=(i.relational?.reasons||[]);r.splice(x.gates.length?1:0,0,...rel.slice(0,2));
  if(i.bearSteps>0)r.push({key:'bear',title:'Bear has the rest',text:'Bear keeps the dates, brings it back and follows up, so you only do this bit.'});
- const top=r.slice(0,3);
+ const top=r.slice(0,i.relational?.reasons.length?4:3);
  const urgent=x.gates.length>0||(x.due&&x.t.safe&&x.t.safe<=x.today);
  const headline=urgent?'This is the one that can’t wait.':x.surfaceNow?'It isn’t the most urgent thing. But now is a good time to do it.':'Nothing to do yet. Bear will bring it back at a good time.';
- return {primaryReason:top[0]?.text||'Bear is keeping track of this.',contributingReasons:top.slice(1).map(x=>x.text),timingReason:x.t.comfortable?`Good time to act: by ${friendlyDate(x.t.comfortable,x.today)}`:undefined,goalLinks:imp.goals.map(g=>g.text),valueLinks:imp.values.map(v=>v.key),dependencyReason:x.dependencyLeverage>=0.25?'Other steps wait on this.':undefined,pressurePreventionReason:x.pressurePreventionValue>=0.45?'A small action now saves carrying it for days.':undefined,confidence:imp.confidence,headline,reasons:top};
+ return {primaryReason:top[0]?.text||'Bear is keeping track of this.',contributingReasons:top.slice(1).map(x=>x.text),timingReason:x.t.comfortable?`Good time to act: by ${friendlyDate(x.t.comfortable,x.today)}`:undefined,goalLinks:imp.goals.map(g=>g.text),valueLinks:imp.values.map(v=>v.key),dependencyReason:x.dependencyLeverage>=0.25?'Other steps wait on this.':undefined,pressurePreventionReason:x.pressurePreventionValue>=0.45?'A small action now saves carrying it for days.':undefined,confidence:imp.confidence,headline,reasons:top,shortReason:top[0]?.title||null};
 }
 
 // One thing, or nothing. Safety and real deadlines first; then the best moment, not the nearest date.

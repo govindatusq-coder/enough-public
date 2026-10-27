@@ -7,6 +7,7 @@ import {prioritise,selectAction} from '../priority/engine.ts';
 import {inputFromGraph} from '../priority/input.ts';
 import {importancePrior,isLowLeverage,roleOf} from '../priority/importance.ts';
 import {flags} from '../flags.ts';
+import {futureSelf,interpret,otherPeople,pastSelfEvidence,presentSelf,relationalAdjust,type PresentSelfState,type RelationalAdjustment} from '../priority/relational.ts';
 import type {PriorityContext,PriorityResult,ValuesGoalsMap} from '../priority/types.ts';
 import {effectiveValues} from '../priority/values.ts';
 import type {BearStore} from '../store/store.ts';
@@ -31,10 +32,12 @@ export async function priorityContext(store:BearStore,profile:Profile,tasks:Task
  return {today,availableMinutes:availableMinutes(profile,now),dayMode:activeDayMode(profile,today),values:effectiveValues(profile.valuesMap,profile.loadMap,counts),struggles:profile.loadMap?.struggles||[],strengths:profile.pins.strengths,learned:profile.loadMap?.learned?.choices||{},otherDeadlines:[]};
 }
 
-export interface Prioritised{results:Map<string,PriorityResult>;top:PriorityResult|null;needs:number;ctx:PriorityContext}
+// An imperative to-do ("Review Maya's chapter") rather than a note to keep.
+const TODO=/^(review|reply|respond|send|draft|write|fix|book|call|ring|phone|email|put|take|go|buy|pay|finish|start|read|comment|prepare|organi[sz]e|plan|sort|clean|check|ask|tell|follow up|submit|update|make|get|arrange|confirm|complete|do|give|return|share|mark|edit|apply|visit|see)\b/i;
+export interface Prioritised{results:Map<string,PriorityResult>;top:PriorityResult|null;needs:number;ctx:PriorityContext;present:PresentSelfState|null;relational:Map<string,RelationalAdjustment>}
 export async function prioritiseOpen(store:BearStore,now=new Date()):Promise<Prioritised>{
  const profile=await ensureProfile(store);
- const [tasks,projects,deps]=await Promise.all([store.list('tasks'),store.list('projects'),store.list('task_dependencies')]);
+ const [tasks,projects,deps,completions]=await Promise.all([store.list('tasks'),store.list('projects'),store.list('task_dependencies'),store.list('completions',{limit:500})]);
  const stepIds=new Set(deps.map(d=>d.dependsOnTaskId));
  const ctx=await priorityContext(store,profile,tasks,now);
  const projectOf=new Map(projects.map(p=>[p.id,p]));
@@ -50,6 +53,8 @@ export async function prioritiseOpen(store:BearStore,now=new Date()):Promise<Pri
   if(p?.captureId&&nextOf.get(p.id)!==t.id)input.queued=true;
   // "No rush" items are never pushed at the person unless they set a date themselves.
   if(t.timing==='flexible'&&!input.flags.some(f=>['urgent','safety','overdue'].includes(f)))input.quiet=true;
+  // A plain to-do Bear can only hold (write, review, reply...) is still the person's to do, not Bear's.
+  if(flags.relationalPriorityV1()&&!input.human&&input.pattern==='UNKNOWN_LOAD'&&!input.resolved&&!input.waitingOn&&TODO.test(t.title))input.human={kind:'information',label:t.title,dueAt:t.dueAt,surfaceFrom:null};
   if(v2){
    const r=roleOf(input.pattern,`${t.title} ${t.notes||''}`,p?.role||null,null);
    Object.assign(input,{projectImportance:p?.importance||null,areaPrior:areaPrior.get(p?.areaKey||'')??null,role:r.role,roleExplicit:r.explicit,lowLeverage:isLowLeverage(t.title),bearSupport:t.bearSupport||null});
@@ -57,6 +62,22 @@ export async function prioritiseOpen(store:BearStore,now=new Date()):Promise<Pri
    if(p?.paused||(p?.deferredUntil&&p.deferredUntil>ctx.today))input.quiet=true;
   }
   return input;});
+ // Relational Priority (relationalPriorityV1): people, past self, meaning. Derived, never asked for.
+ const relational=new Map<string,RelationalAdjustment>();let present:PresentSelfState|null=null;
+ if(flags.relationalPriorityV1()){
+  const tz=profile.lifeRhythm.timezone||'Australia/Sydney';const dayOf=(iso:string)=>todayISO(tz,new Date(iso));
+  const actedToday=Object.values(profile.ideaHistory||{}).filter(h=>h.status==='accepted'&&dayOf(h.at)===ctx.today).length;
+  present=presentSelf({tasks,completions,areaOf:t=>(projectOf.get(t.projectId)?.areaKey||'me') as AreaKey,today:ctx.today,actedToday,dayOf});
+  const ptm=flags.ptmInterpretationV1();
+  for(const input of inputs){const t=open.find(x=>x.id===input.id)!;const text=`${t.title} ${t.notes||''}`;
+   const people=otherPeople(text,input.pattern,t.reliance||null);
+   const c={itemId:t.id,otherPeople:people,pastSelf:pastSelfEvidence(input.pattern,t.kind,tasks,completions,t.id),futureSelf:futureSelf(text),ptm:ptm?interpret(text,input.pattern,people,input.flags):null};
+   const band=prioritise(input,{...ctx,otherDeadlines:[]}).importanceSignal.inferredScore;
+   const adj=relationalAdjust(c,{ptm,explicitImportance:!!t.importance,importanceBand:band,reliance:t.reliance||null});
+   relational.set(t.id,adj);input.relational=adj;
+   // Someone is clearly blocked on this: Bear's own "no rush" guess doesn't hide it (the person's choices still do).
+   if(adj.waiting&&adj.leverage>=0.6&&t.reliance!=='no'&&t.timing==='flexible'&&t.timingBy!=='user'&&!(projectOf.get(t.projectId)?.paused))input.quiet=false;}
+ }
  const run=()=>new Map(inputs.map(i=>[i.id,prioritise(i,{...ctx,otherDeadlines:inputs.filter(o=>o.id!==i.id).map(o=>o.deadline).filter((d):d is string=>!!d)})]));
  let results=run();
  // Bottom-up (V2): a project the person hasn't rated borrows a little from its strongest tasks
@@ -66,8 +87,15 @@ export async function prioritiseOpen(store:BearStore,now=new Date()):Promise<Pri
    const top=kids.map(k=>results.get(k.id)!.importanceSignal.inferredScore).sort((a,b)=>b-a).slice(0,3);const v=0.8*top.reduce((a,b)=>a+b,0)/top.length;
    for(const k of kids){k.projectInferred=v;changed=true;}}
   if(changed)results=run();}
+ // Within a brain-dump project the next to-do is the most worthwhile one, not the first one written down
+ // (relationalPriorityV1). The rest wait their turn quietly.
+ if(flags.relationalPriorityV1()){let moved=false;const rank:Record<string,number>={'Worth doing now':0,'Good to do this week':1,'Coming up':2,'Later is fine':3,'Nothing needed yet':4,'Waiting':5,'Bear is handling it':6,'Sorted':7};
+  for(const pid of new Set([...nextOf.keys()])){const kids=inputs.filter(i=>open.find(t=>t.id===i.id)?.projectId===pid);
+   const best=kids.map(k=>({k,r:results.get(k.id)!,o:open.find(t=>t.id===k.id)!.order??0})).sort((a,b)=>(rank[a.r.ownLabel]??9)-(rank[b.r.ownLabel]??9)||b.r.actionPriority-a.r.actionPriority||b.r.importance-a.r.importance||a.o-b.o)[0];
+   if(best&&nextOf.get(pid)!==best.k.id){nextOf.set(pid,best.k.id);for(const k of kids)k.queued=k.id!==best.k.id;moved=true;}}
+  if(moved)results=run();}
  const sel=selectAction([...results.values()]);
- return {results,top:sel.top,needs:sel.needs,ctx};
+ return {results,top:sel.top,needs:sel.needs,ctx,present,relational};
 }
 
 // ---------- "Not today", importance and learning ----------
@@ -110,4 +138,19 @@ export {valuesMapSchema} from '../priority/schema.ts';
 export async function valuesView(store:BearStore):Promise<{saved:ValuesGoalsMap;effective:ValuesGoalsMap}>{
  const profile=await ensureProfile(store);const tasks=await store.list('tasks');const ctx=await priorityContext(store,profile,tasks,new Date());
  return {saved:profile.valuesMap||{values:[],goals:[]},effective:ctx.values};
+}
+
+// ---------- what the task page shows ----------
+// Minimal by default: a calm label, minutes, one short line, and at most ONE question.
+export function priorityView(r:PriorityResult,relationalAsk:'reliance'|null){
+ const label=r.relationalStatus==='closing_loop'&&r.surfaceNow?'Worth closing the loop':r.timingLabel;
+ const ask:'importance'|'reliance'|null=relationalAsk?'reliance':r.askImportance?'importance':null;
+ return {label,minutes:r.action?r.minutes:0,shortReason:r.explanation.shortReason||null,ask,surfaceNow:r.surfaceNow};
+}
+export function whyView(r:PriorityResult){
+ return {reasons:r.explanation.reasons.slice(0,4),latestComfortable:r.latestComfortableActionAt,latestSafe:r.latestSafeActionAt,deadline:r.deadline,firstStep:r.firstStep};
+}
+export const relianceSchema=z.object({reliance:z.enum(['yes','little','no']).nullable()}).strict();
+export async function setReliance(store:BearStore,taskId:string,reliance:'yes'|'little'|'no'|null){
+ const task=await store.get('tasks',taskId);if(!task)throw new Error('not_found');await store.update('tasks',task.id,{reliance});
 }

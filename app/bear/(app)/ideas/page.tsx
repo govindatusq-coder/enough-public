@@ -7,6 +7,7 @@ import type {Suggestion} from '@/lib/bear/domain/types';
 import type {PriorityIdea} from '@/lib/bear/services/priority-ideas';
 import type {Idea,IdeaAction,Capacity} from '@/lib/bear/strategy/ideas';
 import {EmptyArt} from '@/components/bear/art';
+import {WhyInline} from '@/components/bear/why-inline';
 import {Button,Chip,ErrorCard,Sheet,Skeleton,Toast} from '@/components/bear/ui';
 // Ideas the person set aside today stay hidden on this device until tomorrow (legacy feed only).
 const hiddenKey=()=>'bear-ideas-hidden-'+new Date().toISOString().slice(0,10);
@@ -20,11 +21,11 @@ const roomLabel:Record<string,string>={'5':'about 5 minutes','15':'about 15 minu
 export default function Ideas(){
  const router=useRouter();const [items,setItems]=useState<Suggestion[]|null>(null);const [prio,setPrio]=useState<PriorityIdea[]>([]);const [error,setError]=useState<string|null>(null);const [toast,setToast]=useState<string|null>(null);const [leaving,setLeaving]=useState<string|null>(null);
  // Bear Ideas V2: one feed chosen by the orchestrator. null = still loading, or the legacy feed is on.
- const [feed,setFeed]=useState<{ideas:View[];askCapacity:boolean;capacity:Capacity|null}|null>(null);const [legacy,setLegacy]=useState(false);
- const [why,setWhy]=useState<View|null>(null);const [room,setRoom]=useState<View|null>(null);
+ const [feed,setFeed]=useState<{ideas:View[];askCapacity:boolean;capacity:Capacity|null;rested:boolean}|null>(null);const [legacy,setLegacy]=useState(false);
+ const [room,setRoom]=useState<View|null>(null);
  const fail=useCallback((e:{status?:number;message:string})=>{if(e.status===401)router.replace('/bear/signin');else setError(e.message);},[router]);
  const loadLegacy=useCallback(()=>apiGet<{suggestions:Suggestion[];priority?:PriorityIdea[]}>('/api/bear/suggestions').then(r=>{setItems(r.suggestions);setPrio((r.priority||[]).filter(p=>!hidden().includes(p.id)));setError(null);}).catch(fail),[fail]);
- const load=useCallback(()=>apiGet<{legacy?:boolean;ideas?:View[];askCapacity?:boolean;capacity?:Capacity|null}>('/api/bear/ideas').then(r=>{if(r.legacy){setLegacy(true);return loadLegacy();}setFeed({ideas:r.ideas||[],askCapacity:!!r.askCapacity,capacity:r.capacity||null});setError(null);
+ const load=useCallback(()=>apiGet<{legacy?:boolean;ideas?:View[];askCapacity?:boolean;capacity?:Capacity|null;rested?:boolean}>('/api/bear/ideas').then(r=>{if(r.legacy){setLegacy(true);return loadLegacy();}setFeed({ideas:r.ideas||[],askCapacity:!!r.askCapacity,capacity:r.capacity||null,rested:!!r.rested});setError(null);
   try{sessionStorage.setItem('bear-ideas',String((r.ideas||[]).length));window.dispatchEvent(new Event('bear-ideas'));}catch{/* no storage */}}).catch(fail),[fail,loadLegacy]);
  useEffect(()=>{load();},[load]);
  const gone=(id:string,msg:string|null)=>{if(msg)setToast(msg);setTimeout(()=>{setFeed(f=>f?{...f,ideas:f.ideas.filter(x=>x.id!==id)}:f);setLeaving(null);},450);};
@@ -37,7 +38,7 @@ export default function Ideas(){
    if(a.key==='accept'&&(i.suggestionKind==='missing_expected'||i.suggestionKind==='add_related_areas')){router.push('/bear/capture');return;}
    if(a.key==='accept'&&i.suggestionKind==='bill_increased'&&i.href){router.push(i.href);return;}
    if(a.key==='open'&&i.href){router.push(i.href);return;}
-   setRoom(null);setWhy(null);
+   setRoom(null);
    gone(i.id,a.key==='accept'?"Added. Bear's got it.":a.key==='reject'?'Noted. Bear will suggest less of that.':a.key==='copy'?'Copied. Paste it wherever you message them.':a.key==='dismiss'?'No problem. Bear will leave that for a while.':r.message);
   }catch(e){setError((e as Error).message);setLeaving(null);}
  }
@@ -60,14 +61,15 @@ export default function Ideas(){
     {!feed&&!error&&<Skeleton/>}
     {feed?.askCapacity&&<div className="card idea-room"><p style={{fontWeight:700}}>What have you got room for?</p><p className="muted small" style={{marginTop:4}}>Only if you’d like to say. It changes which ideas Bear shows today.</p><div className="chips" style={{marginTop:10}}>{rooms.map(r=><Chip key={r.key} label={r.label} selected={false} onToggle={()=>setCap(r.key)}/>)}</div></div>}
     {feed?.capacity&&<p className="small muted" style={{margin:'0 0 10px'}}>Room today: {roomLabel[feed.capacity]}. <button type="button" className="one-thing-link" onClick={()=>setFeed(f=>f?{...f,askCapacity:true,capacity:null}:f)}>Change</button></p>}
-    {feed&&feed.ideas.length===0&&empty}
+    {feed&&feed.ideas.length===0&&(feed.rested?<div className="card" style={{textAlign:'center'}}><EmptyArt file="empty-ideas"/><p style={{fontWeight:700,fontSize:19}}>Nothing else from Bear needs your attention right now.</p></div>:empty)}
     {feed?.ideas.map(i=><div key={i.id} className={`card ${leaving===i.id?'collapse-out':''}`}>
      <p className={`eyebrow ${familyTone[i.family]}`} style={{marginBottom:6}}>{i.eyebrow}</p>
      <p style={{fontWeight:700,fontSize:18}}>{i.title}</p>
      <p className="muted small" style={{marginTop:6}}>{i.body}</p>
      {i.chips&&i.chips.length>0&&<div className="idea-chips">{i.chips.map(c=><span key={c} className="idea-chip">{c}</span>)}</div>}
      {i.draft&&<p className="note plain idea-draft">{i.draft}</p>}
-     <div className="btn-row">{i.actions.map(a=><Button key={a.key} className="sm" variant={a.primary?'primary':'quiet'} disabled={leaving===i.id} onClick={()=>press(i,a)}>{a.label}</Button>)}{i.why&&i.why.length>0&&<button type="button" className="one-thing-link" onClick={()=>setWhy(i)}>Why this?</button>}</div>
+     <div className="btn-row">{i.actions.map(a=><Button key={a.key} className="sm" variant={a.primary?'primary':'quiet'} disabled={leaving===i.id} onClick={()=>press(i,a)}>{a.label}</Button>)}</div>
+     {i.why&&i.why.length>0&&<WhyInline reasons={i.why}/>}
     </div>)}
    </div>}
    {legacy&&<div className="section">
@@ -76,11 +78,6 @@ export default function Ideas(){
     {items&&items.length===0&&prio.length===0&&empty}
     {items?.map(s=><div key={s.id} className={`card ${leaving===s.id?'collapse-out':''}`}><p style={{fontWeight:700,fontSize:18}}>{s.title}</p><p className="muted small" style={{marginTop:6}}>{s.body}</p><div className="btn-row"><Button className="sm" variant="primary" disabled={leaving===s.id} onClick={()=>respond(s,'accept')}>{s.actionLabel}</Button><Button className="sm" variant="quiet" disabled={leaving===s.id} onClick={()=>respond(s,'reject')}>Not relevant</Button></div></div>)}
    </div>}
-   {why&&<Sheet onClose={()=>setWhy(null)} label="Why this?">
-    <h2>Why this?</h2>
-    <ul className="idea-why">{why.why!.map(w=><li key={w}>{w}</li>)}</ul>
-    <div className="btn-stack"><Button variant="quiet" onClick={()=>setWhy(null)}>Close</Button></div>
-   </Sheet>}
    {room&&<Sheet onClose={()=>setRoom(null)} label="Roughly when feels realistic?">
     <h2>Roughly when feels realistic?</h2>
     <p className="small muted" style={{marginTop:6}}>Bear can’t see your calendar. It’ll just check in around then.</p>

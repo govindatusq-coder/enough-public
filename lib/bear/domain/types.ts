@@ -161,7 +161,11 @@ export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;stat
  // Priority Engine state: "Not today" snoozes, how often it was put off, and the person's own say on importance.
  snoozedUntil?:ISODate|null;postpones?:number;importance?:Importance|null;
  // The person accepted "I can take more of this": Bear brings it back in smaller steps.
- bearSupport?:'more'|null}
+ bearSupport?:'more'|null;
+ // The person's answer to "Is someone relying on you for this?" (null = Bear decide).
+ reliance?:'yes'|'little'|'no'|null;
+ // Who chose time-sensitive / no rush: the person's own choice is never overridden.
+ timingBy?:'user'|'bear'|null}
 export interface TaskDependency extends Owned{taskId:Id;dependsOnTaskId:Id}
 
 // ---------- Bill ----------

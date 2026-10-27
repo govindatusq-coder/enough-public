@@ -155,7 +155,7 @@ export async function setRead(store:BearStore,provider:StructuredModelProvider|n
  let task=await loadEditable(store,taskId);let brokeDown=false;
  if(input.timing&&input.timing!==task.timing){
   await cancelLive(store,task.id);
-  task=await store.update('tasks',task.id,{timing:input.timing,nudge:null,nudgeChoice:null});
+  task=await store.update('tasks',task.id,{timing:input.timing,timingBy:'user',nudge:null,nudgeChoice:null});
   if(input.timing==='time_sensitive')await planTimeSensitive(store,task,now);
  }
  if(input.size&&input.size!==task.size){

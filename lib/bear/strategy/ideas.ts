@@ -10,7 +10,7 @@ export type IdeaType=
  // Family A: mental-load reduction (the original purpose of Bear Ideas).
  'remember'|'monitor'|'prepare'|'follow_up'|'take_over'|'simplify'|'recurring_pattern'|'save_money'|'prevent'|'reduce_coordination'|'reduce_decisions'
  // Family B: priority (moved here from My Bear).
- |'worth_doing_now'|'prevent_future_pressure'|'unlock_project'
+ |'worth_doing_now'|'prevent_future_pressure'|'unlock_project'|'close_loop'
  // Family C: strategic attention.
  |'protect_time'|'reprioritise'|'make_room_check';
 export type IdeaActionKey='accept'|'reject'|'open'|'later'|'dismiss'|'make_room'|'not_this_week'|'protect'|'lower'|'pause'|'block_yes'|'block_no'|'take_over'|'copy';
@@ -20,15 +20,19 @@ export interface IdeaScore{loadRemoved:number;pressure:number;strategic:number;d
 export interface Idea{
  id:string;family:IdeaFamily;type:IdeaType;eyebrow:string;title:string;body:string;actions:IdeaAction[];
  href?:string|null;taskId?:string|null;projectId?:string|null;suggestionId?:string|null;suggestionKind?:string|null;
- draft?:string|null;chips?:string[];why?:string[];
+ draft?:string|null;chips?:string[];
+ // Plain-language reasons, shown only when the person taps "Why this matters?".
+ why?:{key:string;title:string;text:string}[];
  minutes:number|null;   // the person's time if they act on it; null when it only needs a yes
  critical?:boolean;     // a real deadline or safety: survives Chaos days and "nothing right now"
  entity:string;         // what it's about, for dedupe (a task, a project, a bill)
  score:IdeaScore;
 }
 export type Capacity=NonNullable<Profile['capacityToday']>['value'];
-export interface OrchestrateOptions{today:string;history:Profile['ideaHistory'];capacity:Capacity|null;dayMode:DayMode|null;learned:Record<string,number>;max?:number}
-export interface Orchestrated{ideas:Idea[];considered:number;askCapacity:boolean}
+export interface OrchestrateOptions{today:string;history:Profile['ideaHistory'];capacity:Capacity|null;dayMode:DayMode|null;learned:Record<string,number>;max?:number;
+ // Present self: the person has already carried a lot today. Silence is a valid answer.
+ saturated?:boolean}
+export interface Orchestrated{ideas:Idea[];considered:number;askCapacity:boolean;rested:boolean}
 
 const clamp=(n:number,lo=0,hi=1)=>Math.max(lo,Math.min(hi,n));
 // Idea value: thinking removed, pressure prevented, strategic progress, decisions saved, money and
@@ -61,7 +65,7 @@ export function orchestrate(candidates:Idea[],o:OrchestrateOptions):Orchestrated
  const considered=pool.length;
  // 4. Attention budget: the day and the room the person said they have.
  let budget=max;
- if(o.dayMode==='chaos'||o.capacity==='none'){pool=pool.filter(c=>c.critical);budget=1;}
+ if(o.dayMode==='chaos'||o.capacity==='none'||o.saturated){pool=pool.filter(c=>c.critical);budget=1;}
  else if(o.dayMode==='wiped')budget=Math.min(budget,2);
  else if(o.dayMode==='full')budget=Math.min(budget,3);
  if(o.capacity&&o.capacity!=='none'){const cap=capMinutes[o.capacity];pool=pool.filter(c=>c.critical||c.minutes===null||c.minutes<=cap);}
@@ -79,5 +83,5 @@ export function orchestrate(candidates:Idea[],o:OrchestrateOptions):Orchestrated
  // Ask "what have you got room for?" only when the answer would change which ideas show.
  const nonLoad=out.filter(c=>c.minutes!==null&&c.family!=='load');
  const askCapacity=!o.capacity&&o.dayMode!=='chaos'&&nonLoad.some(c=>c.minutes!<=15)&&pool.some(c=>c.minutes!==null&&c.minutes>30&&c.family!=='load');
- return {ideas:out,considered,askCapacity};
+ return {ideas:out,considered,askCapacity:askCapacity&&!o.saturated,rested:!!o.saturated&&out.length===0&&considered>0};
 }

@@ -457,3 +457,10 @@
 .bear .project-edit .project-q{font-weight:700;margin:12px 0 6px;}
 .bear .project-edit .chips{gap:8px;}
 .bear .project-edit .chip{min-height:38px;padding:0 12px;font-size:14px;}
+/* "Why this matters? ⌄": collapsed until tapped. */
+.bear .why-inline{margin-top:10px;}
+.bear .why-toggle{display:inline-flex;align-items:center;gap:4px;min-height:32px;}
+.bear .why-chev{display:inline-block;transition:transform .18s var(--spring);}
+.bear .why-chev.open{transform:rotate(180deg);}
+.bear .why-list{margin-top:4px;display:grid;gap:4px;}
+.bear .why-summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}

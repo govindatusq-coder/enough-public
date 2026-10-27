@@ -25,12 +25,14 @@ export interface PriorityVector{
  capabilityFit:number;preferenceFit:number;
  confidence:number;
 }
-export type ReasonKey='matters'|'pressure'|'depends'|'window'|'bear'|'safety'|'deadline'|'lead';
+export type ReasonKey='matters'|'pressure'|'depends'|'window'|'bear'|'safety'|'deadline'|'lead'|'person'|'relationship'|'future'|'responsibility'|'meaning'|'timing'|'project';
 export interface Reason{key:ReasonKey;title:string;text:string}
 export interface PriorityExplanation{
  primaryReason:string;contributingReasons:string[];timingReason?:string;goalLinks?:string[];valueLinks?:string[];
  dependencyReason?:string;pressurePreventionReason?:string;confidence:number;
  headline:string;reasons:Reason[];
+ // One short line for the default view; the rest only when the person asks "Why this matters?".
+ shortReason?:string|null;
 }
 export type Gate='safety'|'non_negotiable'|'overdue';
 export type TimingLabel='Worth doing now'|'Good to do this week'|'Coming up'|'Later is fine'|'Waiting'|'Bear is handling it'|'Nothing needed yet'|'Sorted';
@@ -55,6 +57,8 @@ export interface PriorityInput{
  // project, a soft area prior, the work role, and whether this is small tidy-up work.
  projectImportance?:Importance|null;projectInferred?:number|null;areaPrior?:number|null;
  role?:WorkRole;roleExplicit?:boolean;lowLeverage?:boolean;bearSupport?:'more'|null;
+ // Relational Priority (relationalPriorityV1): bounded nudges from people, past self and meaning.
+ relational?:{lift:number;leverage:number;actEarlierDays:number;breakDown:boolean;waiting:boolean;status:'closing_loop'|null;reasons:Reason[]}|null;
 }
 // Explicit and inferred importance are kept apart; inference never overwrites what the person said.
 export interface ImportanceSignal{explicit:Importance|null;inferredScore:number;inferredConfidence:number;evidence:string[]}
@@ -74,4 +78,6 @@ export interface PriorityResult{
  timingLabel:TimingLabel;explanation:PriorityExplanation;
  askImportance:boolean;
  importanceSignal:ImportanceSignal;role:WorkRole|null;
+ // Calm label when someone is waiting ("Worth closing the loop"); and the label ignoring a project queue.
+ relationalStatus:'closing_loop'|null;ownLabel:TimingLabel;
 }

@@ -38,8 +38,11 @@ export function suggestionIdeas(list:Suggestion[]):Idea[]{
 interface Ctx{tasks:Task[];projects:Project[];pr:Prioritised;today:string;profile:Profile}
 const projectOfTask=(c:Ctx,t:Task)=>c.projects.find(p=>p.id===t.projectId);
 const chipsFor=(imp:Importance|null|undefined,role:keyof typeof roleLabel|null|undefined)=>[...(imp?[importanceLabel[imp]]:[]),...(role?[roleLabel[role]]:[])];
+const nameOf=(c:Ctx,t:Task)=>(t.load?describe(recompute(t.load,c.today,caps(),c.profile.loadMap),c.today).title:null)||t.title;
 const mins=(n:number)=>`about ${n} minute${n===1?'':'s'}`;
 
+// "ARC Linkage · ~2 min": the whole default explanation.
+const meta=(project:string|null,minutes:number)=>[project,minutes?`~${minutes} min`:null].filter(Boolean).join(' · ');
 export function mentalLoadIdeas(c:Ctx):Idea[]{
  const out:Idea[]=[];const {pr,today}=c;const title=(id:string)=>c.tasks.find(t=>t.id===id)?.title||'This one';
  const results=[...pr.results.values()].filter(r=>r.id!==pr.top?.id);
@@ -47,8 +50,8 @@ export function mentalLoadIdeas(c:Ctx):Idea[]{
  // one step at a time). Honest about the limits: Bear can't make the call or compare quotes for you.
  for(const r of results.filter(r=>r.support==='prepare_more'&&r.importance>=0.45&&r.action)){
   const t=c.tasks.find(x=>x.id===r.id);if(!t)continue;
-  if(t.bearSupport==='more'){if(r.firstStep)out.push({id:'start:'+t.id,family:'load',type:'prepare',eyebrow:'Start small',title:`A small way into ${the(t.title)}`,body:r.firstStep,actions:[{key:'open',label:'Start small',primary:true},{key:'later',label:'Not now'}],href:`/bear/tasks/${t.id}`,taskId:t.id,minutes:5,entity:'task:'+t.id,chips:chipsFor(t.importance,r.role),score:S({loadRemoved:0.4,pressure:r.futurePressureRisk*0.6,effort:0.08})});continue;}
-  out.push({id:'takeover:'+t.id,family:'load',type:'take_over',eyebrow:'Bear can carry more of this',title:`Let Bear carry more of ${the(t.title)}`,body:`It matters, and it’s the kind of thing that’s easy to put off. Bear can break it into small steps, keep the details together and bring back one step at a time. You still make the calls; Bear just makes each one smaller.`,actions:[{key:'take_over',label:'Yes, carry more',primary:true},{key:'dismiss',label:'I’m fine with it'}],taskId:t.id,minutes:null,entity:'task:'+t.id,chips:chipsFor(t.importance,r.role),why:[r.explanation.primaryReason,'You’ve put it off before, which usually means it’s heavy, not unimportant.'],score:S({loadRemoved:0.7,pressure:r.futurePressureRisk*0.5,uncertainty:0.1})});
+  if(t.bearSupport==='more'){if(r.firstStep)out.push({id:'start:'+t.id,family:'load',type:'prepare',eyebrow:'Start small',title:`A small way into ${the(t.title)}`,body:r.firstStep,actions:[{key:'open',label:'Start small',primary:true},{key:'later',label:'Not now'}],href:`/bear/tasks/${t.id}`,taskId:t.id,minutes:5,entity:'task:'+t.id,score:S({loadRemoved:0.4,pressure:r.futurePressureRisk*0.6,effort:0.08})});continue;}
+  out.push({id:'takeover:'+t.id,family:'load',type:'take_over',eyebrow:'Bear can carry more of this',title:`Let Bear carry more of ${the(nameOf(c,t))}`,body:`It matters, and it’s the kind of thing that’s easy to put off. Bear can break it into small steps, keep the details together and bring back one step at a time. You still make the calls; Bear just makes each one smaller.`,actions:[{key:'take_over',label:'Yes, carry more',primary:true},{key:'dismiss',label:'I’m fine with it'}],taskId:t.id,minutes:null,entity:'task:'+t.id,why:[{key:'matters',title:'It matters',text:r.explanation.primaryReason},{key:'timing',title:'Heavy, not unimportant',text:'Putting something off usually means it’s heavy. More help beats more reminders.'}],score:S({loadRemoved:0.7,pressure:r.futurePressureRisk*0.5,uncertainty:0.1})});
  }
  // prepare: someone else needs a head start, and the comfortable moment is near.
  for(const r of results.filter(r=>r.explanation.reasons.some(x=>x.key==='lead')&&r.latestComfortableActionAt&&(daysBetween(today,r.latestComfortableActionAt)??99)<=10&&!r.surfaceNow).slice(0,2))
@@ -81,7 +84,14 @@ export function priorityFamilyIdeas(c:Ctx):Idea[]{
  if(r&&t){const p=projectOfTask(c,t);const pressure=r.explanation.reasons.find(x=>['pressure','lead','deadline','safety'].includes(x.key));
   const view=t.load?describe(recompute(t.load,today,caps(),c.profile.loadMap),today):null;const head=view?.needsYou?.headline;
   const name=p?.captureId?`${p.title}: ${t.title}`:(view?.title||t.title);
-  out.push({id:'top:'+t.id,family:'priority',type:'worth_doing_now',eyebrow:'Worth doing now',title:name,body:`${head&&head!==name?head.replace(/[.?]?$/,'. '):''}${pressure?pressure.text:r.explanation.primaryReason} ${r.minutes?`It’s ${mins(r.minutes)}.`:''}${r.bearSteps?' Bear has the rest.':''}`.replace(/\s+/g,' ').trim(),actions:[{key:'open',label:'Do it',primary:true},{key:'later',label:'Not today'}],href:`/bear/tasks/${t.id}`,taskId:t.id,minutes:r.minutes||5,critical:r.tier<=1,entity:'task:'+t.id,chips:chipsFor(t.importance,r.role),why:r.explanation.reasons.map(x=>x.text),score:S({pressure:Math.max(0.6,r.pressurePreventionValue),loadRemoved:0.3,leverage:r.dependencyLeverage,effort:r.minutes/90})});}
+  const easy=!!pressure&&r.minutes<=10&&pressure.key==='pressure';
+  // Minimal card: a calm label, the thing, where it lives and roughly how long. Reasons only on request.
+  out.push({id:'top:'+t.id,family:'priority',type:'worth_doing_now',eyebrow:r.relationalStatus==='closing_loop'?'Worth closing the loop':easy?'Easy win before it gets urgent':'Worth doing now',title:name,body:meta(p?.captureId?p.title:null,r.minutes),actions:[{key:'open',label:'Do it now',primary:true},{key:'later',label:'Not now'}],href:`/bear/tasks/${t.id}`,taskId:t.id,minutes:r.minutes||5,critical:r.tier<=1,entity:'task:'+t.id,why:r.explanation.reasons,score:S({pressure:Math.max(0.6,r.pressurePreventionValue),loadRemoved:0.3,leverage:r.dependencyLeverage,effort:r.minutes/90})});}
+ // close_loop: someone is waiting on a small thing from you. Skipped when you've already carried a lot today.
+ for(const x of [...pr.results.values()].filter(x=>x.id!==r?.id&&x.relationalStatus==='closing_loop'&&x.action&&!['Coming up','Waiting','Bear is handling it','Sorted'].includes(x.timingLabel)&&x.minutes<=30).sort((a,b)=>b.importance-a.importance).slice(0,2)){
+  const tt=c.tasks.find(y=>y.id===x.id);if(!tt||pr.present?.saturated)continue;const p=projectOfTask(c,tt);
+  out.push({id:'loop:'+tt.id,family:'priority',type:'close_loop',eyebrow:'Worth closing the loop',title:tt.title,body:meta(p?.captureId?p.title:null,x.minutes),actions:[{key:'open',label:'Do it now',primary:true},{key:'later',label:'Not now'}],href:`/bear/tasks/${tt.id}`,taskId:tt.id,minutes:x.minutes||5,entity:'task:'+tt.id,why:x.explanation.reasons,score:S({leverage:0.6+0.3*x.dependencyLeverage,pressure:0.3,strategic:0.1*x.importance,effort:(x.minutes||5)/90})});
+ }
  // unlock_project: a small step other steps are waiting on.
  for(const x of [...pr.results.values()].filter(x=>x.id!==r?.id&&x.dependencyLeverage>=0.25&&x.action&&!['Later is fine','Coming up','Waiting','Bear is handling it','Sorted'].includes(x.timingLabel)).slice(0,1)){
   const tt=c.tasks.find(y=>y.id===x.id);if(!tt)continue;
@@ -97,19 +107,21 @@ export function priorityFamilyIdeas(c:Ctx):Idea[]{
 export function strategicIdeas(c:Ctx,att:ProjectAttention[]):Idea[]{
  const out:Idea[]=[];const {today}=c;
  for(const a of att.filter(a=>a.strategic&&a.next)){
-  const why=[a.explicit?`You said this ${a.explicit==='very'?'really matters':a.explicit==='nice'?'matters':'is low stakes'}.`:'Bear thinks this matters. You can change that on the project.',`Last real progress: ${a.daysSinceProgress===0?'today':a.daysSinceProgress===1?'yesterday':`${a.daysSinceProgress} days ago`}.`,'Small tidy-ups don’t count as progress, so they don’t reset this.'];
-  const chips=chipsFor(a.explicit,a.role);const next=a.next!;
+  // Plain words, only when asked. Never "neglected".
+  const why=[{key:'future' as const,title:'This matters to where you’re heading',text:`${a.title} ${a.explicit==='very'?'really matters to you':'matters'}, but it hasn’t had much room lately.`},...(a.busyElsewhere?[{key:'meaning' as const,title:'Everyday things got their turn',text:'You’ve kept lots of everyday things running lately. This could use a turn too.'}]:[]),{key:'timing' as const,title:'No deadline needed',text:'Bear won’t invent one. Small tidy-ups don’t count as progress, so they don’t reset this.'}];
+  const chips:string[]=[];const next=a.next!;
+  // Present self and balance: future work doesn't automatically win over a full day or the rest of life.
+  const ps=c.pr.present;const damp=(a.role==='progress'&&ps&&ps.recentLoad>=0.5?0.6:1)*(ps?.heavyArea&&ps.heavyArea===a.areaKey?0.7:1);const lift=ps?.heavyArea&&ps.heavyArea!==a.areaKey?0.15:0;
   const window=a.intent?.window;const setAt=a.intent?.on||a.intent?.setAt.slice(0,10)||today;
   const windowOpen=window==='today'?setAt<=today:window==='tomorrow'?addDays(setAt,1)<=today:window==='this_week'?addDays(setAt,2)<=today:false;
   // They said they'd make room: one gentle check when that time arrives. No calendar, no pretending.
-  if(a.intent&&windowOpen&&a.lastProgressAt<setAt){out.push({id:`block:${a.projectId}:${setAt}`,family:'strategic',type:'make_room_check',eyebrow:'Protect time',title:'Got a decent block today?',body:`For ${a.title}: ${next.title.charAt(0).toLowerCase()+next.title.slice(1)}. ${a.capacity==='block'?'It wants a proper block.':`It’s ${mins(next.minutes)}.`}`,actions:[{key:'block_yes',label:'Yes',primary:true},{key:'block_no',label:'Not today'}],projectId:a.projectId,taskId:next.taskId,minutes:null,entity:'project:'+a.projectId,chips,why,score:S({strategic:0.6+a.importance*0.3,interruption:0.1})});continue;}
+  if(a.intent&&windowOpen&&a.lastProgressAt<setAt){out.push({id:`block:${a.projectId}:${setAt}`,family:'strategic',type:'make_room_check',eyebrow:'Worth protecting time for',title:'Got a decent block today?',body:`For ${a.title}: ${next.title.charAt(0).toLowerCase()+next.title.slice(1)}. ${a.capacity==='block'?'It wants a proper block.':`It’s ${mins(next.minutes)}.`}`,actions:[{key:'block_yes',label:'Yes',primary:true},{key:'block_no',label:'Not today'}],projectId:a.projectId,taskId:next.taskId,minutes:null,entity:'project:'+a.projectId,chips,why,score:S({strategic:0.6+a.importance*0.3,interruption:0.1})});continue;}
   if(a.intent&&!windowOpen)continue;
   if(a.deferredUntil&&a.deferredUntil>today)continue;
   if(a.momentum!=='stalled')continue;
   // Squeezed out again and again: ask once whether the plan should change, without judgement.
   if(a.deferrals>=3){out.push({id:'squeezed:'+a.projectId,family:'strategic',type:'reprioritise',eyebrow:'Worth a rethink',title:'This keeps getting squeezed out',body:`${a.title} has been set aside a few times. That’s fine. It might just need a different plan.`,actions:[{key:'protect',label:'Protect it more',primary:true},{key:'lower',label:'Lower its importance'},{key:'pause',label:'Pause it'}],projectId:a.projectId,minutes:null,entity:'project:'+a.projectId,chips,why,score:S({strategic:0.5+a.neglect*0.5,decisions:0.4})});continue;}
-  const busy=a.busyElsewhere?`You’ve kept lots of everyday things running lately. ${a.title} could use a turn too.`:`No deadline, so it’s easy for it to get squeezed out.`;
-  out.push({id:'protect:'+a.projectId,family:'strategic',type:'protect_time',eyebrow:'Protect time',title:`${a.title} could use a turn`,body:`${busy} The next real step: ${next.title.charAt(0).toLowerCase()+next.title.slice(1)} (${a.capacity==='block'?'a proper block':mins(next.minutes)}).`,actions:[{key:'make_room',label:'I’ll make room',primary:true},{key:'not_this_week',label:'Not this week'}],projectId:a.projectId,taskId:next.taskId,minutes:next.minutes,entity:'project:'+a.projectId,chips,why,score:S({strategic:0.35+a.neglect*0.8,effort:Math.min(0.4,next.minutes/150)})});
+  out.push({id:'protect:'+a.projectId,family:'strategic',type:'protect_time',eyebrow:'Worth protecting time for',title:`${a.title} — ${next.title}`,body:a.capacity==='block'?'Best with a focus block.':`About ${next.minutes} minutes.`,actions:[{key:'make_room',label:'I’ll make room',primary:true},{key:'not_this_week',label:'Not this week'}],projectId:a.projectId,taskId:next.taskId,minutes:next.minutes,entity:'project:'+a.projectId,chips,why,score:S({strategic:(0.35+a.neglect*0.8)*damp+lift,effort:Math.min(0.4,next.minutes/150)})});
  }
  return out;
 }
@@ -125,7 +137,7 @@ export async function bearIdeas(store:BearStore,now=new Date()):Promise<IdeasFee
  if(flags.mentalLoadOpportunityV1())candidates.push(...mentalLoadIdeas(c));
  if(flags.priorityEngineV1())candidates.push(...priorityFamilyIdeas(c));
  if(flags.strategicAttentionV1())candidates.push(...strategicIdeas(c,strategicAttention({projects,tasks,completions,results:pr.results,today})));
- const res=orchestrate(candidates,{today,history:profile.ideaHistory,capacity,dayMode:pr.ctx.dayMode,learned:pr.ctx.learned});
+ const res=orchestrate(candidates,{today,history:profile.ideaHistory,capacity,dayMode:pr.ctx.dayMode,learned:pr.ctx.learned,saturated:!!pr.present?.saturated});
  return {...res,capacity};
 }
 
