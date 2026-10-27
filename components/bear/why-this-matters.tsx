@@ -7,6 +7,8 @@ import type {Reason} from '@/lib/bear/priority/types';
 import {Chip} from './ui';
 
 export interface PriorityView{label:string;reasons:Reason[];headline:string;latestComfortable:string|null;latestSafe:string|null;deadline:string|null;minutes:number;firstStep:string|null;askImportance:boolean;surfaceNow:boolean}
+// Importance, not priority: how much it matters, never how urgent it is. "Bear decide" clears the person's say.
+export const trafficLight=[{key:'very',dot:'🔴',label:'Really matters'},{key:'nice',dot:'🟠',label:'Matters'},{key:'not',dot:'🟢',label:'Low stakes'},{key:null,dot:'○',label:'Bear decide'}] as const;
 const icon:Record<string,string>={matters:'❤️',pressure:'📅',lead:'⏳',depends:'🔗',window:'⏱',bear:'🐻',safety:'⚠️',deadline:'📅'};
 // "Why this matters", in the item's existing card style: 1–3 reasons, a calm timeline where it helps,
 // and one question about importance only when Bear is unsure and the answer would change things.
@@ -25,7 +27,7 @@ export function WhyThisMatters({taskId,p,onChanged}:{taskId:string;p:PriorityVie
     <div className={p.latestSafe!<=today?'on':''}><i/><span>Gets tighter</span><b>{friendlyDate(p.latestSafe,today)}</b></div>
     <div><i/><span>Deadline</span><b>{friendlyDate(p.deadline,today)}</b></div>
    </div>}
-   {p.askImportance&&<div style={{marginTop:12}}><p className="small" style={{fontWeight:700}}>How important is this to you?</p><div className="chips" style={{marginTop:6}}><Chip label="Very important" selected={false} onToggle={()=>!busy&&rate('very')}/><Chip label="Nice if possible" selected={false} onToggle={()=>!busy&&rate('nice')}/><Chip label="Not particularly" selected={false} onToggle={()=>!busy&&rate('not')}/></div></div>}
+   {p.askImportance&&<div style={{marginTop:12}}><p className="small" style={{fontWeight:700}}>How much does this matter?</p><div className="chips" style={{marginTop:6}}>{trafficLight.filter(l=>l.key).map(l=><Chip key={l.label} label={`${l.dot} ${l.label}`} selected={false} onToggle={()=>!busy&&rate(l.key!)}/>)}</div></div>}
   </section>
  );
 }

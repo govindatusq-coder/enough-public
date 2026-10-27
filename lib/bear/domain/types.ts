@@ -78,6 +78,9 @@ export interface Profile extends Owned{
  emailVerifiedAt?:ISODateTime|null;
  // What matters to this person: values, goals, responsibilities, non-negotiables (editable).
  valuesMap?:ValuesGoalsMap;
+ // Bear Ideas history (cooldowns, dismissals) and today's capacity, if the person said.
+ ideaHistory?:Record<string,{status:'accepted'|'deferred'|'dismissed';at:ISODateTime;until?:ISODate|null}>;
+ capacityToday?:{value:'5'|'15'|'30'|'block'|'none';date:ISODate}|null;
 }
 
 // ---------- Capture ----------
@@ -138,17 +141,27 @@ export interface AIInference extends Owned{captureId:Id|null;service:string;prov
 export interface UserCorrection extends Owned{extractionId:Id;field:string;from:unknown;to:unknown}
 
 // ---------- PARA ----------
+// Importance is the person's own traffic light: very = Really matters, nice = Matters, not = Low stakes.
+export type Importance='very'|'nice'|'not';
+export const workRoles=['maintain','prevent','progress','restore'] as const;
+export type WorkRole=typeof workRoles[number];
 export const projectPriorities=['now','soon','later','none'] as const;
 export type ProjectPriority=typeof projectPriorities[number];
 export interface Project extends Owned{areaKey:AreaKey;title:string;status:'active'|'done'|'archived';dueAt:ISODate|null;resourceDocumentIds:Id[];billId:Id|null;
  // Projects found in a brain dump: where they came from, and how the person lined them up.
- captureId?:Id|null;priority?:ProjectPriority|null;order?:number}
+ captureId?:Id|null;priority?:ProjectPriority|null;order?:number;
+ // How much it matters (explicit only; Bear's inference is never stored here) and what it mainly does.
+ importance?:Importance|null;role?:WorkRole|null;paused?:boolean;
+ // Strategic attention: a rough intent to make room, "not this week", and how often it was squeezed out.
+ intent?:{window:'today'|'tomorrow'|'this_week'|'not_sure';setAt:ISODateTime;on?:ISODate}|null;deferredUntil?:ISODate|null;strategicDeferrals?:number}
 export const taskKinds=['pay_bill','check_balance','confirm_discount','confirm_discrepancy','transfer_money','save_receipt','appointment','school','form','errand','shopping','message','note','event','custom'] as const;
 export type TaskKind=typeof taskKinds[number];
 export interface ShoppingItem{id:string;name:string;quantity:string|null;estimatedCents:number|null;done:boolean;doneAt:ISODateTime|null}
 export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;status:'open'|'done'|'dropped'|'archived';dueAt:ISODate|null;dueTime?:string|null;location?:string|null;notes?:string|null;estimatedMinutes:number;cognitiveEffort:'low'|'medium'|'high';forPerson:string|null;isDemo:boolean;items?:ShoppingItem[];estimatedCents?:number|null;setupBy?:'bear'|'user';part?:{of:Id;index:number;total:number}|null;timing?:'time_sensitive'|'flexible';size?:'one_go'|'bigger';nudge?:{every:'week'|'fortnight'|'month'}|null;nudgeChoice?:'none'|'nudge'|'day'|null;buyWhen?:'now'|null;wishlist?:{since:ISODate;checkBackAt:ISODate|null}|null;load?:LoadGraph|null;order?:number;
  // Priority Engine state: "Not today" snoozes, how often it was put off, and the person's own say on importance.
- snoozedUntil?:ISODate|null;postpones?:number;importance?:'very'|'nice'|'not'|null}
+ snoozedUntil?:ISODate|null;postpones?:number;importance?:Importance|null;
+ // The person accepted "I can take more of this": Bear brings it back in smaller steps.
+ bearSupport?:'more'|null}
 export interface TaskDependency extends Owned{taskId:Id;dependsOnTaskId:Id}
 
 // ---------- Bill ----------
@@ -180,7 +193,7 @@ export type WealthReason='late_fee_avoided'|'early_discount_used'|'subscription_
 export interface ValueLedgerEntry extends Owned{kind:LedgerKind;reason:WealthReason|'care_task'|'protected_time';label:string;amountCents:number|null;minutes:number|null;occurredAt:ISODateTime;sourceTaskId:Id|null;sourceBillId:Id|null;defensible:boolean;isDemo:boolean;source?:'user'}
 
 // ---------- Behaviour ----------
-export const behaviourTypes=['suggestion_accepted','suggestion_rejected','task_completed','reminder_delivered','reminder_opened','reminder_snoozed','reminder_dismissed','capture_created','capture_rejected','field_corrected','task_dropped','day_mode_set','rhythm_changed','assist_used','plan_accepted','plan_changed','pattern_unknown','load_action','priority_later','priority_importance'] as const;
+export const behaviourTypes=['suggestion_accepted','suggestion_rejected','task_completed','reminder_delivered','reminder_opened','reminder_snoozed','reminder_dismissed','capture_created','capture_rejected','field_corrected','task_dropped','day_mode_set','rhythm_changed','assist_used','plan_accepted','plan_changed','pattern_unknown','load_action','priority_later','priority_importance','idea_response'] as const;
 export type BehaviourType=typeof behaviourTypes[number];
 export interface BehaviourEvent extends Owned{type:BehaviourType;at:ISODateTime;hourLocal:number;weekday:Weekday;detail:Record<string,unknown>}
 

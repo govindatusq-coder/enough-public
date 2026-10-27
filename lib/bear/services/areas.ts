@@ -2,7 +2,7 @@ import {daysBetween,relativeDay,todayISO} from '../domain/dates.ts';
 import {overdueDays,overdueLabel} from '../domain/overdue.ts';
 import {formatAUD} from '../domain/money.ts';
 import {areaLabels} from '../domain/labels.ts';
-import {areaKeys,type AreaKey,type Task} from '../domain/types.ts';
+import {areaKeys,type AreaKey,type Importance,type Task,type WorkRole} from '../domain/types.ts';
 import type {BearStore} from '../store/store.ts';
 import {ensureProfile} from './profile.ts';
 import {prioritiseOpen,priorityEnabled} from './priority.ts';
@@ -11,7 +11,7 @@ import {dueReminders} from './reminders.ts';
 // Areas (the "A" in PARA, never named as such): every area the person has or uses, with what
 // is current in it. Steps and purchases belong to their main task and are not listed twice.
 export interface AreaTile{key:string;label:string;open:number;done:number;needs:number;overdue:number;soft:boolean}
-export interface AreaItem{project?:{id:string;title:string;priority:string|null}|null;needs:boolean;soft:boolean;reminderId:string|null;overdueDays:number;part:string|null;taskId:string;billId:string|null;title:string;kind:string;due:string|null;dueLabel:string;amount:string|null;estimate:string|null;stepsLeft:number;itemsLeft:number;isDemo:boolean}
+export interface AreaItem{project?:{id:string;title:string;priority:string|null;importance:Importance|null;role:WorkRole|null;paused:boolean}|null;needs:boolean;soft:boolean;reminderId:string|null;overdueDays:number;part:string|null;taskId:string;billId:string|null;title:string;kind:string;due:string|null;dueLabel:string;amount:string|null;estimate:string|null;stepsLeft:number;itemsLeft:number;isDemo:boolean}
 export interface AreaDetail{key:string;label:string;current:AreaItem[];done:AreaItem[]}
 
 async function load(store:BearStore){
@@ -44,7 +44,7 @@ export async function areaView(store:BearStore,key:AreaKey,now=new Date()):Promi
   const rel=due?relativeDay(due,today):'';const d=due?daysBetween(today,due):null;
   const reminder=dueNow.get(t.id)||null;const late=overdueDays(due,today,t.timing)>0;const soon=t.timing!=='flexible'&&due!==null&&d!==null&&d<=2;
   const dp=dumpProject.get(t.projectId);
-  return {project:dp?{id:dp.id,title:dp.title,priority:dp.priority||null}:null,needs:t.status==='open'&&(late||soon||(!!reminder&&!reminder.soft)),soft:!!reminder?.soft&&t.status==='open',reminderId:reminder?.id||null,overdueDays:overdueDays(due,today,t.timing),part:t.part?`${t.part.index} of ${t.part.total}`:null,taskId:t.id,billId:bill?.id||null,title:bill?`${bill.biller||'Bill'}: ${t.title}`:t.title,kind:bill?'bill':t.kind,due,dueLabel:(()=>{const r=pr?.results.get(t.id);const base=due?(d!==null&&d<0?overdueLabel(-d):'Due '+rel):null;if(r&&t.status==='open')return d!==null&&d<0&&base?base:r.timingLabel==='Worth doing now'&&base?`${r.timingLabel} · ${base}`:r.timingLabel==='Good to do this week'&&base?`${r.timingLabel} · ${base}`:r.timingLabel;return t.timing==='flexible'?'No rush':base||'No date';})(),amount:bill?formatAUD(bill.amountCents):null,estimate:t.estimatedCents?`about ${formatAUD(t.estimatedCents)}`:null,stepsLeft:tasks.filter(x=>stepIds.includes(x.id)&&x.status==='open').length,itemsLeft:(t.items||[]).filter(i=>!i.done).length,isDemo:t.isDemo};
+  return {project:dp?{id:dp.id,title:dp.title,priority:dp.priority||null,importance:dp.importance||null,role:dp.role||null,paused:!!dp.paused}:null,needs:t.status==='open'&&(late||soon||(!!reminder&&!reminder.soft)),soft:!!reminder?.soft&&t.status==='open',reminderId:reminder?.id||null,overdueDays:overdueDays(due,today,t.timing),part:t.part?`${t.part.index} of ${t.part.total}`:null,taskId:t.id,billId:bill?.id||null,title:bill?`${bill.biller||'Bill'}: ${t.title}`:t.title,kind:bill?'bill':t.kind,due,dueLabel:(()=>{const r=pr?.results.get(t.id);const base=due?(d!==null&&d<0?overdueLabel(-d):'Due '+rel):null;if(r&&t.status==='open')return d!==null&&d<0&&base?base:r.timingLabel==='Worth doing now'&&base?`${r.timingLabel} · ${base}`:r.timingLabel==='Good to do this week'&&base?`${r.timingLabel} · ${base}`:r.timingLabel;return t.timing==='flexible'?'No rush':base||'No date';})(),amount:bill?formatAUD(bill.amountCents):null,estimate:t.estimatedCents?`about ${formatAUD(t.estimatedCents)}`:null,stepsLeft:tasks.filter(x=>stepIds.includes(x.id)&&x.status==='open').length,itemsLeft:(t.items||[]).filter(i=>!i.done).length,isDemo:t.isDemo};
  };
  const inArea=mains.filter(t=>projectArea.get(t.projectId)===key);
  const pkey=(t:Task)=>{const p=dumpProject.get(t.projectId);if(p)return `1${rank[p.priority||'none']??4}${String(p.order??0).padStart(3,'0')}${String(t.order??0).padStart(3,'0')}`;const r=pr?.results.get(t.id);return r?`0${labelRank[r.timingLabel]??7}${String(Math.round(999-Math.min(999,r.actionPriority*500))).padStart(3,'0')}${t.dueAt||'9999'}`:`0${t.dueAt||'9999'}`;};

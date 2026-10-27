@@ -1,5 +1,6 @@
 import {addDays,daysBetween} from '../domain/dates.ts';
 import type {PatternId} from '../load/types.ts';
+import {importancePrior} from './importance.ts';
 import {friendlyDate} from '../load/words.ts';
 import type {Gate,PriorityContext,PriorityExplanation,PriorityInput,PriorityResult,PriorityVector,Reason,TimingLabel,ValueArea} from './types.ts';
 
@@ -61,11 +62,21 @@ export function importanceOf(i:PriorityInput,ctx:PriorityContext){
  const notImportant=ctx.learned[`not_important:${i.pattern}`]||0;importance-=Math.min(0.2,notImportant*0.07);
  // Non-negotiables (legal, safety, health-critical) are important by definition.
  if(gatesOf(i,ctx).some(g=>g==='non_negotiable'||g==='safety'))importance=Math.max(importance,0.65);
- if(i.importanceOverride)importance=i.importanceOverride==='very'?0.95:i.importanceOverride==='nice'?0.5:0.15;
+ // Hierarchy: an important project raises the prior of its tasks without making every task important;
+ // Bear's bottom-up read of the project and a soft area prior count for less (confidence decays upward).
+ const evidence:string[]=[];
+ if(i.projectImportance){importance=0.5*importance+0.5*importancePrior[i.projectImportance];evidence.push(`project: ${i.projectImportance}`);}
+ else if(i.projectInferred!=null){importance=0.8*importance+0.2*i.projectInferred;evidence.push('project (inferred)');}
+ if(i.areaPrior!=null){importance+=0.05*(i.areaPrior-0.5);}
+ if(i.role==='progress'&&!i.lowLeverage){importance+=0.06;evidence.push('moves a goal forward');}
+ if(i.lowLeverage){importance=Math.min(importance,0.4);evidence.push('small tidy-up work');}
+ const inferredScore=clamp(importance);
+ if(i.importanceOverride)importance=i.importanceOverride==='very'?0.95:i.importanceOverride==='nice'?0.6:0.2;
  if(i.projectPriority&&i.pattern==='UNKNOWN_LOAD'&&!i.importanceOverride)importance=Math.max(importance,consequence);
  // Confidence: a known deadline and known consequence are solid; a guessed personal value is not.
  const confidence=i.importanceOverride?1:clamp((i.deadline?0.35:0.1)+(i.flags.length?0.2:0)+(vs.some(v=>v.source==='user')||gs.length?0.25:0)+(i.pattern!=='UNKNOWN_LOAD'?0.15:0)+(i.projectPriority?0.15:0));
- return {importance:clamp(importance),consequence,valuesAlignment,goalContribution,values:vs,goals:gs,confidence};
+ if(vs.length)evidence.push(...vs.map(v=>`value: ${v.key}${v.source==='inferred'?' (guess)':''}`));if(gs.length)evidence.push(...gs.map(g=>`${g.kind}: ${g.text}`));
+ return {importance:clamp(importance),consequence,valuesAlignment,goalContribution,values:vs,goals:gs,confidence,inferredScore,evidence};
 }
 
 // ---------- HOW ----------
@@ -163,12 +174,13 @@ export function prioritise(i:PriorityInput,ctx:PriorityContext,at:string=ctx.tod
  const toDue=t.due?days(today,t.due)!:null;
  const quickWin=!!i.human&&minutes<=5&&toDue!==null&&toDue>=0&&(['signature','decision','information','approval'].includes(i.human.kind)?toDue<=7:i.human.kind==='payment'?toDue<=2:false);
  const surfaceNow=!i.quiet&&!i.queued&&!!i.human&&!notYet&&!i.resolved&&!snoozed&&importantEnough&&(tier===0||(toComfort!==null&&toComfort<=0)||gates.includes('overdue')||quickWin||(toComfort===null&&futureUrgency>=0.45&&imp.importance>=0.6)||(actionPriority>=0.42&&minutes<=10&&pressurePreventionValue>=0.45))&&(ctx.dayMode!=='chaos'||tier<=1||(toSafe!==null&&toSafe<=0));
- const support=aversion>=0.5&&imp.importance>=0.45?'prepare_more':'normal';
+ const support=i.bearSupport==='more'||(aversion>=0.5&&imp.importance>=0.45)?'prepare_more':'normal';
  const at7=(d:number)=>{if(d===0)return actionPriority;const later=addDays(today,d);const tc=t.comfortable?daysBetween(later,t.comfortable)!:null;const tv=tc===null?0.25:tc<=0?1:tc<=3?0.55:0.25;return i.human?imp.importance*tv:0;};
  const label:TimingLabel=i.resolved?'Sorted':(!i.human||(notYet&&i.human.kind==='confirmation'))?(i.waitingOn?'Waiting':i.bearSteps?'Bear is handling it':'Nothing needed yet') :i.quiet?'Later is fine':i.queued?'Coming up':surfaceNow?'Worth doing now':snoozed?'Coming up':toComfort!==null&&toComfort<=7?'Good to do this week':toComfort!==null?'Coming up':imp.importance>=0.5?'Good to do this week':'Later is fine';
  const explanation=explain(i,imp,{gates,t,toComfort,minutes,dependencyLeverage,pressurePreventionValue,today,surfaceNow,due,support});
  const askImportance=!i.importanceOverride&&imp.confidence<0.45&&!!i.human&&(ctx.learned[`chose_low:${i.pattern}`]||0)>=2;
- return {id:i.id,vector,gates,tier,latestSafeActionAt:t.safe,latestComfortableActionAt:t.comfortable,futurePressureRisk,pressurePreventionValue,dependencyLeverage,importance:imp.importance,globalPriority,actionPriority,trajectory:{today:actionPriority,in7:at7(7),in14:at7(14)},surfaceNow,support,action:i.human?.label||null,deadline:t.due,bearSteps:i.bearSteps,firstStep:support==='prepare_more'?firstSteps[i.pattern]||null:null,minutes,timingLabel:label,explanation,askImportance:askImportance||(!i.importanceOverride&&imp.confidence<0.35&&surfaceNow)};
+ const importanceSignal={explicit:i.importanceOverride||null,inferredScore:imp.inferredScore,inferredConfidence:i.importanceOverride?imp.confidence:imp.confidence*(i.projectImportance?1:0.8),evidence:imp.evidence};
+ return {importanceSignal,role:i.role||null,id:i.id,vector,gates,tier,latestSafeActionAt:t.safe,latestComfortableActionAt:t.comfortable,futurePressureRisk,pressurePreventionValue,dependencyLeverage,importance:imp.importance,globalPriority,actionPriority,trajectory:{today:actionPriority,in7:at7(7),in14:at7(14)},surfaceNow,support,action:i.human?.label||null,deadline:t.due,bearSteps:i.bearSteps,firstStep:support==='prepare_more'?firstSteps[i.pattern]||null:null,minutes,timingLabel:label,explanation,askImportance:askImportance||(!i.importanceOverride&&imp.confidence<0.35&&surfaceNow)};
 }
 
 const valueWords:Record<string,string>={family:'your family',relationships:'the people you care about',career:'your work',financial_security:'keeping money on track',health:'your health',home:'your home',learning:'learning',independence:'keeping life admin under control',community:'your community',rest:'rest',enjoyment:'enjoying life',creativity:'creativity',parenting:'your kids',caregiving:'caring for others'};

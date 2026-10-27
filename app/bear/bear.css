@@ -76,7 +76,7 @@
 
 /* Fields */
 .bear .field{display:grid;gap:6px;margin-top:14px;}
-.bear .field label{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);}
+.bear .field label,.bear .field .label-like{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);}
 .bear .field input,.bear .field textarea,.bear .field select{width:100%;min-height:50px;padding:12px 14px;border-radius:var(--r-md);border:1px solid var(--line);background:rgba(255,255,255,.9);font-size:17px;}
 .bear .field textarea{min-height:140px;resize:vertical;line-height:1.4;}
 .bear .field input:focus,.bear .field textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(24,183,170,.25);}
@@ -449,3 +449,11 @@
 .bear .project-rename{background:none;border:0;padding:6px 0;min-height:32px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-3);text-decoration:underline;text-underline-offset:3px;}
 .bear .rename-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;}
 .bear .rename-row input{flex:1;min-width:0;min-height:44px;padding:8px 12px;border-radius:var(--r-md);border:1px solid var(--line);background:#fff;font-size:16px;}
+/* Bear Ideas V2: small labels and drafts inside the existing idea card. */
+.bear .idea-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.bear .idea-chip{display:inline-flex;align-items:center;min-height:26px;padding:0 10px;border-radius:999px;background:rgba(16,42,67,.06);color:var(--ink-2,var(--navy));font-size:13px;font-weight:600;}
+.bear .idea-draft{display:block;margin-top:10px;white-space:pre-wrap;font-size:14px;}
+.bear .idea-why{margin:12px 0 0;padding-left:18px;display:grid;gap:8px;}
+.bear .project-edit .project-q{font-weight:700;margin:12px 0 6px;}
+.bear .project-edit .chips{gap:8px;}
+.bear .project-edit .chip{min-height:38px;padding:0 12px;font-size:14px;}

@@ -1,8 +1,9 @@
 # Load Bear — BUILD STATUS
 
-Last updated: 25 October 2026.
+Last updated: 27 October 2026.
 
 ## Completed
+- **Bear Ideas V2: prioritisation, strategic attention, mental-load reduction (27 Oct):** one orchestrator chooses at most five ideas from the original bill ideas, a Mental Load Opportunity Engine, the Priority Engine and a new Strategic Attention Engine (progress clock for projects that matter; activity is not progress). "One thing worth doing now" moved from My Bear into Bear Ideas; My Bear is calm again. Traffic-light importance on task and project edit, project role, protect-time with rough intent windows, squeezed-out rethink, capacity question, take-over support, nudge and RSVP drafts, My Wins strategic lines. Four feature flags. 387 tests, priority 110/110, load 100/100, walk-through mobile and desktop pass. See `docs/load-bear/11-bear-ideas-intelligence.md`.
 - Brand board studied; visual system documented (`docs/load-bear/00-visual-system.md`).
 - Architecture, data model, extraction schema, vertical slice, milestones and external configuration documented (`docs/load-bear/01`–`06`).
 - **Sharing to Bear, step 1 (26 Oct):** the capture box has a "Paste from clipboard" button (for text copied in Messenger, WhatsApp, Messages or anything else), and the web app manifest declares a share target at /bear/share, so Android can share text and links straight into the capture box. iPhone web apps cannot appear in the share sheet; the iPhone route is a native Share Extension in the TestFlight app (step 2, needs Xcode on a Mac, not yet built or tested). Messenger and WhatsApp expose less than Messages through the share sheet, so copy-and-paste and screenshots stay the dependable routes. 202 tests.

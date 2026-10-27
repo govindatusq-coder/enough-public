@@ -13,6 +13,8 @@ import {describe,type LoadView} from '../load/view.ts';
 import {caps} from './load.ts';
 import {prioritiseOpen,priorityEnabled} from './priority.ts';
 import {priorityIdeas} from './priority-ideas.ts';
+import {bearIdeas} from './ideas.ts';
+import {flags} from '../flags.ts';
 import type {Reason} from '../priority/types.ts';
 
 // My Bear assembly. Deliberately not a task list: what needs you, what Bear is
@@ -75,12 +77,14 @@ export async function homeView(store:BearStore,now=new Date(),fallbackName=''):P
    const pressure=r.explanation.reasons.find(x=>x.key==='pressure'||x.key==='lead'||x.key==='deadline'||x.key==='safety');
    oneThing={taskId:t.id,billId:bill?.id||null,title:proj?`${proj.title}: ${t.title}`:(loads.get(t.id)?.title||t.title),action:loads.get(t.id)?.needsYou?.headline||r.action||t.title,minutes:r.minutes,line:pressure?pressure.text:r.explanation.primaryReason,bearHasRest:r.bearSteps>0,firstStep:r.firstStep,why:{headline:r.explanation.headline,reasons:r.explanation.reasons}};}
  }
+ // My Bear stays calm (bearIdeasIntelligenceV2): recommendations live in Bear Ideas, not here.
+ const v2=flags.bearIdeasIntelligenceV2();if(v2)oneThing=null;
  const coveredCount=Math.max(0,tasks.length-needsCount-waitingCount);
  const coveredLines=loadViews.filter(v=>!v.needsYou).flatMap(v=>v.waiting.length?[`${v.title}: waiting on ${v.waiting[0].who}`]:v.covered.slice(0,1)).slice(0,8);
  const ledgerRows=await store.list('value_ledger',{orderBy:{column:'occurred_at',ascending:false},limit:200});
  const covered=bills.length+otherHeld+scheduled.length+expectations.length+suggestions.length;
  const hour=localParts(now,tz).hour;
- return {greeting:greeting(hour,profile.name||fallbackName),name:profile.name||fallbackName,coveredCount:covered,dayMode,today,needsYou,overdue,areas:await areaTiles(store,profile.areas,attentionByArea(needsYou,overdue,allOpen,await store.list('projects'))),wishlist:{count:wished.length,next:wished.map(t=>t.wishlist!.checkBackAt).filter((d):d is string=>!!d).sort()[0]||null},handling:{watching,held:otherHeld,remindersReady:ready,expectedSoon,lines,covered:coveredCount,waiting:waitingCount,needs:needsCount,coveredLines},oneThing,ledgers:ledgers(ledgerRows,today,tasks),ideasCount:suggestions.length+(priorityEnabled()?(await priorityIdeas(store,now).catch(()=>[])).length:0),demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
+ return {greeting:greeting(hour,profile.name||fallbackName),name:profile.name||fallbackName,coveredCount:covered,dayMode,today,needsYou,overdue,areas:await areaTiles(store,profile.areas,attentionByArea(needsYou,overdue,allOpen,await store.list('projects'))),wishlist:{count:wished.length,next:wished.map(t=>t.wishlist!.checkBackAt).filter((d):d is string=>!!d).sort()[0]||null},handling:{watching,held:otherHeld,remindersReady:ready,expectedSoon,lines,covered:coveredCount,waiting:waitingCount,needs:needsCount,coveredLines},oneThing,ledgers:ledgers(ledgerRows,today,tasks),ideasCount:v2?(await bearIdeas(store,now).catch(()=>({ideas:[]}))).ideas.length:suggestions.length+(priorityEnabled()?(await priorityIdeas(store,now).catch(()=>[])).length:0),demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
 }
 // Which areas have something that needs the person: things due soon or overdue, and due reminders. Gentle
 // "no rush" nudges never make a number; they only mark the area with a quiet dot.

@@ -5,7 +5,11 @@ import {useRouter} from 'next/navigation';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import type {AreaDetail,AreaItem} from '@/lib/bear/services/areas';
 import {Art} from '@/components/bear/art';
-import {Button,ErrorCard,Skeleton,TopBar} from '@/components/bear/ui';
+import {Button,Chip,ErrorCard,Skeleton,TopBar} from '@/components/bear/ui';
+import {trafficLight} from '@/components/bear/why-this-matters';
+import type {Importance,WorkRole} from '@/lib/bear/domain/types';
+// What a project mainly does (helps Bear tell progress from upkeep). Null = Bear decide.
+const roles=[{key:'progress',dot:'🚀',label:'Moves me forward'},{key:'maintain',dot:'🏠',label:'Keeps things running'},{key:'prevent',dot:'🛡',label:'Prevents trouble'},{key:'restore',dot:'❤️',label:'Matters to me'},{key:null,dot:'○',label:'Bear decide'}] as const;
 
 const kindLabel:Record<string,string>={bill:'Bill',appointment:'Appointment',school:'School',form:'Form',errand:'Errand',shopping:'Shopping',message:'From a message',note:'Note',event:'Event',custom:'Task'};
 function Row({item}:{item:AreaItem}){
@@ -18,9 +22,9 @@ const focus:Record<string,string>={work:'50% 55%',family:'50% 25%',home:'50% 50%
 export default function AreaPage({params}:{params:Promise<{key:string}>}){
  const {key}=use(params);const router=useRouter();
  const [data,setData]=useState<AreaDetail|null>(null);const [error,setError]=useState<string|null>(null);
- const [renaming,setRenaming]=useState<string|null>(null);const [draft,setDraft]=useState('');
+ const [renaming,setRenaming]=useState<string|null>(null);const [draft,setDraft]=useState('');const [imp,setImp]=useState<Importance|null>(null);const [role,setRole]=useState<WorkRole|null>(null);const [paused,setPaused]=useState(false);
  const load=useCallback(()=>apiGet<AreaDetail>(`/api/bear/areas/${key}`).then(d=>{setData(d);setError(null);}).catch(e=>{if(e.status===401)router.replace('/bear/signin');else setError(e.message);}),[key,router]);
- async function rename(id:string){if(!draft.trim())return;try{await apiSend(`/api/bear/projects/${id}`,{title:draft.trim()},'PATCH');setRenaming(null);await load();}catch(e){setError((e as Error).message);}}
+ async function rename(id:string){if(!draft.trim())return;try{await apiSend(`/api/bear/projects/${id}`,{title:draft.trim(),importance:imp,role,paused},'PATCH');setRenaming(null);await load();}catch(e){setError((e as Error).message);}}
  useEffect(()=>{load();},[load]);
  return (
   <main id="main" className="bear-screen">
@@ -33,7 +37,11 @@ export default function AreaPage({params}:{params:Promise<{key:string}>}){
      <div className="area-text"><h1 className="area-title">{data.label}</h1><p className="area-count"><span>{data.current.length===0?'Nothing current':`${data.current.length} current`}</span>{data.done.length>0&&<span>{data.done.length} done</span>}</p></div>
     </header>
     <section className="section"><p className="eyebrow">Current{data.current.length?` · ${data.current.length}`:''}</p>
-     {data.current.length===0?<div className="card"><p className="muted">Nothing current in {data.label}. Give Bear something and it will turn up here.</p><div className="btn-row"><Button href="/bear/capture" className="sm">Give it to Bear</Button></div></div>:<>{data.current.some(i=>!i.project)&&<div className="card">{data.current.filter(i=>!i.project).map(i=><Row key={i.taskId} item={i}/>)}</div>}{[...new Map(data.current.filter(i=>i.project).map(i=>[i.project!.id,i.project!])).values()].map(p=><div key={p.id} className="card" style={{marginTop:12}}>{renaming===p.id?<form className="rename-row" onSubmit={e=>{e.preventDefault();rename(p.id);}}><label htmlFor={`rn-${p.id}`} className="sr-only">Project name</label><input id={`rn-${p.id}`} value={draft} maxLength={80} autoFocus onChange={e=>setDraft(e.target.value)}/><Button type="submit" className="sm" variant="primary" disabled={!draft.trim()}>Save</Button><Button className="sm" variant="quiet" onClick={()=>setRenaming(null)}>Cancel</Button></form>:<p className="eyebrow project-head" style={{marginBottom:2}}><span>{p.title}{p.priority&&<span className="pill" style={{marginLeft:8}}>{({now:'This week',soon:'This month',later:'Later',none:'No rush'} as Record<string,string>)[p.priority]}</span>}</span><button type="button" className="project-rename" aria-label={`Rename ${p.title}`} onClick={()=>{setRenaming(p.id);setDraft(p.title);}}>Rename</button></p>}{data.current.filter(i=>i.project?.id===p.id).map(i=><Row key={i.taskId} item={i}/>)}</div>)}</>}
+     {data.current.length===0?<div className="card"><p className="muted">Nothing current in {data.label}. Give Bear something and it will turn up here.</p><div className="btn-row"><Button href="/bear/capture" className="sm">Give it to Bear</Button></div></div>:<>{data.current.some(i=>!i.project)&&<div className="card">{data.current.filter(i=>!i.project).map(i=><Row key={i.taskId} item={i}/>)}</div>}{[...new Map(data.current.filter(i=>i.project).map(i=>[i.project!.id,i.project!])).values()].map(p=><div key={p.id} className="card" style={{marginTop:12}}>{renaming===p.id?<form className="project-edit" onSubmit={e=>{e.preventDefault();rename(p.id);}}><div className="rename-row"><label htmlFor={`rn-${p.id}`} className="sr-only">Project name</label><input id={`rn-${p.id}`} value={draft} maxLength={80} autoFocus onChange={e=>setDraft(e.target.value)}/></div>
+      <p className="small project-q" id={`imp-${p.id}`}>How much does this matter?</p><div className="chips" role="group" aria-labelledby={`imp-${p.id}`}>{trafficLight.map(l=><Chip key={l.label} label={`${l.dot} ${l.label}`} selected={imp===l.key} onToggle={()=>setImp(l.key)}/>)}</div>
+      <p className="small project-q" id={`role-${p.id}`}>What does this mainly do for you?</p><div className="chips" role="group" aria-labelledby={`role-${p.id}`}>{roles.map(r=><Chip key={r.label} label={`${r.dot} ${r.label}`} selected={role===r.key} onToggle={()=>setRole(r.key)}/>)}</div>
+      {p.paused&&<div className="chips" style={{marginTop:10}}><Chip label="Paused" selected={paused} onToggle={()=>setPaused(v=>!v)}/></div>}
+      <div className="btn-row"><Button type="submit" className="sm" variant="primary" disabled={!draft.trim()}>Save</Button><Button className="sm" variant="quiet" onClick={()=>setRenaming(null)}>Cancel</Button></div></form>:<p className="eyebrow project-head" style={{marginBottom:2}}><span>{p.title}{p.paused?<span className="pill" style={{marginLeft:8}}>Paused</span>:p.priority&&<span className="pill" style={{marginLeft:8}}>{({now:'This week',soon:'This month',later:'Later',none:'No rush'} as Record<string,string>)[p.priority]}</span>}</span><button type="button" className="project-rename" aria-label={`Edit ${p.title}`} onClick={()=>{setRenaming(p.id);setDraft(p.title);setImp(p.importance);setRole(p.role);setPaused(p.paused);}}>Edit</button></p>}{data.current.filter(i=>i.project?.id===p.id).map(i=><Row key={i.taskId} item={i}/>)}</div>)}</>}
     </section>
     {data.done.length>0&&<section className="section"><p className="eyebrow">Done · tap one to change it or make it current again</p><div className="card">{data.done.map(i=><Row key={i.taskId} item={i}/>)}</div></section>}
    </>}

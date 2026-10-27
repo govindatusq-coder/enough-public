@@ -43,7 +43,10 @@ export function WinsScreen(){
       {data.pressure.rushes>0&&<li><b>{data.pressure.rushes}</b> last-minute {data.pressure.rushes===1?'rush':'rushes'} avoided</li>}
       {data.pressure.followUps>0&&<li><b>{data.pressure.followUps}</b> {data.pressure.followUps===1?'follow-up':'follow-ups'} Bear remembered for you</li>}
       <li><b>{data.pressure.offMind}</b> {data.pressure.offMind===1?'thing':'things'} you didn&rsquo;t have to keep in your head</li>
+      {data.strategic&&data.strategic.progressed>0&&<li><b>{data.strategic.progressed}</b> real {data.strategic.progressed===1?'step':'steps'} on a project that matters, this week</li>}
+      {data.strategic&&data.strategic.maintenance>0&&<li><b>{data.strategic.maintenance}</b> everyday {data.strategic.maintenance===1?'thing':'things'} kept running this week</li>}
      </ul>
+     {data.strategic?.line&&<p className="small muted" style={{marginTop:8}}>{data.strategic.line}</p>}
     </section>}
     <div className="section">
      {data.cards.length===0&&<div className="card" style={{textAlign:'center'}}><EmptyArt file="empty-wins"/><p style={{fontWeight:700,fontSize:19}}>{brand.winsEmpty}</p><p className="muted small" style={{marginTop:4}}>{brand.winsSub}</p><BearSays size={22}>{brand.oneLess}</BearSays></div>}

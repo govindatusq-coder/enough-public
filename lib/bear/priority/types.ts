@@ -1,4 +1,4 @@
-import type {AreaKey} from '../domain/types.ts';
+import type {AreaKey,Importance,WorkRole} from '../domain/types.ts';
 import type {HumanActionKind,PatternId} from '../load/types.ts';
 
 // The Priority Engine's model. WHY (importance: values, goals, responsibilities, consequences),
@@ -51,7 +51,13 @@ export interface PriorityInput{
  quiet?:boolean;
  // Waiting its turn behind the next to-do in the same project.
  queued?:boolean;
+ // Hierarchy (priorityEngineV2): the project's explicit traffic light, Bear's bottom-up read of the
+ // project, a soft area prior, the work role, and whether this is small tidy-up work.
+ projectImportance?:Importance|null;projectInferred?:number|null;areaPrior?:number|null;
+ role?:WorkRole;roleExplicit?:boolean;lowLeverage?:boolean;bearSupport?:'more'|null;
 }
+// Explicit and inferred importance are kept apart; inference never overwrites what the person said.
+export interface ImportanceSignal{explicit:Importance|null;inferredScore:number;inferredConfidence:number;evidence:string[]}
 export interface PriorityContext{
  today:string;availableMinutes:number|null;dayMode:'good'|'full'|'wiped'|'chaos'|null;
  values:ValuesGoalsMap;struggles:string[];strengths:string[];
@@ -67,4 +73,5 @@ export interface PriorityResult{
  surfaceNow:boolean;support:'normal'|'prepare_more';firstStep:string|null;minutes:number;action:string|null;deadline:string|null;bearSteps:number;
  timingLabel:TimingLabel;explanation:PriorityExplanation;
  askImportance:boolean;
+ importanceSignal:ImportanceSignal;role:WorkRole|null;
 }

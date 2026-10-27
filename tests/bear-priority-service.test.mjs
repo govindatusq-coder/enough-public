@@ -9,17 +9,20 @@ import {notToday,setImportance,prioritiseOpen} from '../lib/bear/services/priori
 import {completeTask} from '../lib/bear/services/completion.ts';
 import {winsView} from '../lib/bear/services/wins.ts';
 import {areaView} from '../lib/bear/services/areas.ts';
+import {bearIdeas} from '../lib/bear/services/ideas.ts';
+const worthNow=async(store,now)=>(await bearIdeas(store,now)).ideas.find(i=>i.type==='worth_doing_now')?.taskId||null;
 
 const USER='44444444-4444-4444-8444-444444444444';const NOW=new Date('2026-10-26T09:00:00+11:00');
 async function onboard(store){await ensureProfile(store);return saveProfile(store,{name:'Sarah',areas:['family','home','money'],onboardingComplete:true});}
 async function give(store,text){const {extraction}=await createCapture(store,null,{method:'text',text,referenceYear:2026});return (await maybeAutoSetup(store,extraction,NOW)).task;}
 
-test('My Bear shows one thing worth doing now, with reasons, and Need you stays small',async()=>{
+test('the one thing worth doing now lives in Bear Ideas (My Bear stays calm), with reasons, and Need you stays small',async()=>{
  const store=new MemoryBackend().for(USER);await onboard(store);
  const consent=await give(store,'Return the excursion permission note by 28 October.');
  await give(store,'Car registration expires 30 November 2026. Renew online.');await give(store,'Need to buy a new phone charger.');
- const home=await homeView(store,NOW);
- assert.equal(home.oneThing?.taskId,consent.id);assert.ok(home.oneThing.why.reasons.length>=1&&home.oneThing.why.reasons.length<=3);
+ const home=await homeView(store,NOW);assert.equal(home.oneThing,null,'no recommendation card on My Bear');
+ const idea=(await bearIdeas(store,NOW)).ideas.find(i=>i.type==='worth_doing_now');
+ assert.equal(idea?.taskId,consent.id);assert.ok(idea.why.length>=1&&idea.why.length<=3);
  assert.equal(home.handling.needs,1,'one thing, not three');
 });
 
@@ -33,8 +36,8 @@ test('"Not today" steps back until tomorrow, learns gently, and only asks why th
  const store=new MemoryBackend().for(USER);await onboard(store);
  const t=await give(store,'Return the excursion permission note by 28 October.');
  let r=await notToday(store,t.id,null,NOW);assert.equal(r.askWhy,false);
- assert.equal((await homeView(store,NOW)).oneThing,null,'not pushed again today');
- assert.equal((await homeView(store,new Date('2026-10-27T09:00:00+11:00'))).oneThing?.taskId,t.id,'back tomorrow');
+ assert.equal(await worthNow(store,NOW),null,'not pushed again today');
+ assert.equal(await worthNow(store,new Date('2026-10-27T09:00:00+11:00')),t.id,'back tomorrow');
  r=await notToday(store,t.id,null,new Date('2026-10-27T09:00:00+11:00'));assert.equal(r.askWhy,true);
  await notToday(store,t.id,'not_important',new Date('2026-10-27T09:00:00+11:00'));
  const p=await ensureProfile(store);assert.ok(p.loadMap.learned.choices['not_important:SCHOOL_EVENT']>=1||p.loadMap.learned.choices['not_important:FORM_APPLICATION']>=1);

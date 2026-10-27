@@ -5,6 +5,8 @@ import {recompute} from '../load/engine.ts';
 import type {PatternId} from '../load/types.ts';
 import {prioritise,selectAction} from '../priority/engine.ts';
 import {inputFromGraph} from '../priority/input.ts';
+import {importancePrior,isLowLeverage,roleOf} from '../priority/importance.ts';
+import {flags} from '../flags.ts';
 import type {PriorityContext,PriorityResult,ValuesGoalsMap} from '../priority/types.ts';
 import {effectiveValues} from '../priority/values.ts';
 import type {BearStore} from '../store/store.ts';
@@ -13,7 +15,7 @@ import {caps} from './load.ts';
 import {activeDayMode,ensureProfile} from './profile.ts';
 
 // Feature flag: on unless BEAR_PRIORITY_ENGINE_V1=off (for comparison and rollback).
-export const priorityEnabled=()=>process.env.BEAR_PRIORITY_ENGINE_V1!=='off';
+export const priorityEnabled=flags.priorityEngineV1;
 
 // How much room right now, from the person's own weekly rhythm (if they set one). Unknown is fine.
 function availableMinutes(profile:Profile,now:Date):number|null{
@@ -39,13 +41,31 @@ export async function prioritiseOpen(store:BearStore,now=new Date()):Promise<Pri
  const open=tasks.filter(t=>t.status==='open'&&!t.wishlist&&!stepIds.has(t.id)&&t.load&&!t.load.migrated);
  // A brain-dump project offers only its next to-do; the rest stay quietly held.
  const nextOf=new Map<string,string>();for(const t of open){const p=projectOf.get(t.projectId);if(!p?.captureId)continue;const cur=nextOf.get(p.id);const curT=cur?open.find(x=>x.id===cur):null;if(!curT||(t.order??0)<(curT.order??0))nextOf.set(p.id,t.id);}
+ const v2=flags.priorityEngineV2();
+ // Area prior (V2): a soft lean from the projects the person has rated in that area. Weak on purpose.
+ const areaPrior=new Map<string,number>();
+ if(v2){const by=new Map<string,number[]>();for(const p of projects)if(p.importance&&p.status==='active'){const a=by.get(p.areaKey)||[];a.push(importancePrior[p.importance]);by.set(p.areaKey,a);}for(const [k,a] of by)areaPrior.set(k,a.reduce((x,y)=>x+y,0)/a.length);}
  const inputs=open.map(t=>{const p=projectOf.get(t.projectId);const g=recompute(t.load!,ctx.today,caps(),profile.loadMap);
   const input=inputFromGraph(g,{id:t.id,title:t.title,area:(p?.areaKey||'me') as AreaKey,createdAt:t.createdAt,postpones:t.postpones,snoozedUntil:t.snoozedUntil,importanceOverride:t.importance||null,projectPriority:p?.captureId?(p.priority||null):null,notes:t.notes,dueAt:t.dueAt});
   if(p?.captureId&&nextOf.get(p.id)!==t.id)input.queued=true;
   // "No rush" items are never pushed at the person unless they set a date themselves.
   if(t.timing==='flexible'&&!input.flags.some(f=>['urgent','safety','overdue'].includes(f)))input.quiet=true;
+  if(v2){
+   const r=roleOf(input.pattern,`${t.title} ${t.notes||''}`,p?.role||null,null);
+   Object.assign(input,{projectImportance:p?.importance||null,areaPrior:areaPrior.get(p?.areaKey||'')??null,role:r.role,roleExplicit:r.explicit,lowLeverage:isLowLeverage(t.title),bearSupport:t.bearSupport||null});
+   // A paused project, or one set aside for this week, is held quietly; its importance is untouched.
+   if(p?.paused||(p?.deferredUntil&&p.deferredUntil>ctx.today))input.quiet=true;
+  }
   return input;});
- const results=new Map(inputs.map(i=>[i.id,prioritise(i,{...ctx,otherDeadlines:inputs.filter(o=>o.id!==i.id).map(o=>o.deadline).filter((d):d is string=>!!d)})]));
+ const run=()=>new Map(inputs.map(i=>[i.id,prioritise(i,{...ctx,otherDeadlines:inputs.filter(o=>o.id!==i.id).map(o=>o.deadline).filter((d):d is string=>!!d)})]));
+ let results=run();
+ // Bottom-up (V2): a project the person hasn't rated borrows a little from its strongest tasks
+ // (confidence decays upward), then its tasks are read again with that lean.
+ if(v2){let changed=false;
+  for(const p of projects){if(p.importance)continue;const kids=inputs.filter(i=>open.find(t=>t.id===i.id)?.projectId===p.id);if(kids.length<2)continue;
+   const top=kids.map(k=>results.get(k.id)!.importanceSignal.inferredScore).sort((a,b)=>b-a).slice(0,3);const v=0.8*top.reduce((a,b)=>a+b,0)/top.length;
+   for(const k of kids){k.projectInferred=v;changed=true;}}
+  if(changed)results=run();}
  const sel=selectAction([...results.values()]);
  return {results,top:sel.top,needs:sel.needs,ctx};
 }
@@ -69,8 +89,9 @@ export async function notToday(store:BearStore,taskId:string,reason:z.infer<type
  // Ask why only when it has happened before and the answer would change what Bear does.
  return {askWhy:!reason&&postpones>=2};
 }
-export const importanceSchema=z.object({level:z.enum(['very','nice','not'])}).strict();
-export async function setImportance(store:BearStore,taskId:string,level:'very'|'nice'|'not',now=new Date()){
+// level null = "Bear decide": the person's own say is cleared and Bear's inference applies again.
+export const importanceSchema=z.object({level:z.enum(['very','nice','not']).nullable()}).strict();
+export async function setImportance(store:BearStore,taskId:string,level:'very'|'nice'|'not'|null,now=new Date()){
  const task=await store.get('tasks',taskId);if(!task)throw new Error('not_found');
  await store.update('tasks',task.id,{importance:level});
  await recordBehaviour(store,'priority_importance',{pattern:task.load?.nodes[0]?.pattern,level},now);
