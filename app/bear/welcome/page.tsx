@@ -7,7 +7,6 @@ export default function Welcome(){
    <Horizon height={220}/>
    <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',flex:1,justifyContent:'center',gap:18,paddingTop:12}}>
     <HeroVertical/>
-    <p style={{fontSize:20,fontWeight:700}}>Less on your mind. More in your day.</p>
     <p className="muted" style={{fontSize:16}}>Give it to Bear. We&rsquo;ll take care of the thinking, planning and follow-up.</p>
    </div>
    <div style={{position:'relative',zIndex:1,display:'grid',gap:12,paddingBottom:8}}>
