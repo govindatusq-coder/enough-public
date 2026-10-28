@@ -79,6 +79,8 @@ export interface Profile extends Owned{
  // What matters to this person: values, goals, responsibilities, non-negotiables (editable).
  valuesMap?:ValuesGoalsMap;
  // Bear Ideas history (cooldowns, dismissals) and today's capacity, if the person said.
+ // Ideas the person has already seen on Bear Ideas: the tab badge only counts new ones.
+ ideasSeen?:string[];
  ideaHistory?:Record<string,{status:'accepted'|'deferred'|'dismissed';at:ISODateTime;until?:ISODate|null}>;
  capacityToday?:{value:'5'|'15'|'30'|'block'|'none';date:ISODate}|null;
 }

@@ -13,7 +13,7 @@ const tabs2=[
 ];
 export function BottomNav(){
  const path=usePathname();
- // Bear Ideas shows how many ideas the page would show right now. It refreshes on every screen change,
+ // Bear Ideas shows how many NEW ideas there are (ones not yet seen on Bear Ideas). It refreshes on every screen change,
  // after anything changes (a task done, an idea answered, something given to Bear) and when the app
  // comes back to the front. Pages that already know the number share it straight away.
  const [ideas,setIdeas]=useState(0);

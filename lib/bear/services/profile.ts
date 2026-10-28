@@ -53,10 +53,10 @@ async function syncPeople(store:BearStore,people:Profile['people']){
  for(const p of people){const row=existing.find(e=>e.role===p.role&&e.name===p.name);if(!row)await store.insert('people',stamp<Person>(store.userId,{role:p.role,name:p.name,archived:false}));else if(row.archived)await store.update('people',row.id,{archived:false});}
  for(const row of existing)if(!people.some(p=>p.role===row.role&&p.name===row.name)&&!row.archived)await store.update('people',row.id,{archived:true});
 }
-export async function setDayMode(store:BearStore,mode:DayMode|null){
+export async function setDayMode(store:BearStore,mode:DayMode|null,now=new Date()){
  const profile=await ensureProfile(store);
- const next=await store.update('profiles',profile.id,{dayMode:mode,dayModeSetAt:mode?new Date().toISOString():null});
- await recordBehaviour(store,'day_mode_set',{mode});return next;
+ const next=await store.update('profiles',profile.id,{dayMode:mode,dayModeSetAt:mode?now.toISOString():null});
+ await recordBehaviour(store,'day_mode_set',{mode},now);return next;
 }
 export const dayModeSchema=z.object({mode:z.enum(dayModes).nullable()}).strict();
 // Day mode is only trusted for the day it was set on.

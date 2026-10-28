@@ -26,10 +26,13 @@ export default function Ideas(){
  const fail=useCallback((e:{status?:number;message:string})=>{if(e.status===401)router.replace('/bear/signin');else setError(e.message);},[router]);
  const loadLegacy=useCallback(()=>apiGet<{suggestions:Suggestion[];priority?:PriorityIdea[]}>('/api/bear/suggestions').then(r=>{setItems(r.suggestions);setPrio((r.priority||[]).filter(p=>!hidden().includes(p.id)));setError(null);}).catch(fail),[fail]);
  const load=useCallback(()=>apiGet<{legacy?:boolean;ideas?:View[];askCapacity?:boolean;capacity?:Capacity|null;rested?:boolean}>('/api/bear/ideas').then(r=>{if(r.legacy){setLegacy(true);return loadLegacy();}setFeed({ideas:r.ideas||[],askCapacity:!!r.askCapacity,capacity:r.capacity||null,rested:!!r.rested});setError(null);
-  try{sessionStorage.setItem('bear-ideas',String((r.ideas||[]).length));window.dispatchEvent(new Event('bear-ideas'));}catch{/* no storage */}}).catch(fail),[fail,loadLegacy]);
+  // Everything on screen has now been seen: the tab badge clears straight away and stays clear
+  // until Bear has something new.
+  try{sessionStorage.setItem('bear-ideas','0');window.dispatchEvent(new Event('bear-ideas'));}catch{/* no storage */}
+  const ids=(r.ideas||[]).map(i=>i.id);if(ids.length)apiSend('/api/bear/ideas/seen',{ids}).catch(()=>{});}).catch(fail),[fail,loadLegacy]);
  useEffect(()=>{load();const onVis=()=>{if(document.visibilityState==='visible')load();};document.addEventListener('visibilitychange',onVis);return()=>document.removeEventListener('visibilitychange',onVis);},[load]);
- // The badge drops the moment a card goes (the nav then confirms with a fresh count).
- const gone=(id:string,msg:string|null)=>{if(msg)setToast(msg);setTimeout(()=>{setFeed(f=>{if(!f)return f;const ideas=f.ideas.filter(x=>x.id!==id);try{sessionStorage.setItem('bear-ideas',String(ideas.length));window.dispatchEvent(new Event('bear-ideas'));}catch{/* no storage */}return {...f,ideas};});setLeaving(null);load();},450);};
+ // After a card goes, reload: if Bear has another idea ready it appears (and is marked seen).
+ const gone=(id:string,msg:string|null)=>{if(msg)setToast(msg);setTimeout(()=>{setFeed(f=>f?{...f,ideas:f.ideas.filter(x=>x.id!==id)}:f);setLeaving(null);load();},450);};
  async function act(i:View,a:IdeaAction,extra:{window?:string}={}){
   setLeaving(i.id);
   try{

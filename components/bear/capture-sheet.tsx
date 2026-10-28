@@ -39,7 +39,6 @@ const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;aut
   setFields(out);
   setTimeout(()=>router.replace(result.auto?`/bear/tasks/${result.auto.taskId}?auto=1`:`/bear/verify/${result.capture.id}`),Math.min(2600,700+out.length*400));
  },[router]);
- async function pasteFromClipboard(){setError(null);try{const t=await navigator.clipboard.readText();if(!t.trim()){setError('Your clipboard is empty. Copy a message first, then tap Paste.');return;}setText(x=>x.trim()?x.trimEnd()+'\n'+t:t);document.getElementById('quick-text')?.focus();}catch{setError("Bear couldn't read your clipboard. Press and hold in the box and choose Paste instead.");}}
  async function submitText(method:'text'|'manual'|'voice',body:string){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);setPreview({kind:'text',text:body});
   try{finish(await apiSend<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string};dump?:{captureId:string;projects:{title:string;count:number}[]}}>('/api/bear/captures',{method,text:body}));}catch(e){setMode(method);setError((e as ApiError).message);setPreview(null);}}
  async function submitFile(file:File,method:string,extraText?:string|null){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);
@@ -71,7 +70,6 @@ const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;aut
      <label htmlFor="quick-text" className="sr-only">What&rsquo;s on your mind?</label>
      <textarea id="quick-text" value={text} onChange={e=>setText(e.target.value)} placeholder="What&rsquo;s on your mind? Type, paste or dictate. A bill, a school note, a to-do, anything." maxLength={20000} rows={4}/>
      {params.get('shared')==='1'&&<p className="small" role="status" style={{margin:'0 0 6px',color:'var(--teal)',fontWeight:600}}>Shared with Bear. Check it, then give it over.</p>}
-     <div className="quick-tools"><Button variant="ghost" className="sm" type="button" onClick={pasteFromClipboard}>Paste from clipboard</Button><span className="faint">Copied a message in Messenger or WhatsApp? Paste it here.</span></div>
      <div className="quick-actions"><span className="faint">No dates or times needed. Bear works the rest out.</span><Button variant="coral" type="submit" disabled={!text.trim()}>{brand.giveIt}</Button></div>
     </form>}
     {mode==='menu'&&<p className="eyebrow" style={{marginTop:18}}>Or give it another way</p>}

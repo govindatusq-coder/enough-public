@@ -181,7 +181,7 @@ export async function actOnIdea(store:BearStore,a:IdeaAct,now=new Date()):Promis
  for(const [k,v] of Object.entries(hist))if(v.until&&v.until<addDays(today,-60))delete hist[k];
  const map=structuredClone(profile.loadMap||{domains:{}});map.learned??={};const ch=map.learned.choices??={};
  const key=status==='accepted'?`idea_yes:${a.type}`:status==='dismissed'?`idea_no:${a.type}`:null;if(key)ch[key]=(ch[key]||0)+1;
- await store.update('profiles',profile.id,{ideaHistory:hist,loadMap:map});
+ await store.update('profiles',profile.id,{ideaHistory:hist,loadMap:map,ideasSeen:(profile.ideasSeen||[]).filter(id=>id!==a.ideaId)});
  await recordBehaviour(store,'idea_response',{type:a.type,action:a.action},now);
  return {message};
 }
@@ -193,9 +193,15 @@ export async function setCapacity(store:BearStore,value:Capacity,now=new Date())
 export const ideaEnabled=flags.bearIdeasIntelligenceV2;
 export type {Idea};
 
-// The number on the Bear Ideas tab: exactly the ideas the page would show.
+// The number on the Bear Ideas tab: ideas the person hasn't seen yet. Opening Bear Ideas clears it;
+// a new idea (or one coming back after a rest) brings it back.
 export async function ideasCount(store:BearStore,now=new Date()):Promise<number>{
- if(ideaEnabled())return (await bearIdeas(store,now)).ideas.length;
+ if(ideaEnabled()){const profile=await ensureProfile(store);const seen=new Set(profile.ideasSeen||[]);return (await bearIdeas(store,now)).ideas.filter(i=>!seen.has(i.id)).length;}
  const {priorityIdeas}=await import('./priority-ideas.ts');
  return (await refreshSuggestions(store,now)).length+(flags.priorityEngineV1()?(await priorityIdeas(store,now).catch(()=>[])).length:0);
+}
+export const seenSchema=z.object({ids:z.array(z.string().min(1).max(200)).max(20)}).strict();
+export async function markIdeasSeen(store:BearStore,ids:string[]){
+ const profile=await ensureProfile(store);const seen=[...new Set([...(profile.ideasSeen||[]),...ids])].slice(-200);
+ if(seen.length!==(profile.ideasSeen||[]).length)await store.update('profiles',profile.id,{ideasSeen:seen});
 }

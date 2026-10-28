@@ -199,3 +199,13 @@ test('My Wins: important projects progressed and upkeep handled, counted honestl
  const w=await winsView(store,NOW);
  assert.equal(w.strategic.progressed,1);assert.match(w.strategic.line||'',/Grant application/);
 });
+
+test('tab badge: counts only ideas not yet seen; seeing clears it; a new idea brings it back',async()=>{
+ const {ideasCount,markIdeasSeen}=await import('../lib/bear/services/ideas.ts');
+ const store=new MemoryBackend().for(USER);await onboard(store);await project(store);
+ const first=await ideas(store);assert.ok(first.length>=1);assert.equal(await ideasCount(store,NOW),first.length);
+ await markIdeasSeen(store,first.map(i=>i.id));assert.equal(await ideasCount(store,NOW),0,'seen → no badge');
+ await give(store,'Return the excursion permission note by 28 October.');
+ assert.equal(await ideasCount(store,NOW),(await ideas(store)).filter(i=>!first.some(f=>f.id===i.id)).length,'only the new one counts');
+ assert.ok(await ideasCount(store,NOW)>=1);
+});
