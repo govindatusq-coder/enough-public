@@ -15,4 +15,5 @@ export async function proxy(req:NextRequest){
  response.headers.set('Cache-Control','private, no-store');
  return response;
 }
-export const config={matcher:['/api/:path*','/auth/:path*','/signin','/bear','/bear/:path*']};
+// Reckon's API (/api/reckon/*) is stateless and needs no Supabase session; keep it outside this proxy.
+export const config={matcher:['/api/((?!reckon/).*)','/auth/:path*','/signin','/bear','/bear/:path*']};

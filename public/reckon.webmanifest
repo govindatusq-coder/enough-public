@@ -1,0 +1,11 @@
+{
+  "name": "Reckon",
+  "short_name": "Reckon",
+  "description": "Ideas, lived.",
+  "start_url": "/reckon",
+  "scope": "/reckon",
+  "display": "standalone",
+  "background_color": "#FCF9F6",
+  "theme_color": "#0B2545",
+  "icons": [{"src": "/reckon-icon.svg", "sizes": "any", "type": "image/svg+xml"}]
+}

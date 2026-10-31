@@ -1,0 +1,153 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parsePageMeta, parseInstagramEmbed, looksBlocked} from '../lib/reckon/ingest/parse.ts';
+import {retrieveSource} from '../lib/reckon/ingest/retrieve.ts';
+import {detectSource} from '../lib/reckon/platform.ts';
+import * as fallback from '../lib/reckon/ai/fallback.ts';
+import {manualRecord} from '../lib/reckon/model.ts';
+
+function mockFetch(responder) {
+  const original = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    const r = responder(String(url));
+    if (r instanceof Error) throw r;
+    return new Response(r.body ?? '', {status: r.status ?? 200, headers: {'content-type': r.type ?? 'text/html'}});
+  };
+  return () => { globalThis.fetch = original; };
+}
+
+test('parses Open Graph metadata and decodes entities', () => {
+  const html = `<html><head><title>Fallback &amp; title</title><meta property="og:title" content="Start before you&#39;re ready"><meta property="og:description" content="A short &quot;note&quot;"><meta property="og:image" content="https://img.example/x.jpg"></head><body><p>${'word '.repeat(30)}</p></body></html>`;
+  const m = parsePageMeta(html, {readableText: true});
+  assert.equal(m.title, "Start before you're ready");
+  assert.equal(m.description, 'A short "note"');
+  assert.equal(m.image, 'https://img.example/x.jpg');
+  assert.ok(m.text.startsWith('word word'));
+});
+
+test('parses the Instagram embed caption block only when present', () => {
+  const html = `<div class="Caption"><a class="CaptionUsername">someone</a> Motivation follows action. Start anyway.<br>#reels</div>`;
+  assert.equal(parseInstagramEmbed(html).caption, 'Motivation follows action. Start anyway. #reels');
+  assert.deepEqual(parseInstagramEmbed('<html><body>nothing here</body></html>'), {});
+  assert.ok(looksBlocked('<html></html>', 'https://www.instagram.com/accounts/login/?next=/p/x/'));
+});
+
+test('a blocked Instagram retrieval records every attempt and invents nothing', async () => {
+  const restore = mockFetch(() => Object.assign(new Error('CONNECT tunnel failed, response 403'), {name: 'FetchError'}));
+  try {
+    const result = await retrieveSource(detectSource('https://www.instagram.com/p/DcqQ7sMgBjE/'));
+    assert.equal(result.record.status, 'failed');
+    assert.equal(result.record.contentAvailableToAi, false);
+    assert.equal(result.record.transcriptAvailable, false);
+    assert.deepEqual(result.record.fieldsRetrieved, []);
+    assert.equal(result.content.caption, undefined);
+    assert.equal(result.content.title, undefined);
+    assert.equal(result.content.embedUrl, 'https://www.instagram.com/p/DcqQ7sMgBjE/embed/captioned/');
+    assert.deepEqual(result.record.attempts.map(a => a.method), ['oembed', 'open_graph', 'embed_page']);
+    assert.ok(result.record.attempts[0].note.includes('not configured'));
+    assert.ok(result.record.attempts[1].error.includes('403'));
+    assert.ok(result.record.error);
+  } finally { restore(); }
+});
+
+test('a login-walled Instagram page is marked unavailable, not retrieved', async () => {
+  const restore = mockFetch(url => url.includes('/embed/') ? {body: '<html><body>Login</body></html>'} : {body: '<html><head><meta property="og:title" content="Instagram"></head><body><form id="loginForm"></form></body></html>', status: 200});
+  try {
+    const result = await retrieveSource(detectSource('https://www.instagram.com/reel/Cxyz_123/'));
+    assert.equal(result.record.status, 'unavailable');
+    assert.equal(result.content.caption, undefined);
+    assert.equal(result.record.contentAvailableToAi, false);
+  } finally { restore(); }
+});
+
+test('a real caption makes content available to the AI', async () => {
+  const caption = 'Motivation follows action. If you wait to feel ready you will wait forever, so start with two minutes.';
+  const restore = mockFetch(url => url.includes('/embed/') ? {body: `<div class="Caption">${caption}</div>`} : {body: '<html><head><meta property="og:image" content="https://cdn.example/thumb.jpg"></head></html>'});
+  try {
+    const result = await retrieveSource(detectSource('https://www.instagram.com/reel/Cxyz_123/'));
+    assert.equal(result.record.status, 'retrieved');
+    assert.equal(result.content.caption, caption);
+    assert.equal(result.content.thumbnailUrl, 'https://cdn.example/thumb.jpg');
+    assert.equal(result.record.contentAvailableToAi, true);
+    assert.ok(result.record.fieldsRetrieved.includes('caption'));
+  } finally { restore(); }
+});
+
+test('YouTube uses public oEmbed metadata only and never claims a transcript', async () => {
+  const restore = mockFetch(url => url.includes('/oembed') ? {body: JSON.stringify({title: 'How to start when you do not feel like it', author_name: 'Someone', thumbnail_url: 'https://i.ytimg.com/x.jpg'}), type: 'application/json'} : {body: '<html></html>'});
+  try {
+    const result = await retrieveSource(detectSource('https://youtu.be/dQw4w9WgXcQ'));
+    assert.equal(result.content.title, 'How to start when you do not feel like it');
+    assert.equal(result.record.transcriptAvailable, false);
+    assert.equal(result.record.status, 'partial');
+  } finally { restore(); }
+});
+
+test('the fallback distiller refuses to invent an insight from thin sources', () => {
+  const source = {id: 's', userId: 'u', createdAt: '', updatedAt: '', platform: 'instagram', type: 'reel', retrieval: {...manualRecord('manual'), status: 'unavailable', fieldsRetrieved: []}};
+  const out = fallback.distil(source);
+  assert.equal(out.enoughContent, false);
+  assert.equal(out.insight, '');
+  const withCaption = fallback.distil({...source, caption: 'Starting smaller can be more useful than waiting to feel motivated. Try two minutes.'});
+  assert.equal(withCaption.enoughContent, true);
+  assert.equal(withCaption.insight, 'Starting smaller can be more useful than waiting to feel motivated.');
+});
+
+test('the ingest route always answers JSON, even when retrieval throws', async () => {
+  const {handleIngest: POST} = await import('../lib/reckon/ingest/handler.ts');
+  const bad = await POST(new Request('http://x/api/reckon/ingest', {method: 'POST', body: 'not json'}));
+  assert.equal(bad.status, 400);
+  const notUrl = await POST(new Request('http://x/api/reckon/ingest', {method: 'POST', body: JSON.stringify({url: 'a thought'})}));
+  assert.equal(notUrl.status, 400);
+  const original = globalThis.fetch;
+  globalThis.fetch = () => { throw new TypeError('synchronous explosion'); };
+  try {
+    const res = await POST(new Request('http://x/api/reckon/ingest', {method: 'POST', body: JSON.stringify({url: 'https://www.instagram.com/p/DcqQ7sMgBjE/'})}));
+    assert.equal(res.status, 200);
+    const json = await res.json();
+    assert.equal(json.record.status, 'failed');
+    assert.equal(json.record.contentAvailableToAi, false);
+    assert.equal(json.detected.externalId, 'DcqQ7sMgBjE');
+    assert.equal(json.content.caption, undefined);
+  } finally { globalThis.fetch = original; }
+});
+
+test('Instagram Open Graph description is split into caption, author, date and counts', async () => {
+  const {parseInstagramOg} = await import('../lib/reckon/ingest/parse.ts');
+  const ig = parseInstagramOg({description: '13K likes, 19 comments - justinxiao_ on August 30, 2026: "Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement,…"', title: 'Justin Xiao on Instagram: "Qi Gong / Side Quest Sunday…"'});
+  assert.equal(ig.author, 'justinxiao_');
+  assert.equal(ig.likes, 13000); assert.equal(ig.comments, 19);
+  assert.equal(ig.publishedAt, '2026-08-30');
+  assert.equal(ig.caption, 'Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement,…');
+  assert.equal(ig.captionTruncated, true);
+  const plain = parseInstagramOg({description: 'Some other description', title: 'Instagram'});
+  assert.equal(plain.caption, 'Some other description'); assert.equal(plain.author, undefined);
+  assert.equal(parseInstagramOg({}).caption, undefined);
+});
+
+test('a truncated Open Graph caption is completed by the embed page when it carries more', async () => {
+  const full = 'Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement, breath and attention. Ten minutes most mornings changed how I start the day.';
+  const restore = mockFetch(url => url.includes('/embed/') ? {body: `<div class="Caption">${full}</div>`} : {body: '<html><head><meta property="og:description" content="13K likes, 19 comments - justinxiao_ on August 30, 2026: &quot;Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement,…&quot;"><meta property="og:image" content="https://cdn.example/t.jpg"></head></html>'});
+  try {
+    const result = await retrieveSource(detectSource('https://www.instagram.com/p/DcqQ7sMgBjE/'));
+    assert.deepEqual(result.record.attempts.map(a => a.method), ['oembed', 'open_graph', 'embed_page']);
+    assert.equal(result.content.caption, full);
+    assert.equal(result.record.method, 'embed_page');
+    assert.equal(result.content.author, 'justinxiao_');
+    assert.equal(result.content.publishedAt, '2026-08-30');
+    assert.ok(result.record.attempts[1].note.includes('13000 likes'));
+    assert.ok(!result.record.notes.some(n => n.includes('truncated')));
+  } finally { restore(); }
+  const restore2 = mockFetch(url => url.includes('/embed/') ? {body: '<html>login</html>'} : {body: '<html><head><meta property="og:description" content="1 likes, 0 comments - someone on May 1, 2026: &quot;Start before you feel ready, because the feeling arrives late and…&quot;"></head></html>'});
+  try {
+    const result = await retrieveSource(detectSource('https://www.instagram.com/p/DcqQ7sMgBjE/'));
+    assert.equal(result.record.status, 'retrieved');
+    assert.ok(result.record.notes.some(n => n.includes('truncated')));
+    assert.equal(result.content.caption, 'Start before you feel ready, because the feeling arrives late and…');
+  } finally { restore2(); }
+});
+
+test('the fallback distiller skips a title-like fragment and strips engagement text', () => {
+  const out = fallback.distil({id: 's', userId: 'u', createdAt: '', updatedAt: '', platform: 'instagram', type: 'post', retrieval: {...manualRecord('manual'), status: 'retrieved', fieldsRetrieved: ['caption']}, caption: 'Qi Gong / Side Quest Sunday EP Qigong is a gentle mind-body practice combining slow movement, breath and attention. Ten minutes most mornings changed how I start the day.'});
+  assert.equal(out.insight, 'Ten minutes most mornings changed how I start the day.');
+});

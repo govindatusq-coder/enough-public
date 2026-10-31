@@ -10,7 +10,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "test": "node --test tests/*.test.mjs",
-    "lint": "eslint lib/bear app/bear app/api/bear components/bear tests/bear-*.test.mjs",
+    "lint": "eslint lib/bear app/bear app/api/bear components/bear tests/bear-*.test.mjs && eslint app/reckon app/api/reckon components/reckon lib/reckon tests/reckon-platform.test.mjs tests/reckon-ingest.test.mjs tests/reckon-model.test.mjs --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
