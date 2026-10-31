@@ -1,0 +1,73 @@
+// No-model understanding of free text (typed, pasted or spoken). Conservative: it finds a
+// date, a person, a likely Area and a title; anything uncertain is left for the user.
+import {DATE_SPAN,parseAUDate} from '../domain/dates.ts';
+import type {AreaKey} from '../domain/types.ts';
+import {parseItemLine,type RawItem} from '../domain/items.ts';
+import type {GeneralOutput} from './general-schema.ts';
+import type {BillOutput} from './bill-schema.ts';
+
+const areaWords:[RegExp,AreaKey][]=[[/\b(bill|invoice|rates|fee|fees|rego|registration|insurance|subscription|bpay|payment|pay)\b/i,'money'],[/\b(school|kindy|childcare|daycare|excursion|uniform|teacher|homework|class|pickup|pick-up|drop-off|birthday|party|playdate|grandma|grandad|mum|dad|kids?|son|daughter)\b/i,'family'],[/\b(doctor|gp|dentist|dental|physio|specialist|appointment|prescription|script|vaccin|immunis|medicare|hospital|optometrist)\b/i,'health'],[/\b(work|meeting|deadline|boss|client|report|office|shift|roster)\b/i,'work'],[/\b(plumber|electrician|clean|cleaning|garden|lawn|bin|bins|rent|lease|strata|repair|groceries|shopping|washing|laundry|bunnings|hardware)\b/i,'home'],[/\b(gym|run|walk|yoga|haircut|coffee with|massage|me time|book club)\b/i,'me']];
+const kindWords:[RegExp,GeneralOutput['kind']][]=[[/\b(bill|invoice|amount due|rates notice|bpay)\b/i,'bill'],[/\b(appointment|dentist|doctor|gp|physio|specialist|check-?up)\b/i,'appointment'],[/\b(school|kindy|childcare|excursion|permission|uniform|book week|assembly)\b/i,'school'],[/\b(form|sign|signature|fill in|complete the|application|enrol)\b/i,'form'],[/\b(buy|grocer\w*|shopping|shopping list|milk|bread|present|gift|bunnings|hardware|woolworths|coles|aldi|kmart|chemist|supermarket)\b/i,'shopping'],[/\b(party|wedding|birthday|concert|game|match|tournament|invite|rsvp)\b/i,'event'],[/\b(drop off|pick up|return|post|collect|take .* to)\b/i,'errand']];
+const names=/\b(?:[Ff]or|[Ww]ith|[Tt]ake|[Pp]ick up|[Dd]rop off|[Bb]ook|[Cc]ollect)\s+([A-Z][a-z]{2,})\b/;
+const notNames=new Set(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday','January','February','March','April','May','June','July','August','September','October','November','December','The','Tomorrow','Today','Tonight','Next','This']);
+const conf=(v:unknown,c:number)=>({value:v as never,confidence:v===null?0:c,evidence:null});
+export function understandWithRules(text:string,referenceYear=new Date().getFullYear(),billReading:BillOutput|null=null):GeneralOutput{
+ const clean=text.replace(/\r/g,'').trim();const first=clean.split('\n').map(l=>l.trim()).find(Boolean)||'';
+ // A date alone does not make a bill: there must be an amount due or bill wording.
+ const bill=billReading&&billReading.documentType==='bill'&&(billReading.amountDueCents.value!==null||/\b(bill|invoice|amount due|rates notice|bpay)\b/i.test(clean))?billReading:null;
+ const kind=bill?'bill':(kindWords.find(([r])=>r.test(clean))?.[1]||(clean.length<140?'note':'other'));
+ const items=kind==='shopping'?listItems(clean):[];
+ const area=bill&&bill.documentType==='bill'?'money':(areaWords.find(([r])=>r.test(clean))?.[1]||null);
+ let when:string|null=null;for(const m of clean.matchAll(DATE_SPAN)){const iso=parseAUDate(m[0],referenceYear);if(iso){when=iso;break;}}
+ const rel=/\b(today|tomorrow|tonight)\b/i.exec(clean);
+ const time=/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i.exec(clean);const timeOfDay=time?`${String((+time[1]%12)+(time[3].toLowerCase()==='pm'?12:0)).padStart(2,'0')}:${time[2]||'00'}`:null;
+ const candidate=names.exec(clean)?.[1]||null;const person=candidate&&!notNames.has(candidate)?candidate:null;
+ // Prefer an instruction in the text ("please return the permission form by…") over the opening line.
+ const instr=/\b(?:please\s+)?(return|bring|sign|pay|book|buy|collect|send|complete|fill in|rsvp|confirm|renew|submit|order|pick up|drop off)\b([^.\n]*)/i.exec(clean);
+ const sentence=(instr?(instr[1].charAt(0).toUpperCase()+instr[1].slice(1).toLowerCase()+instr[2]).replace(/\s+(by|before|on)\s+\d.*$/i,'').replace(/\s+(by|before)\s+[A-Z]?[a-z]+day.*$/i,''):first.replace(/[.!?].*$/,'')).trim().slice(0,80);
+// How soon, and how big: Bear's best read from the words alone. Conservative: a real date, a
+ // booked kind of thing (appointment, event) or clearly time-bound wording is time-sensitive;
+ // everything else can wait. The person can change either with one tap.
+ const timeBound=/\b(urgent|asap|today|tonight|tomorrow|this week|deadline|due|expires?|expiry|by (?:the )?end of|before)\b/i.test(clean);
+ const timing=bill?'time_sensitive':(when||rel||timeBound||kind==='appointment'||kind==='event')?'time_sensitive':'flexible';
+ const timingConf=bill?0.9:when?0.62:(rel||timeBound||kind==='appointment'||kind==='event')?0.58:0.55;
+ const bigger=/\b(organi[sz]e|renovat\w*|clean ?out|declutter|sort out|party|trip|holiday|tax|wedding|project|redo|build|set up|research|moving house|spring clean|plan(?:ning)? (?:a|the|for))\b/i.test(clean)||clean.length>400;
+ const size=bigger?'bigger':'one_go';
+ const shopTitle=items.length>=2?listTitle(clean):null;
+ const title=shopTitle?shopTitle:bill&&bill.biller.value?`Pay ${bill.category.value?bill.category.value.replace('_',' '):bill.biller.value} bill`:sentence?sentence.charAt(0).toUpperCase()+sentence.slice(1):null;
+ return {kind,summary:first.slice(0,200),title:conf(title,bill?0.8:0.55),area:conf(area,bill?0.9:0.55),when:conf(when,when?0.6:0),timeOfDay:conf(timeOfDay,0.6),person:conf(person,0.5),location:conf(null,0),isRecurring:conf(bill?bill.isRecurring.value:null,0.4),timing:conf(timing,timingConf),size:conf(size,0.5),steps:[],items,estimatedMinutes:null,projects:listProjects(clean),extractedText:clean.slice(0,6000),bill:bill&&bill.documentType!=='not_a_bill'?bill:null,...(rel?{whenHint:rel[1].toLowerCase()}:{})} as GeneralOutput;
+}
+
+// A shopping list typed or spoken as lines, bullets or commas becomes items. No prices are
+// guessed here: only the model estimates, and the app says so.
+export function listItems(text:string):RawItem[]{
+ const body=text.replace(/^(shopping|groceries|grocery list|shopping list|bunnings|to buy|buy|get|need|we need)\b[:\s-]*/i,'');
+ const parts=(body.includes('\n')?body.split('\n'):body.split(/,|;|\band\b/i)).filter(l=>!/\b(by|before|due)\s+\d/i.test(l));
+ const out=parts.map(parseItemLine).filter((x):x is RawItem=>!!x).slice(0,40);
+ return out.length>=2?out:[];
+}
+
+// A short name for a list instead of the whole pasted line.
+export function listTitle(text:string):string{
+ const head=/^\s*(bunnings|woolworths|coles|aldi|kmart|chemist|groceries|grocery list|shopping list|shopping)\b/i.exec(text)?.[1]?.toLowerCase();
+ if(!head)return 'Shopping list';
+ if(head==='groceries'||head==='grocery list')return 'Groceries';
+ if(head==='shopping'||head==='shopping list')return 'Shopping list';
+ return head.charAt(0).toUpperCase()+head.slice(1)+' run';
+}
+
+// A typed brain dump: headings ending in a colon, with lines (or dashes) under each.
+// "PhD: - Ayla: CoC - Belinda: Flup" → project PhD with two tasks.
+export function listProjects(text:string):{name:string;tasks:string[]}[]{
+ const out:{name:string;tasks:string[]}[]=[];
+ for(const raw of text.split('\n')){
+  const line=raw.trim();if(!line)continue;
+  const head=/^([A-Z][\w &/+.'()-]{1,40}?)\s*:\s*(.*)$/.exec(line);
+  const bullet=/^[-•*·]\s*(.+)$/.exec(line);
+  // "Name: thing" under a heading is a task; only a bare heading (or one with bullets after it) starts a project.
+  if(head&&!bullet&&(head[2]===''||/:$/.test(head[2])||/^[-•*·]/.test(head[2])||!out.length)&&!/^\d/.test(head[1])){out.push({name:head[1].trim(),tasks:/:$/.test(head[2])?[]:head[2].split(/\s+[-•*·]\s+|^[-•*·]\s*/).map(t=>t.trim()).filter(Boolean)});continue;}
+  if(out.length)out[out.length-1].tasks.push((bullet?bullet[1]:line).trim());
+ }
+ const real=out.filter(p=>p.tasks.length>0);
+ return real.length>=2&&real.reduce((n,p)=>n+p.tasks.length,0)>=3?real.slice(0,30).map(p=>({name:p.name.slice(0,80),tasks:p.tasks.slice(0,40).map(t=>t.slice(0,160))})):[];
+}

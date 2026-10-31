@@ -9,6 +9,19 @@
     },
     "app/api/idea-image/route.ts": {
       "maxDuration": 180
+    },
+    "app/api/bear/captures/route.ts": {
+      "maxDuration": 120
+    },
+    "app/api/bear/cron/reminders/route.ts": {
+      "maxDuration": 120
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/bear/cron/reminders",
+      "schedule": "0 21 * * *"
+    }
+  ],
+  "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ] && [ \"$VERCEL_GIT_COMMIT_REF\" != \"claude/keen-lamport-xfglo3\" ] && [ \"$VERCEL_GIT_COMMIT_REF\" != \"claude/epic-thompson-9gl5vu\" ]"
 }

@@ -1,0 +1,18 @@
+# Delivers due Load Bear reminders by Web Push every 15 minutes. Vercel's own cron (vercel.json)
+# runs once a day on the Hobby plan; this workflow provides the 15-minute cadence reminders need.
+# Secrets: BEAR_APP_URL (https://your-host) and BEAR_CRON_SECRET (same value as the Vercel env var).
+name: Bear reminders
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    if: ${{ vars.BEAR_REMINDERS_ENABLED == 'true' }}
+    steps:
+      - name: Call the reminder delivery route
+        run: |
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${{ secrets.BEAR_CRON_SECRET }}" \
+            "${{ secrets.BEAR_APP_URL }}/api/bear/cron/reminders"

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- The ENOUGH website origin whose API this app calls. Point a preview build at a Vercel preview origin. -->
+	<key>WebOrigin</key>
+	<string>https://enough-public.vercel.app</string>
+	<!-- The same Supabase project the website uses (optzrikdlhhygfxbzlnn, Sydney). -->
+	<key>SupabaseURL</key>
+	<string>https://optzrikdlhhygfxbzlnn.supabase.co</string>
+	<!-- The public (publishable / anon) key, the value the website ships as NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Leave empty to run without accounts. -->
+	<key>SupabasePublishableKey</key>
+	<string></string>
+</dict>
+</plist>

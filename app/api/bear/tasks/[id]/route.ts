@@ -1,0 +1,25 @@
+import {json,readJson,withBear} from '@/lib/bear/server/context';
+import {recommendPlan} from '@/lib/bear/services/reminder-planning';
+import {readLoad} from '@/lib/bear/services/load';
+import {prioritiseOpen,priorityEnabled,priorityView} from '@/lib/bear/services/priority';
+import {deleteTask,updateTask,updateTaskSchema} from '@/lib/bear/services/task-edit';
+export const dynamic='force-dynamic';
+export const GET=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(req,async({store})=>{
+ const {id}=await params;const task=await store.get('tasks',id);if(!task)return json({error:"Bear couldn't find that."},404);
+ const project=await store.get('projects',task.projectId);
+ const bill=(await store.list('bills',{where:[{column:'task_id',value:task.id}]}))[0]||null;
+ if(bill)return json({redirect:`/bear/bills/${bill.id}`});
+ const reminders=await store.list('reminders',{where:[{column:'task_id',value:task.id}],orderBy:{column:'scheduled_for'}});
+ const deps=await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]});
+ const steps=(await Promise.all(deps.map(d=>store.get('tasks',d.dependsOnTaskId)))).filter(Boolean);
+ const active=reminders.filter(r=>['scheduled','snoozed','delivered'].includes(r.status));
+ const plan=task.status==='open'&&active.length===0&&!task.wishlist&&task.timing!=='flexible'?await recommendPlan(store,null,task):null;
+ const documentId=project?.resourceDocumentIds[0]||null;
+ const load=await readLoad(store,task);
+ const all=priorityEnabled()&&task.status==='open'?await prioritiseOpen(store):null;const pr=all?.results.get(task.id)||null;const relAsk=all?.relational.get(task.id)?.ask||null;
+ // Default view is minimal: no reasons, no scores. Reasons come from /why only when asked.
+ const priority=pr?priorityView(pr,relAsk):null;
+ return json({priority,task:(await store.get('tasks',task.id))||task,project,reminders,steps,plan,load:load.migrated?null:load.view,documentUrl:documentId?`/api/bear/documents/${documentId}`:null});
+});
+export const PATCH=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(req,async({store})=>{const {id}=await params;return json({task:await updateTask(store,id,updateTaskSchema.parse(await readJson(req)))});});
+export const DELETE=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear(req,async({store})=>{const {id}=await params;await deleteTask(store,id);return json({ok:true});});

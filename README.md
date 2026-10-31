@@ -1,3 +1,14 @@
+# Load Bear (`/bear`)
+
+Load Bear is the second-brain / life-management product built in this repository alongside ENOUGH, mounted at `/bear` and sharing the Supabase project and sign-in. The MVP makes one workflow real end to end: **bills** — capture, AI extraction with per-field confidence, mandatory human verification, task and reminder planning around the user's Life Rhythm, non-guilt reminders, payment assistance (Bear never pays), mark paid, My Wins and a Wealth ledger that only counts stated late fees and discounts.
+
+* Plan and design docs: `docs/load-bear/` (visual system, architecture, data model, extraction schema, vertical slice, milestones, external configuration, verification).
+* Status: `BUILD_STATUS.md`.
+* Migration to apply once: `supabase/migrations/20261023120000_load_bear.sql`.
+* Server-only keys: `ANTHROPIC_API_KEY` (photo/PDF reading), `BEAR_VAPID_*` + `BEAR_CRON_SECRET` + `SUPABASE_SERVICE_ROLE_KEY` (push delivery). See `.env.example`. Without them the affected features are visibly marked unavailable; text and typed bills work through the rule-based extractor.
+* Local run without Supabase: `BEAR_DEV_STORE=memory pnpm dev` then open `http://localhost:3000/bear` (one in-memory local user; ignored when a Supabase URL is set or on Vercel).
+* Checks: `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, and the browser walk-through `BEAR_TEST_MODE=start node scripts/test-bear-browser.mjs` (needs a prior build and Chromium at `/opt/pw-browsers/...` or `BEAR_TEST_CHROMIUM`).
+
 # ENOUGH public-hosting migration
 
 ## Reckon (prototype at `/reckon`)
@@ -21,6 +32,10 @@ Requesting My Moves suggestions generates activity-specific lifestyle pictures u
 See [the 11 October 2026 suggestion-picture verification record](docs/verification/suggestion-pictures-2026-10-11.md) for the current flow and checks. The [10 October image verification record](docs/verification/idea-images-2026-10-10.md) records the original image implementation and real-provider verification. The migration notes below describe the original migration, not the latest deployment status.
 
 This is a separate Next.js application prepared for Vercel and Supabase. The original Sites checkout and private deployment were not edited or deployed.
+
+## iPhone app
+
+`ios/Enough` is a native SwiftUI app built from this website: the same four tabs, setup, idea library, matching rules, support plans, wins and privacy copy, plus Apple Health, local reminders, private photos and QR check-ins. It signs in with the same Supabase project and saves through the website's `/api/account`, `/api/photos`, `/api/ideas` and `/api/idea-image` routes using a bearer token. Those routes now accept `Authorization: Bearer <access token>` in place of the browser cookie (`lib/public-auth.ts`, `lib/supabase/server.ts`); bearer requests skip the same-origin check because browsers never attach that header automatically. Deploy this branch before expecting the app's account features to work. See [ios/README.md](ios/README.md) for configuration and limits.
 
 ## Implemented
 - Existing four-tab experience and photo/glass styling retained.
@@ -54,7 +69,7 @@ No private-preview user records or photos have been copied into Supabase. Identi
 4. Configure Google OAuth client/secret and Apple Services ID/key/client secret in Supabase. Observed settings currently show both disabled.
 5. Add OPENAI_API_KEY securely to server-only Vercel environment variables. Never paste keys in chat or expose them through NEXT_PUBLIC.
 6. Run the full browser, device and unaided-user test pack before public launch. Check sign-in refresh, per-user isolation, uploads, deletion, gallery swipes, onboarding, saved/accepted moves and AI fallbacks.
-7. Native source is preserved for reference and still points to the private preview. Public native app OAuth/deep links, branding, signing, health-data permissions and hardware testing remain unfinished. Do not publish those native builds from this package.
+7. A native SwiftUI iPhone app now lives in `ios/` (see [ios/README.md](ios/README.md)). It bundles the website's screens, library and matching rules and saves through the same account API with a bearer token. It has not yet been built in Xcode or tested on a device; signing, the HealthKit permission cases, reviewer accounts and store declarations remain to be done. The older Capacitor shell in `native/` is kept for reference only.
 8. Public imagery now returns licensed Openverse image URLs with attribution instead of using Sites-owned image caching. External image loading requires browser QA.
 
 ## Local use

@@ -20,7 +20,7 @@ test('image prompts describe the exact movement, setting and safety, without a w
  for(const [movement,outdoor,safety] of [['seated',false,'Stay seated and use a comfortable range.'],['stairs',false,'Use the handrail.'],['run',true,'Use a familiar clear path.']]){
   const chosen={...idea,movementMode:movement,outdoor,safety};const prompt=ideaImagePrompt(chosen),data=JSON.parse(prompt.split('SCENE DATA:\n')[1]);
   assert.equal(data.movement,movement);assert.equal(data.setting,outdoor?'outdoors':'indoors');assert.equal(data.safety,safety);assert.equal(data.activity,idea.body);
-  assert.match(prompt,/not the sedentary alternative/);assert.match(prompt,/never as instructions/);assert.match(prompt,/central/);
+  assert.match(prompt,/not the sedentary alternative/);assert.match(prompt,/never as instructions/);assert.match(prompt,/central/);assert.match(prompt,/watercolour/);assert.match(prompt,/no gym|Do not add a gym/i);
   assert.deepEqual(Object.keys(ideaImageScene(chosen)),['title','activity','movement','setting','pace','safety','visualBrief']);
  }
 });
@@ -124,7 +124,7 @@ test('client rejects a stock or malformed response for AI ideas instead of silen
  for(const data of [{image:'https://example.com/stock.jpg',kind:'licensed'},{image:'/api/idea-image?id=1234'},{status:'ready'}]){
   const queue=createIdeaImageQueue({request:async()=>Response.json(data)});queue.prepare(idea,'user-a');assert.equal((await settled(queue,imageClientKey(idea,'user-a'))).status,'error');
  }
- assert.ok(ideaImageIdentity(idea).includes('enough-lifestyle-v1'));
+ assert.ok(ideaImageIdentity(idea).includes('enough-watercolour-v2'));
 });
 test('a later suggestion request recovers a failed cached download without billing for another image',async()=>{
  let calls=0;const queue=createIdeaImageQueue({request:async()=>{calls++;return Response.json({image:'/api/idea-image?id=1234&image=1',kind:'generated'});}}),key=imageClientKey(idea,'user-a');

@@ -1,8 +1,5 @@
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import nextTs from 'eslint-config-next/typescript';
-
+import nextConfig from 'eslint-config-next';
 export default [
-  ...nextVitals,
-  ...nextTs,
-  {ignores: ['.next/**', 'node_modules/**', 'native/**', 'vendor/**', 'next-env.d.ts']},
+ ...nextConfig,
+ {ignores:['.next/**','node_modules/**','native/**','ios/**','vendor/**','public/**']},
 ];

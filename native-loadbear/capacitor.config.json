@@ -1,0 +1,14 @@
+{
+  "appId": "au.loadbear.app",
+  "appName": "Load Bear",
+  "webDir": "www",
+  "server": {
+    "url": "https://enough-public-zuue.vercel.app/bear",
+    "cleartext": false
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#FFF7E8",
+    "preferredContentMode": "mobile"
+  }
+}

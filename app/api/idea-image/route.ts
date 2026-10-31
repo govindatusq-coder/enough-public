@@ -17,8 +17,8 @@ async function licensed(idea:Idea){
  return null;
 }
 const handlers=createIdeaImageHandlers({
- async account(id){
-  const {db,user}=await signedIn();if(!user)return null;
+ async account(id,req){
+  const {db,user}=await signedIn(req);if(!user)return null;
   const {data,error}=await db.from('enough_ideas').select('idea_json').eq('user_id',user.id).eq('idea_id',id).maybeSingle();if(error)throw error;
   if(data)return {owner:user.id,ideas:[ideaSchema.parse(data.idea_json)],store:ideaImageStorage(db)};
   const {data:account,error:readError}=await db.from('enough_accounts').select('state_json').eq('user_id',user.id).maybeSingle();if(readError)throw readError;
