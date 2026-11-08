@@ -35,6 +35,9 @@ export async function completeTask(store:BearStore,input:CompleteInput,now=new D
  for(const r of await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed','delivered']}]}))await store.update('reminders',r.id,{status:'actioned'});
  for(const d of await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})){const dep=await store.get('tasks',d.dependsOnTaskId);if(dep&&dep.status==='open')await store.update('tasks',dep.id,{status:'done'});}
  const lastDelivered=(await store.list('reminders',{where:[{column:'task_id',value:task.id}]})).map(r=>r.deliveredAt).filter(Boolean).sort().pop();
+ // Responsibility Transferred (internal): which operations Bear really carried for this obligation.
+ try{const {flags}=await import('../flags.ts');if(flags.responsibilityEngine()&&task.load){const {responsibilityOf}=await import('../coverage/responsibility.ts');const r=responsibilityOf(task.load);
+  await recordBehaviour(store,'responsibility_op',{taskId:task.id,byBear:r.filter(x=>x.performedByBear).map(x=>x.operation),human:r.filter(x=>x.humanRequired||x.actor==='human').map(x=>x.operation),evidence:completion.evidence?.level||null},now);}}catch{/* research only */}
  await recordBehaviour(store,'task_completed',{taskId:task.id,billId:bill?.id,daysBeforeDue,minutesSinceReminder:lastDelivered?Math.round((now.getTime()-new Date(lastDelivered).getTime())/60000):undefined},now);
  let win:Win|null=null;const ledger:ValueLedgerEntry[]=[];let expectation:RecurringExpectation|null=null;let suggestion:Suggestion|null=null;
  if(bill){

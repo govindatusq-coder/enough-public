@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {addDays,daysBetween} from '../domain/dates.ts';
 import type {Importance,Profile,Project,Suggestion,SuggestionKind,Task} from '../domain/types.ts';
 import {flags} from '../flags.ts';
+import {schoolIdeaCandidates,setCoverage,watchAnticipation} from '../coverage/coverage-service.ts';
 import {friendlyDate,the} from '../load/words.ts';
 import {recompute} from '../load/engine.ts';
 import {describe} from '../load/view.ts';
@@ -136,23 +137,30 @@ export async function bearIdeas(store:BearStore,now=new Date()):Promise<IdeasFee
  const candidates:Idea[]=[...suggestionIdeas(suggestions)];
  if(flags.mentalLoadOpportunityV1())candidates.push(...mentalLoadIdeas(c));
  if(flags.priorityEngineV1())candidates.push(...priorityFamilyIdeas(c));
+ // School Admin pack: coverage offers and anticipation from the person's own history.
+ candidates.push(...await schoolIdeaCandidates(store,today,S));
  if(flags.strategicAttentionV1())candidates.push(...strategicIdeas(c,strategicAttention({projects,tasks,completions,results:pr.results,today})));
  const res=orchestrate(candidates,{today,history:profile.ideaHistory,capacity,dayMode:pr.ctx.dayMode,learned:pr.ctx.learned,saturated:!!pr.present?.saturated});
  return {...res,capacity};
 }
 
 // ---------- acting on an idea ----------
-export const ideaActSchema=z.object({ideaId:z.string().min(1).max(200),type:z.string().max(40),action:z.enum(['accept','reject','open','later','dismiss','make_room','not_this_week','protect','lower','pause','block_yes','block_no','take_over','copy']),
+export const ideaActSchema=z.object({ideaId:z.string().min(1).max(200),type:z.string().max(40),action:z.enum(['activate_pack','watch','not_this_year','accept','reject','open','later','dismiss','make_room','not_this_week','protect','lower','pause','block_yes','block_no','take_over','copy']),
  suggestionId:z.string().uuid().nullable().optional(),taskId:z.string().uuid().nullable().optional(),projectId:z.string().uuid().nullable().optional(),
  window:z.enum(['today','tomorrow','this_week','not_sure']).nullable().optional()}).strict();
+// The kind of school event an anticipation idea is about (from its id: watch:<kind>:<year>).
+const kindOf=(ideaId:string)=>/^(?:watch|ask):([a-z_]+):\d{4}$/.exec(ideaId)?.[1]||null;
 export type IdeaAct=z.infer<typeof ideaActSchema>;
-const cooldown:Partial<Record<IdeaActionKey,number>>={dismiss:30,later:1,open:3,copy:3,take_over:30,make_room:0,not_this_week:7,protect:2,lower:30,pause:60,block_yes:1,block_no:1};
+const cooldown:Partial<Record<IdeaActionKey,number>>={activate_pack:365,watch:14,not_this_year:300,dismiss:30,later:1,open:3,copy:3,take_over:30,make_room:0,not_this_week:7,protect:2,lower:30,pause:60,block_yes:1,block_no:1};
 export async function actOnIdea(store:BearStore,a:IdeaAct,now=new Date()):Promise<{message:string|null}>{
  if(a.action==='accept'||a.action==='reject'){if(!a.suggestionId)throw new Error('not_found');await respondToSuggestion(store,{suggestionId:a.suggestionId,response:a.action},now);return {message:null};}
  const profile=await ensureProfile(store);const pr=await prioritiseOpen(store,now);const today=pr.ctx.today;
  const project=a.projectId?await store.get('projects',a.projectId):null;if(a.projectId&&!project)throw new Error('not_found');
  let message:string|null=null;
  switch(a.action){
+  case 'activate_pack':await setCoverage(store,'school',true,now);message='Done. Bear will keep school admin together. It only sees what you give it.';break;
+  case 'watch':{const k=kindOf(a.ideaId);if(k)await watchAnticipation(store,k,'watching',today);message='Okay. Bear will check with you in a couple of weeks.';break;}
+  case 'not_this_year':{const k=kindOf(a.ideaId);if(k)await watchAnticipation(store,k,'not_this_year',today);message='No problem. Bear won’t ask again this year.';break;}
   case 'later':if(a.taskId)await notToday(store,a.taskId,null,now);message='No problem. Bear will bring it back another day.';break;
   case 'take_over':if(a.taskId)await store.update('tasks',a.taskId,{bearSupport:'more'});message='Done. Bear will bring it back in smaller steps.';break;
   case 'make_room':{const window=a.window||'not_sure';await store.update('projects',project!.id,{intent:{window,setAt:now.toISOString(),on:today}});message=window==='not_sure'?'That’s fine. Bear will check in later in the week.':'Good. Bear will check in then.';
@@ -175,7 +183,7 @@ export async function actOnIdea(store:BearStore,a:IdeaAct,now=new Date()):Promis
  }
  // History (cooldowns) and learning: which KINDS of idea help. Never what matters.
  const days=cooldown[a.action]??1;const hist={...(profile.ideaHistory||{})};
- const status=['dismiss','lower','pause'].includes(a.action)?'dismissed':['later','not_this_week','block_no'].includes(a.action)?'deferred':'accepted';
+ const status=['dismiss','lower','pause','not_this_year'].includes(a.action)?'dismissed':['later','not_this_week','block_no'].includes(a.action)?'deferred':'accepted';
  hist[a.ideaId]={status,at:now.toISOString(),until:days?addDays(today,days):today};
  // Keep the history small: drop entries whose cooldown ended more than 60 days ago.
  for(const [k,v] of Object.entries(hist))if(v.until&&v.until<addDays(today,-60))delete hist[k];

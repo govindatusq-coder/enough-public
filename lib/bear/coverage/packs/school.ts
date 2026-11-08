@@ -88,7 +88,10 @@ export function readSchoolNotice(raw:string,today:string,children:string[]=[]):S
   eventAt[eventAt.length-1]=ev.kind;
   events.push({kind:ev.kind,title:ev.title(m,text),date,endDate:d?.end||null,confidence:date?0.9:0.6});break;}
   // A later sentence naming an event Bear already has ("the camp payment...") points back to it.
-  if(!eventAt[eventAt.length-1])for(const e of events)if(EVENTS.find(x=>x.kind===e.kind)!.re.test(s))eventAt[eventAt.length-1]=e.kind;}
+  if(!eventAt[eventAt.length-1])for(const e of events)if(EVENTS.find(x=>x.kind===e.kind)!.re.test(s))eventAt[eventAt.length-1]=e.kind;
+  // Heading style ("YEAR 5 CAMP" then "17–19 November" on its own line): a bare date line dates the event above it.
+  const last=events[events.length-1];
+  if(!eventAt[eventAt.length-1]&&last&&!last.date&&s.length<=40&&!/\b(due|by|return|pay|close|before)\b/i.test(s)){const d=dateIn(s,today,'event');if(d){last.date=d.iso;last.endDate=d.end||null;last.confidence=0.85;eventAt[eventAt.length-1]=last.kind;}}}
  // ---- obligations: each sentence, each with its own date ----
  const obligations:SchoolObligationDetail[]=[];const ambiguities:string[]=[];let current:SchoolEventKind|null=null;
  const add=(o:Omit<SchoolObligationDetail,'dueInferred'|'reference'|'link'|'code'|'method'|'items'|'amountCents'>&Partial<SchoolObligationDetail>)=>{

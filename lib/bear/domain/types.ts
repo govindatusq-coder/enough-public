@@ -81,6 +81,9 @@ export interface Profile extends Owned{
  // Bear Ideas history (cooldowns, dismissals) and today's capacity, if the person said.
  // Ideas the person has already seen on Bear Ideas: the tab badge only counts new ones.
  ideasSeen?:string[];
+ // Load Bear 2.0: Coverage Packs the person turned on, and school events Bear is watching for from their own history.
+ coverage?:Partial<Record<import('../coverage/types.ts').PackId,{active:boolean;since:ISODateTime}>>;
+ anticipations?:Record<string,{status:'watching'|'not_this_year';year:string;askOn:ISODate}>;
  ideaHistory?:Record<string,{status:'accepted'|'deferred'|'dismissed';at:ISODateTime;until?:ISODate|null}>;
  capacityToday?:{value:'5'|'15'|'30'|'block'|'none';date:ISODate}|null;
 }

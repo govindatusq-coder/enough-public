@@ -8,12 +8,12 @@ import type {DayMode,Profile} from '../domain/types.ts';
 export type IdeaFamily='load'|'priority'|'strategic';
 export type IdeaType=
  // Family A: mental-load reduction (the original purpose of Bear Ideas).
- 'remember'|'monitor'|'prepare'|'follow_up'|'take_over'|'simplify'|'recurring_pattern'|'save_money'|'prevent'|'reduce_coordination'|'reduce_decisions'
+ 'remember'|'monitor'|'prepare'|'follow_up'|'take_over'|'simplify'|'recurring_pattern'|'save_money'|'prevent'|'reduce_coordination'|'reduce_decisions'|'expand_coverage'
  // Family B: priority (moved here from My Bear).
  |'worth_doing_now'|'prevent_future_pressure'|'unlock_project'|'close_loop'
  // Family C: strategic attention.
  |'protect_time'|'reprioritise'|'make_room_check';
-export type IdeaActionKey='accept'|'reject'|'open'|'later'|'dismiss'|'make_room'|'not_this_week'|'protect'|'lower'|'pause'|'block_yes'|'block_no'|'take_over'|'copy';
+export type IdeaActionKey='activate_pack'|'watch'|'not_this_year'|'accept'|'reject'|'open'|'later'|'dismiss'|'make_room'|'not_this_week'|'protect'|'lower'|'pause'|'block_yes'|'block_no'|'take_over'|'copy';
 export interface IdeaAction{key:IdeaActionKey;label:string;primary?:boolean}
 // What an idea is worth (0–1 each). Internal only: never shown as numbers.
 export interface IdeaScore{loadRemoved:number;pressure:number;strategic:number;decisions:number;money:number;leverage:number;effort:number;uncertainty:number;interruption:number}

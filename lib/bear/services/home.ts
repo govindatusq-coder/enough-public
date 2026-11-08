@@ -14,6 +14,7 @@ import {caps} from './load.ts';
 import {prioritiseOpen,priorityEnabled} from './priority.ts';
 import {ideasCount} from './ideas.ts';
 import {flags} from '../flags.ts';
+import {isSchoolTask} from '../coverage/coverage-service.ts';
 import type {Reason} from '../priority/types.ts';
 
 // My Bear assembly. Deliberately not a task list: what needs you, what Bear is
@@ -28,6 +29,8 @@ export interface HomeView{
  oneThing:OneThing|null;
  ledgers:{health:{headline:string;lines:string[]};wealth:{headline:string|null;lines:string[]};happiness:{headline:string|null;lines:string[]}};
  ideasCount:number;demoAvailable:boolean;hasAnyBill:boolean;
+ // A category Bear is keeping on top of (School admin), as one quiet line. Null when off or empty.
+ coverage:{label:string;line:string;href:string}|null;
 }
 export async function homeView(store:BearStore,now=new Date(),fallbackName=''):Promise<HomeView>{
  const profile=await ensureProfile(store);const tz=profile.lifeRhythm.timezone||'Australia/Sydney';const today=todayISO(tz,now);const dayMode=activeDayMode(profile,today);
@@ -83,7 +86,9 @@ export async function homeView(store:BearStore,now=new Date(),fallbackName=''):P
  const ledgerRows=await store.list('value_ledger',{orderBy:{column:'occurred_at',ascending:false},limit:200});
  const covered=bills.length+otherHeld+scheduled.length+expectations.length+suggestions.length;
  const hour=localParts(now,tz).hour;
- return {greeting:greeting(hour,profile.name||fallbackName),name:profile.name||fallbackName,coveredCount:covered,dayMode,today,needsYou,overdue,areas:await areaTiles(store,profile.areas,attentionByArea(needsYou,overdue,allOpen,await store.list('projects'))),wishlist:{count:wished.length,next:wished.map(t=>t.wishlist!.checkBackAt).filter((d):d is string=>!!d).sort()[0]||null},handling:{watching,held:otherHeld,remindersReady:ready,expectedSoon,lines,covered:coveredCount,waiting:waitingCount,needs:needsCount,coveredLines},oneThing,ledgers:ledgers(ledgerRows,today,tasks),ideasCount:await ideasCount(store,now).catch(()=>0),demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
+ const schoolOpen=flags.coveragePacks()&&profile.coverage?.school?.active?tasks.filter(isSchoolTask).length:0;
+ const coverage=schoolOpen?{label:'School admin',line:`Bear is keeping track of ${schoolOpen} ${schoolOpen===1?'thing':'things'}`,href:'/bear/areas/family'}:null;
+ return {coverage,greeting:greeting(hour,profile.name||fallbackName),name:profile.name||fallbackName,coveredCount:covered,dayMode,today,needsYou,overdue,areas:await areaTiles(store,profile.areas,attentionByArea(needsYou,overdue,allOpen,await store.list('projects'))),wishlist:{count:wished.length,next:wished.map(t=>t.wishlist!.checkBackAt).filter((d):d is string=>!!d).sort()[0]||null},handling:{watching,held:otherHeld,remindersReady:ready,expectedSoon,lines,covered:coveredCount,waiting:waitingCount,needs:needsCount,coveredLines},oneThing,ledgers:ledgers(ledgerRows,today,tasks),ideasCount:await ideasCount(store,now).catch(()=>0),demoAvailable:!profile.demoOffered&&bills.length===0&&!(await store.list('bills',{limit:1})).length,hasAnyBill:(await store.list('bills',{limit:1})).length>0};
 }
 // Which areas have something that needs the person: things due soon or overdue, and due reminders. Gentle
 // "no rush" nudges never make a number; they only mark the area with a quiet dot.

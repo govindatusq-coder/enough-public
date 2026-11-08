@@ -64,6 +64,10 @@ export function personName(text:string):string|null{
 
 // ---------- other people ----------
 export function otherPeople(text:string,pattern:PatternId,reliance:Reliance|null=null):OtherPerson[]{
+ // A school notice is about the person's child, not their students or colleagues: "students need a hat"
+ // means pupils. Nobody is "waiting on" them; the school's deadlines already carry the timing.
+ if((pattern==='SCHOOL_EVENT'||/\b(dear (?:parents|families|carers)|parents and carers|year \d{1,2} (?:camp|excursion|students))\b/i.test(text))&&!R.community.test(text)){
+  if(reliance!=='yes')return [{name:null,relationshipType:'child',waiting:false,blocked:false,commitment:false,dependency:0,relationalImportance:0.75,relationalPressure:0.15,confidence:0.4}];}
  const name=personName(text);
  const type:RelationType=R.supervision.test(text)?'supervision':R.mentoring.test(text)?'mentoring':R.collaboration.test(text)?'collaboration':R.child.test(text)?'child':R.family.test(text)?'family':R.household.test(text)&&R.householdTask.test(text)?'household':R.community.test(text)?'community':R.colleague.test(text)?'colleague':'unknown';
  // WAITING_FOR_RESPONSE means the person is waiting on someone else, not the other way round.

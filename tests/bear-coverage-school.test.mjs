@@ -136,3 +136,8 @@ test('flag off: a school notice with a fee goes back to the old reading',async()
  process.env.BEAR_COVERAGE_PACKS_ENABLED='off';try{const s=await setup();const {extraction}=await give(s,CAMP);assert.notEqual(extraction.general.kind,'school');}finally{delete process.env.BEAR_COVERAGE_PACKS_ENABLED;}
 });
 test('existing bills are untouched',async()=>{const s=await setup();const {extraction}=await createCapture(s,null,{method:'text',text:'AGL electricity bill. Amount due $184.60. Due 20 November 2026.',referenceYear:2026});assert.equal(extraction.kind,'bill');});
+test('“students” in a school notice are pupils: no “your student is waiting on you”',async()=>{
+ const {prioritiseOpen}=await import('../lib/bear/services/priority.ts');
+ const s=await setup();const {task}=await give(s,CAMP);const r=(await prioritiseOpen(s,NOW)).results.get(task.id);
+ assert.equal(r.relationalStatus,null);assert.doesNotMatch(r.explanation.reasons.map(x=>x.title).join(' '),/student|waiting on/i);
+});

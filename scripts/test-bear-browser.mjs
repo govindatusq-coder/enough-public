@@ -66,6 +66,17 @@ try{
   await page.goto(base+'/bear/ideas');await page.waitForSelector('.eyebrow:has-text("Worth doing now")');const n=await page.$$eval('main .card',e=>e.length);assert.ok(n>=1&&n<=6,'a few ideas, not a list: '+n);await shot('51-ideas-worth-now');
   const card=page.locator('main .card',{has:page.locator('.eyebrow:has-text("Worth doing now")')});assert.equal(await card.locator('.why-list').count(),0,'rationale collapsed by default');await card.locator('button:has-text("Why this matters?")').click();await card.locator('.why-list .why-row').first().waitFor();const why=await card.locator('.why-list').textContent();assert.ok(!/score|power|threat|neglect|\d\.\d/i.test(why),'plain words only: '+why);await shot('52-why-this');await card.locator('button:has-text("Not now")').click();await page.waitForSelector('.eyebrow:has-text("Worth doing now")',{state:'detached',timeout:10000});});
  await step('Bear Ideas: one calm feed of a few ideas',async()=>{await page.goto(base+'/bear/ideas');await page.waitForSelector('main .card .eyebrow');const body=await page.textContent('main');assert.ok(!/overdue|behind|you should/i.test(body),'calm copy');await shot('54-ideas-feed');});
+ await step('School Admin: a camp notice becomes one item with each deadline, Bear’s preparation folded away, and honest coverage',async()=>{
+  await page.goto(base+'/bear/capture');await page.fill('#quick-text','Year 5 camp is on 18 December. Permission forms are due 10 December. Payment of $180 is due 12 December. Payment reference CAMP5-221. Students need a sleeping bag, water bottle and enclosed shoes.');
+  await page.click('button[type="submit"]:has-text("Give it to Bear")');await page.waitForURL(/\/bear\/tasks\//,{timeout:20000});await page.waitForSelector('.load-panel');
+  const panel=await page.textContent('.load-panel');assert.ok(/Consent is due/i.test(panel),'consent first: '+panel.slice(0,200));assert.ok(!/bill/i.test(await page.textContent('main h1, main h2').catch(()=>'')),'not a bill');
+  assert.equal(await page.$$eval('.prep-list',e=>e.length),0,'preparation folded away');assert.ok(!/student is waiting/i.test(await page.textContent('main')),'school pupils are not the person’s students');await shot('56-school-item');
+  await page.click('.load-panel button:has-text("Bear’s preparation")');await page.waitForSelector('.prep-row');const prep=await page.textContent('.prep-list');
+  assert.ok(prep.includes('$180')&&prep.includes('sleeping bag'),prep);assert.ok(await page.$('.prep-row button:has-text("Copy reference")'),'reference ready to copy');
+  assert.ok(!/Bear (has )?(paid|submitted|sent|booked)/i.test(prep),'no false claims');await shot('57-school-prep');
+  await page.goto(base+'/bear/me');await page.waitForSelector('text=What Bear covers');const cov=await page.textContent('.coverage-card');assert.ok(/School admin/.test(cov));
+  assert.equal(await page.locator('text=Forward to Bear').count(),0,'forwarding hidden until it is set up');await shot('58-coverage-settings');
+ });
  await step('the Bear Ideas badge shows only new ideas, clears once seen, and stays right everywhere',async()=>{
   const badge=async()=>Number((await page.locator('.bear-nav .nav-badge').textContent({timeout:1500}).catch(()=>'0'))||0);
   const server=async()=>Number((await page.evaluate(async()=>(await (await fetch('/api/bear/ideas/count')).json()).count)));
