@@ -1,0 +1,46 @@
+{
+ "hypothetical": true,
+ "scenarios": {
+  "conservative": {
+   "annualRevenue": 240000,
+   "activeUsers": 1600,
+   "grossMarginPct": 0.94,
+   "annualContribution": 145920,
+   "contributionMarginPct": 0.608,
+   "firstYearAfterIntegration": 25920,
+   "averageActiveLifetimeMonths": 10.000000000000002
+  },
+  "base": {
+   "annualRevenue": 1200000,
+   "activeUsers": 7500,
+   "grossMarginPct": 0.9535,
+   "annualContribution": 997200,
+   "contributionMarginPct": 0.831,
+   "firstYearAfterIntegration": 847200,
+   "averageActiveLifetimeMonths": 14.285714285714295
+  },
+  "optimistic": {
+   "annualRevenue": 4500000,
+   "activeUsers": 37500,
+   "grossMarginPct": 0.95,
+   "annualContribution": 3969000,
+   "contributionMarginPct": 0.882,
+   "firstYearAfterIntegration": 3769000,
+   "averageActiveLifetimeMonths": 24.99999999999998
+  }
+ },
+ "buildVsBuy": {
+  "build": {
+   "cost": 730000,
+   "monthsToMarket": 12,
+   "opportunityCost": 300000,
+   "total": 1030000
+  },
+  "acquire": {
+   "cost": 1150000,
+   "monthsToMarket": 4,
+   "opportunityCost": 100000,
+   "total": 1250000
+  }
+ }
+}

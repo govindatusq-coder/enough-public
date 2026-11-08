@@ -1,0 +1,16 @@
+{
+ "_note": "HYPOTHETICAL, editable assumptions for an employee-benefits distribution model. Not forecasts, not Employment Hero figures, not validated. Edit and rerun: node commercial/model.mjs",
+ "currency": "AUD",
+ "scenarios": {
+  "conservative": {"employeesCovered": 20000, "pricePerEmployeeMonth": 1.00, "activationRate": 0.08, "monthlyRetention": 0.90, "aiCostPerActiveUserMonth": 0.60, "hostingPerActiveUserMonth": 0.15, "supportPerActiveUserMonth": 0.40, "fixedMonthly": 6000, "integrationOneOff": 120000},
+  "base":         {"employeesCovered": 50000, "pricePerEmployeeMonth": 2.00, "activationRate": 0.15, "monthlyRetention": 0.93, "aiCostPerActiveUserMonth": 0.50, "hostingPerActiveUserMonth": 0.12, "supportPerActiveUserMonth": 0.30, "fixedMonthly": 10000, "integrationOneOff": 150000},
+  "optimistic":   {"employeesCovered": 150000, "pricePerEmployeeMonth": 2.50, "activationRate": 0.25, "monthlyRetention": 0.96, "aiCostPerActiveUserMonth": 0.40, "hostingPerActiveUserMonth": 0.10, "supportPerActiveUserMonth": 0.20, "fixedMonthly": 18000, "integrationOneOff": 200000}
+ },
+ "pricingBasis": "per covered employee per month (the platform pays for everyone covered, whether or not they activate)",
+ "buildVsBuy": {
+  "buildTeam": {"engineers": 3, "fullyLoadedAnnualCostPerEngineer": 190000, "months": 12, "productDesign": 1, "designAnnualCost": 160000},
+  "acquirePrice": 1000000, "acquireIntegrationMonths": 4, "acquireIntegrationCost": 150000,
+  "opportunityCostPerMonthOfDelay": 25000,
+  "notes": "Build estimates are placeholders for the buyer to replace with their own rates. Acquisition is not assumed to be preferable."
+ }
+}

@@ -103,3 +103,16 @@ test('mock benefits platform: provision, launch token, usage report, deprovision
 test('unknown endpoints and methods',async()=>{
  const w=world();assert.equal((await w.call(w.a.key,'GET','/api/v1/admin/users')).status,404);assert.equal((await w.call(w.a.key,'GET','/api/v2/responsibilities')).status,404);
 });
+
+test('research export: opt-in only, pseudonymous, counts only (no household content)',async()=>{
+ const {researchExport,pseudonym}=await import('../lib/bear/engine/research-export.ts');
+ const {ensureProfile,saveProfile}=await import('../lib/bear/services/profile.ts');const {createCapture}=await import('../lib/bear/services/capture.ts');const {maybeAutoSetup}=await import('../lib/bear/services/auto-setup.ts');
+ const s=new MemoryBackend().for('56565656-5656-4565-8565-565656565656');const p=await ensureProfile(s);await saveProfile(s,{name:'Sarah',areas:['family'],onboardingComplete:true});
+ const {extraction}=await createCapture(s,null,{method:'text',text:'Year 5 camp is on 18 November. Payment of $180 is due 12 November.',referenceYear:2026});await maybeAutoSetup(s,extraction,NOW);
+ const secret='a-long-study-secret-123';
+ assert.equal(await researchExport(s,secret,'2026-11-09'),null,'no consent → nothing');
+ await s.update('profiles',p.id,{research:{consent:true,at:NOW.toISOString()}});
+ const row=await researchExport(s,secret,'2026-11-09');assert.equal(row.participant,pseudonym(s.userId,secret));assert.notEqual(row.participant,s.userId);
+ const text=JSON.stringify(row);for(const leak of ['camp','Sarah','180','Year 5',s.userId])assert.ok(!text.includes(leak),leak);
+ await assert.rejects(researchExport(s,'short','2026-11-09'),/study_secret_required/);
+});
