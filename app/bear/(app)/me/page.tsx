@@ -1,4 +1,5 @@
 'use client';
+import {ForwardToBear} from '@/components/bear/forward-to-bear';
 import {useCallback,useEffect,useState,useSyncExternalStore} from 'react';
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
@@ -73,6 +74,7 @@ export default function Me(){
     {perm==='granted'&&push?.available&&!push.subscriptions&&<div className="btn-row"><Button className="sm" onClick={enableNotifications}>Set up push on this device</Button></div>}
    </div></section>
    <section className="section"><p className="eyebrow">Reading photos and documents</p><div className="card"><p className="small">{data.aiAvailable?'Photos, screenshots and PDFs of anything (bills, school notes, appointments, forms, messages) are read by the AI service on Bear\u2019s server. Nothing you give Bear is used to train anything, and nothing is paid without you.':'The AI service is not connected, so pictures and PDFs are off. Typed, pasted and spoken things still work.'}</p>{data.aiAvailable&&<div className="btn-row" style={{marginTop:10}}><Button className="sm" variant="ghost" disabled={aiTest==='running'} onClick={runAiTest}>{aiTest==='running'?'Testing…':'Test photo reading'}</Button></div>}{aiResult&&<p className="small" role="status" style={{marginTop:10,wordBreak:'break-word'}}>{aiResult}</p>}</div></section>
+   <ForwardToBear/>
    <section className="section"><p className="eyebrow">Privacy</p><div className="card"><p className="small">Only you can see what you give Bear. For bills it keeps the biller, amount, dates and payment reference, never card numbers, CVVs or bank passwords. <Link href="/privacy" style={{textDecoration:'underline'}}>Privacy notice</Link></p></div></section>
    <section className="section"><p className="eyebrow">App</p><div className="card"><p className="small">Version <strong>{CURRENT_BUILD}</strong>. Bear checks for a newer version each time you open it.</p>
     <div className="btn-row">{updateState==='update'?<Button className="sm" variant="coral" onClick={applyUpdate}>Update now</Button>:<Button className="sm" variant="ghost" disabled={updateState==='checking'} onClick={async()=>{setUpdateState('checking');setUpdateState(await checkForUpdate());}}>{updateState==='checking'?'Checking…':'Check for updates'}</Button>}</div>

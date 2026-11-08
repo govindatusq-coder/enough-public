@@ -77,7 +77,11 @@ export function readSchoolNotice(raw:string,today:string,children:string[]=[]):S
  const ss=sentences(text);const untrusted=ss.filter(s=>INJECTION.test(s));const clean=ss.filter(s=>!INJECTION.test(s));
  // ---- events ----
  const events:SchoolEvent[]=[];const eventAt:(SchoolEventKind|null)[]=[];
- for(const s of clean){eventAt.push(null);for(const ev of EVENTS){const m=ev.re.exec(s);if(!m)continue;if(events.some(e=>e.kind===ev.kind))continue;
+ for(const s of clean){eventAt.push(null);for(const ev of EVENTS){const m=ev.re.exec(s);if(!m)continue;
+  const seen=events.find(e=>e.kind===ev.kind);
+  // A later, more specific mention (a date, a year level) refines the event rather than adding another.
+  if(seen){if(!seen.date){const d=dateIn(s,today,'event');if(d&&(d.role!=='due'||!/\b(due|by|return|pay|close)\b/i.test(s))){seen.date=d.iso;seen.endDate=d.end||null;seen.confidence=0.9;}}
+   const better=ev.title(m,text);if(/^School /.test(seen.title)&&!/^School /.test(better))seen.title=better;eventAt[eventAt.length-1]=ev.kind;break;}
   const d=dateIn(s,today,'event');
   // A date in the event's own sentence that reads as a deadline ("forms due 10 Nov") isn't the event date.
   const date=d&&(d.role!=='due'||!/\b(due|by|return|pay|close)\b/i.test(s))?d.iso:null;

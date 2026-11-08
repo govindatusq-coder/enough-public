@@ -86,7 +86,7 @@ export interface Profile extends Owned{
 }
 
 // ---------- Capture ----------
-export const captureMethods=['text','manual','photo','screenshot','upload','voice'] as const;
+export const captureMethods=['text','manual','photo','screenshot','upload','voice','email'] as const;
 export type CaptureMethod=typeof captureMethods[number];
 export const captureStatuses=['received','extracting','needs_verification','verified','rejected','failed'] as const;
 export type CaptureStatus=typeof captureStatuses[number];

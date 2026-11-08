@@ -48,7 +48,7 @@ export async function readLoad(store:BearStore,task:Task,now=new Date()):Promise
  return {graph,view:describe(graph,today,{quiet:task.timing==='flexible'}),migrated:!!graph.migrated};
 }
 
-export async function actOnLoad(store:BearStore,taskId:string,input:{stepId:string;evidence?:string|null},now=new Date()){
+export async function actOnLoad(store:BearStore,taskId:string,input:{stepId:string;evidence?:string|null;source?:'user'|'email'|'receipt'},now=new Date()){
  const task=await store.get('tasks',taskId);if(!task)throw new Error('not_found');
  const profile=await ensureProfile(store);const today=todayISO(tzOf(profile),now);
  const graph=task.load||(await readLoad(store,task,now)).graph;

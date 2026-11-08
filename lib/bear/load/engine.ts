@@ -98,7 +98,8 @@ export function graphState(graph:LoadGraph):LoadState{
 }
 
 // ---------- Acting on a load ----------
-export interface ActionInput{stepId:string;evidence?:string|null}
+// source: who vouches for it. The person (default), or a real document such as a forwarded confirmation email.
+export interface ActionInput{stepId:string;evidence?:string|null;source?:'user'|'email'|'receipt'}
 export interface ActionResult{graph:LoadGraph;said:string;unknownChoice?:string|null}
 const spawnable:Record<string,{pattern:PatternId;flags:string[];title:(t:string)=>string;parentEvidence?:string}>={
  follow_up_needed:{pattern:'APPOINTMENT',flags:['needs_booking'],title:t=>`Follow-up for ${t.toLowerCase()}`,parentEvidence:'outcome_captured'},
@@ -127,7 +128,7 @@ export function applyAction(graph:LoadGraph,input:ActionInput,today:string,caps:
  const key=chosen||step.evidence;
  if(chosen==='still_waiting'){step.surfaceFrom=addDays(today,map?.learned?.followUpDays??5);node.evidence.push({key:'still_waiting',at,source:'user'});return {graph:recompute(g,today,caps,map),said:`No problem. Bear will check again ${step.surfaceFrom}.`};}
  step.status='done';
- if(key)node.evidence.push({key,at,source:'user'});
+ if(key)node.evidence.push({key,at,source:input.source||'user'});
  if(key==='resubmit_needed'||key==='resubmitting'){const sub=node.steps.find(s=>s.key==='submit');if(sub)sub.status='pending';}
  if(key==='switch_provider'){const c=node.steps.find(s=>s.key==='contact');if(c)c.status='pending';}
  if(key==='renewal_confirmed'){const exp=node.entities.expiryDate||node.entities.dueDate;if(exp){node.entities={...node.entities,expiryDate:addMonths(exp,12)};node.evidence.push({key:'next_expiry_recorded',at,source:'system'});}
