@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: Load Bear Responsibility Engine API
+  version: 1.0.0
+  description: |
+    Vendor-neutral API for embedding Load Bear's Responsibility Engine in another platform (e.g. an
+    employee-benefits app). Off unless BEAR_ENTERPRISE_API_ENABLED=on. All requests need a tenant API key.
+    Employees are addressed by the tenant's own external id in the X-LoadBear-Subject header. Employers never
+    receive individual responsibilities; reporting is aggregated and suppressed below 10 active members.
+servers: [{url: https://{host}/api/v1, variables: {host: {default: enough-public-zuue.vercel.app}}}]
+security: [{apiKey: []}]
+components:
+  securitySchemes:
+    apiKey: {type: http, scheme: bearer, description: "Tenant API key (lbk_…). Stored only as a SHA-256 hash."}
+  parameters:
+    Subject: {name: X-LoadBear-Subject, in: header, required: true, schema: {type: string, maxLength: 128}, description: The tenant's own employee id.}
+    Idempotency: {name: Idempotency-Key, in: header, required: false, schema: {type: string, pattern: '^[\w-]{8,128}$'}, description: Replays the first response for the same key.}
+    Id: {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+  schemas:
+    Error: {type: object, properties: {error: {type: object, properties: {code: {type: string}, message: {type: string}, requestId: {type: string}}}}}
+    EvidenceReference: {type: object, properties: {sourceId: {type: string}, location: {type: string}, excerpt: {type: string}}}
+    ExtractedResponsibility:
+      type: object
+      properties:
+        title: {type: string}
+        responsibilityPattern: {type: string, enum: [BILL_PAYMENT, SCHOOL_EVENT, APPOINTMENT, FORM_APPLICATION, REPAIR_PROBLEM, WAITING_FOR_RESPONSE, PURCHASE_REQUIRED, RENEWAL, INVITATION_EVENT, REPLENISHMENT, UNKNOWN_LOAD]}
+        dueDate: {type: [string, 'null'], format: date}
+        dueDateBasis: {type: string, enum: [explicit, inferred, unknown]}
+        dueDateEvidence: {type: [string, 'null']}
+        eventDate: {type: [string, 'null'], format: date}
+        eventDateBasis: {type: string, enum: [explicit, inferred, unknown]}
+        amountCents: {type: [integer, 'null']}
+        requiredActions: {type: array, items: {type: string}}
+        dependencies: {type: array, items: {type: string}}
+        missingInformation: {type: array, items: {type: string}}
+        sourceEvidence: {type: array, items: {$ref: '#/components/schemas/EvidenceReference'}}
+        confidence: {type: number}
+        requiresConfirmation: {type: boolean}
+    Extraction:
+      type: object
+      properties:
+        sourceId: {type: string}
+        sourceType: {type: string, enum: [image, document, voice, text, message]}
+        responsibilities: {type: array, items: {$ref: '#/components/schemas/ExtractedResponsibility'}}
+        processingStatus: {type: string, enum: [success, partial, failed]}
+        warnings: {type: array, items: {type: string}}
+    State: {type: string, enum: [identified, needs_clarification, planned, ready, in_progress, waiting, completed_unverified, verified, closed, cancelled]}
+    Responsibility:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        title: {type: string}
+        state: {$ref: '#/components/schemas/State'}
+        statusText: {type: string, description: Plain words for people (e.g. "Looks done. Just waiting for confirmation.")}
+        nextAction: {type: [object, 'null']}
+        prepared: {type: array, items: {type: object}}
+        plan: {type: [object, 'null']}
+        verification: {type: [object, 'null'], properties: {level: {type: string}, method: {type: string}, at: {type: string}}}
+    ActionOutcome:
+      type: object
+      properties:
+        status: {type: string, enum: [done, prepared, needs_approval, not_available, failed]}
+        userMessage: {type: string}
+paths:
+  /capabilities:
+    get: {summary: What actions are AVAILABLE / REQUIRES_CONFIGURATION / REQUIRES_INTEGRATION / NOT_SUPPORTED, responses: {'200': {description: OK}}}
+  /branding:
+    get: {summary: The tenant's white-label settings (defaults to Load Bear), responses: {'200': {description: OK}}}
+  /members:
+    post:
+      summary: Provision an employee (idempotent per external id)
+      parameters: [{$ref: '#/components/parameters/Idempotency'}]
+      requestBody: {content: {application/json: {schema: {type: object, required: [externalId], properties: {externalId: {type: string}}}}}}
+      responses: {'201': {description: Provisioned}, '400': {description: Invalid, content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}}}
+  /members/{externalId}:
+    delete: {summary: Deprovision (access ends immediately), parameters: [{name: externalId, in: path, required: true, schema: {type: string}}], responses: {'200': {description: Deprovisioned}, '404': {description: Not found}}}
+  /reports/usage:
+    get: {summary: Aggregated, coarse usage; suppressed below 10 active members, responses: {'200': {description: OK}}}
+  /responsibilities/extract:
+    post:
+      summary: Extract responsibilities from text with evidence (stateless; nothing stored)
+      requestBody: {content: {application/json: {schema: {type: object, required: [text], properties: {text: {type: string, maxLength: 20000}, sourceType: {type: string}, today: {type: string, format: date}}}}}}
+      responses: {'200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/Extraction'}}}}}
+  /responsibilities/plan:
+    post:
+      summary: A validated dependency plan, from text (stateless) or an existing responsibility (needs subject)
+      responses: {'200': {description: OK}}
+  /responsibilities:
+    post:
+      summary: Capture text for the subject; Bear sets up one responsibility per job (duplicates merged)
+      parameters: [{$ref: '#/components/parameters/Subject'}, {$ref: '#/components/parameters/Idempotency'}]
+      responses: {'201': {description: Created}, '200': {description: Merged into an existing responsibility}, '202': {description: Needs review in the app (e.g. a bill)}}
+  /responsibilities/{id}:
+    get: {summary: One responsibility, parameters: [{$ref: '#/components/parameters/Id'}, {$ref: '#/components/parameters/Subject'}], responses: {'200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/Responsibility'}}}}, '404': {description: Not found (including other tenants' data)}}}
+  /responsibilities/{id}/history:
+    get: {summary: Append-only lifecycle events (no content), parameters: [{$ref: '#/components/parameters/Id'}, {$ref: '#/components/parameters/Subject'}], responses: {'200': {description: OK}}}
+  /responsibilities/{id}/actions:
+    post:
+      summary: Perform or prepare an action; approval enforced; unsupported actions explained, never faked
+      parameters: [{$ref: '#/components/parameters/Id'}, {$ref: '#/components/parameters/Subject'}, {$ref: '#/components/parameters/Idempotency'}]
+      requestBody: {content: {application/json: {schema: {type: object, required: [actionType], properties: {actionType: {type: string}, approved: {type: boolean}, input: {type: object}}}}}}
+      responses: {'200': {description: OK, content: {application/json: {schema: {type: object, properties: {outcome: {$ref: '#/components/schemas/ActionOutcome'}}}}}}, '409': {description: Not available}, '502': {description: Integration failed (recorded as failure)}}
+  /responsibilities/{id}/verify:
+    post:
+      summary: Record the employee's confirmation (user_confirmation is the only method via API today)
+      parameters: [{$ref: '#/components/parameters/Id'}, {$ref: '#/components/parameters/Subject'}]
+      requestBody: {content: {application/json: {schema: {type: object, required: [method], properties: {method: {type: string, enum: [user_confirmation]}}}}}}
+      responses: {'200': {description: Verified}, '409': {description: Already closed}}
