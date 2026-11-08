@@ -9,7 +9,7 @@ import type {ExtractedEntity} from '@/lib/bear/domain/types';
 async function withAuto<T extends {extraction:ExtractedEntity}>(store:BearStore,provider:StructuredModelProvider|null,result:T){
  // A page of projects (a brain dump) is filed as projects with their to-dos, then lined up together.
  if(result.extraction.kind==='task'&&isBrainDump(result.extraction.general))return {...result,dump:await setupBrainDump(store,result.extraction)};
- const auto=await maybeAutoSetup(store,result.extraction,new Date(),provider).catch(()=>null);return auto?{...result,auto:{taskId:auto.task.id,title:auto.task.title,area:auto.area,planned:auto.planned,dueAt:auto.task.dueAt}}:result;}
+ const auto=await maybeAutoSetup(store,result.extraction,new Date(),provider).catch(()=>null);return auto?{...result,auto:{taskId:auto.task.id,title:auto.task.title,area:auto.area,planned:auto.planned,dueAt:auto.task.dueAt,merged:!!auto.merged}}:result;}
 export const dynamic='force-dynamic';
 export const maxDuration=120;
 // Accepts JSON {method,text} or multipart form-data with `file` (+ optional `method`, `text`).

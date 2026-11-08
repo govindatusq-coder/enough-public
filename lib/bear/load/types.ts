@@ -49,8 +49,15 @@ export interface LoadEntities{
  reference?:string|null;
  expiryDate?:string|null;
  rsvpDate?:string|null;
+ // School Admin pack: per-obligation details from a school notice (dates, amounts, references, links).
+ school?:SchoolDetails|null;
  flags?:string[];             // consent, payment, autopay, disputed, duplicate, overdue, telehealth, referral, cancelled, rescheduled, urgent, safety, rental, warranty, booked, submitted, ordered, recurring, ...
 }
+
+export interface SchoolObligationDetail{type:'consent'|'payment'|'equipment'|'booking'|'order'|'medical'|'reply'|'costume'|'materials'|'homework';dueDate:string|null;dueInferred:boolean;amountCents:number|null;reference:string|null;link:string|null;code:string|null;method:string|null;items:string[];confidence:number;
+ // Which event in the notice this belongs to (a newsletter can carry several).
+ eventKind?:string|null}
+export interface SchoolDetails{event:string;kind:string;date:string|null;endDate:string|null;child:string|null;obligations:SchoolObligationDetail[]}
 
 export interface PatternStepTemplate{
  key:string;
@@ -113,7 +120,9 @@ export interface WaitingState{
  escalationAt?:string|null;
 }
 
-export interface Evidence{key:string;at:string;source:'user'|'system'|'time'}
+// Where evidence came from: the person's word, the system, time passing, or a real document
+// (a forwarded confirmation email, an uploaded receipt, a provider) when Bear has one.
+export interface Evidence{key:string;at:string;source:'user'|'system'|'time'|'email'|'receipt'|'provider'}
 
 export interface LoadStep{
  id:string;key:string;label:string;cta:string|null;

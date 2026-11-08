@@ -11,6 +11,9 @@ export interface LoadView{
  needsYou:MinimumHumanAction|null;nothingForYou:boolean;
  covered:string[];waiting:{who:string;line:string}[];comingUp:{line:string;date:string}[];
  nextBringBack:string|null; // date Bear will next bring this back (a reminder is set for it)
+ // Bear's preparation (School Admin pack): the details the person needs, ready to use. Never an action
+ // Bear took: a link is a link to open, a reference is something to copy.
+ prepared?:{key:string;label:string;value:string;href:string|null;copy:string|null;done:boolean}[];
 }
 
 function holdLine(n:LoadNode,today:string):string|null{
@@ -50,5 +53,23 @@ export function describe(graph:LoadGraph,today:string,opts:{quiet?:boolean}={}):
  // A title that is already an action ("Return the permission form") reads badly after "I've got the".
  const action=/^(return|pay|book|buy|get|call|ring|email|send|sign|fill|complete|renew|fix|pick|drop|collect|organi[sz]e|sort|check|finish|write|clean|take|bring|order|cancel|reply|rsvp|find|ask|tell|make|update|submit|lodge)\b/i.test(primary.title);
  const headline=state==='resolved'?'All sorted. Off your mind.':state==='captured'&&!needsYou?(action?'I’m holding onto this.':`I’m holding onto ${t}.`):acted&&(state==='covered'||state==='waiting')?(action?'All covered.':`${sentence(primary.title)} covered.`):action?'I’ve got this.':`I’ve got ${t}.`;
- return {state,title:primary.title,headline,needsYou,nothingForYou:!needsYou&&state!=='resolved',covered:uniq,waiting,comingUp:comingUp.map(c=>({line:opts.quiet?`${c.line} will be here when you want it`:/^\w+ing\b/.test(c.line)?`${c.line} will come back ${friendlyDate(c.date,today)}`:`Back ${friendlyDate(c.date,today)}: ${c.line}`,date:c.date})),nextBringBack:opts.quiet?null:nextBringBack};
+ const prepared=preparedFor(graph,today);
+ return {prepared,state,title:primary.title,headline,needsYou,nothingForYou:!needsYou&&state!=='resolved',covered:uniq,waiting,comingUp:comingUp.map(c=>({line:opts.quiet?`${c.line} will be here when you want it`:/^\w+ing\b/.test(c.line)?`${c.line} will come back ${friendlyDate(c.date,today)}`:`Back ${friendlyDate(c.date,today)}: ${c.line}`,date:c.date})),nextBringBack:opts.quiet?null:nextBringBack};
+}
+
+const hrefOf=(link:string|null)=>link?(/^https?:\/\//i.test(link)?link:`https://${link}`):null;
+function preparedFor(graph:LoadGraph,today:string):NonNullable<LoadView['prepared']>{
+ const primary=graph.nodes.find(n=>n.id===graph.primaryId)!;const d=primary.entities.school;if(!d)return [];
+ const has=(k:string)=>graph.nodes.some(n=>n.evidence.some(e=>e.key===k));const out:NonNullable<LoadView['prepared']>=[];
+ const by=(x:string|null)=>x?` · by ${friendlyDate(x,today)}`:'';
+ for(const o of d.obligations){
+  if(o.type==='consent')out.push({key:'consent',label:'Consent',value:`Sign and return the form${by(o.dueDate)}${o.method?` · ${o.method}`:''}`,href:hrefOf(o.link),copy:null,done:has('submission_confirmed')});
+  if(o.type==='payment')out.push({key:'payment',label:'Payment',value:[o.amountCents?money(o.amountCents):'Amount not stated',o.dueDate?`by ${friendlyDate(o.dueDate,today)}`:null,o.method?`via ${o.method}`:null].filter(Boolean).join(' · '),href:hrefOf(o.link),copy:o.reference,done:has('payment_confirmed')||has('already_paid')});
+  if(o.type==='booking')out.push({key:'booking',label:'Booking',value:`${o.link?o.link.replace(/^https?:\/\//,''):'Booking details in the notice'}${o.code?` · code ${o.code}`:''}${by(o.dueDate)}`,href:hrefOf(o.link),copy:o.code,done:has('booked')});
+  if(o.type==='order')out.push({key:'order',label:'Ordering',value:`${o.link?o.link.replace(/^https?:\/\//,''):'Order details in the notice'}${o.code?` · code ${o.code}`:''}${by(o.dueDate)}`,href:hrefOf(o.link),copy:o.code,done:has('ordered')});
+  if(o.type==='medical')out.push({key:'medical',label:'Medical details',value:`Update the school’s medical form${by(o.dueDate)}${o.method?` · ${o.method}`:''}. Bear doesn’t fill in health details.`,href:hrefOf(o.link),copy:null,done:has('medical_sent')});
+ }
+ const items=[...new Set(d.obligations.filter(o=>['equipment','costume','materials'].includes(o.type)).flatMap(o=>o.items))];
+ if(items.length)out.push({key:'bring',label:'To have ready',value:items.join(', '),href:null,copy:null,done:has('packed')||has('costume_ready')});
+ return out;
 }

@@ -44,7 +44,7 @@ export async function readLoad(store:BearStore,task:Task,now=new Date()):Promise
  if(!graph){const bill=(await store.list('bills',{where:[{column:'task_id',value:task.id}]}))[0]||null;graph=legacyGraph(task,bill,today,caps());await store.update('tasks',task.id,{load:graph});}
  const before=graphState(graph);graph=recompute(graph,today,caps(),profile.loadMap);
  // Time can close a load (the camp happened, with everything it needed done).
- if(graphState(graph)==='resolved'&&before!=='resolved'&&task.status==='open'&&!graph.migrated){await store.update('tasks',task.id,{load:graph});await completeTask(store,{taskId:task.id,method:'load',expectNext:null},now).catch(()=>null);}
+ if(graphState(graph)==='resolved'&&before!=='resolved'&&task.status==='open'&&!graph.migrated){await store.update('tasks',task.id,{load:graph});await completeTask(store,{taskId:task.id,method:'load',expectNext:null,evidence:'time'},now).catch(()=>null);}
  return {graph,view:describe(graph,today,{quiet:task.timing==='flexible'}),migrated:!!graph.migrated};
 }
 

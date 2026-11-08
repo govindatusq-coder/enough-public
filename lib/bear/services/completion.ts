@@ -1,7 +1,8 @@
+import {completionEvidence} from '../coverage/verification.ts';
 import {z} from 'zod';
 import {addDays,addMonths,daysBetween,todayISO} from '../domain/dates.ts';
 import {formatAUD} from '../domain/money.ts';
-import type {Bill,Completion,RecurringExpectation,Suggestion,ValueLedgerEntry,Win} from '../domain/types.ts';
+import type {Bill,Completion,RecurringExpectation,Suggestion,Task,ValueLedgerEntry,Win} from '../domain/types.ts';
 import {stamp,type BearStore} from '../store/store.ts';
 import {recordBehaviour} from './behaviour.ts';
 import {ensureProfile} from './profile.ts';
@@ -12,7 +13,9 @@ import {resolveLoad,syncNextInProject} from './load.ts';
 // Wealth entry ONLY when a defensible saving exists, and (if the user agreed, or
 // to ask) sets up the recurring expectation.
 export const completeSchema=z.object({taskId:z.string().uuid(),method:z.string().max(40).nullable().default(null),paidOn:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),expectNext:z.boolean().nullable().default(null)}).strict();
-export type CompleteInput=z.infer<typeof completeSchema>;
+// How Bear knows it's done: the person said so (default), time closed a load whose steps the person
+// had already confirmed, or a real document. Never inferred from a reminder or a passing deadline alone.
+export type CompleteInput=z.infer<typeof completeSchema>&{evidence?:'user'|'time'|'email'|'receipt'};
 
 export async function completeTask(store:BearStore,input:CompleteInput,now=new Date()){
  const task=await store.get('tasks',input.taskId);if(!task)throw new Error('not_found');
@@ -27,7 +30,7 @@ export async function completeTask(store:BearStore,input:CompleteInput,now=new D
  await store.update('tasks',task.id,{status:'done'});
  if(input.method!=='load')await resolveLoad(store,task,now);
  await syncNextInProject(store,task.projectId,now);
- const completion=await store.insert('completions',stamp<Completion>(store.userId,{taskId:task.id,billId:bill?.id||null,completedAt:now.toISOString(),daysBeforeDue,method:input.method,timing}));
+ const completion=await store.insert('completions',stamp<Completion>(store.userId,{taskId:task.id,billId:bill?.id||null,completedAt:now.toISOString(),daysBeforeDue,method:input.method,timing,evidence:evidenceFor(input.evidence||'user',task,now)}));
  // Cancel outstanding reminders quietly and close dependencies.
  for(const r of await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed','delivered']}]}))await store.update('reminders',r.id,{status:'actioned'});
  for(const d of await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})){const dep=await store.get('tasks',d.dependsOnTaskId);if(dep&&dep.status==='open')await store.update('tasks',dep.id,{status:'done'});}
@@ -100,4 +103,14 @@ export async function dropTask(store:BearStore,taskId:string){
  for(const r of await store.list('reminders',{where:[{column:'task_id',value:taskId},{column:'status',op:'in',value:['scheduled','snoozed','delivered']}]}))await store.update('reminders',r.id,{status:'cancelled'});
  for(const b of await store.list('bills',{where:[{column:'task_id',value:taskId}]})){await store.update('bills',b.id,{status:'dropped'});await store.update('projects',b.projectId,{status:'archived'});}
  await recordBehaviour(store,'task_dropped',{taskId});
+}
+
+function evidenceFor(source:'user'|'time'|'email'|'receipt',task:Task,now:Date):NonNullable<Completion['evidence']>{
+ const at=now.toISOString();
+ if(source==='time'){
+  // Time closed it: confirmed by the person only if every step they had to do carries their word.
+  const humanDone=(task.load?.nodes||[]).flatMap(n=>n.evidence).some(e=>e.source==='user');
+  return humanDone?{level:'user_confirmed',source:'user',confidence:0.8,verifiedAt:at}:{level:'inferred',source:'time',confidence:0.5,verifiedAt:null};
+ }
+ return completionEvidence(source,at);
 }

@@ -8,6 +8,9 @@ import {formatAU} from '../domain/dates.ts';
 import {formatAUD} from '../domain/money.ts';
 import {traced,type AIInference,type AreaKey,type Bill,type BillFieldKey,type BillFields,type ExtractedEntity,type GeneralFields,type Traced,type VerificationQuestion} from '../domain/types.ts';
 import {stamp,type BearStore} from '../store/store.ts';
+import {flags} from '../flags.ts';
+import {readSchoolNotice} from '../coverage/packs/school.ts';
+import {todayISO} from '../domain/dates.ts';
 
 // BillExtractionService: runs the rule-based extractor and (when configured) the model,
 // reconciles them into Traced fields with honest confidence, and writes the
@@ -120,12 +123,26 @@ export async function extractCapture(store:BearStore,provider:StructuredModelPro
  const sourceText=input.text||model?.extractedText||null;
  const billRulesFinal=input.text?billRules:extractBillWithRules(sourceText||'',input.referenceYear);
  const general=reconcileGeneral(model,generalRules,at);
- const isBill=general.kind==='bill'||(!model&&billRulesFinal.documentType==='bill'&&billRulesFinal.amountDueCents.value!==null);
+ // School Admin pack: a school notice is read as a school notice (events, each obligation with its own
+ // date, amount, reference, link), never as a bill, even when it mentions a fee.
+ let school:ExtractedEntity['school']=null;
+ if(flags.coveragePacks()&&sourceText){
+  const profile=(await store.list('profiles',{limit:1}))[0];
+  const children=(profile?.people||[]).filter(p=>p.role==='child').map(p=>p.name).filter(Boolean);
+  const reading=readSchoolNotice(sourceText,todayISO(profile?.lifeRhythm?.timezone||'Australia/Sydney'),children);
+  if(reading.isSchool&&(reading.events.length||reading.obligations.length)){
+   school=reading;const ev=reading.events.find(e=>e.date)||reading.events[0];
+   general.kind='school';general.area=traced('family' as AreaKey,'rules',0.9,false,at);
+   if(ev){general.title=traced(ev.title,'rules',0.85,false,at);general.when=traced(ev.date,'rules',ev.date?0.85:0,false,at);}
+   if(reading.child&&reading.child.confidence>=0.6)general.person=traced(reading.child.name,'rules',reading.child.confidence,false,at);
+  }
+ }
+ const isBill=!school&&(general.kind==='bill'||(!model&&billRulesFinal.documentType==='bill'&&billRulesFinal.amountDueCents.value!==null));
  const fields=reconcile(model?.bill||null,billRulesFinal,at);
  if(isBill&&general.kind!=='bill')general.kind='bill';
  const questions=isBill?verificationQuestions(fields):generalQuestions(general);
  const duplicate=isBill?await findDuplicate(store,fields):null;
- const entity=stamp<ExtractedEntity>(store.userId,{captureId:input.captureId,kind:isBill?'bill':'task',status:'draft',fields,general,questions,sourceText,inferenceId,duplicateOfBillId:duplicate?.id||null});
+ const entity=stamp<ExtractedEntity>(store.userId,{captureId:input.captureId,kind:isBill?'bill':'task',status:'draft',fields,general,questions,sourceText,inferenceId,duplicateOfBillId:duplicate?.id||null,school});
  return store.insert('extractions',entity);
 }
 export const extractBill=extractCapture;

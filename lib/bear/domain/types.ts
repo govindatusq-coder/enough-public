@@ -138,7 +138,9 @@ export const captureKinds=['bill','appointment','school','form','errand','shoppi
 export type CaptureKind=typeof captureKinds[number];
 export interface ListItem{name:string;quantity:string|null;estimatedCents:number|null}
 export interface GeneralFields{kind:CaptureKind;summary:string;title:Traced<string>;area:Traced<AreaKey>;when:Traced<ISODate>;timeOfDay:Traced<string>;person:Traced<string>;location:Traced<string>;isRecurring:Traced<boolean>;steps:string[];estimatedMinutes:number|null;items:ListItem[];estimatedCostCents:number|null;timing:Traced<'time_sensitive'|'flexible'>;size:Traced<'one_go'|'bigger'>;projects?:{name:string;tasks:string[]}[]}
-export interface ExtractedEntity extends Owned{captureId:Id;kind:'bill'|'task';status:'draft'|'verified'|'rejected';fields:BillFields;general:GeneralFields;questions:VerificationQuestion[];sourceText:string|null;inferenceId:Id|null;duplicateOfBillId:Id|null}
+export interface ExtractedEntity extends Owned{captureId:Id;kind:'bill'|'task';status:'draft'|'verified'|'rejected';fields:BillFields;general:GeneralFields;questions:VerificationQuestion[];sourceText:string|null;inferenceId:Id|null;duplicateOfBillId:Id|null;
+ // School Admin pack reading (when the capture is a school notice).
+ school?:import('../coverage/packs/school.ts').SchoolReading|null}
 export interface AIInference extends Owned{captureId:Id|null;service:string;provider:string;model:string;promptHash:string;rawOutput:unknown;latencyMs:number;ok:boolean;error:string|null}
 export interface UserCorrection extends Owned{extractionId:Id;field:string;from:unknown;to:unknown}
 
@@ -191,7 +193,9 @@ export interface Suggestion extends Owned{kind:SuggestionKind;status:'open'|'acc
 // ---------- Completion, Win, Ledger ----------
 export interface Completion extends Owned{taskId:Id;billId:Id|null;completedAt:ISODateTime;daysBeforeDue:number|null;method:string|null;
  // Snapshot from the Priority Engine at the moment it was done (for "pressure prevented").
- timing?:{latestSafe:ISODate|null;latestComfortable:ISODate|null;deadline:ISODate|null;bearSteps:number}|null}
+ timing?:{latestSafe:ISODate|null;latestComfortable:ISODate|null;deadline:ISODate|null;bearSteps:number}|null;
+ // How Bear knows it was done (Load Bear 2.0): confirmed by a document, by the person, or only inferred.
+ evidence?:import('../coverage/types.ts').CompletionEvidence|null}
 export type WinCategory='handled'|'money'|'time'|'me';
 export interface Win extends Owned{completionId:Id;category:WinCategory;title:string;detail:string;amountCents:number|null;minutes:number|null;billId:Id|null;isDemo:boolean}
 export type LedgerKind='wealth'|'health'|'happiness';
@@ -199,7 +203,7 @@ export type WealthReason='late_fee_avoided'|'early_discount_used'|'subscription_
 export interface ValueLedgerEntry extends Owned{kind:LedgerKind;reason:WealthReason|'care_task'|'protected_time';label:string;amountCents:number|null;minutes:number|null;occurredAt:ISODateTime;sourceTaskId:Id|null;sourceBillId:Id|null;defensible:boolean;isDemo:boolean;source?:'user'}
 
 // ---------- Behaviour ----------
-export const behaviourTypes=['suggestion_accepted','suggestion_rejected','task_completed','reminder_delivered','reminder_opened','reminder_snoozed','reminder_dismissed','capture_created','capture_rejected','field_corrected','task_dropped','day_mode_set','rhythm_changed','assist_used','plan_accepted','plan_changed','pattern_unknown','load_action','priority_later','priority_importance','idea_response'] as const;
+export const behaviourTypes=['suggestion_accepted','suggestion_rejected','task_completed','reminder_delivered','reminder_opened','reminder_snoozed','reminder_dismissed','capture_created','capture_rejected','field_corrected','task_dropped','day_mode_set','rhythm_changed','assist_used','plan_accepted','plan_changed','pattern_unknown','load_action','priority_later','priority_importance','idea_response','coverage_merged','responsibility_op','research_signal'] as const;
 export type BehaviourType=typeof behaviourTypes[number];
 export interface BehaviourEvent extends Owned{type:BehaviourType;at:ISODateTime;hourLocal:number;weekday:Weekday;detail:Record<string,unknown>}
 

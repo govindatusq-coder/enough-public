@@ -1,3 +1,4 @@
+import {schoolDetails,schoolFlags,preparationList,type SchoolReading} from '../coverage/packs/school.ts';
 import {z} from 'zod';
 import {addDays,formatAU,isValidISODate,parseISODate} from '../domain/dates.ts';
 import {areaKeys,billCategories,paymentMethods,recurrences,traced,type Area,type Bill,type BillFieldKey,type BillFields,type Project,type Task,type TaskDependency,type Traced,type UserCorrection} from '../domain/types.ts';
@@ -100,7 +101,7 @@ export async function confirmTask(store:BearStore,input:ConfirmTaskInput,now=new
  await store.update('extractions',extraction.id,{status:'verified',general:g});
  if(capture)await store.update('captures',capture.id,{status:'verified'});
  // Run it through the Load Pattern Engine: what it is, what Bear carries, what needs the person.
- const loaded=await attachLoad(store,task,{text:[extraction.sourceText,capture?.text].find(t=>t&&t.trim())||g.summary||g.title.value||'',title:g.title.value,kindHint:g.kind,entities:entitiesFromReading(g)},now);
+ const loaded=await attachLoad(store,task,{text:[extraction.sourceText,capture?.text].find(t=>t&&t.trim())||g.summary||g.title.value||'',title:g.title.value,kindHint:g.kind,entities:{...entitiesFromReading(g),...(extraction.school?schoolEntities(extraction.school):{})}},now);
  return {task:loaded.task,project,steps};
 }
 
@@ -113,4 +114,11 @@ export async function planDependencies(store:BearStore,task:Task,bill:Bill,detai
  if(bill.previousBillId){const prev=await store.get('bills',bill.previousBillId);if(prev&&prev.amountCents>0&&bill.amountCents>prev.amountCents*1.25)await add('confirm_discrepancy',`Check why this is higher than last time`,null,3);}
  if(detail==='full_plan'&&bill.amountCents>=50000&&!f.directDebitActive.value)await add('check_balance','Check the account balance',bill.dueAt?addDays(bill.dueAt,-2):null,1);
  return created;
+}
+
+// School Admin pack → load entities: the event, each obligation's own details, and the flags that switch
+// on the right steps (consent, payment, booking, order...). A single packing list per event.
+export function schoolEntities(r:SchoolReading){
+ const d=schoolDetails(r);if(!d)return {};
+ return {school:d,eventDate:d.date,eventEndDate:d.endDate,person:d.child,items:preparationList(d),flags:schoolFlags(r)};
 }

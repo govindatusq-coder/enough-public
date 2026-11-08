@@ -464,3 +464,7 @@
 .bear .why-chev.open{transform:rotate(180deg);}
 .bear .why-list{margin-top:4px;display:grid;gap:4px;}
 .bear .why-summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+/* Bear's preparation (School Admin): details ready to use, in the existing card language. */
+.bear .prep-list{display:grid;gap:10px;margin-top:6px;}
+.bear .prep-row{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding-top:8px;border-top:1px solid var(--line);}
+.bear .prep-actions{display:flex;gap:6px;flex-wrap:wrap;flex:none;}

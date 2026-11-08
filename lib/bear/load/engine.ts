@@ -1,3 +1,4 @@
+import {patterns} from './patterns.ts';
 import {addDays,addMonths} from '../domain/dates.ts';
 import {minimumHumanAction,stepActive,humanCandidates} from './action.ts';
 import {isClosed,evidenceKeys} from './closure.ts';
@@ -43,8 +44,13 @@ export function normaliseEntities(pattern:PatternId,e:LoadEntities):LoadEntities
 export function understand(input:UnderstandInput):Understood{
  const text=normaliseText(input.text);
  let entities=mergeEntities(extractEntities(text,input.today),input.entities);
+ // School Admin pack: the notice reader's per-obligation dates are authoritative for a school notice
+ // (the generic reader can only find one "due" date for the whole thing).
+ const school=input.entities?.school;
+ if(school){entities={...entities,school,eventDate:school.date??entities.eventDate??null,eventEndDate:school.endDate??null,dueDate:school.obligations.find(o=>o.type==='medical')?.dueDate||null,amountCents:school.obligations.find(o=>o.type==='payment')?.amountCents??null,person:school.child||entities.person||null};}
+ const force=input.forcePattern||(school?'SCHOOL_EVENT':undefined);
  let recognition=recognise(text,entities,input.kindHint);
- if(input.forcePattern)recognition={...recognition,primary:input.forcePattern,confidence:Math.max(recognition.confidence,0.9)};
+ if(force)recognition={...recognition,primary:force,confidence:Math.max(recognition.confidence,0.9),attached:(patterns[force].attaches||[]).filter(a=>a.when(entities,text)).map(a=>a.pattern)};
  entities=normaliseEntities(recognition.primary,entities);
  // Learned: the tradie or clinic they keep using becomes the default suggestion.
  const usual=usualProvider(input.loadMap,recognition.primary);if(usual&&!entities.provider)entities={...entities,provider:usual};

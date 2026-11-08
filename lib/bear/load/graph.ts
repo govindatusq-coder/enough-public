@@ -35,14 +35,29 @@ export function deriveTitle(pattern:PatternId,text:string,e:LoadEntities,given?:
 function childEntities(parent:LoadEntities,child:PatternId,parentPattern:PatternId):LoadEntities{
  const flags=parent.flags||[];
  switch(child){
-  case 'FORM_APPLICATION':return {dueDate:parent.dueDate||(parent.eventDate?addDays(parent.eventDate,-7):null),flags:flags.filter(f=>['consent','signature','portal','documents','medical_requirement'].includes(f))};
-  case 'BILL_PAYMENT':return {amountCents:parent.amountCents,dueDate:parent.dueDate||(parent.eventDate?addDays(parent.eventDate,-7):null),flags:[...flags.filter(f=>['autopay','instalment','shared','overdue'].includes(f)),'with_parent']};
+  // A school notice gives each obligation its own deadline, amount, reference and link.
+  case 'FORM_APPLICATION':if(parent.school){const o=parent.school.obligations.find(x=>x.type==='consent');return {dueDate:o?.dueDate||(parent.eventDate?addDays(parent.eventDate,-7):null),person:parent.person,flags:['consent',...flags.filter(f=>['signature','portal','documents','medical_requirement'].includes(f))]};}
+   return {dueDate:parent.dueDate||(parent.eventDate?addDays(parent.eventDate,-7):null),flags:flags.filter(f=>['consent','signature','portal','documents','medical_requirement'].includes(f))};
+  case 'BILL_PAYMENT':if(parent.school){const o=parent.school.obligations.find(x=>x.type==='payment');return {amountCents:o?.amountCents??parent.amountCents??null,dueDate:o?.dueDate||(parent.eventDate?addDays(parent.eventDate,-7):null),reference:o?.reference||null,provider:o?.method||null,flags:['with_parent']};}
+   return {amountCents:parent.amountCents,dueDate:parent.dueDate||(parent.eventDate?addDays(parent.eventDate,-7):null),flags:[...flags.filter(f=>['autopay','instalment','shared','overdue'].includes(f)),'with_parent']};
   case 'PURCHASE_REQUIRED':return {items:parent.items,person:parent.person,eventDate:parent.eventDate,dueDate:parent.eventDate?addDays(parent.eventDate,parentPattern==='INVITATION_EVENT'?-1:-3):null,flags:flags.filter(f=>['gift','budget','urgent'].includes(f))};
   default:return {dueDate:parent.dueDate,flags:[]};
  }
 }
 const childTitle:Partial<Record<PatternId,(p:PatternId)=>string>>={FORM_APPLICATION:()=>'Consent',BILL_PAYMENT:()=>'Payment',PURCHASE_REQUIRED:p=>p==='INVITATION_EVENT'?'Present':'Things to buy'};
 
+// School Admin pack wording: the link, code or detail the person needs, already in the step.
+function schoolParts(e:LoadEntities,today:string,title:string):Record<string,string>{
+ const o=(t:string)=>e.school?.obligations.find(x=>x.type===t);const by=(d?:string|null)=>d?` by ${friendlyDate(d,today)}`:'';
+ const b=o('booking'),r=o('order'),rep=o('reply'),c=o('costume'),h=o('homework');
+ return {
+  bookingLabel:`Book a time${b?.link?` at ${b.link.replace(/^https?:\/\//,'')}`:''}${b?.code?` (code ${b.code})`:''}${by(b?.dueDate)}`,
+  orderLabel:`Order ${/photo/i.test(title)?'photos':'online'}${r?.link?` at ${r.link.replace(/^https?:\/\//,'')}`:''}${r?.code?` (code ${r.code})`:''}${by(r?.dueDate)}, or skip it`,
+  replyLabel:`Reply to the school${by(rep?.dueDate)}`,
+  costumeLabel:`Sort ${e.person?e.person+'’s':'a'} costume for ${title.replace(/^the /i,'')}${c?.items.length?`: ${c.items.slice(0,3).join(', ')}`:''}`,
+  homeworkLabel:`Homework or project due${by(h?.dueDate)}`,
+ };
+}
 function fill(template:string,e:LoadEntities,title:string,today:string,text:string,who:string){
  const flags=e.flags||[];const due=friendlyDate(e.dueDate||e.rsvpDate||e.expiryDate,today);const by=due?` by ${due}`:'';
  const items=e.items?.length?e.items.slice(0,6).join(', '):'';
@@ -57,6 +72,7 @@ function fill(template:string,e:LoadEntities,title:string,today:string,text:stri
   renewLabel:flags.includes('expired')?`${title.replace(/^renew\s+/i,'').replace(/^\w/,c=>c.toUpperCase())} has expired. Renew it now`:/^renew\b/i.test(title)?`${title}${/\bby\b/i.test(title)?'':by}`:`Renew ${title.toLowerCase()}${by}`,
   prereq,getLabel:flags.includes('medication')?`Refill ${items||title.toLowerCase()}`:flags.includes('essential')||flags.includes('urgent')?`Get ${items||title.toLowerCase()} today`:`Add ${items||title.toLowerCase()} to the next shop`,
   range:friendlyRange(e.eventDate,e.eventEndDate,today),
+  ...schoolParts(e,today,title),
  };
  return template.replace(/\{(\w+)\}/g,(_,k)=>parts[k]??'').replace(/\s+/g,' ').trim();
 }
