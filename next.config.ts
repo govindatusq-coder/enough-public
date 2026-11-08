@@ -12,7 +12,10 @@ const nextConfig: NextConfig = {
     {key:'Content-Security-Policy',value:contentSecurityPolicy({development:process.env.NODE_ENV==='development',supabaseUrl:process.env.NEXT_PUBLIC_SUPABASE_URL})},
     {key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},
     {key:'X-Content-Type-Options',value:'nosniff'},
-  ]}];},
+  ]},
+  // The Outlook add-in's own pages (and only those) may sit inside Outlook and load Office.js.
+  ...['/bear/outlook','/bear/outlook/:path*'].map(source=>({source,headers:[{key:'Content-Security-Policy',value:contentSecurityPolicy({development:process.env.NODE_ENV==='development',supabaseUrl:process.env.NEXT_PUBLIC_SUPABASE_URL,outlook:true})}]})),
+  ];},
 };
 
 export default nextConfig;

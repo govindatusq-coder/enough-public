@@ -20,7 +20,7 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
   if(!(file instanceof File))throw new HttpError('Choose a picture or PDF first.',400);
   if(file.size>MAX_FILE_BYTES)throw new HttpError('That file is bigger than 10 MB. Try a screenshot or a smaller photo.',413);
   const bytes=new Uint8Array(await file.arrayBuffer());
-  const result=await createCapture(store,provider,{method:(['photo','screenshot','upload'] as const).includes(method as 'photo')?method as 'photo'|'screenshot'|'upload':'upload',text:typeof text==='string'&&text.trim()?text:null,file:{bytes,mime:file.type||'application/octet-stream',name:file.name||'bill'}});
+  const result=await createCapture(store,provider,{method:(['photo','screenshot','upload','email'] as const).includes(method as 'photo')?method as 'photo'|'screenshot'|'upload'|'email':'upload',text:typeof text==='string'&&text.trim()?text:null,file:{bytes,mime:file.type||'application/octet-stream',name:file.name||'bill'}});
   return json(await withAuto(store,provider,result),201);
  }
  const raw=await req.text();if(new TextEncoder().encode(raw).length>64*1024)throw new HttpError('That is a lot of text. Paste just the bill.',413);
