@@ -35,6 +35,15 @@ try{
  await step('what to hand over',async()=>{await page.click('button.tile:has-text("All of it where possible")');await shot('06-handover');await page.click('button:has-text("Next")');await page.waitForSelector('text=How should Bear behave?');});
  await step('how Bear behaves',async()=>{await page.click('button.chip:has-text("Gentle reminder")');await page.click('button.chip:has-text("Be persistent")');await page.click('button.chip:has-text("Ask what’s getting in the way")');await shot('07-behave');await page.click('button:has-text("Next")');await page.waitForSelector('text=Let’s get something out of your head.');await shot('08-first');});
  await step('the last step offers one real thing, or later',async()=>{assert.ok(await page.$('button:has-text("Give Bear one real thing")'));await page.click('button:has-text("Not right now")');await page.waitForURL(/\/bear\/home/);});
+ await step('first visit: a short “How Bear works” tour, once, skippable, replayable from Settings',async()=>{
+  await page.waitForSelector('.tour[role="dialog"]');assert.ok((await page.textContent('.tour')).includes('Give it to Bear'));await shot('62-tour-1');
+  for(let k=2;k<=5;k++){await page.click('.tour button:has-text("Next")');await page.waitForSelector(`.tour >> text=${k} of 5`);if(k===3)await shot('63-tour-3');}
+  assert.ok(await page.$('.tour button:has-text("Give Bear something")'));await shot('64-tour-5');
+  await page.click('.tour button:has-text("Go to My Bear")');await page.waitForSelector('.tour',{state:'detached'});
+  await page.reload();await page.waitForSelector('.hero-banner');await page.waitForTimeout(800);assert.equal(await page.$$eval('.tour',e=>e.length),0,'only once');
+  await page.goto(base+'/bear/me');await page.click('a:has-text("How Bear works")');await page.waitForSelector('.tour');await page.keyboard.press('Escape');await page.waitForURL(/\/bear\/me/);
+  await page.goto(base+'/bear/home');
+ });
  await step('home empty state and example bill offer',async()=>{await page.waitForSelector('.hero-banner');assert.ok(!(await page.textContent('body')).includes('Needs you'),'no Needs you list on My Bear');assert.equal((await page.$$('.area-tile .badge')).length,0,'no numbers when nothing needs you');assert.ok((await page.textContent('body')).includes('Good '));await shot('11-home-empty');await page.click('button:has-text("Try the example bill")');await page.waitForURL(/\/bear\/verify\//);});
  await step('verification shows demo data and a specific question',async()=>{await page.waitForSelector('text=Have I got this right?');const body=await page.textContent('body');assert.ok(body.includes('Example data'));assert.ok(body.includes('$184.60'));assert.ok(body.includes('Energy Australia'));await shot('12-verify');});
  await step('confirm the bill',async()=>{const q=await page.$('text=Is ');if(q){const yes=await page.$('.glass button:has-text("Yes")');if(yes)await yes.click();}await page.click('button:has-text("Yep, Bear\'s got it")');await page.waitForURL(/\/bear\/bills\//);billUrl=page.url().split('?')[0];await page.waitForSelector('text=Bringing it back');await shot('13-plan');});

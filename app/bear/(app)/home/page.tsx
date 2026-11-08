@@ -1,4 +1,5 @@
 'use client';
+import {FirstTimeTour} from '@/components/bear/how-bear-works';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
@@ -31,6 +32,7 @@ export default function Home(){
  const firstNeed=home.needsYou.filter(n=>!n.soft).sort((a,b)=>(b.overdueDays-a.overdueDays)||((a.due||'9999')<(b.due||'9999')?-1:1))[0]||null;
  return (
   <main id="main" className="bear-screen home-screen">
+   <FirstTimeTour show={home.showTour}/>
    <header className="hero-banner">
     <div className="hero-text">
      <h1 className="hero-greeting">{home.greeting}</h1>

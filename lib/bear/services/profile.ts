@@ -31,6 +31,8 @@ export const profilePatchSchema=z.object({
  demoOffered:z.boolean().optional(),
  loadMap:loadMapSchema.optional(),
  valuesMap:valuesMapSchema.optional(),
+ // When the person finished or skipped the "How Bear works" tour (shown once).
+ tourSeenAt:z.string().datetime().nullable().optional(),
 }).strict();
 export type ProfilePatch=z.infer<typeof profilePatchSchema>;
 

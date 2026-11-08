@@ -84,6 +84,8 @@ export interface Profile extends Owned{
  // Load Bear 2.0: Coverage Packs the person turned on, and school events Bear is watching for from their own history.
  coverage?:Partial<Record<import('../coverage/types.ts').PackId,{active:boolean;since:ISODateTime}>>;
  // Research participation: off unless the person explicitly opts in (study export is pseudonymous).
+ // The "How Bear works" tour: shown once, then replayable from Settings.
+ tourSeenAt?:ISODateTime|null;
  research?:{consent:boolean;at:ISODateTime;studyId?:string;enrolledOn?:ISODate;withdrawnAt?:ISODateTime|null}|null;
  anticipations?:Record<string,{status:'watching'|'not_this_year';year:string;askOn:ISODate}>;
  ideaHistory?:Record<string,{status:'accepted'|'deferred'|'dismissed';at:ISODateTime;until?:ISODate|null}>;
