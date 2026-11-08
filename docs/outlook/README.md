@@ -32,7 +32,7 @@ Only `/bear/outlook` pages may be framed, and only by Outlook hosts (`outlook.of
 Everything else keeps `frame-ancestors 'none'`.
 
 ## Installing (testing)
-Outlook on the web → `aka.ms/olksideload` → My add-ins → Add a custom add-in → Add from URL →
+Outlook on the web → `aka.ms/olksideload` → My add-ins → Add a custom add-in → Add from File (download `/outlook/manifest.xml` first; "Add from URL" is often greyed out) or Add from URL →
 `https://<deployment>/outlook/manifest.xml`. It then shows up in the new Outlook for Windows, Outlook
 for Mac and Outlook mobile on the same account. Work and school tenants may block custom add-ins.
 

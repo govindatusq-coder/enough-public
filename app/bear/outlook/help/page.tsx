@@ -16,8 +16,8 @@ export default async function OutlookHelp(){
    <ol className="small" style={{paddingLeft:20,margin:0,display:'grid',gap:8}}>
     <li>Open Outlook on the web (outlook.office.com or outlook.live.com) on a computer.</li>
     <li>Go to <b>aka.ms/olksideload</b>. It opens <b>Add-ins for Outlook</b>.</li>
-    <li>Choose <b>My add-ins</b>, then <b>Add a custom add-in</b> → <b>Add from URL</b>.</li>
-    <li>Paste this link, then choose <b>Install</b>:<br/><span style={{fontWeight:700,wordBreak:'break-all'}}>{manifest}</span></li>
+    <li>Save the add-in file to your computer: <a href="/outlook/manifest.xml" download="load-bear-outlook.xml" style={{fontWeight:700}}>Download the Load Bear add-in</a>.</li>
+    <li>Choose <b>My add-ins</b>, then <b>Add a custom add-in</b> → <b>Add from File</b>, pick that file and choose <b>Install</b>.<br/><span className="muted">If <b>Add from URL</b> is available, you can paste this link instead: <span style={{wordBreak:'break-all'}}>{manifest}</span></span></li>
    </ol>
    <p className="small muted" style={{marginTop:10}}>It then appears in Outlook on the web, the new Outlook for Windows, Outlook for Mac, and the Outlook app on your phone, on the same account.</p>
   </div></section>
