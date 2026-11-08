@@ -1,4 +1,6 @@
-# Study framework (prepared, not run)
+# Study framework
+
+**Now set up in the app** (off until switched on): see PROTOCOL.md, RUNBOOK.md, PARTICIPANT_INFORMATION_AND_CONSENT.md, RECRUITMENT.md, ANALYSIS_PLAN.md and ETHICS.md. The notes below are the original framework.
 
 Goal: test whether Load Bear reduces administrative effort and perceived household cognitive labour, not
 just whether it extracts tasks accurately.

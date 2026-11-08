@@ -77,6 +77,17 @@ try{
   await page.goto(base+'/bear/me');await page.waitForSelector('text=What Bear covers');const cov=await page.textContent('.coverage-card');assert.ok(/School admin/.test(cov));
   assert.equal(await page.locator('text=Forward to Bear').count(),0,'forwarding hidden until it is set up');await shot('58-coverage-settings');
  });
+ if(process.env.BEAR_STUDY_ENABLED==='on')await step('research study: join with the code and consent, answer the starting survey, leave and delete',async()=>{
+  await page.goto(base+'/bear/me');await page.waitForSelector('text=Research study');await page.click('button:has-text("Join the study")');
+  await page.fill('#study-code',process.env.BEAR_STUDY_CODE);assert.ok(await page.locator('[role="dialog"] button:has-text("Join")').isDisabled(),'consent required');
+  await page.check('[role="dialog"] input[type="checkbox"]');await shot('59-study-join');await page.click('[role="dialog"] button:has-text("Join")');
+  await page.waitForSelector('a:has-text("Starting survey")');await page.click('a:has-text("Starting survey")');await page.waitForSelector('text=Skip anything');
+  await page.locator('.study-item input[type="range"]').first().fill('80');await page.locator('.study-item input[type="number"]').first().fill('120');await shot('60-study-survey');
+  await page.click('button:has-text("Next")');await page.waitForSelector('text=Workload of household admin');
+  for(const r of await page.locator('.study-item input[type="range"]').all())await r.fill('40');await page.click('button:has-text("Next")');await page.waitForSelector('text=Thank you.');await shot('61-study-thanks');
+  await page.goto(base+'/bear/me');await page.waitForSelector('text=Nothing to answer right now');await page.click('button:has-text("Leave the study")');await page.click('[role="dialog"] button:has-text("Leave and delete my answers")');
+  await page.waitForSelector('button:has-text("Join the study")');
+ });
  await step('the Bear Ideas badge shows only new ideas, clears once seen, and stays right everywhere',async()=>{
   const badge=async()=>Number((await page.locator('.bear-nav .nav-badge').textContent({timeout:1500}).catch(()=>'0'))||0);
   const server=async()=>Number((await page.evaluate(async()=>(await (await fetch('/api/bear/ideas/count')).json()).count)));

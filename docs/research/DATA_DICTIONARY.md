@@ -20,3 +20,15 @@ Exported only for participants with `profile.research.consent = true`. One row p
 | unresolvedPastDue | int | Open, time-sensitive items past their date |
 
 Excluded: titles, notes, names, children, amounts, event dates, documents, health details, free text.
+
+## Survey responses (`responses.csv` from `scripts/study-export.mjs`)
+
+| Field | Type | Meaning |
+|---|---|---|
+| participant | string | Same pseudonym as above |
+| phase | baseline / weekly / end | When it was answered |
+| week | int | 0 (baseline) to 6 (end) |
+| instrument | tlx / sus / weekly / context | See PROTOCOL.md |
+| completedOn | date | Day answered |
+| score | number or empty | Raw TLX (0–100) or SUS (0–100); empty for purpose-built instruments |
+| item columns | number | One column per answered item id (e.g. `tlx_mental`, `admin_minutes`); skipped items are empty |

@@ -8,7 +8,7 @@ import type {DayMode,Profile} from '../domain/types.ts';
 export type IdeaFamily='load'|'priority'|'strategic';
 export type IdeaType=
  // Family A: mental-load reduction (the original purpose of Bear Ideas).
- 'remember'|'monitor'|'prepare'|'follow_up'|'take_over'|'simplify'|'recurring_pattern'|'save_money'|'prevent'|'reduce_coordination'|'reduce_decisions'|'expand_coverage'
+ 'remember'|'monitor'|'prepare'|'follow_up'|'take_over'|'simplify'|'recurring_pattern'|'save_money'|'prevent'|'reduce_coordination'|'reduce_decisions'|'expand_coverage'|'study'
  // Family B: priority (moved here from My Bear).
  |'worth_doing_now'|'prevent_future_pressure'|'unlock_project'|'close_loop'
  // Family C: strategic attention.

@@ -8,3 +8,6 @@ tsconfig.tsbuildinfo
 .DS_Store
 .bear-browser-results/
 .idea-image-browser-results/
+
+# Research exports (never commit)
+study-export/

@@ -139,6 +139,9 @@ export async function bearIdeas(store:BearStore,now=new Date()):Promise<IdeasFee
  if(flags.priorityEngineV1())candidates.push(...priorityFamilyIdeas(c));
  // School Admin pack: coverage offers and anticipation from the person's own history.
  candidates.push(...await schoolIdeaCandidates(store,today,S));
+ // Research study (participants only): one quiet card when a check-in is due.
+ try{const {studyStatus}=await import('../study/service.ts');const st=await studyStatus(store,now);
+  if(st.available&&st.enrolled&&st.due)candidates.push({id:`study:${st.due.phase}:${st.due.week}`,family:'load',type:'study',eyebrow:'Research study',title:st.due.label,body:'Thanks for taking part. Skip anything you’d rather not answer.',actions:[{key:'open',label:'Answer now',primary:true},{key:'later',label:'Not now'}],href:'/bear/study',minutes:st.due.phase==='weekly'?1:5,entity:'study',score:S({loadRemoved:0.35,interruption:0.05})});}catch{/* study off */}
  if(flags.strategicAttentionV1())candidates.push(...strategicIdeas(c,strategicAttention({projects,tasks,completions,results:pr.results,today})));
  const res=orchestrate(candidates,{today,history:profile.ideaHistory,capacity,dayMode:pr.ctx.dayMode,learned:pr.ctx.learned,saturated:!!pr.present?.saturated});
  return {...res,capacity};

@@ -470,3 +470,8 @@
 .bear .prep-actions{display:flex;gap:6px;flex-wrap:wrap;flex:none;}
 .bear .coverage-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .bear .coverage-line{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:12px 16px;text-decoration:none;color:inherit;}
+/* Research study survey, in the existing card language. */
+.bear .study-item{margin-top:12px;}
+.bear .study-ends{display:flex;justify-content:space-between;margin-top:4px;}
+.bear .chip[aria-checked="true"]{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 8px 18px -12px rgba(16,42,67,.9);}
+.bear .study-item input[type="range"]{accent-color:var(--navy);}
