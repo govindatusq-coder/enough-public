@@ -113,3 +113,12 @@ test('benchmark dataset: at least 200 synthetic, labelled scenarios across all t
  for(const p of ['BILL_PAYMENT','SCHOOL_EVENT','APPOINTMENT','FORM_APPLICATION','REPAIR_PROBLEM','WAITING_FOR_RESPONSE','PURCHASE_REQUIRED','RENEWAL','INVITATION_EVENT','REPLENISHMENT'])assert.ok(pats.has(p),p);
  for(const c of ['simple','multiple','ambiguous_deadline','missing_information','conflicting','duplicate','updated_document','dependency_chain','irrelevant_information','no_action','misleading','prompt_injection','sensitive_information','contradictory_evidence'])assert.ok(d.scenarios.some(s=>s.category===c),c);
 });
+
+test('before the event-log migration is applied, everything still works (history is a record, not a dependency)',async()=>{
+ const s=await setup();const realInsert=s.insert.bind(s),realList=s.list.bind(s);
+ s.insert=(t,r)=>t==='responsibility_events'?Promise.reject(new Error('relation does not exist')):realInsert(t,r);
+ s.list=(t,q)=>t==='responsibility_events'?Promise.reject(new Error('relation does not exist')):realList(t,q);
+ const a=await give(s,'Renew the car registration by 30 November.');assert.ok(a.task);
+ const b=await give(s,'Renew the car registration by 30 November.');assert.equal(b.merged,true,'duplicate merge still works');
+ assert.deepEqual(await history(s,a.task.id),[]);
+});

@@ -8,14 +8,16 @@ import type {ResponsibilityEvent,ResponsibilityState} from './types.ts';
 // The append-only history. Services call syncState after anything meaningful happens; the engine derives
 // the real state, validates the transition and appends one event. An impossible jump is recorded as a
 // conflict for review, never silently forced.
+// The history is a record, never a dependency: if its table isn't there yet (migration not applied) or a
+// write fails, the person's action still goes through; the history simply has nothing for that moment.
 export async function history(store:BearStore,responsibilityId:string):Promise<ResponsibilityEvent[]>{
- return (await store.list('responsibility_events',{where:[{column:'responsibility_id',value:responsibilityId}],orderBy:{column:'created_at',ascending:true}}));
+ try{return await store.list('responsibility_events',{where:[{column:'responsibility_id',value:responsibilityId}],orderBy:{column:'created_at',ascending:true}});}catch{return [];}
 }
 export async function lastState(store:BearStore,id:string):Promise<ResponsibilityState|null>{
  const h=(await history(store,id)).filter(e=>e.nextState);return h.length?h[h.length-1].nextState!:null;
 }
-export async function appendEvent(store:BearStore,e:Omit<ResponsibilityEvent,'id'|'userId'|'createdAt'|'updatedAt'|'at'>&{at?:string}){
- return store.insert('responsibility_events',stamp<ResponsibilityEvent>(store.userId,{...e,at:e.at||new Date().toISOString()}));
+export async function appendEvent(store:BearStore,e:Omit<ResponsibilityEvent,'id'|'userId'|'createdAt'|'updatedAt'|'at'>&{at?:string}):Promise<ResponsibilityEvent|null>{
+ try{return await store.insert('responsibility_events',stamp<ResponsibilityEvent>(store.userId,{...e,at:e.at||new Date().toISOString()}));}catch{return null;}
 }
 export async function syncState(store:BearStore,taskOrId:Task|string,actor:ResponsibilityEvent['actor']='system',now=new Date()):Promise<ResponsibilityState|null>{
  if(!flags.responsibilityEngine())return null;
