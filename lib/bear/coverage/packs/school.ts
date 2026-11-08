@@ -113,7 +113,8 @@ export function readSchoolNotice(raw:string,today:string,children:string[]=[]):S
   if(/\b(permission|consent|sign(?:ed)?(?: and return)? (?:the )?(?:form|note|slip)|return the (?:signed )?(?:form|note|slip)|permission (?:note|slip|form))\b/i.test(s)&&!/\bmedical\b/i.test(s))
    add({type:'consent',dueDate,confidence:dueDate?0.9:0.7,link:/operoo|caremonkey|compass|sentral|portal/i.test(s)?link:null,method});
   const amounts=findAmounts(s);
-  if(amounts.length&&/\b(pay|payment|fee|cost|costs|\$\d|contribution|levy)\b/i.test(s)){
+  // A cost mentioned about the past ("last year it cost $30") is history, not something to pay.
+  if(amounts.length&&/\b(pay|payment|fee|cost|costs|\$\d|contribution|levy)\b/i.test(s)&&!/\b(last year|previously|in the past|was \$|were \$|cost \$\d+(?:\.\d+)? last)\b/i.test(s)){
    const best=[...amounts].sort((a,b)=>b.weight-a.weight)[0];
    add({type:'payment',dueDate,amountCents:best.cents,confidence:dueDate?0.9:0.7,reference:REFERENCE.exec(s)?.[1]||null,link,method});}
   else if(/\b(?:pay|payment)\b/i.test(s)&&(REFERENCE.test(s)||link||method)&&obligations.some(o=>o.type==='payment'))

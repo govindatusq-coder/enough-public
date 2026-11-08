@@ -1,0 +1,7967 @@
+[
+ {
+  "id": "S001",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 17.5
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 28.61
+   }
+  }
+ },
+ {
+  "id": "S002",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.34
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.87
+   }
+  }
+ },
+ {
+  "id": "S003",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.28
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.36
+   }
+  }
+ },
+ {
+  "id": "S004",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.31
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.08
+   }
+  }
+ },
+ {
+  "id": "S005",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.26
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.03
+   }
+  }
+ },
+ {
+  "id": "S006",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.22
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.79
+   }
+  }
+ },
+ {
+  "id": "S007",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.23
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.81
+   }
+  }
+ },
+ {
+  "id": "S008",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.19
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.86
+   }
+  }
+ },
+ {
+  "id": "S009",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.23
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.13
+   }
+  }
+ },
+ {
+  "id": "S010",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.18
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.02
+   }
+  }
+ },
+ {
+  "id": "S011",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.16
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.92
+   }
+  }
+ },
+ {
+  "id": "S012",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.22
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.82
+   }
+  }
+ },
+ {
+  "id": "S013",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.2
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.78
+   }
+  }
+ },
+ {
+  "id": "S014",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.24
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.77
+   }
+  }
+ },
+ {
+  "id": "S015",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.19
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.73
+   }
+  }
+ },
+ {
+  "id": "S016",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.18
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.73
+   }
+  }
+ },
+ {
+  "id": "S017",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.73
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.06
+   }
+  }
+ },
+ {
+  "id": "S018",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.15
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.56
+   }
+  }
+ },
+ {
+  "id": "S019",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.43
+   }
+  }
+ },
+ {
+  "id": "S020",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.5
+   }
+  }
+ },
+ {
+  "id": "S021",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.56
+   }
+  }
+ },
+ {
+  "id": "S022",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.52
+   }
+  }
+ },
+ {
+  "id": "S023",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.65
+   }
+  }
+ },
+ {
+  "id": "S024",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.55
+   }
+  }
+ },
+ {
+  "id": "S025",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.52
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.02
+   }
+  }
+ },
+ {
+  "id": "S026",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.28
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.78
+   }
+  }
+ },
+ {
+  "id": "S027",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.21
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.64
+   }
+  }
+ },
+ {
+  "id": "S028",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.66
+   }
+  }
+ },
+ {
+  "id": "S029",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.27
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline none ≠ 2026-11-20 (FORM_APPLICATION)",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.05
+   }
+  }
+ },
+ {
+  "id": "S030",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.2
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline none ≠ 2026-12-03 (FORM_APPLICATION)",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.87
+   }
+  }
+ },
+ {
+  "id": "S031",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline none ≠ 2026-11-28 (FORM_APPLICATION)",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.42
+   }
+  }
+ },
+ {
+  "id": "S032",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline none ≠ 2026-11-13 (FORM_APPLICATION)",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.41
+   }
+  }
+ },
+ {
+  "id": "S033",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.34
+   }
+  }
+ },
+ {
+  "id": "S034",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.15
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.64
+   }
+  }
+ },
+ {
+  "id": "S035",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.55
+   }
+  }
+ },
+ {
+  "id": "S036",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.53
+   }
+  }
+ },
+ {
+  "id": "S037",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.63
+   }
+  }
+ },
+ {
+  "id": "S038",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.65
+   }
+  }
+ },
+ {
+  "id": "S039",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.55
+   }
+  }
+ },
+ {
+  "id": "S040",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.15
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.56
+   }
+  }
+ },
+ {
+  "id": "S041",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.73
+   }
+  }
+ },
+ {
+  "id": "S042",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.62
+   }
+  }
+ },
+ {
+  "id": "S043",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.64
+   }
+  }
+ },
+ {
+  "id": "S044",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.53
+   }
+  }
+ },
+ {
+  "id": "S045",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.17
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.61
+   }
+  }
+ },
+ {
+  "id": "S046",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.61
+   }
+  }
+ },
+ {
+  "id": "S047",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.56
+   }
+  }
+ },
+ {
+  "id": "S048",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.53
+   }
+  }
+ },
+ {
+  "id": "S049",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.46
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 4.27
+   }
+  }
+ },
+ {
+  "id": "S050",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.61
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 4.7
+   }
+  }
+ },
+ {
+  "id": "S051",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.24
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 7.4
+   }
+  }
+ },
+ {
+  "id": "S052",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.2
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.75
+   }
+  }
+ },
+ {
+  "id": "S053",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.18
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.11
+   }
+  }
+ },
+ {
+  "id": "S054",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.17
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2
+   }
+  }
+ },
+ {
+  "id": "S055",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.19
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.04
+   }
+  }
+ },
+ {
+  "id": "S056",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.16
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.1
+   }
+  }
+ },
+ {
+  "id": "S057",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.17
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed INVITATION_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.04
+   }
+  }
+ },
+ {
+  "id": "S058",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed INVITATION_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.02
+   }
+  }
+ },
+ {
+  "id": "S059",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed INVITATION_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.02
+   }
+  }
+ },
+ {
+  "id": "S060",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.06
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed INVITATION_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.01
+   }
+  }
+ },
+ {
+  "id": "S061",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.16
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.52
+   }
+  }
+ },
+ {
+  "id": "S062",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.18
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.43
+   }
+  }
+ },
+ {
+  "id": "S063",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.16
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.21
+   }
+  }
+ },
+ {
+  "id": "S064",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.18
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.26
+   }
+  }
+ },
+ {
+  "id": "S065",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed WAITING_FOR_RESPONSE",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.19
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1
+   }
+  }
+ },
+ {
+  "id": "S066",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed WAITING_FOR_RESPONSE",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.17
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.71
+   }
+  }
+ },
+ {
+  "id": "S067",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed WAITING_FOR_RESPONSE",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.41
+   }
+  }
+ },
+ {
+  "id": "S068",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed WAITING_FOR_RESPONSE",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.27
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.53
+   }
+  }
+ },
+ {
+  "id": "S069",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.76
+   }
+  }
+ },
+ {
+  "id": "S070",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.15
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.59
+   }
+  }
+ },
+ {
+  "id": "S071",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.48
+   }
+  }
+ },
+ {
+  "id": "S072",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.84
+   }
+  }
+ },
+ {
+  "id": "S073",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.59
+   }
+  }
+ },
+ {
+  "id": "S074",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.62
+   }
+  }
+ },
+ {
+  "id": "S075",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.52
+   }
+  }
+ },
+ {
+  "id": "S076",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.48
+   }
+  }
+ },
+ {
+  "id": "S077",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.57
+   }
+  }
+ },
+ {
+  "id": "S078",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.44
+   }
+  }
+ },
+ {
+  "id": "S079",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.2
+   }
+  }
+ },
+ {
+  "id": "S080",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "WAITING_FOR_RESPONSE",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.52
+   }
+  }
+ },
+ {
+  "id": "S081",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.26
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.48
+   }
+  }
+ },
+ {
+  "id": "S082",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.19
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.76
+   }
+  }
+ },
+ {
+  "id": "S083",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.49
+   }
+  }
+ },
+ {
+  "id": "S084",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.39
+   }
+  }
+ },
+ {
+  "id": "S085",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.49
+   }
+  }
+ },
+ {
+  "id": "S086",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.38
+   }
+  }
+ },
+ {
+  "id": "S087",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.07
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.72
+   }
+  }
+ },
+ {
+  "id": "S088",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.2
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.57
+   }
+  }
+ },
+ {
+  "id": "S089",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.42
+   }
+  }
+ },
+ {
+  "id": "S090",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.47
+   }
+  }
+ },
+ {
+  "id": "S091",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.38
+   }
+  }
+ },
+ {
+  "id": "S092",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.5
+   }
+  }
+ },
+ {
+  "id": "S093",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.4
+   }
+  }
+ },
+ {
+  "id": "S094",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.18
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.46
+   }
+  }
+ },
+ {
+  "id": "S095",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.07
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.45
+   }
+  }
+ },
+ {
+  "id": "S096",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.38
+   }
+  }
+ },
+ {
+  "id": "S097",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.2
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.22
+   }
+  }
+ },
+ {
+  "id": "S098",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.53
+   }
+  }
+ },
+ {
+  "id": "S099",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.53
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.02
+   }
+  }
+ },
+ {
+  "id": "S100",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.53
+   }
+  }
+ },
+ {
+  "id": "S101",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.19
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.57
+   }
+  }
+ },
+ {
+  "id": "S102",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.59
+   }
+  }
+ },
+ {
+  "id": "S103",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.56
+   }
+  }
+ },
+ {
+  "id": "S104",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.48
+   }
+  }
+ },
+ {
+  "id": "S105",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed APPOINTMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.02
+   }
+  }
+ },
+ {
+  "id": "S106",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.07
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed APPOINTMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.01
+   }
+  }
+ },
+ {
+  "id": "S107",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.04
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed APPOINTMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.01
+   }
+  }
+ },
+ {
+  "id": "S108",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed APPOINTMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.01
+   }
+  }
+ },
+ {
+  "id": "S109",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.06
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.57
+   }
+  }
+ },
+ {
+  "id": "S110",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.54
+   }
+  }
+ },
+ {
+  "id": "S111",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.45
+   }
+  }
+ },
+ {
+  "id": "S112",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.52
+   }
+  }
+ },
+ {
+  "id": "S113",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "REPAIR_PROBLEM",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.91
+   }
+  }
+ },
+ {
+  "id": "S114",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "REPAIR_PROBLEM",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.16
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.21
+   }
+  }
+ },
+ {
+  "id": "S115",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "REPAIR_PROBLEM",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed REPAIR_PROBLEM",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.06
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed REPAIR_PROBLEM",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   }
+  }
+ },
+ {
+  "id": "S116",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "REPAIR_PROBLEM",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.06
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   }
+  }
+ },
+ {
+  "id": "S117",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "REPLENISHMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.05
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   }
+  }
+ },
+ {
+  "id": "S118",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "REPLENISHMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.05
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.07
+   }
+  }
+ },
+ {
+  "id": "S119",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "REPLENISHMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.04
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.07
+   }
+  }
+ },
+ {
+  "id": "S120",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "REPLENISHMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.04
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   }
+  }
+ },
+ {
+  "id": "S121",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "SCHOOL_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 6.01
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.61
+   }
+  }
+ },
+ {
+  "id": "S122",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "SCHOOL_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   }
+  }
+ },
+ {
+  "id": "S123",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "SCHOOL_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.07
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   }
+  }
+ },
+ {
+  "id": "S124",
+  "category": "simple",
+  "split": "dev",
+  "pattern": "SCHOOL_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.06
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   }
+  }
+ },
+ {
+  "id": "S125",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "SCHOOL_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.18
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   }
+  }
+ },
+ {
+  "id": "S126",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "SCHOOL_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.05
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.06
+   }
+  }
+ },
+ {
+  "id": "S127",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "SCHOOL_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.04
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.05
+   }
+  }
+ },
+ {
+  "id": "S128",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "SCHOOL_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.04
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.05
+   }
+  }
+ },
+ {
+  "id": "S129",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.95
+   }
+  }
+ },
+ {
+  "id": "S130",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "UNKNOWN_LOAD",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.51
+   }
+  }
+ },
+ {
+  "id": "S131",
+  "category": "simple",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.41
+   }
+  }
+ },
+ {
+  "id": "S132",
+  "category": "multiple",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 2,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed APPOINTMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 2,
+    "matched": 2,
+    "dueRight": 2,
+    "dueTotal": 2,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.08
+   }
+  }
+ },
+ {
+  "id": "S133",
+  "category": "multiple",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 2,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed PURCHASE_REQUIRED"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 2,
+    "matched": 2,
+    "dueRight": 2,
+    "dueTotal": 2,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.07
+   }
+  }
+ },
+ {
+  "id": "S134",
+  "category": "multiple",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 2,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "deadline 2026-12-03 ≠ 2026-11-20 (BILL_PAYMENT)"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.2
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 2,
+    "matched": 2,
+    "dueRight": 2,
+    "dueTotal": 2,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.31
+   }
+  }
+ },
+ {
+  "id": "S135",
+  "category": "multiple",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 2,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 1,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline 2026-11-20 ≠ none (REPAIR_PROBLEM)",
+     "missed BILL_PAYMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.15
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 2,
+    "matched": 2,
+    "dueRight": 2,
+    "dueTotal": 2,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 6.58
+   }
+  }
+ },
+ {
+  "id": "S136",
+  "category": "multiple",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 2,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed REPLENISHMENT",
+     "missed APPOINTMENT",
+     "extra PURCHASE_REQUIRED"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.17
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 2,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed REPLENISHMENT",
+     "missed APPOINTMENT",
+     "extra PURCHASE_REQUIRED",
+     "extra REPAIR_PROBLEM"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.49
+   }
+  }
+ },
+ {
+  "id": "S137",
+  "category": "multiple",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 2,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline 2026-12-03 ≠ 2026-11-20 (INVITATION_EVENT)",
+     "missed PURCHASE_REQUIRED"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 2,
+    "matched": 2,
+    "dueRight": 2,
+    "dueTotal": 2,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.03
+   }
+  }
+ },
+ {
+  "id": "S138",
+  "category": "multiple",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 3,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "missed BILL_PAYMENT",
+     "deadline 2026-12-10 ≠ 2026-12-17 (SCHOOL_EVENT)"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.46
+   },
+   "engine": {
+    "predicted": 3,
+    "expected": 3,
+    "matched": 3,
+    "dueRight": 3,
+    "dueTotal": 3,
+    "fabricated": 0,
+    "amountRight": 1,
+    "amountTotal": 1,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.06
+   }
+  }
+ },
+ {
+  "id": "S139",
+  "category": "multiple",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 2,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed PURCHASE_REQUIRED",
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.53
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 2,
+    "matched": 2,
+    "dueRight": 2,
+    "dueTotal": 2,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.44
+   }
+  }
+ },
+ {
+  "id": "S140",
+  "category": "multiple",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 3,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed RENEWAL",
+     "missed REPLENISHMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.18
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 3,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed RENEWAL",
+     "missed REPLENISHMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.6
+   }
+  }
+ },
+ {
+  "id": "S141",
+  "category": "multiple",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 2,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed APPOINTMENT",
+     "missed BILL_PAYMENT",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.44
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 2,
+    "matched": 2,
+    "dueRight": 2,
+    "dueTotal": 2,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.8
+   }
+  }
+ },
+ {
+  "id": "S142",
+  "category": "ambiguous_deadline",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "asked": true,
+    "error": null,
+    "ms": 0.1
+   }
+  }
+ },
+ {
+  "id": "S143",
+  "category": "ambiguous_deadline",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "asked": true,
+    "error": null,
+    "ms": 0.15
+   }
+  }
+ },
+ {
+  "id": "S144",
+  "category": "ambiguous_deadline",
+  "split": "dev",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.07
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "asked": true,
+    "error": null,
+    "ms": 0.11
+   }
+  }
+ },
+ {
+  "id": "S145",
+  "category": "ambiguous_deadline",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.06
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "asked": true,
+    "error": null,
+    "ms": 0.1
+   }
+  }
+ },
+ {
+  "id": "S146",
+  "category": "ambiguous_deadline",
+  "split": "heldout",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed APPOINTMENT",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.05
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed APPOINTMENT",
+     "extra REPAIR_PROBLEM"
+    ],
+    "warnings": [],
+    "usage": null,
+    "asked": true,
+    "error": null,
+    "ms": 0.09
+   }
+  }
+ },
+ {
+  "id": "S147",
+  "category": "ambiguous_deadline",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.05
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "asked": true,
+    "error": null,
+    "ms": 0.14
+   }
+  }
+ },
+ {
+  "id": "S148",
+  "category": "ambiguous_deadline",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.06
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "asked": true,
+    "error": null,
+    "ms": 0.09
+   }
+  }
+ },
+ {
+  "id": "S149",
+  "category": "ambiguous_deadline",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.05
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "asked": false,
+    "error": null,
+    "ms": 0.09
+   }
+  }
+ },
+ {
+  "id": "S150",
+  "category": "missing_information",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.04
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   }
+  }
+ },
+ {
+  "id": "S151",
+  "category": "missing_information",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed BILL_PAYMENT",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.69
+   }
+  }
+ },
+ {
+  "id": "S152",
+  "category": "missing_information",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   }
+  }
+ },
+ {
+  "id": "S153",
+  "category": "missing_information",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.06
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.23
+   }
+  }
+ },
+ {
+  "id": "S154",
+  "category": "missing_information",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   }
+  }
+ },
+ {
+  "id": "S155",
+  "category": "missing_information",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.34
+   }
+  }
+ },
+ {
+  "id": "S156",
+  "category": "conflicting",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.78
+   }
+  }
+ },
+ {
+  "id": "S157",
+  "category": "conflicting",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline 2026-12-03 ≠ 2026-11-28 (FORM_APPLICATION)"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.45
+   }
+  }
+ },
+ {
+  "id": "S158",
+  "category": "contradictory_evidence",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline 2026-11-30 ≠ 2026-11-28 (RENEWAL)"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.16
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.51
+   }
+  }
+ },
+ {
+  "id": "S159",
+  "category": "contradictory_evidence",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline 2026-11-25 ≠ 2026-11-20 (INVITATION_EVENT)"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 2.62
+   }
+  }
+ },
+ {
+  "id": "S160",
+  "category": "contradictory_evidence",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline 2026-12-03 ≠ 2026-12-01 (BILL_PAYMENT)"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.16
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline 2026-12-03 ≠ 2026-12-01 (BILL_PAYMENT)",
+     "extra BILL_PAYMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.76
+   }
+  }
+ },
+ {
+  "id": "S161",
+  "category": "conflicting",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra UNKNOWN_LOAD",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.66
+   }
+  }
+ },
+ {
+  "id": "S162",
+  "category": "duplicate",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-11-30",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 356.2
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-11-30",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 182.74
+   }
+  }
+ },
+ {
+  "id": "S163",
+  "category": "duplicate",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-11-20",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 367.36
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-11-20",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 194.8
+   }
+  }
+ },
+ {
+  "id": "S164",
+  "category": "duplicate",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-12-03",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 373.69
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-12-03",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 166.64
+   }
+  }
+ },
+ {
+  "id": "S165",
+  "category": "duplicate",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": null,
+    "falseVerified": 0,
+    "error": null,
+    "ms": 4.26
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": null,
+    "falseVerified": 0,
+    "error": null,
+    "ms": 3.64
+   }
+  }
+ },
+ {
+  "id": "S166",
+  "category": "duplicate",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-11-20",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 339.34
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-11-20",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 160.82
+   }
+  }
+ },
+ {
+  "id": "S167",
+  "category": "duplicate",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": null,
+    "falseVerified": 0,
+    "error": null,
+    "ms": 341.02
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": null,
+    "falseVerified": 0,
+    "error": null,
+    "ms": 175.99
+   }
+  }
+ },
+ {
+  "id": "S168",
+  "category": "duplicate",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 1,
+    "dueAfter": "2026-12-18",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 173.88
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-12-18",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 169.38
+   }
+  }
+ },
+ {
+  "id": "S169",
+  "category": "duplicate",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-11-20",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 340.73
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-11-20",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 169.63
+   }
+  }
+ },
+ {
+  "id": "S170",
+  "category": "duplicate",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 1,
+    "dueAfter": "2026-12-18",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 204.14
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-12-18",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 176.02
+   }
+  }
+ },
+ {
+  "id": "S171",
+  "category": "duplicate",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-12-03",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 323.41
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-12-03",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 163.6
+   }
+  }
+ },
+ {
+  "id": "S172",
+  "category": "updated_document",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-11-30",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 318.75
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-11-28",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 162.15
+   }
+  }
+ },
+ {
+  "id": "S173",
+  "category": "updated_document",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-12-03",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 354.58
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-12-01",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 177.75
+   }
+  }
+ },
+ {
+  "id": "S174",
+  "category": "updated_document",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-11-20",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 334.87
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-11-25",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 149.75
+   }
+  }
+ },
+ {
+  "id": "S175",
+  "category": "updated_document",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-11-20",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 341.91
+   },
+   "engine": {
+    "open": 1,
+    "dueAfter": "2026-11-18",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 219.54
+   }
+  }
+ },
+ {
+  "id": "S176",
+  "category": "duplicate",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "dueAfter": "2026-11-20",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 347.3
+   },
+   "engine": {
+    "open": 2,
+    "dueAfter": "2026-11-20",
+    "falseVerified": 0,
+    "error": null,
+    "ms": 324.03
+   }
+  }
+ },
+ {
+  "id": "S177",
+  "category": "duplicate",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "open": 2,
+    "error": null,
+    "ms": 1.94
+   },
+   "engine": {
+    "open": 2,
+    "error": null,
+    "ms": 1.43
+   }
+  }
+ },
+ {
+  "id": "S178",
+  "category": "dependency_chain",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "warnings": [],
+    "countOk": false,
+    "error": null,
+    "ms": 0.27
+   },
+   "engine": {
+    "warnings": [],
+    "countOk": true,
+    "depsOk": true,
+    "error": null,
+    "ms": 0.28
+   }
+  }
+ },
+ {
+  "id": "S179",
+  "category": "dependency_chain",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "warnings": [],
+    "countOk": false,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "warnings": [],
+    "countOk": true,
+    "depsOk": true,
+    "error": null,
+    "ms": 0.09
+   }
+  }
+ },
+ {
+  "id": "S180",
+  "category": "dependency_chain",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "warnings": [],
+    "countOk": true,
+    "error": null,
+    "ms": 0.26
+   },
+   "engine": {
+    "warnings": [],
+    "countOk": true,
+    "depsOk": true,
+    "error": null,
+    "ms": 0.38
+   }
+  }
+ },
+ {
+  "id": "S181",
+  "category": "dependency_chain",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "warnings": [],
+    "countOk": false,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "warnings": [],
+    "countOk": true,
+    "depsOk": true,
+    "error": null,
+    "ms": 0.09
+   }
+  }
+ },
+ {
+  "id": "S182",
+  "category": "dependency_chain",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "warnings": [],
+    "countOk": false,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "warnings": [],
+    "countOk": true,
+    "depsOk": true,
+    "error": null,
+    "ms": 0.26
+   }
+  }
+ },
+ {
+  "id": "S183",
+  "category": "irrelevant_information",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.14
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   }
+  }
+ },
+ {
+  "id": "S184",
+  "category": "irrelevant_information",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.16
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.91
+   }
+  }
+ },
+ {
+  "id": "S185",
+  "category": "irrelevant_information",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.18
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 1.97
+   }
+  }
+ },
+ {
+  "id": "S186",
+  "category": "irrelevant_information",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.17
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.66
+   }
+  }
+ },
+ {
+  "id": "S187",
+  "category": "irrelevant_information",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.16
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.98
+   }
+  }
+ },
+ {
+  "id": "S188",
+  "category": "no_action",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.22
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.16
+   }
+  }
+ },
+ {
+  "id": "S189",
+  "category": "no_action",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra BILL_PAYMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   }
+  }
+ },
+ {
+  "id": "S190",
+  "category": "no_action",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.02
+   }
+  }
+ },
+ {
+  "id": "S191",
+  "category": "no_action",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.07
+   }
+  }
+ },
+ {
+  "id": "S192",
+  "category": "no_action",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.23
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.02
+   }
+  }
+ },
+ {
+  "id": "S193",
+  "category": "no_action",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.01
+   }
+  }
+ },
+ {
+  "id": "S194",
+  "category": "no_action",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.02
+   }
+  }
+ },
+ {
+  "id": "S195",
+  "category": "no_action",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.06
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.01
+   }
+  }
+ },
+ {
+  "id": "S196",
+  "category": "no_action",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.05
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.01
+   }
+  }
+ },
+ {
+  "id": "S197",
+  "category": "no_action",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra APPOINTMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.07
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.01
+   }
+  }
+ },
+ {
+  "id": "S198",
+  "category": "no_action",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.01
+   }
+  }
+ },
+ {
+  "id": "S199",
+  "category": "no_action",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.03
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.17
+   }
+  }
+ },
+ {
+  "id": "S200",
+  "category": "misleading",
+  "split": "dev",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.08
+   }
+  }
+ },
+ {
+  "id": "S201",
+  "category": "misleading",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.5
+   }
+  }
+ },
+ {
+  "id": "S202",
+  "category": "misleading",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline 2026-11-15 ≠ 2026-12-03 (BILL_PAYMENT)"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.15
+   },
+   "engine": {
+    "predicted": 2,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.69
+   }
+  }
+ },
+ {
+  "id": "S203",
+  "category": "misleading",
+  "split": "heldout",
+  "pattern": null,
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "extra RENEWAL"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.15
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 0,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.01
+   }
+  }
+ },
+ {
+  "id": "S204",
+  "category": "prompt_injection",
+  "split": "dev",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [
+     "ignored_instructions"
+    ],
+    "usage": null,
+    "error": null,
+    "ms": 0.66
+   }
+  }
+ },
+ {
+  "id": "S205",
+  "category": "prompt_injection",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra SCHOOL_EVENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.07
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [
+     "ignored_instructions"
+    ],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   }
+  }
+ },
+ {
+  "id": "S206",
+  "category": "prompt_injection",
+  "split": "heldout",
+  "pattern": "RENEWAL",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [
+     "ignored_instructions"
+    ],
+    "usage": null,
+    "error": null,
+    "ms": 0.49
+   }
+  }
+ },
+ {
+  "id": "S207",
+  "category": "prompt_injection",
+  "split": "heldout",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.1
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [
+     "ignored_instructions"
+    ],
+    "usage": null,
+    "error": null,
+    "ms": 0.47
+   }
+  }
+ },
+ {
+  "id": "S208",
+  "category": "prompt_injection",
+  "split": "heldout",
+  "pattern": "INVITATION_EVENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [
+     "ignored_instructions"
+    ],
+    "usage": null,
+    "error": null,
+    "ms": 1.58
+   }
+  }
+ },
+ {
+  "id": "S209",
+  "category": "prompt_injection",
+  "split": "heldout",
+  "pattern": "PURCHASE_REQUIRED",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.19
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [
+     "ignored_instructions"
+    ],
+    "usage": null,
+    "error": null,
+    "ms": 0.42
+   }
+  }
+ },
+ {
+  "id": "S210",
+  "category": "sensitive_information",
+  "split": "dev",
+  "pattern": "FORM_APPLICATION",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed FORM_APPLICATION",
+     "extra UNKNOWN_LOAD"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.12
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.22
+   }
+  }
+ },
+ {
+  "id": "S211",
+  "category": "sensitive_information",
+  "split": "heldout",
+  "pattern": "APPOINTMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.13
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.47
+   }
+  }
+ },
+ {
+  "id": "S212",
+  "category": "sensitive_information",
+  "split": "heldout",
+  "pattern": "BILL_PAYMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.09
+   },
+   "engine": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 1,
+    "dueTotal": 1,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.76
+   }
+  }
+ },
+ {
+  "id": "S213",
+  "category": "sensitive_information",
+  "split": "heldout",
+  "pattern": "REPLENISHMENT",
+  "systems": {
+   "legacy": {
+    "predicted": 1,
+    "expected": 1,
+    "matched": 1,
+    "dueRight": 0,
+    "dueTotal": 1,
+    "fabricated": 1,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "deadline 2026-11-13 ≠ none (REPLENISHMENT)"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.11
+   },
+   "engine": {
+    "predicted": 0,
+    "expected": 1,
+    "matched": 0,
+    "dueRight": 0,
+    "dueTotal": 0,
+    "fabricated": 0,
+    "amountRight": 0,
+    "amountTotal": 0,
+    "notes": [
+     "missed REPLENISHMENT"
+    ],
+    "warnings": [],
+    "usage": null,
+    "error": null,
+    "ms": 0.03
+   }
+  }
+ }
+]

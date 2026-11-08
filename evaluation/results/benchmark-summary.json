@@ -1,0 +1,1305 @@
+{
+ "synthetic": true,
+ "note": "Synthetic dataset written by the same team that built the engine; results are likely optimistic and do not describe real-world performance.",
+ "generatedAt": "2026-11-08T05:34:39.296Z",
+ "today": "2026-11-09",
+ "scenarioCount": 213,
+ "splits": {
+  "dev": 93,
+  "heldout": 120
+ },
+ "llmBaselines": "NOT RUN: no ANTHROPIC_API_KEY in this environment. No competitor or model results are reported or estimated.",
+ "overall": {
+  "legacy": {
+   "scenarios": 213,
+   "precision": {
+    "value": 0.802,
+    "low": 0.74,
+    "high": 0.852,
+    "n": 192
+   },
+   "recall": {
+    "value": 0.806,
+    "low": 0.744,
+    "high": 0.856,
+    "n": 191
+   },
+   "deadlineAccuracy": {
+    "value": 0.935,
+    "low": 0.885,
+    "high": 0.964,
+    "n": 154
+   },
+   "amountAccuracy": {
+    "value": 1,
+    "low": 0.816,
+    "high": 1,
+    "n": 17
+   },
+   "fabricatedDeadlines": 2,
+   "abstention": {
+    "value": 0,
+    "low": 0,
+    "high": 0.228,
+    "n": 13
+   },
+   "falseActionRate": {
+    "value": 1,
+    "low": 0.772,
+    "high": 1,
+    "n": 13
+   },
+   "injectionFlagged": {
+    "value": 0,
+    "low": 0,
+    "high": 0.39,
+    "n": 6
+   },
+   "duplicateHandling": {
+    "value": 0.25,
+    "low": 0.102,
+    "high": 0.495,
+    "n": 16
+   },
+   "updateApplied": {
+    "value": 0,
+    "low": 0,
+    "high": 0.49,
+    "n": 4
+   },
+   "dependencyCount": {
+    "value": 0.2,
+    "low": 0.036,
+    "high": 0.624,
+    "n": 5
+   },
+   "falseVerifiedCompletions": null,
+   "correctionBurden": 0.443,
+   "latencyMs": {
+    "p50": 0.13,
+    "p95": 323.41
+   }
+  },
+  "engine": {
+   "scenarios": 213,
+   "precision": {
+    "value": 0.921,
+    "low": 0.873,
+    "high": 0.951,
+    "n": 189
+   },
+   "recall": {
+    "value": 0.911,
+    "low": 0.862,
+    "high": 0.944,
+    "n": 191
+   },
+   "deadlineAccuracy": {
+    "value": 0.971,
+    "low": 0.935,
+    "high": 0.988,
+    "n": 174
+   },
+   "amountAccuracy": {
+    "value": 1,
+    "low": 0.824,
+    "high": 1,
+    "n": 18
+   },
+   "fabricatedDeadlines": 0,
+   "abstention": {
+    "value": 0.923,
+    "low": 0.667,
+    "high": 0.986,
+    "n": 13
+   },
+   "falseActionRate": {
+    "value": 0.077,
+    "low": 0.014,
+    "high": 0.333,
+    "n": 13
+   },
+   "injectionFlagged": {
+    "value": 1,
+    "low": 0.61,
+    "high": 1,
+    "n": 6
+   },
+   "duplicateHandling": {
+    "value": 1,
+    "low": 0.806,
+    "high": 1,
+    "n": 16
+   },
+   "updateApplied": {
+    "value": 1,
+    "low": 0.51,
+    "high": 1,
+    "n": 4
+   },
+   "dependencyCount": {
+    "value": 1,
+    "low": 0.566,
+    "high": 1,
+    "n": 5
+   },
+   "falseVerifiedCompletions": 0,
+   "correctionBurden": 0.193,
+   "latencyMs": {
+    "p50": 0.56,
+    "p95": 163.6
+   }
+  }
+ },
+ "heldout": {
+  "legacy": {
+   "scenarios": 120,
+   "precision": {
+    "value": 0.811,
+    "low": 0.726,
+    "high": 0.874,
+    "n": 106
+   },
+   "recall": {
+    "value": 0.827,
+    "low": 0.743,
+    "high": 0.888,
+    "n": 104
+   },
+   "deadlineAccuracy": {
+    "value": 0.919,
+    "low": 0.841,
+    "high": 0.96,
+    "n": 86
+   },
+   "amountAccuracy": {
+    "value": 1,
+    "low": 0.701,
+    "high": 1,
+    "n": 9
+   },
+   "fabricatedDeadlines": 2,
+   "abstention": {
+    "value": 0,
+    "low": 0,
+    "high": 0.299,
+    "n": 9
+   },
+   "falseActionRate": {
+    "value": 1,
+    "low": 0.701,
+    "high": 1,
+    "n": 9
+   },
+   "injectionFlagged": {
+    "value": 0,
+    "low": 0,
+    "high": 0.49,
+    "n": 4
+   },
+   "duplicateHandling": {
+    "value": 0.364,
+    "low": 0.152,
+    "high": 0.646,
+    "n": 11
+   },
+   "updateApplied": {
+    "value": 0,
+    "low": 0,
+    "high": 0.658,
+    "n": 2
+   },
+   "dependencyCount": {
+    "value": 0.333,
+    "low": 0.061,
+    "high": 0.792,
+    "n": 3
+   },
+   "falseVerifiedCompletions": null,
+   "correctionBurden": 0.425,
+   "latencyMs": {
+    "p50": 0.12,
+    "p95": 334.87
+   }
+  },
+  "engine": {
+   "scenarios": 120,
+   "precision": {
+    "value": 0.853,
+    "low": 0.771,
+    "high": 0.909,
+    "n": 102
+   },
+   "recall": {
+    "value": 0.837,
+    "low": 0.754,
+    "high": 0.895,
+    "n": 104
+   },
+   "deadlineAccuracy": {
+    "value": 0.943,
+    "low": 0.872,
+    "high": 0.975,
+    "n": 87
+   },
+   "amountAccuracy": {
+    "value": 1,
+    "low": 0.701,
+    "high": 1,
+    "n": 9
+   },
+   "fabricatedDeadlines": 0,
+   "abstention": {
+    "value": 0.889,
+    "low": 0.565,
+    "high": 0.98,
+    "n": 9
+   },
+   "falseActionRate": {
+    "value": 0.111,
+    "low": 0.02,
+    "high": 0.435,
+    "n": 9
+   },
+   "injectionFlagged": {
+    "value": 1,
+    "low": 0.51,
+    "high": 1,
+    "n": 4
+   },
+   "duplicateHandling": {
+    "value": 1,
+    "low": 0.741,
+    "high": 1,
+    "n": 11
+   },
+   "updateApplied": {
+    "value": 1,
+    "low": 0.342,
+    "high": 1,
+    "n": 2
+   },
+   "dependencyCount": {
+    "value": 1,
+    "low": 0.438,
+    "high": 1,
+    "n": 3
+   },
+   "falseVerifiedCompletions": 0,
+   "correctionBurden": 0.349,
+   "latencyMs": {
+    "p50": 0.52,
+    "p95": 169.38
+   }
+  }
+ },
+ "byCategory": {
+  "simple": {
+   "legacy": {
+    "scenarios": 131,
+    "precision": {
+     "value": 0.901,
+     "low": 0.838,
+     "high": 0.941,
+     "n": 131
+    },
+    "recall": {
+     "value": 0.901,
+     "low": 0.838,
+     "high": 0.941,
+     "n": 131
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.968,
+     "high": 1,
+     "n": 118
+    },
+    "amountAccuracy": {
+     "value": 1,
+     "low": 0.816,
+     "high": 1,
+     "n": 17
+    },
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 0.198,
+    "latencyMs": {
+     "p50": 0.13,
+     "p95": 0.52
+    }
+   },
+   "engine": {
+    "scenarios": 131,
+    "precision": {
+     "value": 0.961,
+     "low": 0.911,
+     "high": 0.983,
+     "n": 127
+    },
+    "recall": {
+     "value": 0.931,
+     "low": 0.875,
+     "high": 0.963,
+     "n": 131
+    },
+    "deadlineAccuracy": {
+     "value": 0.967,
+     "low": 0.919,
+     "high": 0.987,
+     "n": 122
+    },
+    "amountAccuracy": {
+     "value": 1,
+     "low": 0.816,
+     "high": 1,
+     "n": 17
+    },
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 0.137,
+    "latencyMs": {
+     "p50": 0.56,
+     "p95": 2.52
+    }
+   }
+  },
+  "multiple": {
+   "legacy": {
+    "scenarios": 10,
+    "precision": {
+     "value": 0.7,
+     "low": 0.397,
+     "high": 0.892,
+     "n": 10
+    },
+    "recall": {
+     "value": 0.318,
+     "low": 0.164,
+     "high": 0.527,
+     "n": 22
+    },
+    "deadlineAccuracy": {
+     "value": 0.429,
+     "low": 0.158,
+     "high": 0.75,
+     "n": 7
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 1,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 2.2,
+    "latencyMs": {
+     "p50": 0.18,
+     "p95": 1.46
+    }
+   },
+   "engine": {
+    "scenarios": 10,
+    "precision": {
+     "value": 0.9,
+     "low": 0.699,
+     "high": 0.972,
+     "n": 20
+    },
+    "recall": {
+     "value": 0.818,
+     "low": 0.615,
+     "high": 0.927,
+     "n": 22
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.824,
+     "high": 1,
+     "n": 18
+    },
+    "amountAccuracy": {
+     "value": 1,
+     "low": 0.207,
+     "high": 1,
+     "n": 1
+    },
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 0.6,
+    "latencyMs": {
+     "p50": 1.31,
+     "p95": 6.58
+    }
+   }
+  },
+  "ambiguous_deadline": {
+   "legacy": {
+    "scenarios": 8,
+    "precision": {
+     "value": 0.75,
+     "low": 0.409,
+     "high": 0.929,
+     "n": 8
+    },
+    "recall": {
+     "value": 0.75,
+     "low": 0.409,
+     "high": 0.929,
+     "n": 8
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.61,
+     "high": 1,
+     "n": 6
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 0.5,
+    "latencyMs": {
+     "p50": 0.06,
+     "p95": 0.13
+    }
+   },
+   "engine": {
+    "scenarios": 8,
+    "precision": {
+     "value": 0.875,
+     "low": 0.529,
+     "high": 0.978,
+     "n": 8
+    },
+    "recall": {
+     "value": 0.875,
+     "low": 0.529,
+     "high": 0.978,
+     "n": 8
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.646,
+     "high": 1,
+     "n": 7
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 0.25,
+    "latencyMs": {
+     "p50": 0.1,
+     "p95": 0.15
+    }
+   }
+  },
+  "missing_information": {
+   "legacy": {
+    "scenarios": 6,
+    "precision": {
+     "value": 0.833,
+     "low": 0.436,
+     "high": 0.97,
+     "n": 6
+    },
+    "recall": {
+     "value": 0.833,
+     "low": 0.436,
+     "high": 0.97,
+     "n": 6
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.566,
+     "high": 1,
+     "n": 5
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 0.333,
+    "latencyMs": {
+     "p50": 0.08,
+     "p95": 0.12
+    }
+   },
+   "engine": {
+    "scenarios": 6,
+    "precision": {
+     "value": 1,
+     "low": 0.61,
+     "high": 1,
+     "n": 6
+    },
+    "recall": {
+     "value": 1,
+     "low": 0.61,
+     "high": 1,
+     "n": 6
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.61,
+     "high": 1,
+     "n": 6
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 0,
+    "latencyMs": {
+     "p50": 0.23,
+     "p95": 0.69
+    }
+   }
+  },
+  "conflicting": {
+   "legacy": {
+    "scenarios": 3,
+    "precision": {
+     "value": 0.667,
+     "low": 0.208,
+     "high": 0.939,
+     "n": 3
+    },
+    "recall": {
+     "value": 0.667,
+     "low": 0.208,
+     "high": 0.939,
+     "n": 3
+    },
+    "deadlineAccuracy": {
+     "value": 0.5,
+     "low": 0.095,
+     "high": 0.905,
+     "n": 2
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 1,
+    "latencyMs": {
+     "p50": 0.13,
+     "p95": 0.14
+    }
+   },
+   "engine": {
+    "scenarios": 3,
+    "precision": {
+     "value": 0.5,
+     "low": 0.15,
+     "high": 0.85,
+     "n": 4
+    },
+    "recall": {
+     "value": 0.667,
+     "low": 0.208,
+     "high": 0.939,
+     "n": 3
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.342,
+     "high": 1,
+     "n": 2
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 1,
+    "latencyMs": {
+     "p50": 0.66,
+     "p95": 0.78
+    }
+   }
+  },
+  "contradictory_evidence": {
+   "legacy": {
+    "scenarios": 3,
+    "precision": {
+     "value": 1,
+     "low": 0.438,
+     "high": 1,
+     "n": 3
+    },
+    "recall": {
+     "value": 1,
+     "low": 0.438,
+     "high": 1,
+     "n": 3
+    },
+    "deadlineAccuracy": {
+     "value": 0,
+     "low": 0,
+     "high": 0.562,
+     "n": 3
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 1,
+    "latencyMs": {
+     "p50": 0.16,
+     "p95": 0.16
+    }
+   },
+   "engine": {
+    "scenarios": 3,
+    "precision": {
+     "value": 0.75,
+     "low": 0.301,
+     "high": 0.954,
+     "n": 4
+    },
+    "recall": {
+     "value": 1,
+     "low": 0.438,
+     "high": 1,
+     "n": 3
+    },
+    "deadlineAccuracy": {
+     "value": 0.667,
+     "low": 0.208,
+     "high": 0.939,
+     "n": 3
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 0.667,
+    "latencyMs": {
+     "p50": 1.76,
+     "p95": 2.62
+    }
+   }
+  },
+  "duplicate": {
+   "legacy": {
+    "scenarios": 12,
+    "precision": null,
+    "recall": null,
+    "deadlineAccuracy": null,
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": {
+     "value": 0.333,
+     "low": 0.138,
+     "high": 0.609,
+     "n": 12
+    },
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": null,
+    "latencyMs": {
+     "p50": 340.73,
+     "p95": 373.69
+    }
+   },
+   "engine": {
+    "scenarios": 12,
+    "precision": null,
+    "recall": null,
+    "deadlineAccuracy": null,
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": {
+     "value": 1,
+     "low": 0.757,
+     "high": 1,
+     "n": 12
+    },
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": null,
+    "latencyMs": {
+     "p50": 169.63,
+     "p95": 324.03
+    }
+   }
+  },
+  "updated_document": {
+   "legacy": {
+    "scenarios": 4,
+    "precision": null,
+    "recall": null,
+    "deadlineAccuracy": null,
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": {
+     "value": 0,
+     "low": 0,
+     "high": 0.49,
+     "n": 4
+    },
+    "updateApplied": {
+     "value": 0,
+     "low": 0,
+     "high": 0.49,
+     "n": 4
+    },
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": null,
+    "latencyMs": {
+     "p50": 341.91,
+     "p95": 354.58
+    }
+   },
+   "engine": {
+    "scenarios": 4,
+    "precision": null,
+    "recall": null,
+    "deadlineAccuracy": null,
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": {
+     "value": 1,
+     "low": 0.51,
+     "high": 1,
+     "n": 4
+    },
+    "updateApplied": {
+     "value": 1,
+     "low": 0.51,
+     "high": 1,
+     "n": 4
+    },
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": null,
+    "latencyMs": {
+     "p50": 177.75,
+     "p95": 219.54
+    }
+   }
+  },
+  "dependency_chain": {
+   "legacy": {
+    "scenarios": 5,
+    "precision": null,
+    "recall": null,
+    "deadlineAccuracy": null,
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": {
+     "value": 0.2,
+     "low": 0.036,
+     "high": 0.624,
+     "n": 5
+    },
+    "falseVerifiedCompletions": null,
+    "correctionBurden": null,
+    "latencyMs": {
+     "p50": 0.13,
+     "p95": 0.27
+    }
+   },
+   "engine": {
+    "scenarios": 5,
+    "precision": null,
+    "recall": null,
+    "deadlineAccuracy": null,
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": {
+     "value": 1,
+     "low": 0.566,
+     "high": 1,
+     "n": 5
+    },
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": null,
+    "latencyMs": {
+     "p50": 0.26,
+     "p95": 0.38
+    }
+   }
+  },
+  "irrelevant_information": {
+   "legacy": {
+    "scenarios": 5,
+    "precision": {
+     "value": 0.8,
+     "low": 0.376,
+     "high": 0.964,
+     "n": 5
+    },
+    "recall": {
+     "value": 0.8,
+     "low": 0.376,
+     "high": 0.964,
+     "n": 5
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.51,
+     "high": 1,
+     "n": 4
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 0.4,
+    "latencyMs": {
+     "p50": 0.16,
+     "p95": 0.18
+    }
+   },
+   "engine": {
+    "scenarios": 5,
+    "precision": {
+     "value": 0.833,
+     "low": 0.436,
+     "high": 0.97,
+     "n": 6
+    },
+    "recall": {
+     "value": 1,
+     "low": 0.566,
+     "high": 1,
+     "n": 5
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.566,
+     "high": 1,
+     "n": 5
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 0.2,
+    "latencyMs": {
+     "p50": 0.91,
+     "p95": 1.97
+    }
+   }
+  },
+  "no_action": {
+   "legacy": {
+    "scenarios": 12,
+    "precision": {
+     "value": 0,
+     "low": 0,
+     "high": 0.243,
+     "n": 12
+    },
+    "recall": null,
+    "deadlineAccuracy": null,
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": {
+     "value": 0,
+     "low": 0,
+     "high": 0.243,
+     "n": 12
+    },
+    "falseActionRate": {
+     "value": 1,
+     "low": 0.757,
+     "high": 1,
+     "n": 12
+    },
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 1,
+    "latencyMs": {
+     "p50": 0.09,
+     "p95": 0.23
+    }
+   },
+   "engine": {
+    "scenarios": 12,
+    "precision": {
+     "value": 0,
+     "low": 0,
+     "high": 0.793,
+     "n": 1
+    },
+    "recall": null,
+    "deadlineAccuracy": null,
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": {
+     "value": 0.917,
+     "low": 0.646,
+     "high": 0.985,
+     "n": 12
+    },
+    "falseActionRate": {
+     "value": 0.083,
+     "low": 0.015,
+     "high": 0.354,
+     "n": 12
+    },
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 0.083,
+    "latencyMs": {
+     "p50": 0.02,
+     "p95": 0.17
+    }
+   }
+  },
+  "misleading": {
+   "legacy": {
+    "scenarios": 4,
+    "precision": {
+     "value": 0.25,
+     "low": 0.046,
+     "high": 0.699,
+     "n": 4
+    },
+    "recall": {
+     "value": 0.333,
+     "low": 0.061,
+     "high": 0.792,
+     "n": 3
+    },
+    "deadlineAccuracy": {
+     "value": 0,
+     "low": 0,
+     "high": 0.793,
+     "n": 1
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": {
+     "value": 0,
+     "low": 0,
+     "high": 0.793,
+     "n": 1
+    },
+    "falseActionRate": {
+     "value": 1,
+     "low": 0.207,
+     "high": 1,
+     "n": 1
+    },
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 1.5,
+    "latencyMs": {
+     "p50": 0.15,
+     "p95": 0.15
+    }
+   },
+   "engine": {
+    "scenarios": 4,
+    "precision": {
+     "value": 0.5,
+     "low": 0.15,
+     "high": 0.85,
+     "n": 4
+    },
+    "recall": {
+     "value": 0.667,
+     "low": 0.208,
+     "high": 0.939,
+     "n": 3
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.342,
+     "high": 1,
+     "n": 2
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": {
+     "value": 1,
+     "low": 0.207,
+     "high": 1,
+     "n": 1
+    },
+    "falseActionRate": {
+     "value": 0,
+     "low": 0,
+     "high": 0.793,
+     "n": 1
+    },
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 0.75,
+    "latencyMs": {
+     "p50": 0.5,
+     "p95": 0.69
+    }
+   }
+  },
+  "prompt_injection": {
+   "legacy": {
+    "scenarios": 6,
+    "precision": {
+     "value": 0.833,
+     "low": 0.436,
+     "high": 0.97,
+     "n": 6
+    },
+    "recall": {
+     "value": 0.833,
+     "low": 0.436,
+     "high": 0.97,
+     "n": 6
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.566,
+     "high": 1,
+     "n": 5
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": {
+     "value": 0,
+     "low": 0,
+     "high": 0.39,
+     "n": 6
+    },
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 0.333,
+    "latencyMs": {
+     "p50": 0.12,
+     "p95": 0.19
+    }
+   },
+   "engine": {
+    "scenarios": 6,
+    "precision": {
+     "value": 1,
+     "low": 0.61,
+     "high": 1,
+     "n": 6
+    },
+    "recall": {
+     "value": 1,
+     "low": 0.61,
+     "high": 1,
+     "n": 6
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.61,
+     "high": 1,
+     "n": 6
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": {
+     "value": 1,
+     "low": 0.61,
+     "high": 1,
+     "n": 6
+    },
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 0,
+    "latencyMs": {
+     "p50": 0.49,
+     "p95": 1.58
+    }
+   }
+  },
+  "sensitive_information": {
+   "legacy": {
+    "scenarios": 4,
+    "precision": {
+     "value": 0.75,
+     "low": 0.301,
+     "high": 0.954,
+     "n": 4
+    },
+    "recall": {
+     "value": 0.75,
+     "low": 0.301,
+     "high": 0.954,
+     "n": 4
+    },
+    "deadlineAccuracy": {
+     "value": 0.667,
+     "low": 0.208,
+     "high": 0.939,
+     "n": 3
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 1,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": null,
+    "correctionBurden": 0.75,
+    "latencyMs": {
+     "p50": 0.12,
+     "p95": 0.13
+    }
+   },
+   "engine": {
+    "scenarios": 4,
+    "precision": {
+     "value": 1,
+     "low": 0.438,
+     "high": 1,
+     "n": 3
+    },
+    "recall": {
+     "value": 0.75,
+     "low": 0.301,
+     "high": 0.954,
+     "n": 4
+    },
+    "deadlineAccuracy": {
+     "value": 1,
+     "low": 0.438,
+     "high": 1,
+     "n": 3
+    },
+    "amountAccuracy": null,
+    "fabricatedDeadlines": 0,
+    "abstention": null,
+    "falseActionRate": null,
+    "injectionFlagged": null,
+    "duplicateHandling": null,
+    "updateApplied": null,
+    "dependencyCount": null,
+    "falseVerifiedCompletions": 0,
+    "correctionBurden": 0.25,
+    "latencyMs": {
+     "p50": 0.47,
+     "p95": 0.76
+    }
+   }
+  }
+ },
+ "aiCost": {
+  "engine": "A$0 model cost per scenario (deterministic rules; no model calls for text). Images/PDFs use the AI reader in the app, not measured here.",
+  "legacy": "A$0 (rules)"
+ }
+}

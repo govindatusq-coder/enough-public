@@ -15,8 +15,8 @@ const INJECTION=/\b(ignore (?:all |any |the )?(?:previous|prior|above|earlier) i
 const VAGUE=/\b(end of (?:term|the term|semester|year)|later this (?:month|term|year)|soon|in the coming weeks|at some point|early next (?:month|term)|sometime|tbc|tba|to be confirmed)\b/i;
 // Purely informational: thanks, recaps and closures with nothing for the person to do.
 const INFO_ONLY=/^(?:thank(?:s| you)|congratulations|well done|great (?:work|job)|a (?:big )?thank you|we (?:had|enjoyed)|it was (?:great|wonderful)|here (?:is|are) (?:some )?photos|just (?:a )?(?:note|fyi)|fyi\b)/i;
-const ACTION=/\b(pay|payment|due|return|sign|submit|book|bring|pack|buy|order|renew|rsvp|reply|respond|call|email|send|fill|complete|lodge|collect|pick up|drop off|attend|confirm|update|fix|repair|replace|get|need(?:s)? to|please|must|required|remember|appointment|expires?|invoice|bill|running (?:low|out)|ran out|out of)\b/i;
-const CLOSED=/\b(no action (?:is )?(?:required|needed)|nothing (?:you )?need to do|for your information only|already (?:been )?(?:paid|done|submitted|sorted)|has been cancelled|is cancelled)\b/i;
+const ACTION=/\b(pay|payment|due|return|sign|submit|book|bring|pack|buy|order|renew|rsvp|reply|respond|call|email|send|fill|complete|lodge|collect|pick up|drop off|attend|confirm|update|fix|repair|replace|get|need(?:s)? to|please|must|required|remember|appointment|expires?|invoice|bill|running (?:low|out)|ran out|out of|waiting (?:to hear|for|on)|still waiting|expected by|hear back)\b/i;
+const CLOSED=/\b(no action (?:is )?(?:required|needed)|nothing (?:you )?need to do|nothing to do yet|for your information only|already (?:been )?(?:paid|done|submitted|sorted)|has been cancelled|is cancelled|thank you for your payment|account is up to date|payment (?:has been )?received)\b/i;
 const sentences=(t:string)=>t.split(/(?<=[.!?])\s+|\n+/).map(s=>s.trim()).filter(Boolean);
 const excerptFor=(ss:string[],needle:RegExp|string)=>ss.find(s=>typeof needle==='string'?s.toLowerCase().includes(needle.toLowerCase()):needle.test(s))||null;
 
@@ -72,7 +72,7 @@ function clauses(ss:string[]):string[]{
  }
  flush();return out;
 }
-const startsJob=(s:string)=>/^(?:please\s+)?(?:pay|book|renew|call|ring|email|buy|order|return|sign|submit|reply|rsvp|fix|send|get|pick up|drop off|remember|need to|don'?t forget|reminder)\b/i.test(s.trim())||/\b(bill|invoice|appointment|renewal|registration|rego|expires?)\b/i.test(s);
+const startsJob=(s:string)=>/^(?:(?:also|and|then|plus),?\s+)?(?:please\s+)?(?:pay|book|renew|call|ring|email|buy|order|return|sign|submit|reply|rsvp|fix|send|get|pick up|drop off|remember|need to|don'?t forget|reminder)\b/i.test(s.trim())||/\b(bill|invoice|appointment|renewal|registration|rego|expires?)\b/i.test(s);
 const tokens=(s:string)=>new Set(s.toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>2&&!['the','and','for','you','your','due','with','this','that','please','from'].includes(w)));
 export function sameResponsibility(a:ExtractedResponsibility,b:ExtractedResponsibility){
  if(a.responsibilityPattern!==b.responsibilityPattern)return false;const A=tokens(a.title),B=tokens(b.title);const inter=[...A].filter(x=>B.has(x)).length;
@@ -81,11 +81,19 @@ export function sameResponsibility(a:ExtractedResponsibility,b:ExtractedResponsi
 
 function fromGeneric(chunk:string,o:ExtractOptions,ref:(e:string|null,l?:string)=>EvidenceReference[]):ExtractedResponsibility|null{
  const e=extractEntities(chunk,o.today);const rec=recognise(chunk,e);
- const pattern:PatternId=rec.primary;
+ let pattern:PatternId=rec.primary;
+ // A clear but weak signal (one pattern scores, nothing else does) beats "unknown"; it is flagged to confirm.
+ if(pattern==='UNKNOWN_LOAD'&&rec.ranked[0]?.score>0&&!(rec.ranked[1]?.score>0))pattern=rec.ranked[0].id;
+ // Paying school fees or a levy is a payment, not a school event.
+ if(pattern==='SCHOOL_EVENT'&&/\bpay\b/i.test(chunk)&&/\b(fees?|levy|levies|invoice|contribution)\b/i.test(chunk)&&!/\b(excursion|camp|carnival|incursion|photos?|interviews?|book week)\b/i.test(chunk))pattern='BILL_PAYMENT';
+ // A document someone has to return or submit is a form, whatever it is called (an action plan, a note).
+ if(pattern==='UNKNOWN_LOAD'&&/\b(return(?:ed)?|submit(?:ted)?|lodge[ds]?|sign(?:ed)?|fill(?:ed)? in)\b/i.test(chunk)&&/\b(plan|form|application|certificate|note|slip|declaration)\b/i.test(chunk))pattern='FORM_APPLICATION';
  const actionable=ACTION.test(chunk);
  if(pattern==='UNKNOWN_LOAD'&&!actionable)return null;
  if(!actionable&&!e.dueDate&&!e.amountCents)return null;
- const dates=findDates(chunk,o.today);const due=dates.find(d=>d.role==='due'||d.role==='expiry'||d.role==='rsvp');const ev=dates.find(d=>d.role==='event');
+ const dates=findDates(chunk,o.today);const dues=dates.filter(d=>d.role==='due'||d.role==='expiry'||d.role==='rsvp');const ev=dates.find(d=>d.role==='event');
+ // Two different deadlines for the same job: the earlier one is the safe choice, and Bear says it isn't sure.
+ const conflicting=new Set(dues.map(d=>d.iso)).size>1;const due=conflicting?[...dues].sort((a,b)=>a.iso.localeCompare(b.iso))[0]:dues[0];
  const vague=VAGUE.exec(chunk);
  const dueDate=due?.iso||null;
  const dueBasis:FactBasis=dueDate?'explicit':'unknown';
@@ -95,12 +103,12 @@ function fromGeneric(chunk:string,o:ExtractOptions,ref:(e:string|null,l?:string)
  if(vague&&!dueDate&&!missing.includes('due date'))missing.push('due date');
  const human=g.nodes.flatMap(n=>n.steps.filter(s=>s.owner==='human'&&s.status!=='skipped').map(s=>s.label));
  const deps=g.nodes.flatMap(n=>n.steps.filter(s=>s.dependsOn.length).map(s=>`${s.label} after ${s.dependsOn.map(id=>g.nodes.flatMap(x=>x.steps).find(x=>x.id===id)?.label).filter(Boolean).join(', ')}`));
- const confidence=Math.round((pattern==='UNKNOWN_LOAD'?0.5:Math.max(0.55,rec.confidence))*(missing.length?0.85:1)*100)/100;
+ const confidence=Math.round((pattern==='UNKNOWN_LOAD'?0.5:pattern!==rec.primary?0.55:Math.max(0.55,rec.confidence))*(missing.length?0.85:1)*(conflicting?0.7:1)*100)/100;
  return {title:deriveTitle(pattern,chunk,e,null),description:chunk.slice(0,1000),domain:p.domain,responsibilityPattern:pattern,
   dueDate,dueDateBasis:dueBasis,dueDateEvidence:due?.text?excerptFor([chunk],due.text):(vague?vague[0]:null),
   eventDate:ev?.iso||null,eventDateBasis:ev?'explicit':'unknown',amountCents:e.amountCents??null,responsiblePerson:e.person||null,
   requiredActions:human.slice(0,6),dependencies:deps.slice(0,6),missingInformation:missing,sourceEvidence:ref(chunk),confidence,
-  requiresConfirmation:confidence<0.6||(!!vague&&!dueDate),groupKey:null};
+  requiresConfirmation:confidence<0.6||(!!vague&&!dueDate)||conflicting,groupKey:null};
 }
 
 const OBL_TITLE:Record<string,(ev:string)=>string>={consent:e=>e?`Return ${e} permission form`:'Return the permission form',payment:e=>`Pay for ${e}`,equipment:e=>`Pack for ${e}`,booking:e=>`Book a time for ${e}`,order:e=>`Order ${e}`,medical:e=>`Update medical details for ${e}`,reply:e=>`Reply to the school about ${e}`,costume:e=>`Sort a costume for ${e}`,materials:e=>`Send materials for ${e}`,homework:e=>`Homework due for ${e}`};

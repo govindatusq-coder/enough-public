@@ -105,3 +105,11 @@ test('different things stay different: numbers, amounts and event dates matter',
  assert.equal(compare(r('Submit the sports registration form 0 by 1 October.'),task('Submit the school enrolment form','FORM_APPLICATION',{dueDate:'2026-11-20'})).kind,'distinct');
  assert.equal(compare(r('Pay the water bill of $95 by 20 February.'),task('Pay the water bill of $90','BILL_PAYMENT',{amountCents:9000,dueDate:'2026-11-20'})).kind,'distinct','next quarter’s bill');
 });
+
+test('benchmark dataset: at least 200 synthetic, labelled scenarios across all ten patterns and the hard categories',async()=>{
+ const {readFileSync}=await import('node:fs');const d=JSON.parse(readFileSync(new URL('../evaluation/dataset/scenarios.json',import.meta.url)));
+ assert.ok(d.synthetic&&d.scenarios.length>=200);assert.ok(d.scenarios.every(s=>s.synthetic&&s.expected&&s.inputs.length));
+ const pats=new Set(d.scenarios.flatMap(s=>(s.expected.responsibilities||[]).map(r=>r.pattern)));
+ for(const p of ['BILL_PAYMENT','SCHOOL_EVENT','APPOINTMENT','FORM_APPLICATION','REPAIR_PROBLEM','WAITING_FOR_RESPONSE','PURCHASE_REQUIRED','RENEWAL','INVITATION_EVENT','REPLENISHMENT'])assert.ok(pats.has(p),p);
+ for(const c of ['simple','multiple','ambiguous_deadline','missing_information','conflicting','duplicate','updated_document','dependency_chain','irrelevant_information','no_action','misleading','prompt_injection','sensitive_information','contradictory_evidence'])assert.ok(d.scenarios.some(s=>s.category===c),c);
+});
