@@ -6,21 +6,26 @@ import {createClient,type SupabaseClient} from '@supabase/supabase-js';
 import {base64ToBytes,mimeOf,type OutlookAttachment,type OutlookItem} from './item.ts';
 
 declare global{interface Window{Office?:any}}
-const OFFICE_JS='https://appsforoffice.microsoft.com/lib/1/hosted/office.js';
+import {OFFICE_JS} from './boot.ts';
 
 let loading:Promise<boolean>|null=null;
-// True when running inside Outlook. Office.js is known to remove history.pushState/replaceState in some
-// hosts, which Next.js needs, so they are put back once it has loaded.
-export function loadOffice(timeoutMs=8000):Promise<boolean>{
+// The pages start loading Office.js the moment they open (see OFFICE_BOOT); this waits for it. True when
+// running inside Outlook. (Office.js removes history.pushState/replaceState, which Next.js needs; the boot
+// script guards them, and they're put back here too in case it didn't run.)
+export function loadOffice(timeoutMs=10000):Promise<boolean>{
  if(loading)return loading;
  loading=new Promise(resolve=>{
   const keep={push:history.pushState,replace:history.replaceState};
   const restore=()=>{if(typeof history.pushState!=='function')history.pushState=keep.push;if(typeof history.replaceState!=='function')history.replaceState=keep.replace;};
-  const timer=setTimeout(()=>{restore();resolve(false);},timeoutMs);
-  const ready=()=>{window.Office.onReady((info:{host?:string}|undefined)=>{clearTimeout(timer);restore();resolve(info?.host==='Outlook'||!!window.Office?.context?.mailbox);});};
+  let done=false;const finish=(v:boolean)=>{if(done)return;done=true;clearTimeout(timer);restore();resolve(v);};
+  const timer=setTimeout(()=>finish(false),timeoutMs);
+  const ready=()=>{try{window.Office.onReady((info:{host?:string}|undefined)=>finish(info?.host==='Outlook'||!!window.Office?.context?.mailbox));}catch{finish(false);}};
   if(window.Office){ready();return;}
-  const s=document.createElement('script');s.src=OFFICE_JS;s.async=true;s.onload=ready;s.onerror=()=>{clearTimeout(timer);restore();resolve(false);};
-  document.head.appendChild(s);
+  let s=document.getElementById('office-js') as HTMLScriptElement|null;
+  if(!s){s=document.createElement('script');s.id='office-js';s.src=OFFICE_JS;document.head.appendChild(s);}
+  s.addEventListener('load',ready);s.addEventListener('error',()=>finish(false));
+  // It may have finished loading before this ran.
+  const poll=setInterval(()=>{if(window.Office){clearInterval(poll);ready();}else if(done)clearInterval(poll);},100);
  });
  return loading;
 }

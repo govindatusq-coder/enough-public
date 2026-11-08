@@ -62,10 +62,22 @@ test('the manifest: this deployment’s URLs, read-only, a Give to Bear button o
  const opens=(xml.match(/<[A-Za-z][^>]*[^/]>/g)||[]).filter(t=>!t.startsWith('<?')).length,closes=(xml.match(/<\/[A-Za-z]/g)||[]).length;assert.equal(opens,closes);
  assert.match(outlookManifest('https://a.b',{id:'11111111-2222-4333-8444-555555555555'}),/<Id>11111111-2222-4333-8444-555555555555<\/Id>/);
 });
+test('the boot script starts Office.js first and keeps Next.js’s history working when Office.js nulls it',async()=>{
+ const {OFFICE_BOOT,OFFICE_JS}=await import('../lib/bear/outlook/boot.ts');assert.ok(OFFICE_BOOT.includes(OFFICE_JS));
+ const added=[];function P(){}P.prototype.pushState=function(){return 'push';};P.prototype.replaceState=function(){return 'replace';};const h=new P();
+ const doc={getElementById:()=>null,createElement:()=>({}),head:{appendChild:(s)=>added.push(s)}};
+ new Function('window','document',OFFICE_BOOT)({history:h},doc);
+ h.pushState=null;h.replaceState=null;assert.equal(h.replaceState(),'replace');assert.equal(h.pushState(),'push');
+ h.pushState=()=>'wrapped';assert.equal(h.pushState(),'wrapped','real functions (Next.js wrapping) still accepted');
+ assert.equal(added.length,1);assert.equal(added[0].id,'office-js');assert.equal(added[0].src,OFFICE_JS);
+});
 test('only the add-in’s pages may sit inside Outlook; everything else still can’t be framed',()=>{
  const normal=contentSecurityPolicy({supabaseUrl:'https://p.supabase.co'});assert.ok(normal.includes("frame-ancestors 'none'"));assert.ok(!normal.includes('appsforoffice'));
  const ol=contentSecurityPolicy({supabaseUrl:'https://p.supabase.co',outlook:true});
  assert.match(ol,/frame-ancestors https:\/\/outlook\.office\.com .*https:\/\/outlook\.live\.com/);assert.ok(ol.includes('script-src \'self\' \'unsafe-inline\' https://appsforoffice.microsoft.com'));
- assert.ok(!ol.includes("frame-ancestors 'none'"));assert.ok(!ol.includes('unsafe-eval'));assert.ok(!/frame-ancestors[^;]*\*(?!\.)/.test(ol),'no bare wildcard');
+ assert.ok(!ol.includes("frame-ancestors 'none'"));
+ // Office.js can't start inside Outlook without MicrosoftAjax.js (this was the real-Outlook “couldn't start” error).
+ for(const o of ['https://ajax.aspnetcdn.com','https://officeapis.public.onecdn.static.microsoft'])assert.match(ol,new RegExp("script-src[^;]*"+o.replace(/\./g,'\\.')));
+ assert.match(ol,/frame-ancestors[^;]*https:\/\/\*\.microsoft /,'outlook.cloud.microsoft');assert.ok(!ol.includes('unsafe-eval'));assert.ok(!/frame-ancestors[^;]*\*(?!\.)/.test(ol),'no bare wildcard');
  const cfg=readFileSync(new URL('../next.config.ts',import.meta.url),'utf8');assert.match(cfg,/'\/bear\/outlook','\/bear\/outlook\/:path\*'/);
 });
