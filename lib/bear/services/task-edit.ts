@@ -1,3 +1,4 @@
+import {syncState} from '../engine/events.ts';
 import {z} from 'zod';
 import {reopenLoad,relayLoadDate,retitleLoad} from './load.ts';
 import {addDays,formatWhen,localParts,todayISO,zonedDateTime} from '../domain/dates.ts';
@@ -46,6 +47,9 @@ export async function updateTask(store:BearStore,taskId:string,input:UpdateTaskI
  if(input.location!==undefined)patch.location=input.location;
  if(input.notes!==undefined)patch.notes=input.notes;
  if(input.forPerson!==undefined)patch.forPerson=input.forPerson;
+ // Facts the person set themselves are never overwritten by a later document (only proposed).
+ const touched=(['title','dueAt','dueTime','location','forPerson'] as const).filter(k=>input[k]!==undefined&&input[k]!==task[k]);
+ if(touched.length)patch.confirmedFields=[...new Set([...(task.confirmedFields||[]),...touched])];
  if(input.items!==undefined){
   const before=new Map((task.items||[]).map(i=>[i.id,i]));const at=new Date().toISOString();
   const items:ShoppingItem[]=input.items.map(i=>{const prev=i.id?before.get(i.id):undefined;return {id:prev?.id||i.id||newId(),name:i.name,quantity:i.quantity,estimatedCents:i.estimatedCents,done:i.done,doneAt:i.done?(prev?.doneAt||at):null};});
@@ -305,6 +309,7 @@ export async function reopenTask(store:BearStore,taskId:string){
  const items=task.items?.map(i=>({...i,done:false,doneAt:null}));
  const next=await store.update('tasks',task.id,{status:'open',...(items?{items}:{})});
  await reopenLoad(store,next);
+ await syncState(store,next.id,'user').catch(()=>null);
  const project=await store.get('projects',task.projectId);if(project)await store.update('projects',project.id,{status:'active'});
  for(const d of await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})){const dep=await store.get('tasks',d.dependsOnTaskId);if(dep&&dep.status==='done')await store.update('tasks',dep.id,{status:'open'});}
  return next;

@@ -1,3 +1,4 @@
+import type {ResponsibilityEvent} from '../engine/types.ts';
 import type {AIInference,Area,BehaviourEvent,Bill,Capture,Completion,ExtractedEntity,Owned,Person,Profile,Project,PushSubscriptionRow,RecurringExpectation,Reminder,ReminderInteraction,SourceDocument,Suggestion,Task,TaskDependency,UserCorrection,ValueLedgerEntry,Win} from '../domain/types.ts';
 
 // Table names map 1:1 to public.bear_* tables. Each table stores the full entity
@@ -7,6 +8,8 @@ export interface Tables{
  ai_inferences:AIInference;user_corrections:UserCorrection;projects:Project;tasks:Task;task_dependencies:TaskDependency;
  bills:Bill;recurring_expectations:RecurringExpectation;reminders:Reminder;reminder_interactions:ReminderInteraction;
  suggestions:Suggestion;completions:Completion;wins:Win;value_ledger:ValueLedgerEntry;behaviour_events:BehaviourEvent;push_subscriptions:PushSubscriptionRow;
+ // Responsibility Engine: append-only lifecycle events (see migration 20261109120000).
+ responsibility_events:ResponsibilityEvent;
 }
 export type TableName=keyof Tables;
 
@@ -34,6 +37,7 @@ export const indexes:{[K in TableName]:{[column:string]:(row:Tables[K])=>unknown
  value_ledger:{kind:r=>r.kind,reason:r=>r.reason,amount_cents:r=>r.amountCents,minutes:r=>r.minutes,occurred_at:r=>r.occurredAt,defensible:r=>r.defensible,is_demo:r=>r.isDemo},
  behaviour_events:{type:r=>r.type,at:r=>r.at,hour_local:r=>r.hourLocal,weekday:r=>r.weekday},
  push_subscriptions:{endpoint:r=>r.endpoint},
+ responsibility_events:{responsibility_id:r=>r.responsibilityId,event_type:r=>r.eventType,at:r=>r.at},
 };
 
 export type Where={column:string;op?:'eq'|'neq'|'lte'|'gte'|'lt'|'gt'|'in';value:unknown};

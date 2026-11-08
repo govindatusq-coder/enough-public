@@ -1,3 +1,4 @@
+import {syncState} from '../engine/events.ts';
 import {addDays,todayISO,zonedDateTime} from '../domain/dates.ts';
 import type {Bill,Profile,Reminder,Task} from '../domain/types.ts';
 import {applyAction,dateEntityFor,graphState,markResolved,recompute,understand,withEntities,type UnderstandInput} from '../load/engine.ts';
@@ -24,6 +25,7 @@ export async function attachLoad(store:BearStore,task:Task,input:Omit<Understand
  if(recognition.primary==='UNKNOWN_LOAD')await recordBehaviour(store,'pattern_unknown',{near:recognition.ranked.slice(0,3).map(r=>`${r.id}:${r.confidence}`),length:input.text.length>200?'long':input.text.length>40?'medium':'short'},now);
  const updated=await store.update('tasks',task.id,{load:graph});
  await syncLoadReminder(store,updated,graph,profile,now);
+ await syncState(store,updated,'system',now).catch(()=>null);
  return {task:updated,graph,recognition};
 }
 
@@ -65,6 +67,7 @@ export async function actOnLoad(store:BearStore,taskId:string,input:{stepId:stri
   for(const r of await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed','delivered']}]}))if(r.plan.windowId!=='load')await store.update('reminders',r.id,{status:'actioned'});
   await syncLoadReminder(store,updated,result.graph,profile,now);
  }
+ await syncState(store,updated.id,input.source==='email'?'integration':'user',now).catch(()=>null);
  return {task:updated,view:describe(result.graph,today,{quiet:updated.timing==='flexible'}),said:result.said,win};
 }
 

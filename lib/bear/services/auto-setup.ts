@@ -8,6 +8,11 @@ import type {StructuredModelProvider} from '../ai/provider.ts';
 import {flags} from '../flags.ts';
 import {findSchoolMatch,mergeDetails} from '../coverage/matching.ts';
 import {splitByEvent} from '../coverage/packs/school.ts';
+import {extractResponsibilities} from '../engine/extract.ts';
+import {findDuplicate} from '../engine/duplicates.ts';
+import {appendEvent,syncState} from '../engine/events.ts';
+import {relayLoadDate} from './load.ts';
+import {todayISO} from '../domain/dates.ts';
 import {stamp} from '../store/store.ts';
 import {traced,type ExtractedEntity as Extraction} from '../domain/types.ts';
 import {recordBehaviour} from './behaviour.ts';
@@ -36,6 +41,36 @@ export async function maybeAutoSetup(store:BearStore,extraction:ExtractedEntity,
    const copy=await store.insert('extractions',stamp<Extraction>(store.userId,{captureId:extraction.captureId,kind:'task',status:'draft',fields:extraction.fields,general:{...extraction.general,title:traced(ev.title,'rules',0.85,false,at),when:traced(ev.date,'rules',ev.date?0.85:0,false,at)},questions:[],sourceText:extraction.sourceText,inferenceId:extraction.inferenceId,duplicateOfBillId:null,school:part}));
    await maybeAutoSetup(store,copy,now,provider).catch(()=>null);}
   return main;
+ }
+ // Responsibility Engine (non-school captures): one item per responsibility; the same thing again is merged;
+ // a changed date updates Bear's own guess, or is only proposed if the person set that date themselves.
+ if(flags.responsibilityEngine()&&!extraction.school?.isSchool&&extraction.sourceText){
+  const today=todayISO(profile.lifeRhythm.timezone||'Australia/Sydney',now);
+  const ext=extractResponsibilities(extraction.sourceText,{today,sourceId:extraction.captureId});
+  const [first,...more]=ext.responsibilities;
+  if(first){
+   const open=(await store.list('tasks',{where:[{column:'status',value:'open'}]})).filter(t=>t.load);
+   const v=findDuplicate(first,open);
+   if(v.kind!=='distinct'&&!more.length){
+    let existing=open.find(t=>t.id===v.taskId)!;
+    if(v.kind==='update'){const c=v.changes[0];
+     if(existing.confirmedFields?.includes('dueAt')){existing=await store.update('tasks',existing.id,{pendingUpdate:{field:'dueAt',from:c.from,to:c.to,at:now.toISOString()}});await appendEvent(store,{responsibilityId:existing.id,eventType:'update_proposed',actor:'system',metadata:{field:'dueAt'}});}
+     else{const graph=await relayLoadDate(store,existing,c.to,now);existing=await store.update('tasks',existing.id,{dueAt:c.to,load:graph});await appendEvent(store,{responsibilityId:existing.id,eventType:'update_applied',actor:'system',metadata:{field:'dueAt'}});}}
+    else await appendEvent(store,{responsibilityId:existing.id,eventType:'duplicate_merged',actor:'system'});
+    await store.update('extractions',extraction.id,{status:'verified'});const cap=await store.get('captures',extraction.captureId);if(cap)await store.update('captures',cap.id,{status:'verified'});
+    await syncState(store,existing.id,'system',now).catch(()=>null);
+    return {task:existing,planned:false,area:(await store.get('projects',existing.projectId))?.areaKey||area,merged:true};
+   }
+   if(more.length){
+    // Several jobs in one capture ("pay the gas bill and book the dentist"): one item each.
+    const at=now.toISOString();
+    const firstX=await store.update('extractions',extraction.id,{sourceText:first.description||extraction.sourceText,general:{...extraction.general,title:traced(first.title,'rules',0.8,false,at)}});
+    const main=await maybeAutoSetup(store,firstX,now,provider).catch(()=>null);
+    for(const r of more){const copy=await store.insert('extractions',stamp<Extraction>(store.userId,{captureId:extraction.captureId,kind:'task',status:'draft',fields:extraction.fields,general:{...extraction.general,title:traced(r.title,'rules',0.8,false,at),when:traced(r.dueDate||r.eventDate||null,'rules',r.dueDate||r.eventDate?0.8:0,false,at)},questions:[],sourceText:r.description||r.title,inferenceId:extraction.inferenceId,duplicateOfBillId:null}));
+     await maybeAutoSetup(store,copy,now,provider).catch(()=>null);}
+    return main;
+   }
+  }
  }
  // School Admin pack: a notice about an event Bear already holds (a reminder, a resend) joins it.
  let joinProject:string|null=null;

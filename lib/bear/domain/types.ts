@@ -172,7 +172,10 @@ export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;stat
  // The person's answer to "Is someone relying on you for this?" (null = Bear decide).
  reliance?:'yes'|'little'|'no'|null;
  // Who chose time-sensitive / no rush: the person's own choice is never overridden.
- timingBy?:'user'|'bear'|null}
+ timingBy?:'user'|'bear'|null;
+ // Responsibility Engine: fields the person set themselves (never silently overwritten), and a change a
+ // newer document proposes for one of them, waiting for the person's yes.
+ confirmedFields?:string[];pendingUpdate?:{field:'dueAt';from:string|null;to:string|null;at:ISODateTime}|null}
 export interface TaskDependency extends Owned{taskId:Id;dependsOnTaskId:Id}
 
 // ---------- Bill ----------

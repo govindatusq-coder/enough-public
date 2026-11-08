@@ -1,3 +1,4 @@
+import {syncState} from '../engine/events.ts';
 import {completionEvidence} from '../coverage/verification.ts';
 import {z} from 'zod';
 import {addDays,addMonths,daysBetween,todayISO} from '../domain/dates.ts';
@@ -60,6 +61,7 @@ export async function completeTask(store:BearStore,input:CompleteInput,now=new D
   const timing=daysBeforeDue===null||isStep?'Done':daysBeforeDue>1?`${daysBeforeDue} days early`:daysBeforeDue===1?'1 day early':daysBeforeDue===0?'On the day':'Done';
   if(!isStep)win=await store.insert('wins',stamp<Win>(store.userId,{completionId:completion.id,category:task.kind==='appointment'&&/me|gp|doctor|dentist|physio/i.test(task.title)&&!task.forPerson?'me':'handled',title:task.title,detail:timing,amountCents:null,minutes:null,billId:null,isDemo:task.isDemo}));
  }
+ await syncState(store,task.id,input.evidence==='time'?'system':input.evidence==='email'?'integration':'user',now).catch(()=>null);
  return {completion,win:win as Win,ledger,expectation,suggestion};
 }
 export const categoryLabel=(c:string)=>({electricity:'Electricity',gas:'Gas',water:'Water',internet:'Internet',mobile:'Mobile',council_rates:'Council rates',car_registration:'Car registration',insurance:'Insurance',school_fees:'School fee',childcare:'Childcare',sports_fees:'Sports fee',subscription:'Subscription',rent:'Rent',strata:'Strata',medical:'Medical',other:'Bill'} as Record<string,string>)[c]||'Bill';
@@ -106,6 +108,7 @@ export async function dropTask(store:BearStore,taskId:string){
  for(const r of await store.list('reminders',{where:[{column:'task_id',value:taskId},{column:'status',op:'in',value:['scheduled','snoozed','delivered']}]}))await store.update('reminders',r.id,{status:'cancelled'});
  for(const b of await store.list('bills',{where:[{column:'task_id',value:taskId}]})){await store.update('bills',b.id,{status:'dropped'});await store.update('projects',b.projectId,{status:'archived'});}
  await recordBehaviour(store,'task_dropped',{taskId});
+ await syncState(store,taskId,'user').catch(()=>null);
 }
 
 function evidenceFor(source:'user'|'time'|'email'|'receipt',task:Task,now:Date):NonNullable<Completion['evidence']>{
