@@ -60,6 +60,7 @@ test('the manifest: this deployment’s URLs, read-only, a Give to Bear button o
  for(const n of [16,32,64,80,128]){assert.ok(xml.includes(`/outlook/icon-${n}.png`));assert.ok(readFileSync(new URL(`../public/outlook/icon-${n}.png`,import.meta.url)).length>100);}
  // Balanced tags (a cheap well-formedness check; Outlook rejects a broken manifest outright).
  const opens=(xml.match(/<[A-Za-z][^>]*[^/]>/g)||[]).filter(t=>!t.startsWith('<?')).length,closes=(xml.match(/<\/[A-Za-z]/g)||[]).length;assert.equal(opens,closes);
+ assert.match(outlookManifest('https://a.b',{preview:true}),/<DisplayName DefaultValue="Load Bear \(preview\)"\/>/);assert.match(xml,/<DisplayName DefaultValue="Load Bear"\/>/);
  assert.match(outlookManifest('https://a.b',{id:'11111111-2222-4333-8444-555555555555'}),/<Id>11111111-2222-4333-8444-555555555555<\/Id>/);
 });
 test('the boot script starts Office.js first and keeps Next.js’s history working when Office.js nulls it',async()=>{

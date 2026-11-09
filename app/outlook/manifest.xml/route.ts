@@ -8,5 +8,5 @@ export const dynamic='force-dynamic';
 export function GET(req:Request){
  const url=new URL(req.url);const host=req.headers.get('x-forwarded-host')||url.host;const proto=req.headers.get('x-forwarded-proto')||url.protocol.replace(':','');
  const origin=`${host.startsWith('localhost')||host.startsWith('127.')?proto:'https'}://${host}`;
- return new Response(outlookManifest(origin,{id:process.env.BEAR_OUTLOOK_ADDIN_ID||idFor(host)}),{headers:{'Content-Type':'application/xml; charset=utf-8','Content-Disposition':'inline; filename="load-bear-outlook.xml"','Cache-Control':'no-store'}});
+ return new Response(outlookManifest(origin,{id:process.env.BEAR_OUTLOOK_ADDIN_ID||idFor(host),preview:process.env.VERCEL_ENV==='preview'}),{headers:{'Content-Type':'application/xml; charset=utf-8','Content-Disposition':'inline; filename="load-bear-outlook.xml"','Cache-Control':'no-store'}});
 }

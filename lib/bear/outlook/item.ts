@@ -54,7 +54,7 @@ export function givenKey(itemId:string|null|undefined){return itemId?'bear-outlo
 
 // The add-in manifest (XML, the format every Outlook supports: web, new Outlook, Windows, Mac, iOS and
 // Android). Built from the origin it is served from, so the preview and production each have their own.
-export function outlookManifest(origin:string,opts:{id?:string;version?:string}={}){
+export function outlookManifest(origin:string,opts:{id?:string;version?:string;preview?:boolean}={}){
  const o=origin.replace(/\/$/,'');const id=opts.id||'5b1f7d4e-2c8a-4e6b-9f3d-7a1c0b2e4d68';const v=opts.version||'1.0.0.0';
  const host=new URL(o).host;const esc=(s:string)=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
  const pane=esc(`${o}/bear/outlook`);const icon=(n:number)=>esc(`${o}/outlook/icon-${n}.png`);
@@ -92,7 +92,7 @@ export function outlookManifest(origin:string,opts:{id?:string;version?:string}=
   <Version>${v}</Version>
   <ProviderName>Load Bear</ProviderName>
   <DefaultLocale>en-AU</DefaultLocale>
-  <DisplayName DefaultValue="Load Bear"/>
+  <DisplayName DefaultValue="Load Bear${opts.preview?' (preview)':''}"/>
   <Description DefaultValue="Give an email to Bear. Bear works out what it asks of you, and remembers it so you don’t have to."/>
   <IconUrl DefaultValue="${icon(64)}"/>
   <HighResolutionIconUrl DefaultValue="${icon(128)}"/>
@@ -133,7 +133,7 @@ export function outlookManifest(origin:string,opts:{id?:string;version?:string}=
           <bt:Url id="paneUrl" DefaultValue="${pane}"/>
         </bt:Urls>
         <bt:ShortStrings>
-          <bt:String id="groupLabel" DefaultValue="Load Bear"/>
+          <bt:String id="groupLabel" DefaultValue="Load Bear${opts.preview?' (preview)':''}"/>
           <bt:String id="buttonLabel" DefaultValue="Give to Bear"/>
         </bt:ShortStrings>
         <bt:LongStrings>
