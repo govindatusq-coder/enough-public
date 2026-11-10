@@ -25,10 +25,10 @@ The rules were fixed after each of these runs, so each set stopped being a fair 
 
 | Measure | Result |
 |---|---|
-| Exact decision | 94.0% |
+| Exact decision | 98.5% |
 | Responsibilities caught (recall) | 100.0% of 224 |
-| False alarms (said something when nothing was needed) | 9.4% of 256 |
-| Questions asked per 100 emails | 6 (all unnecessary if Bear knew who qualifies for an offer: 6) |
+| False alarms (said something when nothing was needed) | 2.0% of 256 |
+| Questions asked per 100 emails | 4.4 (of which sensitive offers, asked every time by design: 1.5) |
 | Missed deadlines | 0 of 127 emails with a deadline |
 | Fabricated dates | 0 |
 

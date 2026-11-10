@@ -61,3 +61,11 @@ With `BEAR_DECISIONS_ENABLED=on`, a scheduling question ("Could we do 3pm or 4pm
 the question in [square brackets] for the person to choose from. Bear can't see a calendar, so the draft never
 says a time works. Bear never sends; the person reads, edits and sends. Only scheduling questions get a draft.
 Code: `lib/bear/outlook/draft.ts`; tests: `tests/bear-draft-reply.test.mjs`.
+
+## Offers for "eligible staff / students / seniors / parents" (same flag)
+Bear can't know who qualifies, so the first time it asks "Does this apply to you?" and remembers the person's own
+yes or no for that GROUP (`profile.offerGroups`, only these four groups, only yes or no). Later offers for that
+group are resolved without asking; "Change" in the panel forgets it. Never inferred. Offers about hardship, income,
+disability or health are never remembered: Bear asks each time, and the profile schema can't store them.
+Code: `lib/bear/engine/offers.ts`; tests: `tests/bear-offers.test.mjs`. Gap: no Settings screen yet that lists
+what Bear remembered (the panel's "Change" is the only control today).

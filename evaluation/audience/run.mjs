@@ -2,12 +2,13 @@
 // 12 invented households, each with a generated inbox and KNOWN correct answers, scored on the measures that can be
 // measured today. Deterministic (seeded): no model calls, no real data.
 // HONESTY: the email templates and the decision rules were written by the same team, so scores here are
-// optimistic. What this is good for: (1) persona-dependent relevance, (2) questions-per-100-emails (user burden),
+// optimistic. Offers: the person answers once per group and Bear remembers (sensitive groups are asked every time). What this is good for: (1) persona-dependent relevance, (2) questions-per-100-emails (user burden),
 // (3) a repeatable harness that can take real inboxes later.
 import {writeFileSync,mkdirSync} from 'node:fs';
 import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {decide} from '../../lib/bear/engine/decide.ts';
+import {decideFor,offerGroup} from '../../lib/bear/engine/offers.ts';
 import {extractResponsibilities} from '../../lib/bear/engine/extract.ts';
 const here=dirname(fileURLToPath(import.meta.url));
 const TODAY='2026-11-10';
@@ -68,16 +69,28 @@ function inbox(p,n=40){const fam=FAM.filter(x=>x.need(p));const total=fam.reduce
 const all=P.flatMap(p=>inbox(p));
 // ---- score ----
 const NEEDS=new Set(['ACT','WAIT','UPDATE','CLOSE']);
-function score(rows){const n=rows.length;let exact=0,needs=0,caught=0,ignores=0,falseAlarm=0,asks=0,unnecessaryAsks=0,missedDeadlines=0,deadlines=0,fabricated=0;
- for(const r of rows){const d=decide(r.text).decision;r.decided=d;if(d===r.expected)exact++;
+function score(rows){const n=rows.length;let exact=0,needs=0,caught=0,ignores=0,falseAlarm=0,asks=0,missedDeadlines=0,deadlines=0,fabricated=0,sensitiveAsks=0,unclearAsks=0;
+ for(const r of rows){const d=r.decided;if(d===r.expected)exact++;
   if(NEEDS.has(r.expected)){needs++;if(d!=='IGNORE')caught++;}
   if(r.expected==='IGNORE'){ignores++;if(d!=='IGNORE')falseAlarm++;}
-  if(d==='ASK'){asks++;if(r.expected!=='ASK')unnecessaryAsks++;}
+  if(r.question){asks++;if(r.kind==='sensitive')sensitiveAsks++;if(r.kind==='unclear')unclearAsks++;}
   if(r.expected==='ACT'&&r.hasDeadline){deadlines++;if(d==='IGNORE')missedDeadlines++;}
   const ex=extractResponsibilities(r.text,{today:TODAY,sourceId:'a'}).responsibilities;if(ex.some(x=>x.dueDate)&&!/\d/.test(r.text))fabricated++;}
  const f=(a,b)=>b?+(a/b).toFixed(3):null;
  return {emails:n,exactDecision:f(exact,n),detectionRecall:f(caught,needs),needing:needs,falseAlarmRate:f(falseAlarm,ignores),ignoring:ignores,
-  questionsPer100:+(asks/n*100).toFixed(1),unnecessaryQuestionsPer100:+(unnecessaryAsks/n*100).toFixed(1),missedDeadlines,deadlineEmails:deadlines,fabricatedDates:fabricated};}
+  questionsPer100:+(asks/n*100).toFixed(1),sensitiveQuestionsPer100:+(sensitiveAsks/n*100).toFixed(1),missedDeadlines,deadlineEmails:deadlines,fabricatedDates:fabricated};}
+// Remembering: the first time an offer for a clear, non-sensitive group is unclear, Bear asks and the person
+// answers truthfully; Bear then remembers that group. Sensitive offers are asked every time.
+const TRUTH={staff:'staff',student:'students',senior:'seniors'};
+for(const p of P){const answers={};
+ for(const r of all.filter(x=>x.persona===p.id)){
+  const d=decideFor(r.text,answers);r.decided=d.decision;r.question=0;r.kind=null;
+  if(d.rule==='eligibility-offer'){
+   const info=offerGroup(r.text);r.question=1;
+   if(info.group&&!info.sensitive){r.kind='first';const yes=!!p.eligible[TRUTH[info.group]];answers[info.group]=yes?'yes':'no';r.decided=yes?'ACT':'IGNORE';}
+   else r.kind=info.sensitive?'sensitive':'unclear';}
+  else if(d.decision==='ASK')r.question=1;}}
+
 const overall=score(all);
 const byPersona=Object.fromEntries(P.map(p=>[p.id,{who:p.who,...score(all.filter(r=>r.persona===p.id))}]));
 const byFamily=Object.fromEntries([...new Set(all.map(r=>r.family))].map(f=>{const rs=all.filter(r=>r.family===f);const ok=rs.filter(r=>r.decided===r.expected).length;return [f,{emails:rs.length,correct:ok,accuracy:+(ok/rs.length).toFixed(3)}];}));
@@ -87,5 +100,5 @@ mkdirSync(resolve(here,'../results'),{recursive:true});
 writeFileSync(resolve(here,'../results/audience-summary.json'),JSON.stringify(out,null,1));
 writeFileSync(resolve(here,'dataset.json'),JSON.stringify({synthetic:true,today:TODAY,personas:P,emails:all.map(({persona,family,text,expected})=>({persona,family,text,expected}))},null,1));
 console.log(JSON.stringify({overall,byFamily:Object.fromEntries(Object.entries(byFamily).filter(([,v])=>v.accuracy<1))},null,1));
-console.log('persona   detect  falseAlarm  questions/100  unnecessary/100');
-for(const [id,v] of Object.entries(byPersona))console.log(id.padEnd(8),String(v.detectionRecall).padEnd(7),String(v.falseAlarmRate).padEnd(11),String(v.questionsPer100).padEnd(14),v.unnecessaryQuestionsPer100);
+console.log('persona   detect  falseAlarm  questions/100  sensitive/100');
+for(const [id,v] of Object.entries(byPersona))console.log(id.padEnd(8),String(v.detectionRecall).padEnd(7),String(v.falseAlarmRate).padEnd(11),String(v.questionsPer100).padEnd(14),v.sensitiveQuestionsPer100);

@@ -81,6 +81,8 @@ export interface Profile extends Owned{
  // Bear Ideas history (cooldowns, dismissals) and today's capacity, if the person said.
  // Ideas the person has already seen on Bear Ideas: the tab badge only counts new ones.
  ideasSeen?:string[];
+ // What the person has told Bear about offers sent to many people ("eligible staff"): yes/no per group. Never inferred; sensitive groups are never stored.
+ offerGroups?:Partial<Record<'staff'|'student'|'senior'|'parent','yes'|'no'>>;
  // Load Bear 2.0: Coverage Packs the person turned on, and school events Bear is watching for from their own history.
  coverage?:Partial<Record<import('../coverage/types.ts').PackId,{active:boolean;since:ISODateTime}>>;
  // Research participation: off unless the person explicitly opts in (study export is pseudonymous).

@@ -29,7 +29,7 @@ const lines=[
 `| Exact decision | ${pct(aud.overall.exactDecision)} |`,
 `| Responsibilities caught (recall) | ${pct(aud.overall.detectionRecall)} of ${aud.overall.needing} |`,
 `| False alarms (said something when nothing was needed) | ${pct(aud.overall.falseAlarmRate)} of ${aud.overall.ignoring} |`,
-`| Questions asked per 100 emails | ${aud.overall.questionsPer100} (all unnecessary if Bear knew who qualifies for an offer: ${aud.overall.unnecessaryQuestionsPer100}) |`,
+`| Questions asked per 100 emails | ${aud.overall.questionsPer100} (of which sensitive offers, asked every time by design: ${aud.overall.sensitiveQuestionsPer100}) |`,
 `| Missed deadlines | ${aud.overall.missedDeadlines} of ${aud.overall.deadlineEmails} emails with a deadline |`,
 `| Fabricated dates | ${aud.overall.fabricatedDates} |`,'',
 'Templates and rules were written by the same team, so this is optimistic. It is useful for relevance, user burden and as a repeatable harness. It already found one real bug: a bill ("payment of $X is due") was read as a receipt.','',]:[]),

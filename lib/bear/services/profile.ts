@@ -33,6 +33,8 @@ export const profilePatchSchema=z.object({
  valuesMap:valuesMapSchema.optional(),
  // When the person finished or skipped the "How Bear works" tour (shown once).
  tourSeenAt:z.string().datetime().nullable().optional(),
+ // What the person said about offers for a group: only these four groups, only yes or no. Sensitive groups are not storable.
+ offerGroups:z.object({staff:z.enum(['yes','no']).optional(),student:z.enum(['yes','no']).optional(),senior:z.enum(['yes','no']).optional(),parent:z.enum(['yes','no']).optional()}).strict().optional(),
 }).strict();
 export type ProfilePatch=z.infer<typeof profilePatchSchema>;
 
