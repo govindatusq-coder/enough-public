@@ -16,5 +16,7 @@ export const flags={
  decisions:()=>process.env.BEAR_DECISIONS_ENABLED==='on',
  // The execution layer (approvals, attempts, confirmation) feeding responsibility states. OFF unless switched on.
  executionLayer:()=>process.env.BEAR_EXECUTION_ENABLED==='on',
+ // Outlook calendar (connect an account, add events with approval). OFF unless switched on; it also needs its settings.
+ calendarIntegration:(env:Record<string,string|undefined>=process.env)=>env.BEAR_CALENDAR_ENABLED==='on',
  bearIdeasIntelligenceV2:()=>on('BEAR_IDEAS_V2'),                                        // one curated feed; recommendations live in Bear Ideas, not My Bear
 };

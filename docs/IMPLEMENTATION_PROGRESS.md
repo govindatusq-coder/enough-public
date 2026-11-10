@@ -11,7 +11,7 @@ Status vocabulary: Implemented and connected / Implemented, awaiting configurati
 | 4 Planning | Implemented and connected | DAG, validation, per-pattern completion criteria |
 | 5 Prioritisation and attention | Partial | scoring and restraint yes; approval bundling not built |
 | 6 Preparation | Partial | drafts, checklists, payment details, and a prepared calendar file with an **Add to calendar** button (implemented and connected) |
-| 7 Execution and verification | Implemented; no integration connected | approvals, idempotency, attempts, recovery, confirmation; behind `BEAR_EXECUTION_ENABLED` (off) |
+| 7 Execution and verification | Implemented; Outlook calendar (all-day events) implemented, awaiting configuration, unverified against real Microsoft; no other integration | approvals, idempotency, attempts, recovery, confirmation; behind `BEAR_EXECUTION_ENABLED` (off) |
 | 8 Personalisation | Partial | feedback labels, offers memory; no confidence model |
 | 9 Minimal UI | Partial | `BearResponsibilityStatusCard` and its model exist and are tested; **not placed on a screen**, because the task page's existing panel already says the same things |
 | 10 End-to-end validation | Implemented for the camp | 564 tests, stress scripts, walkthrough |

@@ -15,6 +15,7 @@ import type {ResponsibilityEvent} from './types.ts';
 //  4. "Accepted" is not "confirmed". Only evidence confirms.
 export interface ActionRequest{responsibilityId:string;actionType:ActionType;details:Record<string,unknown>}
 export interface ExecAdapter extends IntegrationAdapter{
+ idempotent?:boolean;   // the provider dedupes by the key we send (e.g. Graph transactionId): a retry after a lost reply cannot do it twice
  perform(t:ActionType,input:Record<string,unknown>):Promise<IntegrationResult>;                       // gets idempotencyKey in input
  verify?(reference:string,t:ActionType):Promise<{confirmed:boolean}>;                                // does the provider confirm it?
  check?(key:string,t:ActionType,details:Record<string,unknown>):Promise<{happened:boolean|'unknown';reference?:string|null}>; // did an earlier attempt land?
@@ -77,7 +78,8 @@ export async function executeAction(store:BearStore,r:ActionRequest,o:ExecOption
  if(x.status==='started'||x.status==='unknown'){
   const probe=o.adapter.check?await o.adapter.check(key,r.actionType,r.details).catch(()=>({happened:'unknown' as const})):{happened:'unknown' as const};
   if(probe.happened===true){await record(store,r.responsibilityId,'execution_accepted','integration',{key,recovered:true,referenceKind:probe.reference?'provider':null},now);return {status:'already_done',userMessage:'That had already gone through. I haven’t repeated it.',reference:probe.reference||null};}
-  if(probe.happened==='unknown'){await record(store,r.responsibilityId,'execution_unknown','system',{key},now).catch(()=>null);return {status:'unknown_outcome',userMessage:'I can’t tell whether that went through, so I haven’t tried again. Please check, then tell me.'};}
+  if(probe.happened==='unknown'&&!o.adapter.idempotent){await record(store,r.responsibilityId,'execution_unknown','system',{key},now).catch(()=>null);return {status:'unknown_outcome',userMessage:'I can’t tell whether that went through, so I haven’t tried again. Please check, then tell me.'};}
+  // idempotent provider: trying again with the same key cannot create a second one, so it is safe to proceed.
  }
  if(x.status==='failed'&&!x.retrySafe)return {status:'retry_not_safe',userMessage:'That failed in a way where trying again might do it twice, so I’ve stopped. Over to you.'};
  if(x.attempts>=MAX_ATTEMPTS)return {status:'retry_not_safe',userMessage:'I’ve tried a few times. Over to you.'};
@@ -85,7 +87,7 @@ export async function executeAction(store:BearStore,r:ActionRequest,o:ExecOption
  let res:IntegrationResult;
  try{res=await withTimeout(o.adapter.perform(r.actionType,{...r.details,idempotencyKey:key}),o.timeoutMs??15000);}
  catch(e){await record(store,r.responsibilityId,'execution_unknown','system',{key,reason:(e as Error).message==='timeout'?'timeout':'error'},now).catch(()=>null);
-  return {status:'unknown_outcome',userMessage:'I can’t tell whether that went through, so I haven’t tried again. Please check, then tell me.'};}
+  return {status:'unknown_outcome',userMessage:o.adapter.idempotent?'That didn’t come back, so I’m not sure it went through. It’s safe to try again: it can’t be added twice.':'I can’t tell whether that went through, so I haven’t tried again. Please check, then tell me.'};}
  if(!res.ok){await record(store,r.responsibilityId,'action_failed','integration',{key,retrySafe:res.retrySafe===true,reason:res.error||'integration_error'},now).catch(()=>null);
   return {status:'failed',userMessage:'That didn’t go through. Nothing was done.',error:res.error||'integration_error'};}
  await record(store,r.responsibilityId,'execution_accepted','integration',{key,referenceKind:res.reference?'provider':null},now).catch(()=>null);

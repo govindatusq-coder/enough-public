@@ -1,5 +1,6 @@
 import type {ResponsibilityEvent} from '../engine/types.ts';
 import type {StudyResponse} from '../study/service.ts';
+import type {ConnectedAccount} from '../calendar/accounts.ts';
 import type {AIInference,Area,BehaviourEvent,Bill,Capture,Completion,ExtractedEntity,Owned,Person,Profile,Project,PushSubscriptionRow,RecurringExpectation,Reminder,ReminderInteraction,SourceDocument,Suggestion,Task,TaskDependency,UserCorrection,ValueLedgerEntry,Win} from '../domain/types.ts';
 
 // Table names map 1:1 to public.bear_* tables. Each table stores the full entity
@@ -13,6 +14,8 @@ export interface Tables{
  responsibility_events:ResponsibilityEvent;
  // Research study (opt-in): survey answers (see migration 20261110120000).
  study_responses:StudyResponse;
+ // Connected accounts (tokens stored encrypted; see migration 20261111120000).
+ connected_accounts:ConnectedAccount;
 }
 export type TableName=keyof Tables;
 
@@ -42,6 +45,7 @@ export const indexes:{[K in TableName]:{[column:string]:(row:Tables[K])=>unknown
  push_subscriptions:{endpoint:r=>r.endpoint},
  responsibility_events:{responsibility_id:r=>r.responsibilityId,event_type:r=>r.eventType,at:r=>r.at},
  study_responses:{phase:r=>r.phase,instrument:r=>r.instrument,week:r=>r.week},
+ connected_accounts:{provider:r=>r.provider},
 };
 
 export type Where={column:string;op?:'eq'|'neq'|'lte'|'gte'|'lt'|'gt'|'in';value:unknown};

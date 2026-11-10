@@ -17,10 +17,10 @@ AI proposes. Code decides. `lib/bear/engine/execution.ts` is the only path to an
 | draft message, plan, set reminder, organise | Implemented and connected |
 | prepare calendar file | Implemented and connected: **Add to calendar** on the task page downloads a file the person opens; Bear adds nothing. See `docs/CALENDAR_INTEGRATION.md` |
 | send message, share information | Unsupported (no mail integration) |
-| create calendar event (in the person's calendar) | Unsupported until a calendar account is connected; the path is documented in `docs/CALENDAR_INTEGRATION.md` |
+| create calendar event (all-day, in the person's Outlook calendar) | Implemented, awaiting configuration (`BEAR_CALENDAR_ENABLED` and Microsoft app settings); verified only against a local stand-in so far. See `docs/CALENDAR_INTEGRATION.md` |
 | submit form, book appointment, contact provider | Unsupported |
 | make payment, make purchase | Unsupported; Bear shows amount, reference and link for the person |
 
-Nothing simulates success. In production every outward action reports `not_available` with the manual handoff. Tests use an injected test adapter; production never passes one.
+Nothing simulates success. Until configured, every outward action reports `not_available` with the manual handoff. Tests use an injected test adapter; production never passes one.
 
 Enabling real actions needs the owner's explicit authorisation, a real integration per action, and a review of this document.

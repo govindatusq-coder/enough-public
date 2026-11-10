@@ -1,4 +1,5 @@
 import {flags} from '../flags.ts';
+import {calendarConfig} from '../calendar/config.ts';
 import type {CapabilityKey} from './types.ts';
 
 // The capability truth table. Bear may only claim what is `implemented && enabled`.
@@ -19,7 +20,8 @@ export function capabilityTable(env:Record<string,string|undefined>=process.env)
   row('record_confirmation','Record what you tell Bear is done',true),
   row('inbound_email','Receive emails you forward to Bear',true,inbound,true),
   row('read_email','Read your email account',false,false),
-  row('calendar','Read or write your calendar',false,false),
+  // Implemented only when the owner has switched Outlook calendar on and supplied every setting (still needs the person to connect).
+  row('calendar','Add events to your Outlook calendar',calendarConfig(env).ready,calendarConfig(env).ready,!calendarConfig(env).ready),
   row('bank','See your bank account',false,false),
   row('pay','Make payments',false,false),
   row('contact_external','Contact schools or companies for you',false,false),
