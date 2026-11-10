@@ -1,0 +1,143 @@
+{
+ "synthetic": true,
+ "authoredBy": "written by the Load Bear team BEFORE the footer/boilerplate rule fixes; labels committed before the fixes and before any run",
+ "frozenAt": "do not edit labels or tune rules on this set",
+ "today": "2026-11-10",
+ "cases": [
+  {
+   "id": "H01",
+   "expected": "IGNORE",
+   "text": "Your weekly digest is ready. See what's new in your network. If you no longer wish to receive these emails, please unsubscribe."
+  },
+  {
+   "id": "H02",
+   "expected": "IGNORE",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please click unsubscribe."
+  },
+  {
+   "id": "H03",
+   "expected": "IGNORE",
+   "text": "Your order #5521 has been delivered. We hope you enjoy it. Please do not reply to this automated message."
+  },
+  {
+   "id": "H04",
+   "expected": "IGNORE",
+   "text": "You have a new follower. View their profile. Manage your notification settings."
+  },
+  {
+   "id": "H05",
+   "expected": "IGNORE",
+   "text": "Please add our address to your contacts to make sure our emails reach your inbox."
+  },
+  {
+   "id": "H06",
+   "expected": "IGNORE",
+   "text": "Thanks for signing up to our newsletter! You'll receive updates monthly. You can unsubscribe at any time."
+  },
+  {
+   "id": "H07",
+   "expected": "IGNORE",
+   "text": "Join us for our online webinar series on gardening. Register now to save your spot. Unsubscribe from these emails."
+  },
+  {
+   "id": "H08",
+   "expected": "IGNORE",
+   "text": "A new device signed in to your account. If this was you, no action is needed."
+  },
+  {
+   "id": "H09",
+   "expected": "IGNORE",
+   "text": "Weekly roundup: top stories in education. Read more. Please forward this to a friend if you enjoyed it."
+  },
+  {
+   "id": "H10",
+   "expected": "IGNORE",
+   "text": "Your subscription renews automatically on 14 December. No action is needed."
+  },
+  {
+   "id": "H11",
+   "expected": "IGNORE",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey."
+  },
+  {
+   "id": "H12",
+   "expected": "IGNORE",
+   "text": "Happy New Year from all of us!"
+  },
+  {
+   "id": "H13",
+   "expected": "IGNORE",
+   "text": "Here is the agenda for your reference."
+  },
+  {
+   "id": "H14",
+   "expected": "ACT",
+   "text": "Your driver licence expires on 2 February 2027. Renew it online to avoid a fine."
+  },
+  {
+   "id": "H15",
+   "expected": "ACT",
+   "text": "Your child's immunisation record is out of date. Please book a catch-up appointment with your GP."
+  },
+  {
+   "id": "H16",
+   "expected": "ACT",
+   "text": "Rates notice: payment of $480.20 is due on 15/12/2026. Pay online or by BPAY. To stop receiving paper notices, please unsubscribe."
+  },
+  {
+   "id": "H17",
+   "expected": "ACT",
+   "text": "Can you collect Mia from netball on Thursday at 5pm?"
+  },
+  {
+   "id": "H18",
+   "expected": "ACT",
+   "text": "Please complete the staff compliance training by 30 November."
+  },
+  {
+   "id": "H19",
+   "expected": "ACT",
+   "text": "The kids' swimming term fees are due next Friday."
+  },
+  {
+   "id": "H20",
+   "expected": "ASK",
+   "text": "Parents of Year 4 students who play an instrument may be eligible for a free lesson trial."
+  },
+  {
+   "id": "H21",
+   "expected": "ASK",
+   "text": "Just letting you know the library may be closed next week."
+  },
+  {
+   "id": "H22",
+   "expected": "WAIT",
+   "text": "Your claim is being assessed. We'll email you once a decision has been made."
+  },
+  {
+   "id": "H23",
+   "expected": "WAIT",
+   "text": "We're still waiting on your doctor's report. We'll be in touch when it arrives."
+  },
+  {
+   "id": "H24",
+   "expected": "CLOSE",
+   "text": "We've received your registration for the fun run. See you there!"
+  },
+  {
+   "id": "H25",
+   "expected": "CLOSE",
+   "text": "Your payment of $35 was successful. Thank you."
+  },
+  {
+   "id": "H26",
+   "expected": "UPDATE",
+   "text": "Update: the school concert has been moved to Wednesday 9 December."
+  },
+  {
+   "id": "H27",
+   "expected": "UPDATE",
+   "text": "Heads up, tomorrow's training is cancelled."
+  }
+ ]
+}
