@@ -54,3 +54,10 @@ the email isn't sent anywhere before the person taps. It only changes what the p
 adds, closes or changes anything by itself. "Is that right?" sends labels only (what Bear said, what it
 should have said, which rule fired) to `/api/bear/decide/feedback`, never the email. Measured scores:
 `evaluation/results/decisions-*.json`; read their caveats before quoting any number.
+
+## Draft a reply (same flag)
+With `BEAR_DECISIONS_ENABLED=on`, a scheduling question ("Could we do 3pm or 4pm on Tuesday 24th?") also shows
+**Draft a reply**. It opens an Outlook reply (`displayReplyForm`, read-item permission only) with the times from
+the question in [square brackets] for the person to choose from. Bear can't see a calendar, so the draft never
+says a time works. Bear never sends; the person reads, edits and sends. Only scheduling questions get a draft.
+Code: `lib/bear/outlook/draft.ts`; tests: `tests/bear-draft-reply.test.mjs`.

@@ -53,6 +53,11 @@ export async function attachmentFile(a:OutlookAttachment):Promise<File|null>{
   try{const bytes=base64ToBytes(String(r.value.content||''));resolve(new File([bytes],a.name,{type:mimeOf(a)}));}catch{resolve(null);}
  });}catch{resolve(null);}});
 }
+// Opens a reply window with the draft filled in. The person reads, edits and sends it; Bear never sends.
+export function showReplyDraft(html:string){
+ try{const it=mailbox()?.item;if(!it?.displayReplyForm)return false;it.displayReplyForm(html);return true;}catch{return false;}
+}
+export const canShowReply=()=>{try{return typeof mailbox()?.item?.displayReplyForm==='function';}catch{return false;}};
 export function openInBrowser(url:string){
  try{if(window.Office?.context?.ui?.openBrowserWindow){window.Office.context.ui.openBrowserWindow(url);return;}}catch{/* fall through */}
  window.open(url,'_blank','noopener');

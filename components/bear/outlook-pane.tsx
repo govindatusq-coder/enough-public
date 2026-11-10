@@ -5,7 +5,8 @@ import {Button} from './ui';
 import {captureText,givenKey,readableAttachments,type OutlookAttachment,type OutlookItem} from '@/lib/bear/outlook/item';
 import {decide} from '@/lib/bear/engine/decide';
 import {presentRead,READ_CHOICES} from '@/lib/bear/outlook/read';
-import {accessToken,addinAuth,attachmentFile,authConfigured,canReadAttachments,loadOffice,onItemChanged,openInBrowser,readOpenItem,signInWithPopup} from '@/lib/bear/outlook/office-client';
+import {draftReply} from '@/lib/bear/outlook/draft';
+import {accessToken,addinAuth,attachmentFile,authConfigured,canReadAttachments,canShowReply,loadOffice,showReplyDraft,onItemChanged,openInBrowser,readOpenItem,signInWithPopup} from '@/lib/bear/outlook/office-client';
 
 // Bear in Outlook. The person opens an email, taps "Give to Bear" in Outlook, then "Give this to Bear"
 // here. The email goes through the same capture pipeline as everything else; nothing is sent before
@@ -32,7 +33,7 @@ export function OutlookPane(){
 
  const signedIn=useCallback(async()=>!authConfigured()||!!(await accessToken()),[]);
  const refresh=useCallback(async()=>{
-  setOutcomes([]);setNote(null);setFb('idle');
+  setOutcomes([]);setNote(null);setFb('idle');setDrafted(false);
   const it=await readOpenItem();setItem(it);
   setPicked(new Set(readableAttachments(it?.attachments||[]).map(a=>a.id)));
   const k=givenKey(it?.id);let seen=false;try{seen=!!(k&&localStorage.getItem(k));}catch{/* no storage */}setGiven(seen);
@@ -42,7 +43,9 @@ export function OutlookPane(){
  useEffect(()=>{let off=()=>{};loadOffice().then(inOutlook=>{if(!inOutlook){setPhase('outside');return;}refresh();off=onItemChanged(()=>{refresh();});});return()=>off();},[refresh]);
 
  useEffect(()=>{fetch('/api/bear/decide',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>setFirstRead(!!j?.enabled)).catch(()=>setFirstRead(false));},[]);
+ const [drafted,setDrafted]=useState(false);
  const read=useMemo(()=>firstRead&&item?decide(captureText(item.item)):null,[firstRead,item]);
+ const draft=useMemo(()=>read&&item?draftReply({from:item.item.from,text:captureText(item.item),decision:read.decision,rule:read.rule}):null,[read,item]);
  async function feedback(correct:boolean,expected?:string){if(!read)return;
   try{await send('/api/bear/decide/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({predicted:read.decision,correct,expected,rule:read.rule})});setFb('thanks');}catch{setFb('idle');setNote('Bear couldn’t save that. Nothing was lost.');}}
  async function connect(){setNote(null);const r=await signInWithPopup(origin);if(r==='signed_in')setPhase('ready');else if(r==='blocked')setNote('Outlook didn’t open the sign-in window. Allow pop-ups for Outlook, then try again.');}
@@ -102,6 +105,10 @@ export function OutlookPane(){
     {fb==='choosing'&&<div style={{marginTop:8}}><p className="small">What should it be?</p><div className="btn-row">{READ_CHOICES.map(c=><button key={c.value} type="button" className="btn quiet sm" onClick={()=>feedback(false,c.value)}>{c.label}</button>)}</div></div>}
     {fb==='thanks'&&<p className="small muted" style={{margin:'8px 0 0'}}>Thanks. Bear kept only your answer, not your email.</p>}
    </div>;})()}
+   {draft&&canShowReply()&&<div className="ol-draft" style={{marginTop:10}}>
+    <button type="button" className="btn glass wide" onClick={()=>{if(showReplyDraft(draft.html))setDrafted(true);else setNote('Outlook couldn’t open a reply here. Reply as normal and Bear’s still here.');}}>Draft a reply</button>
+    <p className="small muted" style={{margin:'6px 0 0'}}>{drafted?'Reply opened. Pick the time in [brackets], edit it, and send it yourself.':'Opens a reply for you to edit and send. Bear never sends anything.'}</p>
+   </div>}
    <div className="btn-stack"><Button className="wide" variant={read&&!presentRead(read.decision).primary?'quiet':'primary'} disabled={phase==='sending'} onClick={give}>{phase==='sending'?'Bear is reading it…':read?presentRead(read.decision).button:'Give this to Bear'}</Button></div>
    {note&&<p className="note" role="alert" style={{marginTop:12}}>{note}</p>}
    <p className="faint" style={{marginTop:12}}>Bear only sees this email, and only when you tap. It doesn’t read your inbox.</p>
