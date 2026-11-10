@@ -1,0 +1,286 @@
+{
+ "generated": "2026-11-10T12:48:33.691Z",
+ "synthetic": true,
+ "personas": 12,
+ "note": "Templates and rules were written by the same team: scores are optimistic. Use for relevance, burden and a repeatable harness, not as proof of real-world accuracy.",
+ "overall": {
+  "emails": 480,
+  "exactDecision": 0.94,
+  "detectionRecall": 1,
+  "needing": 224,
+  "falseAlarmRate": 0.094,
+  "ignoring": 256,
+  "questionsPer100": 6,
+  "unnecessaryQuestionsPer100": 6,
+  "missedDeadlines": 0,
+  "deadlineEmails": 127,
+  "fabricatedDates": 0
+ },
+ "byPersona": {
+  "P01": {
+   "who": "sole parent, two kids",
+   "emails": 40,
+   "exactDecision": 0.925,
+   "detectionRecall": 1,
+   "needing": 20,
+   "falseAlarmRate": 0.15,
+   "ignoring": 20,
+   "questionsPer100": 7.5,
+   "unnecessaryQuestionsPer100": 7.5,
+   "missedDeadlines": 0,
+   "deadlineEmails": 13,
+   "fabricatedDates": 0
+  },
+  "P02": {
+   "who": "academic with one child",
+   "emails": 40,
+   "exactDecision": 0.85,
+   "detectionRecall": 1,
+   "needing": 19,
+   "falseAlarmRate": 0.286,
+   "ignoring": 21,
+   "questionsPer100": 15,
+   "unnecessaryQuestionsPer100": 15,
+   "missedDeadlines": 0,
+   "deadlineEmails": 16,
+   "fabricatedDates": 0
+  },
+  "P03": {
+   "who": "retiree",
+   "emails": 40,
+   "exactDecision": 0.95,
+   "detectionRecall": 1,
+   "needing": 12,
+   "falseAlarmRate": 0,
+   "ignoring": 28,
+   "questionsPer100": 5,
+   "unnecessaryQuestionsPer100": 5,
+   "missedDeadlines": 0,
+   "deadlineEmails": 7,
+   "fabricatedDates": 0
+  },
+  "P04": {
+   "who": "renting student, part-time job",
+   "emails": 40,
+   "exactDecision": 0.875,
+   "detectionRecall": 1,
+   "needing": 13,
+   "falseAlarmRate": 0.185,
+   "ignoring": 27,
+   "questionsPer100": 12.5,
+   "unnecessaryQuestionsPer100": 12.5,
+   "missedDeadlines": 0,
+   "deadlineEmails": 4,
+   "fabricatedDates": 0
+  },
+  "P05": {
+   "who": "couple with three kids",
+   "emails": 40,
+   "exactDecision": 0.975,
+   "detectionRecall": 1,
+   "needing": 17,
+   "falseAlarmRate": 0.043,
+   "ignoring": 23,
+   "questionsPer100": 2.5,
+   "unnecessaryQuestionsPer100": 2.5,
+   "missedDeadlines": 0,
+   "deadlineEmails": 13,
+   "fabricatedDates": 0
+  },
+  "P06": {
+   "who": "shift worker, one child, no car",
+   "emails": 40,
+   "exactDecision": 0.925,
+   "detectionRecall": 1,
+   "needing": 23,
+   "falseAlarmRate": 0.176,
+   "ignoring": 17,
+   "questionsPer100": 7.5,
+   "unnecessaryQuestionsPer100": 7.5,
+   "missedDeadlines": 0,
+   "deadlineEmails": 10,
+   "fabricatedDates": 0
+  },
+  "P07": {
+   "who": "small business owner, two kids",
+   "emails": 40,
+   "exactDecision": 0.975,
+   "detectionRecall": 1,
+   "needing": 19,
+   "falseAlarmRate": 0.048,
+   "ignoring": 21,
+   "questionsPer100": 2.5,
+   "unnecessaryQuestionsPer100": 2.5,
+   "missedDeadlines": 0,
+   "deadlineEmails": 10,
+   "fabricatedDates": 0
+  },
+  "P08": {
+   "who": "grandparent carer",
+   "emails": 40,
+   "exactDecision": 1,
+   "detectionRecall": 1,
+   "needing": 19,
+   "falseAlarmRate": 0,
+   "ignoring": 21,
+   "questionsPer100": 0,
+   "unnecessaryQuestionsPer100": 0,
+   "missedDeadlines": 0,
+   "deadlineEmails": 10,
+   "fabricatedDates": 0
+  },
+  "P09": {
+   "who": "new migrant family, two kids",
+   "emails": 40,
+   "exactDecision": 0.9,
+   "detectionRecall": 1,
+   "needing": 20,
+   "falseAlarmRate": 0.1,
+   "ignoring": 20,
+   "questionsPer100": 10,
+   "unnecessaryQuestionsPer100": 10,
+   "missedDeadlines": 0,
+   "deadlineEmails": 9,
+   "fabricatedDates": 0
+  },
+  "P10": {
+   "who": "fly-in fly-out worker, one child",
+   "emails": 40,
+   "exactDecision": 0.95,
+   "detectionRecall": 1,
+   "needing": 19,
+   "falseAlarmRate": 0.095,
+   "ignoring": 21,
+   "questionsPer100": 5,
+   "unnecessaryQuestionsPer100": 5,
+   "missedDeadlines": 0,
+   "deadlineEmails": 12,
+   "fabricatedDates": 0
+  },
+  "P11": {
+   "who": "postgraduate researcher",
+   "emails": 40,
+   "exactDecision": 0.975,
+   "detectionRecall": 1,
+   "needing": 22,
+   "falseAlarmRate": 0,
+   "ignoring": 18,
+   "questionsPer100": 2.5,
+   "unnecessaryQuestionsPer100": 2.5,
+   "missedDeadlines": 0,
+   "deadlineEmails": 12,
+   "fabricatedDates": 0
+  },
+  "P12": {
+   "who": "teacher with two kids",
+   "emails": 40,
+   "exactDecision": 0.975,
+   "detectionRecall": 1,
+   "needing": 21,
+   "falseAlarmRate": 0.053,
+   "ignoring": 19,
+   "questionsPer100": 2.5,
+   "unnecessaryQuestionsPer100": 2.5,
+   "missedDeadlines": 0,
+   "deadlineEmails": 11,
+   "fabricatedDates": 0
+  }
+ },
+ "byFamily": {
+  "newsletter": {
+   "emails": 79,
+   "correct": 79,
+   "accuracy": 1
+  },
+  "school_change": {
+   "emails": 18,
+   "correct": 18,
+   "accuracy": 1
+  },
+  "bill_due": {
+   "emails": 38,
+   "correct": 38,
+   "accuracy": 1
+  },
+  "school_form": {
+   "emails": 31,
+   "correct": 31,
+   "accuracy": 1
+  },
+  "school_fee": {
+   "emails": 22,
+   "correct": 22,
+   "accuracy": 1
+  },
+  "greeting": {
+   "emails": 24,
+   "correct": 24,
+   "accuracy": 1
+  },
+  "marketing": {
+   "emails": 84,
+   "correct": 84,
+   "accuracy": 1
+  },
+  "payment_confirm": {
+   "emails": 28,
+   "correct": 28,
+   "accuracy": 1
+  },
+  "broadcast_offer": {
+   "emails": 29,
+   "correct": 0,
+   "accuracy": 0
+  },
+  "rego": {
+   "emails": 11,
+   "correct": 11,
+   "accuracy": 1
+  },
+  "school_cancel": {
+   "emails": 14,
+   "correct": 14,
+   "accuracy": 1
+  },
+  "delegated": {
+   "emails": 18,
+   "correct": 18,
+   "accuracy": 1
+  },
+  "work_fyi": {
+   "emails": 13,
+   "correct": 13,
+   "accuracy": 1
+  },
+  "work_scheduling": {
+   "emails": 17,
+   "correct": 17,
+   "accuracy": 1
+  },
+  "work_request": {
+   "emails": 20,
+   "correct": 20,
+   "accuracy": 1
+  },
+  "optional_reply": {
+   "emails": 14,
+   "correct": 14,
+   "accuracy": 1
+  },
+  "waiting": {
+   "emails": 12,
+   "correct": 12,
+   "accuracy": 1
+  },
+  "appointment_cancelled": {
+   "emails": 8,
+   "correct": 8,
+   "accuracy": 1
+  }
+ },
+ "notMeasured": [
+  "planningAccuracy",
+  "autonomousCompletion",
+  "incorrectActions"
+ ]
+}

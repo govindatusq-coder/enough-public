@@ -1,0 +1,2999 @@
+{
+ "synthetic": true,
+ "today": "2026-11-10",
+ "personas": [
+  {
+   "id": "P01",
+   "who": "sole parent, two kids",
+   "child": true,
+   "car": true,
+   "work": false,
+   "eligible": {}
+  },
+  {
+   "id": "P02",
+   "who": "academic with one child",
+   "child": true,
+   "car": true,
+   "work": true,
+   "eligible": {
+    "staff": true
+   }
+  },
+  {
+   "id": "P03",
+   "who": "retiree",
+   "child": false,
+   "car": true,
+   "work": false,
+   "eligible": {
+    "seniors": true
+   }
+  },
+  {
+   "id": "P04",
+   "who": "renting student, part-time job",
+   "child": false,
+   "car": false,
+   "work": true,
+   "eligible": {
+    "students": true
+   }
+  },
+  {
+   "id": "P05",
+   "who": "couple with three kids",
+   "child": true,
+   "car": true,
+   "work": true,
+   "eligible": {}
+  },
+  {
+   "id": "P06",
+   "who": "shift worker, one child, no car",
+   "child": true,
+   "car": false,
+   "work": true,
+   "eligible": {}
+  },
+  {
+   "id": "P07",
+   "who": "small business owner, two kids",
+   "child": true,
+   "car": true,
+   "work": true,
+   "eligible": {}
+  },
+  {
+   "id": "P08",
+   "who": "grandparent carer",
+   "child": true,
+   "car": true,
+   "work": false,
+   "eligible": {
+    "seniors": true
+   }
+  },
+  {
+   "id": "P09",
+   "who": "new migrant family, two kids",
+   "child": true,
+   "car": false,
+   "work": false,
+   "eligible": {
+    "hardship": true
+   }
+  },
+  {
+   "id": "P10",
+   "who": "fly-in fly-out worker, one child",
+   "child": true,
+   "car": true,
+   "work": true,
+   "eligible": {}
+  },
+  {
+   "id": "P11",
+   "who": "postgraduate researcher",
+   "child": false,
+   "car": false,
+   "work": true,
+   "eligible": {
+    "students": true,
+    "staff": true
+   }
+  },
+  {
+   "id": "P12",
+   "who": "teacher with two kids",
+   "child": true,
+   "car": true,
+   "work": true,
+   "eligible": {
+    "staff": true
+   }
+  }
+ ],
+ "emails": [
+  {
+   "persona": "P01",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on 03/12/2026.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P01",
+   "family": "bill_due",
+   "text": "Your gas bill of $311.43 is due on Thursday 17 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "school_form",
+   "text": "Please return the swimming carnival form by 30/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "school_fee",
+   "text": "Payment for the school disco ($160.52) is due by 11 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on Wednesday 2 December.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P01",
+   "family": "school_fee",
+   "text": "school disco fees of $224.76 are due on Wednesday 2 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "bill_due",
+   "text": "Payment of $392.93 for your internet account is due by Wednesday 2 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "school_fee",
+   "text": "Payment for the Year 5 camp ($246.01) is due by 30 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P01",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible staff for a one-off grant. How to apply: email us by 15 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible students for a one-off grant. How to apply: email us by Sunday 15 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "greeting",
+   "text": "Happy New Year from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on Wednesday 18 November.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P01",
+   "family": "rego",
+   "text": "Don't forget to renew your car registration before 17/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "bill_due",
+   "text": "Your gas bill of $22.71 is due on 17/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible staff for a one-off grant. How to apply: email us by Sunday 29 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "rego",
+   "text": "Your vehicle registration expires on 10/12/2026. Renew online to avoid a fine.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "school_form",
+   "text": "Could you sign and return the excursion consent form by Sunday 15 November?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "payment_confirm",
+   "text": "We've received your payment of $363.24. Thank you.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P01",
+   "family": "payment_confirm",
+   "text": "We've received your payment of $186.94. Thank you.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P01",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "school_cancel",
+   "text": "The book fair on Friday 13 November has been cancelled.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P01",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "school_fee",
+   "text": "Payment for the Year 5 camp ($281.70) is due by 02/12/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "school_form",
+   "text": "Please return the swimming carnival form by 14/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "newsletter",
+   "text": "This week: sports day photos. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "school_fee",
+   "text": "Payment for the Year 5 camp ($67.84) is due by 15/12/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P01",
+   "family": "delegated",
+   "text": "Sarah has arranged the cake for Friday, so no need to worry about it.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P01",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "school_form",
+   "text": "The excursion consent form needs to be handed in by 22/11/2026. Thanks!",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "school_cancel",
+   "text": "Training is off because of the wet weather. Back to normal next week.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P02",
+   "family": "greeting",
+   "text": "Happy Easter from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible seniors for a one-off grant. How to apply: email us by Thursday 26 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible seniors for a one-off grant. How to apply: email us by Monday 16 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "school_form",
+   "text": "The swimming carnival form needs to be handed in by Tuesday 1 December. Thanks!",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "school_form",
+   "text": "Please return the excursion consent form by Monday 7 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "bill_due",
+   "text": "Your gas bill of $277.79 is due on 15 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "work_fyi",
+   "text": "Please find attached the minutes from last week's meeting for your records.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "school_form",
+   "text": "Could you sign and return the swimming carnival form by 10 December?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "rego",
+   "text": "Don't forget to renew your car registration before 16/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "work_fyi",
+   "text": "Please find attached the minutes from last week's meeting for your records.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "school_form",
+   "text": "Please return the excursion consent form by Tuesday 8 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible seniors for a one-off grant. How to apply: email us by Friday 4 December.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "school_form",
+   "text": "The swimming carnival form needs to be handed in by Friday 20 November. Thanks!",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "rego",
+   "text": "Your vehicle registration expires on 14/11/2026. Renew online to avoid a fine.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P02",
+   "family": "work_scheduling",
+   "text": "Are you free at 10am on Tuesday? Let me know what works.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible seniors for a one-off grant. How to apply: email us by Friday 13 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "school_form",
+   "text": "Could you sign and return the swimming carnival form by Monday 23 November?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "school_form",
+   "text": "The excursion consent form needs to be handed in by 17/12/2026. Thanks!",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible families experiencing hardship for a one-off grant. How to apply: email us by 01/12/2026.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "work_request",
+   "text": "Please review the draft report before Saturday 21 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "rego",
+   "text": "Don't forget to renew your car registration before 17 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "school_fee",
+   "text": "Payment for the book fair ($306.03) is due by 20 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "school_form",
+   "text": "Please return the excursion consent form by 27 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P02",
+   "family": "work_fyi",
+   "text": "Please find attached the minutes from last week's meeting for your records.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "newsletter",
+   "text": "This week: our garden project. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "broadcast_offer",
+   "text": "Financial support of up to $162 is available to eligible families experiencing hardship. Apply by Monday 23 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "optional_reply",
+   "text": "Let us know if you have any questions.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P02",
+   "family": "bill_due",
+   "text": "Payment of $437.51 for your internet account is due by 16 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P03",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "newsletter",
+   "text": "This week: our garden project. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "optional_reply",
+   "text": "Let us know if you have any questions.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "bill_due",
+   "text": "Payment of $322.59 for your water account is due by Tuesday 8 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P03",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "optional_reply",
+   "text": "Let me know if you'd like a copy of the report.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "newsletter",
+   "text": "This week: our garden project. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "waiting",
+   "text": "We're still waiting on your doctor's report. We'll be in touch when it arrives.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P03",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible seniors for a one-off grant. How to apply: email us by 19 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P03",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "payment_confirm",
+   "text": "We've received your payment of $296.62. Thank you.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "bill_due",
+   "text": "Reminder: your water bill is overdue. Please pay $221.60 by 13/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P03",
+   "family": "waiting",
+   "text": "Your claim is being assessed. We'll email you once a decision has been made.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P03",
+   "family": "bill_due",
+   "text": "Payment of $324.64 for your gas account is due by Monday 23 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P03",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "newsletter",
+   "text": "This week: our garden project. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "broadcast_offer",
+   "text": "Financial support of up to $286 is available to eligible seniors. Apply by Monday 16 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P03",
+   "family": "payment_confirm",
+   "text": "Your payment of $349.36 was successful.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P03",
+   "family": "bill_due",
+   "text": "Reminder: your gas bill is overdue. Please pay $158.16 by 29 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P03",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "bill_due",
+   "text": "Your gas bill of $212.09 is due on Monday 16 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P03",
+   "family": "appointment_cancelled",
+   "text": "Your appointment on Monday 16 November has been cancelled by the clinic.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P03",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "greeting",
+   "text": "Happy Diwali from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P03",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "optional_reply",
+   "text": "Let us know if you have any questions.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "work_request",
+   "text": "Could you send me the budget by 20 November?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P04",
+   "family": "newsletter",
+   "text": "This week: a new librarian joins us. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "work_fyi",
+   "text": "Here is the agenda for your reference.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P04",
+   "family": "waiting",
+   "text": "We're still waiting on your doctor's report. We'll be in touch when it arrives.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P04",
+   "family": "waiting",
+   "text": "Your claim is being assessed. We'll email you once a decision has been made.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P04",
+   "family": "work_request",
+   "text": "Could you send me the budget by Tuesday 8 December?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P04",
+   "family": "work_scheduling",
+   "text": "Are you free at 10am on Sunday? Let me know what works.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P04",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible seniors for a one-off grant. How to apply: email us by Tuesday 17 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "newsletter",
+   "text": "This week: sports day photos. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "broadcast_offer",
+   "text": "Financial support of up to $473 is available to eligible families experiencing hardship. Apply by 04/12/2026.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "bill_due",
+   "text": "Your electricity bill of $224.81 is due on 28 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P04",
+   "family": "waiting",
+   "text": "Your application has been received. We will be in touch in early December.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P04",
+   "family": "delegated",
+   "text": "Sarah has arranged the cake for Friday, so no need to worry about it.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "appointment_cancelled",
+   "text": "Your appointment on 4 December has been cancelled by the clinic.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P04",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible staff for a one-off grant. How to apply: email us by 1 December.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "delegated",
+   "text": "Sarah has arranged the cake for Friday, so no need to worry about it.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P04",
+   "family": "work_scheduling",
+   "text": "Are you free at 10am on Wednesday? Let me know what works.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P04",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "work_request",
+   "text": "Please complete the compliance training by 9 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P04",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "optional_reply",
+   "text": "Let me know if you'd like a copy of the report.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible staff for a one-off grant. How to apply: email us by 16 December.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "newsletter",
+   "text": "This week: sports day photos. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P04",
+   "family": "work_scheduling",
+   "text": "Are you free at 10am on Monday? Let me know what works.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P04",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible staff for a one-off grant. How to apply: email us by Thursday 17 December.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "school_form",
+   "text": "The excursion consent form needs to be handed in by 22/11/2026. Thanks!",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "work_request",
+   "text": "Could you send me the budget by 17/11/2026?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "school_change",
+   "text": "Change of time: the Year 5 camp has moved to 28/11/2026.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P05",
+   "family": "work_request",
+   "text": "Could you send me the budget by 17/12/2026?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "work_fyi",
+   "text": "Here is the agenda for your reference.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "school_fee",
+   "text": "swimming carnival fees of $457.80 are due on 21 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on 13 November.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P05",
+   "family": "newsletter",
+   "text": "This week: a new librarian joins us. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "greeting",
+   "text": "Happy Easter from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "school_fee",
+   "text": "Payment for the book fair ($108.90) is due by 2 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "payment_confirm",
+   "text": "Your payment of $179.82 was successful.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P05",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "work_fyi",
+   "text": "Here is the agenda for your reference.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "bill_due",
+   "text": "Your gas bill of $427.21 is due on 12/12/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible students for a one-off grant. How to apply: email us by 24/11/2026.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "greeting",
+   "text": "Happy Eid from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "rego",
+   "text": "Don't forget to renew your car registration before 22 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "newsletter",
+   "text": "This week: our garden project. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "newsletter",
+   "text": "This week: a new librarian joins us. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "school_form",
+   "text": "Could you sign and return the swimming carnival form by 15 November?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on Wednesday 25 November.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P05",
+   "family": "rego",
+   "text": "Your vehicle registration expires on 22 November. Renew online to avoid a fine.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "work_fyi",
+   "text": "Here is the agenda for your reference.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "newsletter",
+   "text": "This week: sports day photos. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "school_form",
+   "text": "Please return the swimming carnival form by Saturday 5 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "bill_due",
+   "text": "Payment of $374.38 for your gas account is due by Monday 23 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "greeting",
+   "text": "Happy Easter from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P05",
+   "family": "bill_due",
+   "text": "Your electricity bill of $162.82 is due on Tuesday 1 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "bill_due",
+   "text": "Your gas bill of $398.30 is due on 21 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P05",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "work_scheduling",
+   "text": "Are you free at 10am on Monday? Let me know what works.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "school_fee",
+   "text": "Payment for the swimming carnival ($194.14) is due by 25 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "payment_confirm",
+   "text": "Your payment of $227.07 was successful.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P06",
+   "family": "school_form",
+   "text": "The swimming carnival form needs to be handed in by 19 November. Thanks!",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "school_form",
+   "text": "Could you sign and return the photo permission form by 23 November?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "appointment_cancelled",
+   "text": "Your appointment on 12/12/2026 has been cancelled by the clinic.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P06",
+   "family": "newsletter",
+   "text": "This week: a new librarian joins us. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "school_form",
+   "text": "Could you sign and return the swimming carnival form by Wednesday 16 December?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "newsletter",
+   "text": "This week: sports day photos. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "bill_due",
+   "text": "Reminder: your water bill is overdue. Please pay $125.04 by 23/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "school_change",
+   "text": "Change of time: the book fair has moved to 17/12/2026.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P06",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "work_scheduling",
+   "text": "Are you free at 10am on Tuesday? Let me know what works.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "work_scheduling",
+   "text": "Could we do 3pm or 4pm on Monday 30 November for a catch-up?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "waiting",
+   "text": "Your claim is being assessed. We'll email you once a decision has been made.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P06",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "school_form",
+   "text": "Could you sign and return the swimming carnival form by Sunday 13 December?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible students for a one-off grant. How to apply: email us by 27/11/2026.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "work_scheduling",
+   "text": "Could we do 3pm or 4pm on Thursday 3 December for a catch-up?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible families experiencing hardship for a one-off grant. How to apply: email us by Wednesday 18 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "newsletter",
+   "text": "This week: the winter concert recap. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P06",
+   "family": "optional_reply",
+   "text": "Let us know if you have any questions.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "appointment_cancelled",
+   "text": "Your appointment on 8 December has been cancelled by the clinic.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P06",
+   "family": "work_scheduling",
+   "text": "Could we do 3pm or 4pm on Friday 4 December for a catch-up?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "payment_confirm",
+   "text": "We've received your payment of $106.37. Thank you.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P06",
+   "family": "bill_due",
+   "text": "Your electricity bill of $31.47 is due on 10/12/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "school_cancel",
+   "text": "The book fair on Friday 13 November has been cancelled.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P06",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible seniors for a one-off grant. How to apply: email us by Thursday 17 December.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P06",
+   "family": "school_form",
+   "text": "Could you sign and return the swimming carnival form by 7 December?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "work_request",
+   "text": "Please review the draft report before 05/12/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P06",
+   "family": "school_form",
+   "text": "Please return the photo permission form by 17 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "school_fee",
+   "text": "book fair fees of $392.54 are due on Thursday 17 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "school_form",
+   "text": "Please return the medical form by 30 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "work_request",
+   "text": "Could you send me the budget by Thursday 10 December?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "work_scheduling",
+   "text": "Are you free at 10am on Sunday? Let me know what works.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "school_fee",
+   "text": "school disco fees of $251.52 are due on Thursday 19 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "school_form",
+   "text": "Please return the photo permission form by Monday 16 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "work_fyi",
+   "text": "Please find attached the minutes from last week's meeting for your records.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "appointment_cancelled",
+   "text": "Your appointment on 23/11/2026 has been cancelled by the clinic.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P07",
+   "family": "bill_due",
+   "text": "Your internet bill of $276.92 is due on Saturday 28 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "work_scheduling",
+   "text": "Are you free at 10am on Tuesday? Let me know what works.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "work_request",
+   "text": "Could you send me the budget by 01/12/2026?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on 02/12/2026.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P07",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "newsletter",
+   "text": "This week: a new librarian joins us. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "payment_confirm",
+   "text": "Your payment of $445.73 was successful.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P07",
+   "family": "work_fyi",
+   "text": "Please find attached the minutes from last week's meeting for your records.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "bill_due",
+   "text": "Your water bill of $294.39 is due on 23 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "work_scheduling",
+   "text": "Could we do 3pm or 4pm on Thursday 10 December for a catch-up?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "newsletter",
+   "text": "This week: sports day photos. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "delegated",
+   "text": "Sarah has arranged the cake for Friday, so no need to worry about it.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "school_cancel",
+   "text": "The Year 5 camp on 4 December has been cancelled.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P07",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "greeting",
+   "text": "Happy Eid from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "work_scheduling",
+   "text": "Could we do 3pm or 4pm on Sunday 15 November for a catch-up?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on 28 November.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P07",
+   "family": "work_fyi",
+   "text": "Please find attached the minutes from last week's meeting for your records.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "school_form",
+   "text": "The photo permission form needs to be handed in by 15 November. Thanks!",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P07",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible students for a one-off grant. How to apply: email us by 1 December.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "work_fyi",
+   "text": "Please find attached the minutes from last week's meeting for your records.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "work_fyi",
+   "text": "Here is the agenda for your reference.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P07",
+   "family": "school_form",
+   "text": "Please return the excursion consent form by 24 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on 05/12/2026.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P08",
+   "family": "bill_due",
+   "text": "Your internet bill of $387.89 is due on Sunday 6 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "newsletter",
+   "text": "This week: sports day photos. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "rego",
+   "text": "Don't forget to renew your car registration before 10 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "bill_due",
+   "text": "Your electricity bill of $166.12 is due on 29 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "bill_due",
+   "text": "Reminder: your electricity bill is overdue. Please pay $76.85 by Monday 30 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "school_fee",
+   "text": "swimming carnival fees of $116.11 are due on Monday 16 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "waiting",
+   "text": "We're still waiting on your doctor's report. We'll be in touch when it arrives.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P08",
+   "family": "rego",
+   "text": "Don't forget to renew your car registration before 24 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "newsletter",
+   "text": "This week: our garden project. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "appointment_cancelled",
+   "text": "Your appointment on 15 December has been cancelled by the clinic.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P08",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "school_fee",
+   "text": "Year 5 camp fees of $112.90 are due on 15 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "school_form",
+   "text": "Could you sign and return the swimming carnival form by Friday 13 November?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "school_change",
+   "text": "Change of time: the school disco has moved to 10/12/2026.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P08",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "optional_reply",
+   "text": "Let me know if you'd like a copy of the report.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "newsletter",
+   "text": "This week: sports day photos. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "school_cancel",
+   "text": "The swimming carnival on Sunday 15 November has been cancelled.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P08",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on Monday 30 November.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P08",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "greeting",
+   "text": "Happy Diwali from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "optional_reply",
+   "text": "Let me know if you'd like a copy of the report.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "school_change",
+   "text": "Change of time: the book fair has moved to 15 November.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P08",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "school_fee",
+   "text": "Year 5 camp fees of $313.48 are due on 29 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "greeting",
+   "text": "Happy Diwali from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "appointment_cancelled",
+   "text": "Your appointment on 13/11/2026 has been cancelled by the clinic.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P08",
+   "family": "school_fee",
+   "text": "Payment for the swimming carnival ($118.36) is due by Sunday 15 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P08",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P08",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P09",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "payment_confirm",
+   "text": "We've received your payment of $416.98. Thank you.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P09",
+   "family": "school_change",
+   "text": "Change of time: the school disco has moved to 4 December.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P09",
+   "family": "appointment_cancelled",
+   "text": "Your appointment on 29 November has been cancelled by the clinic.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P09",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P09",
+   "family": "school_form",
+   "text": "Could you sign and return the photo permission form by 15/12/2026?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P09",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible families experiencing hardship for a one-off grant. How to apply: email us by 5 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P09",
+   "family": "payment_confirm",
+   "text": "We've received your payment of $353.58. Thank you.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P09",
+   "family": "optional_reply",
+   "text": "Let us know if you have any questions.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "bill_due",
+   "text": "Your internet bill of $390.04 is due on 16 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P09",
+   "family": "school_form",
+   "text": "The medical form needs to be handed in by Monday 7 December. Thanks!",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P09",
+   "family": "waiting",
+   "text": "Your claim is being assessed. We'll email you once a decision has been made.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P09",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P09",
+   "family": "school_cancel",
+   "text": "Training is off because of the wet weather. Back to normal next week.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P09",
+   "family": "delegated",
+   "text": "Sarah has arranged the cake for Friday, so no need to worry about it.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "greeting",
+   "text": "Happy Eid from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "optional_reply",
+   "text": "Let me know if you'd like a copy of the report.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "bill_due",
+   "text": "Your water bill of $43.21 is due on Saturday 28 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P09",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "broadcast_offer",
+   "text": "Financial support of up to $110 is available to eligible staff. Apply by Monday 14 December.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "school_cancel",
+   "text": "Training is off because of the wet weather. Back to normal next week.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P09",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "optional_reply",
+   "text": "Let us know if you have any questions.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "school_fee",
+   "text": "Payment for the swimming carnival ($259.34) is due by 3 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P09",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "bill_due",
+   "text": "Reminder: your gas bill is overdue. Please pay $360.59 by 23/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P09",
+   "family": "newsletter",
+   "text": "This week: the winter concert recap. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible staff for a one-off grant. How to apply: email us by 16/11/2026.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "bill_due",
+   "text": "Payment of $200.18 for your electricity account is due by 16 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P09",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible families experiencing hardship for a one-off grant. How to apply: email us by 13/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P09",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "delegated",
+   "text": "Sarah has arranged the cake for Friday, so no need to worry about it.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P09",
+   "family": "payment_confirm",
+   "text": "Your payment of $311.73 was successful.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P09",
+   "family": "school_cancel",
+   "text": "The Year 5 camp on 4 December has been cancelled.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P10",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P10",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "work_request",
+   "text": "Please review the draft report before 16/12/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "optional_reply",
+   "text": "Let me know if you'd like a copy of the report.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "bill_due",
+   "text": "Reminder: your internet bill is overdue. Please pay $478.34 by 14 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "school_cancel",
+   "text": "Training is off because of the wet weather. Back to normal next week.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P10",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on 30 November.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P10",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible families experiencing hardship for a one-off grant. How to apply: email us by Wednesday 9 December.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "bill_due",
+   "text": "Payment of $125.52 for your electricity account is due by Tuesday 17 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "school_cancel",
+   "text": "Training is off because of the wet weather. Back to normal next week.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P10",
+   "family": "newsletter",
+   "text": "This week: the winter concert recap. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "bill_due",
+   "text": "Your internet bill of $260.32 is due on Thursday 17 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "work_request",
+   "text": "Could you send me the budget by Monday 7 December?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "greeting",
+   "text": "Congratulations to all our graduates!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "school_fee",
+   "text": "Payment for the swimming carnival ($210.35) is due by 24/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "school_fee",
+   "text": "book fair fees of $277.60 are due on 22 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible students for a one-off grant. How to apply: email us by 21 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "waiting",
+   "text": "We're still waiting on your doctor's report. We'll be in touch when it arrives.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P10",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "work_request",
+   "text": "Please review the draft report before 23 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "school_change",
+   "text": "Due date extended: the form is now due on 18/11/2026.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P10",
+   "family": "school_form",
+   "text": "The photo permission form needs to be handed in by 28 November. Thanks!",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "optional_reply",
+   "text": "Let me know if you'd like a copy of the report.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "school_fee",
+   "text": "Payment for the Year 5 camp ($344.13) is due by 27 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "greeting",
+   "text": "Happy Diwali from all of us!",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P10",
+   "family": "delegated",
+   "text": "Sarah has arranged the cake for Friday, so no need to worry about it.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P10",
+   "family": "bill_due",
+   "text": "Your water bill of $397.59 is due on 25 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P10",
+   "family": "work_request",
+   "text": "Could you send me the budget by Sunday 29 November?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "payment_confirm",
+   "text": "Your payment of $370.54 was successful.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P11",
+   "family": "bill_due",
+   "text": "Your gas bill of $405.94 is due on Friday 27 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P11",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "work_request",
+   "text": "Please review the draft report before 17/12/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "newsletter",
+   "text": "This week: a new librarian joins us. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible students for a one-off grant. How to apply: email us by 14/12/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "work_request",
+   "text": "Please review the draft report before Sunday 6 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P11",
+   "family": "bill_due",
+   "text": "Payment of $465.56 for your gas account is due by Saturday 21 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "work_request",
+   "text": "Please complete the compliance training by 10 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "payment_confirm",
+   "text": "We've received your payment of $434.08. Thank you.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P11",
+   "family": "payment_confirm",
+   "text": "Your payment of $327.18 was successful.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P11",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "work_scheduling",
+   "text": "Are you free at 10am on Monday? Let me know what works.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "newsletter",
+   "text": "This week: sports day photos. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "bill_due",
+   "text": "Your internet bill of $118.43 is due on Wednesday 16 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "bill_due",
+   "text": "Payment of $478.56 for your gas account is due by 24/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "optional_reply",
+   "text": "Let me know if you'd like a copy of the report.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "bill_due",
+   "text": "Your electricity bill of $308.39 is due on 24 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "bill_due",
+   "text": "Reminder: your internet bill is overdue. Please pay $73.56 by Saturday 21 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "work_scheduling",
+   "text": "Are you free at 10am on Monday? Let me know what works.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "payment_confirm",
+   "text": "Thank you for submitting your form. Your child is confirmed.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P11",
+   "family": "work_request",
+   "text": "Please complete the compliance training by Monday 7 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "bill_due",
+   "text": "Payment of $211.95 for your internet account is due by 10 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P11",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "payment_confirm",
+   "text": "Your payment of $459.90 was successful.",
+   "expected": "CLOSE"
+  },
+  {
+   "persona": "P11",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "waiting",
+   "text": "Your application has been received. We will be in touch in early December.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P11",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P11",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "marketing",
+   "text": "We found a recent article that cited you. View article. Please unsubscribe if you don't want these emails.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "work_request",
+   "text": "Please complete the compliance training by 21/11/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "school_form",
+   "text": "Could you sign and return the medical form by Tuesday 15 December?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "waiting",
+   "text": "Your application has been received. We will be in touch in early December.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P12",
+   "family": "school_change",
+   "text": "Change of time: the book fair has moved to 23/11/2026.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P12",
+   "family": "newsletter",
+   "text": "This week: our garden project. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "work_request",
+   "text": "Could you send me the budget by 17/12/2026?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "school_fee",
+   "text": "book fair fees of $173.63 are due on 4 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "school_cancel",
+   "text": "Training is off because of the wet weather. Back to normal next week.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P12",
+   "family": "newsletter",
+   "text": "Newsletter: Term 4 is off to a great start.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "newsletter",
+   "text": "Weekly roundup: top stories in education. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "work_scheduling",
+   "text": "Could we do 3pm or 4pm on Saturday 12 December for a catch-up?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "work_scheduling",
+   "text": "Could we do 3pm or 4pm on Sunday 13 December for a catch-up?",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "newsletter",
+   "text": "This week: our garden project. Read more.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "rego",
+   "text": "Your vehicle registration expires on 21/11/2026. Renew online to avoid a fine.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "school_cancel",
+   "text": "The book fair on 22/11/2026 has been cancelled.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P12",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "delegated",
+   "text": "Jo is picking up the forms from the office, so there's nothing for you to do.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "broadcast_offer",
+   "text": "Applications are open to eligible seniors for a one-off grant. How to apply: email us by Tuesday 17 November.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "waiting",
+   "text": "Your claim is being assessed. We'll email you once a decision has been made.",
+   "expected": "WAIT"
+  },
+  {
+   "persona": "P12",
+   "family": "school_change",
+   "text": "Change of time: the book fair has moved to Saturday 12 December.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P12",
+   "family": "work_fyi",
+   "text": "Here is the agenda for your reference.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "bill_due",
+   "text": "Payment of $41.84 for your water account is due by 09/12/2026.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "marketing",
+   "text": "A new device signed in to your account. If this was you, no action is needed.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "marketing",
+   "text": "Sale ends Sunday! Take 30% off all shoes. Shop now. To stop receiving promotional emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "rego",
+   "text": "Your vehicle registration expires on 21/11/2026. Renew online to avoid a fine.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "school_fee",
+   "text": "Payment for the book fair ($208.70) is due by 20 November.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "school_cancel",
+   "text": "The Year 5 camp on 16/12/2026 has been cancelled.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P12",
+   "family": "school_fee",
+   "text": "Payment for the school disco ($399.08) is due by Tuesday 1 December.",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "marketing",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "marketing",
+   "text": "Your weekly digest is ready. If you no longer wish to receive these emails, please unsubscribe.",
+   "expected": "IGNORE"
+  },
+  {
+   "persona": "P12",
+   "family": "school_cancel",
+   "text": "The book fair on 2 December has been cancelled.",
+   "expected": "UPDATE"
+  },
+  {
+   "persona": "P12",
+   "family": "school_form",
+   "text": "The photo permission form needs to be handed in by Wednesday 18 November. Thanks!",
+   "expected": "ACT"
+  },
+  {
+   "persona": "P12",
+   "family": "work_request",
+   "text": "Could you send me the budget by Tuesday 8 December?",
+   "expected": "ACT"
+  }
+ ]
+}

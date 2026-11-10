@@ -30,3 +30,10 @@ for(const f of ['decisions','fresh-unseen','fresh-unseen-2','fresh-unseen-3','re
   assert.deepEqual(wrong,[]);
  });
 }
+
+test('a demand for payment is never read as a receipt (found by the synthetic audience)',()=>{
+ for(const t of ['Payment of $392.93 for your internet account is due by Wednesday 2 December.','Payment of $200.18 for your electricity account is due by 16 November.','Your gas payment is overdue. Please pay $90.10 by 20 November.'])
+  assert.notEqual(decide(t).decision,'CLOSE',t);
+ for(const t of ['We’ve received your payment of $180 for the Year 5 camp. Thank you.','Your payment of $35 was successful. Thank you.','Payment received for invoice 4471.'])
+  assert.equal(decide(t).decision,'CLOSE',t);
+});
