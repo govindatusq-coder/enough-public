@@ -1,0 +1,168 @@
+{
+ "synthetic": true,
+ "authoredBy": "written by the Load Bear team BEFORE the rule fixes that follow; labels committed before the fixes and before any run",
+ "frozenAt": "do not edit labels or tune rules on this set",
+ "today": "2026-11-10",
+ "cases": [
+  {
+   "id": "G01",
+   "expected": "ACT",
+   "text": "Hi parents, please make sure Maya's swimmers and a towel are packed for the carnival on Friday 20 November."
+  },
+  {
+   "id": "G02",
+   "expected": "ACT",
+   "text": "The electricity account is overdue. Please pay $243.10 by 16/11/2026 to avoid a late fee."
+  },
+  {
+   "id": "G03",
+   "expected": "ACT",
+   "text": "Your car registration will expire on 3 January 2027. Renew online before then."
+  },
+  {
+   "id": "G04",
+   "expected": "ACT",
+   "text": "Could you let us know by Thursday whether Leo will attend the excursion?"
+  },
+  {
+   "id": "G05",
+   "expected": "ACT",
+   "text": "Are you free to catch up on Wednesday afternoon? Let me know what works."
+  },
+  {
+   "id": "G06",
+   "expected": "ACT",
+   "text": "Don't forget the P&C meeting minutes need to be reviewed before the next meeting on 24 November."
+  },
+  {
+   "id": "G07",
+   "expected": "ACT",
+   "text": "Sign-up for the school disco closes at 5pm on 12 November. Add your child's name using the form."
+  },
+  {
+   "id": "G08",
+   "expected": "ACT",
+   "text": "Your dental check-up is booked for 2 December at 9:15am. Please arrive 10 minutes early and bring your health card."
+  },
+  {
+   "id": "G09",
+   "expected": "ACT",
+   "text": "We haven't received your enrolment form yet. Please send it in as soon as you can."
+  },
+  {
+   "id": "G10",
+   "expected": "ACT",
+   "text": "Please reply with your preferred time slot for the parent-teacher interview."
+  },
+  {
+   "id": "G11",
+   "expected": "ASK",
+   "text": "FYI the school oval might be waterlogged on Monday so sports may be moved indoors."
+  },
+  {
+   "id": "G12",
+   "expected": "ASK",
+   "text": "Heads up: the swimming program may start a week later than planned. We'll confirm soon."
+  },
+  {
+   "id": "G13",
+   "expected": "ASK",
+   "text": "Applications for the school captain leadership program are open to eligible Year 6 students. See the website for details."
+  },
+  {
+   "id": "G14",
+   "expected": "ASK",
+   "text": "Sports uniforms are available at a discount this month for families who qualify."
+  },
+  {
+   "id": "G15",
+   "expected": "WAIT",
+   "text": "We've lodged your claim and will contact you when the assessor has reviewed it."
+  },
+  {
+   "id": "G16",
+   "expected": "WAIT",
+   "text": "Still waiting on the plumber to confirm availability for next week."
+  },
+  {
+   "id": "G17",
+   "expected": "WAIT",
+   "text": "Your visa application is being processed. No action is needed from you at this time."
+  },
+  {
+   "id": "G18",
+   "expected": "WAIT",
+   "text": "Thanks for your enquiry. A team member will be in touch within five business days."
+  },
+  {
+   "id": "G19",
+   "expected": "CLOSE",
+   "text": "Your RSVP for the end-of-year concert has been recorded. See you there!"
+  },
+  {
+   "id": "G20",
+   "expected": "CLOSE",
+   "text": "Thanks, got the signed form."
+  },
+  {
+   "id": "G21",
+   "expected": "CLOSE",
+   "text": "Your refund of $50 for the cancelled excursion has been issued."
+  },
+  {
+   "id": "G22",
+   "expected": "CLOSE",
+   "text": "Your booking for the 10:30 session is confirmed."
+  },
+  {
+   "id": "G23",
+   "expected": "UPDATE",
+   "text": "Apologies, the meeting has been moved to Thursday at 2pm."
+  },
+  {
+   "id": "G24",
+   "expected": "UPDATE",
+   "text": "Training on Tuesday is off because of the wet weather. Back to normal next week."
+  },
+  {
+   "id": "G25",
+   "expected": "UPDATE",
+   "text": "Due date extended: the form is now due on 30 November."
+  },
+  {
+   "id": "G26",
+   "expected": "UPDATE",
+   "text": "Room change: Parent-teacher interviews will now be held in the library."
+  },
+  {
+   "id": "G27",
+   "expected": "IGNORE",
+   "text": "Congratulations to all our Year 12 graduates!"
+  },
+  {
+   "id": "G28",
+   "expected": "IGNORE",
+   "text": "Our newsletter this week features a profile of our new librarian."
+  },
+  {
+   "id": "G29",
+   "expected": "IGNORE",
+   "text": "Here are the photos from last week's excursion. Enjoy!"
+  },
+  {
+   "id": "G30",
+   "expected": "IGNORE",
+   "text": "Thank you for your feedback. We appreciate you taking the time to write."
+  },
+  {
+   "id": "G31",
+   "expected": "IGNORE",
+   "text": "Please find attached the minutes from last week's meeting for your records."
+  },
+  {
+   "id": "G32",
+   "expected": "IGNORE",
+   "text": "Sarah has arranged the cake for Friday, so no need to worry about it."
+  }
+ ]
+}
