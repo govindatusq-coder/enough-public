@@ -21,12 +21,15 @@ export interface ResponsibilityExtraction{
 }
 
 // The lifecycle, derived from what Bear actually knows. Not every responsibility visits every state.
-export const responsibilityStates=['identified','needs_clarification','planned','ready','in_progress','waiting','completed_unverified','verified','closed','cancelled'] as const;
+export const responsibilityStates=['identified','needs_clarification','planned','ready','in_progress','waiting','completed_unverified','verified','closed','cancelled',
+ // Execution states: only reachable once an action has been put to the person or sent through an integration.
+ 'awaiting_approval','executing','awaiting_confirmation','failed','blocked'] as const;
 export type ResponsibilityState=typeof responsibilityStates[number];
 export type VerificationMethod='user_confirmation'|'document'|'forwarded_email'|'integration';
 export interface ResponsibilityEvent{
  id:string;userId:string;createdAt:string;updatedAt:string;
- responsibilityId:string;eventType:'state_changed'|'state_conflict'|'update_proposed'|'update_applied'|'duplicate_merged'|'action_prepared'|'action_failed'|'approval_requested'|'verified';
+ responsibilityId:string;eventType:'state_changed'|'state_conflict'|'update_proposed'|'update_applied'|'duplicate_merged'|'action_prepared'|'action_failed'|'approval_requested'|'verified'
+  |'approval_granted'|'approval_declined'|'approval_revoked'|'execution_started'|'execution_accepted'|'execution_confirmed'|'execution_unknown'|'execution_skipped';
  previousState?:ResponsibilityState|null;nextState?:ResponsibilityState|null;
  actor:'user'|'system'|'integration';at:string;evidenceId?:string|null;
  // Minimal, non-sensitive metadata only (never notice text, names or amounts).

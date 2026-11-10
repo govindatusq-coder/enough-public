@@ -2,6 +2,7 @@ import {todayISO} from '../domain/dates.ts';
 import type {Task} from '../domain/types.ts';
 import {flags} from '../flags.ts';
 import {stamp,type BearStore} from '../store/store.ts';
+import {summariseExecution} from './execution-summary.ts';
 import {checkTransition,stateOf,verificationOf} from './state.ts';
 import type {ResponsibilityEvent,ResponsibilityState} from './types.ts';
 
@@ -24,7 +25,8 @@ export async function syncState(store:BearStore,taskOrId:Task|string,actor:Respo
  const task=typeof taskOrId==='string'?await store.get('tasks',taskOrId):taskOrId;if(!task)return null;
  const completions=task.status==='done'?await store.list('completions',{where:[{column:'task_id',value:task.id}],orderBy:{column:'completed_at',ascending:false},limit:1}):[];
  const profile=(await store.list('profiles',{limit:1}))[0];
- const next=stateOf(task,completions[0]||null,todayISO(profile?.lifeRhythm?.timezone||'Australia/Sydney',now));
+ const exec=flags.executionLayer()?summariseExecution(await history(store,task.id),now):null;
+ const next=stateOf(task,completions[0]||null,todayISO(profile?.lifeRhythm?.timezone||'Australia/Sydney',now),exec);
  const prev=await lastState(store,task.id);if(prev===next)return next;
  const verification=next==='verified'?verificationOf(completions[0]):null;
  const check=checkTransition(prev,next,verification);

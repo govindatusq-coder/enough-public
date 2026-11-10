@@ -32,7 +32,7 @@ export function registry(env:Record<string,string|undefined>=process.env,grants:
 export const capability=(t:ActionType,env?:Record<string,string|undefined>,grants?:IntegrationGrants)=>registry(env,grants).find(c=>c.actionType===t)!;
 
 // What an integration adapter reports. Only `ok:true` with a reference counts as success.
-export interface IntegrationResult{ok:boolean;reference?:string|null;error?:string|null}
+export interface IntegrationResult{ok:boolean;reference?:string|null;error?:string|null;retrySafe?:boolean}  // retrySafe: the failure is known to have happened BEFORE anything was sent
 export interface IntegrationAdapter{perform(t:ActionType,input:Record<string,unknown>):Promise<IntegrationResult>}
 export type ActionOutcome=
  |{status:'done';userMessage:string;reference:string|null;verified:boolean}        // happened, with evidence when verified

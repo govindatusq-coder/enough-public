@@ -14,5 +14,7 @@ export const flags={
  inboundEmail:()=>process.env.BEAR_INBOUND_EMAIL_ENABLED==='on',
  // Bear's first read of an email in the Outlook panel (ACT/ASK/WAIT/UPDATE/CLOSE/IGNORE). OFF unless switched on.
  decisions:()=>process.env.BEAR_DECISIONS_ENABLED==='on',
+ // The execution layer (approvals, attempts, confirmation) feeding responsibility states. OFF unless switched on.
+ executionLayer:()=>process.env.BEAR_EXECUTION_ENABLED==='on',
  bearIdeasIntelligenceV2:()=>on('BEAR_IDEAS_V2'),                                        // one curated feed; recommendations live in Bear Ideas, not My Bear
 };

@@ -32,7 +32,7 @@ export function htmlToText(html:string){
 }
 // A confirmation the school or a provider sent: real evidence, recorded as coming from an email.
 const CONFIRMS:{re:RegExp;evidence:string}[]=[
- {re:/\b(payment (?:has been |was )?(?:received|successful|processed)|thank you for your payment|receipt (?:for|no\.?|number))\b/i,evidence:'payment_confirmed'},
+ {re:/\b(payment (?:has been |was )?(?:received|successful|processed)|(?:we(?:’|')ve|we have|i(?:’|')ve|i have) (?:now )?received your payment|thank you for your payment|receipt (?:for|no\.?|number))\b/i,evidence:'payment_confirmed'},
  {re:/\b(consent (?:has been |was )?(?:received|submitted|given)|permission (?:has been |was )?(?:received|submitted))\b/i,evidence:'submission_confirmed'},
  {re:/\b(booking (?:is |has been )?confirmed|your (?:interview|appointment) (?:is|has been) booked|you have booked)\b/i,evidence:'booked'},
 ];
