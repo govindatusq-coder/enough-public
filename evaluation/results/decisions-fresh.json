@@ -1,0 +1,114 @@
+{
+ "generated": "2026-11-10T07:12:59.195Z",
+ "accuracy": 0.733,
+ "correct": 22,
+ "n": 30,
+ "confusion": {
+  "ACT": {
+   "ACT": 6,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 2
+  },
+  "ASK": {
+   "ACT": 0,
+   "ASK": 2,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 2
+  },
+  "WAIT": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 2,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 2
+  },
+  "UPDATE": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 2,
+   "CLOSE": 0,
+   "IGNORE": 1
+  },
+  "CLOSE": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 3,
+   "IGNORE": 1
+  },
+  "IGNORE": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 7
+  }
+ },
+ "wrong": [
+  {
+   "id": "F01",
+   "expected": "ACT",
+   "decided": "IGNORE",
+   "rule": "no-responsibility-found",
+   "text": "Hi all, the Year 3 swimming carnival permission slips are due back to the office by Wednesday 18 November. Thanks, Mrs Ng"
+  },
+  {
+   "id": "F02",
+   "expected": "ACT",
+   "decided": "IGNORE",
+   "rule": "no-responsibility-found",
+   "text": "Kindly ensure your child brings a named water bottle and hat to school every day this week."
+  },
+  {
+   "id": "F09",
+   "expected": "ASK",
+   "decided": "IGNORE",
+   "rule": "no-responsibility-found",
+   "text": "Hi, just letting you know the car park at school will be closed on Thursday for resurfacing."
+  },
+  {
+   "id": "F10",
+   "expected": "ASK",
+   "decided": "IGNORE",
+   "rule": "no-responsibility-found",
+   "text": "The excursion to the botanic gardens may move to a different date depending on the weather. We will confirm in due course."
+  },
+  {
+   "id": "F15",
+   "expected": "WAIT",
+   "decided": "IGNORE",
+   "rule": "no-responsibility-found",
+   "text": "Apologies for the delay. We have not yet heard back from the tradesperson about the quote."
+  },
+  {
+   "id": "F16",
+   "expected": "WAIT",
+   "decided": "IGNORE",
+   "rule": "no-responsibility-found",
+   "text": "The strata committee is still considering the complaint and will respond once a decision has been made."
+  },
+  {
+   "id": "F18",
+   "expected": "CLOSE",
+   "decided": "IGNORE",
+   "rule": "no-responsibility-found",
+   "text": "We have now received your signed consent form. No further action is required from you."
+  },
+  {
+   "id": "F21",
+   "expected": "UPDATE",
+   "decided": "IGNORE",
+   "rule": "no-responsibility-found",
+   "text": "Change of time: the Year 6 assembly has moved from 9am to 1:30pm on Friday."
+  }
+ ]
+}
