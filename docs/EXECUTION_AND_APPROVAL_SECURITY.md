@@ -15,9 +15,9 @@ AI proposes. Code decides. `lib/bear/engine/execution.ts` is the only path to an
 | Action | Status |
 |---|---|
 | draft message, plan, set reminder, organise | Implemented and connected |
-| prepare calendar file (`prepare.ts`) | Implemented; the person opens it themselves; not wired to a screen yet |
+| prepare calendar file | Implemented and connected: **Add to calendar** on the task page downloads a file the person opens; Bear adds nothing. See `docs/CALENDAR_INTEGRATION.md` |
 | send message, share information | Unsupported (no mail integration) |
-| create calendar event | Unsupported (no calendar integration) |
+| create calendar event (in the person's calendar) | Unsupported until a calendar account is connected; the path is documented in `docs/CALENDAR_INTEGRATION.md` |
 | submit form, book appointment, contact provider | Unsupported |
 | make payment, make purchase | Unsupported; Bear shows amount, reference and link for the person |
 

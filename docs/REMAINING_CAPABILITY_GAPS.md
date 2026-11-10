@@ -1,6 +1,6 @@
 # Remaining capability gaps
 
-1. **No real integration** for sending, calendar, forms, booking or payment. Until one exists Bear prepares and hands off. Needs the owner's decision, credentials and authorisation per integration.
+1. **No real integration** for sending, calendar (creating events in the person's own calendar; a downloadable file exists), forms, booking or payment. Until one exists Bear prepares and hands off. Needs the owner's decision, credentials and authorisation per integration.
 2. **Execution on screen**: no approval UI or place for the status card yet (nothing to approve until an integration exists). Wiring `applyConfirmation` to `confirmExecution` is not done.
 3. **Context engine**: no household/context tables or generic relationship retrieval.
 4. **Free-form outcome inference and plan generation by a model**: today patterns drive this; model-generated plans would go through `validatePlan`.
