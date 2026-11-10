@@ -1,21 +1,29 @@
-// Decision benchmark (baseline). Usage: node evaluation/run-decisions.mjs
-// The current engine only EXTRACTS responsibilities; it has no ACT/ASK/WAIT/UPDATE/CLOSE/IGNORE output yet.
-// So this scores the closest honest proxy: does the engine create a new tracked item for the message?
-//   tracked (expected ≠ IGNORE) vs created (engine returns ≥1 responsibility).
-// Decision-level accuracy is reported as NOT MEASURABLE for the current engine. Never estimated.
+// Decision benchmark. Usage: node evaluation/run-decisions.mjs
+// Two systems on the same labelled cases (evaluation/dataset/decisions.json):
+//   decide     = lib/bear/engine/decide.ts (rule-based decision layer): exact decision accuracy + confusion.
+//   extractor  = lib/bear/engine/extract.ts (the current engine): only "creates an item?" vs "tracked?" proxy,
+//                because it has no decision output.
+// Dev and held-out are reported separately. Held-out is not clean: its cases were written before rules were tuned,
+// but dev failures were read while tuning, so treat held-out as a weak check, not an independent test.
 import {readFileSync,writeFileSync} from 'node:fs';
 import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {extractResponsibilities} from '../lib/bear/engine/extract.ts';
+import {decide} from '../lib/bear/engine/decide.ts';
 const here=dirname(fileURLToPath(import.meta.url));
 const data=JSON.parse(readFileSync(resolve(here,'dataset/decisions.json'),'utf8'));
-const rows=data.cases.map(c=>{const created=extractResponsibilities(c.text,{today:data.today,sourceId:c.id}).responsibilities.length>0;return {...c,created,tracked:c.expected!=='IGNORE'};});
-function stats(rs){const tp=rs.filter(r=>r.created&&r.tracked).length,fp=rs.filter(r=>r.created&&!r.tracked).length,fn=rs.filter(r=>!r.created&&r.tracked).length,tn=rs.filter(r=>!r.created&&!r.tracked).length;
- const p=tp+fp?tp/(tp+fp):null,rc=tp+fn?tp/(tp+fn):null;return {n:rs.length,tp,fp,fn,tn,precision:p==null?null:+p.toFixed(3),recall:rc==null?null:+rc.toFixed(3),
-  wrongCreations:rs.filter(r=>r.created&&r.expected==='CLOSE'||r.created&&r.expected==='IGNORE').map(r=>r.id)};}
-const out={generated:new Date().toISOString(),measured:'tracked-vs-created proxy only',decisionAccuracy:'NOT MEASURABLE: engine has no decision output yet',
- dev:stats(rows.filter(r=>r.split==='dev')),heldout:stats(rows.filter(r=>r.split==='heldout')),
- missed:rows.filter(r=>!r.created&&r.tracked).map(r=>r.id),
- cases:rows.map(({id,split,category,expected,created})=>({id,split,category,expected,createdNewItem:created}))};
-const dest=resolve(here,'results/decisions-baseline.json');writeFileSync(dest,JSON.stringify(out,null,1));
-console.log(JSON.stringify({dev:out.dev,heldout:out.heldout,missed:out.missed},null,1));console.log('wrote',dest);
+const LABELS=['ACT','ASK','WAIT','UPDATE','CLOSE','IGNORE'];
+const rows=data.cases.map(c=>({...c,decided:decide(c.text).decision,extractorCreated:extractResponsibilities(c.text,{today:data.today,sourceId:c.id}).responsibilities.length>0}));
+function accuracy(rs){const ok=rs.filter(r=>r.decided===r.expected).length;return {n:rs.length,correct:ok,accuracy:+(ok/rs.length).toFixed(3)};}
+function confusion(rs){const m={};for(const e of LABELS){m[e]={};for(const p of LABELS)m[e][p]=0;}for(const r of rs)m[r.expected][r.decided]++;return m;}
+function proxy(rs){const tracked=r=>r.expected!=='IGNORE';const tp=rs.filter(r=>r.extractorCreated&&tracked(r)).length,fp=rs.filter(r=>r.extractorCreated&&!tracked(r)).length,fn=rs.filter(r=>!r.extractorCreated&&tracked(r)).length;
+ return {precision:tp+fp?+(tp/(tp+fp)).toFixed(3):null,recall:tp+fn?+(tp/(tp+fn)).toFixed(3):null};}
+const splits={dev:rows.filter(r=>r.split==='dev'),heldout:rows.filter(r=>r.split==='heldout')};
+const out={generated:new Date().toISOString(),note:'decide = rule-based baseline; held-out not clean (see run-decisions.mjs header)',
+ decide:Object.fromEntries(Object.entries(splits).map(([k,rs])=>[k,{...accuracy(rs),confusion:confusion(rs)}])),
+ extractorProxy:Object.fromEntries(Object.entries(splits).map(([k,rs])=>[k,proxy(rs)])),
+ wrong:rows.filter(r=>r.decided!==r.expected).map(r=>({id:r.id,split:r.split,expected:r.expected,decided:r.decided,text:r.text.slice(0,90)}))};
+const dest=resolve(here,'results/decisions-decide.json');writeFileSync(dest,JSON.stringify(out,null,1));
+console.log(JSON.stringify({decide:{dev:out.decide.dev.accuracy,heldout:out.decide.heldout.accuracy},extractorProxy:out.extractorProxy},null,1));
+console.log(out.wrong.map(w=>`${w.id} ${w.split} expected ${w.expected} got ${w.decided}: ${w.text}`).join('\n'));
+console.log('wrote',dest);
