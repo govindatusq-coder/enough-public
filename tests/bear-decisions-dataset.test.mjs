@@ -22,7 +22,7 @@ test('the rule-based decision layer: every dev case, and it never creates from a
 
 import {existsSync} from 'node:fs';
 // Regression: every labelled set stays correct. The real-email set B is local-only (private), so it is skipped when absent.
-for(const f of ['decisions','fresh-unseen','fresh-unseen-2','real-sample-5','real-sample-b5']){
+for(const f of ['decisions','fresh-unseen','fresh-unseen-2','fresh-unseen-3','real-sample-5','real-sample-b5','real-sample-d5']){
  const url=new URL(`../evaluation/dataset/${f}.json`,import.meta.url);
  test(`decision rules: every case in ${f}`,{skip:!existsSync(url)},()=>{
   const set=JSON.parse(readFileSync(url,'utf8'));

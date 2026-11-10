@@ -1,0 +1,93 @@
+{
+ "generated": "2026-11-10T10:59:14.999Z",
+ "accuracy": 0.815,
+ "correct": 22,
+ "n": 27,
+ "confusion": {
+  "ACT": {
+   "ACT": 6,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 0
+  },
+  "ASK": {
+   "ACT": 0,
+   "ASK": 2,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 0
+  },
+  "WAIT": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 1,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 1
+  },
+  "UPDATE": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 2,
+   "CLOSE": 0,
+   "IGNORE": 0
+  },
+  "CLOSE": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 1,
+   "IGNORE": 1
+  },
+  "IGNORE": {
+   "ACT": 3,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 10
+  }
+ },
+ "wrong": [
+  {
+   "id": "H05",
+   "expected": "IGNORE",
+   "decided": "ACT",
+   "rule": "explicit-request",
+   "text": "Please add our address to your contacts to make sure our emails reach your inbox."
+  },
+  {
+   "id": "H09",
+   "expected": "IGNORE",
+   "decided": "ACT",
+   "rule": "explicit-request",
+   "text": "Weekly roundup: top stories in education. Read more. Please forward this to a friend if you enjoyed it."
+  },
+  {
+   "id": "H11",
+   "expected": "IGNORE",
+   "decided": "ACT",
+   "rule": "explicit-request",
+   "text": "Rate your recent stay. We'd love your feedback. Please take our two-minute survey."
+  },
+  {
+   "id": "H22",
+   "expected": "WAIT",
+   "decided": "IGNORE",
+   "rule": "no-responsibility-found",
+   "text": "Your claim is being assessed. We'll email you once a decision has been made."
+  },
+  {
+   "id": "H25",
+   "expected": "CLOSE",
+   "decided": "IGNORE",
+   "rule": "no-responsibility-found",
+   "text": "Your payment of $35 was successful. Thank you."
+  }
+ ]
+}
