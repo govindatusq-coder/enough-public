@@ -1,0 +1,13 @@
+{
+ "synthetic": false,
+ "source": "five real emails the user uploaded; names, addresses and links removed; text shortened",
+ "frozenAt": "labels committed before any run; do not edit labels or tune rules on this set",
+ "today": "2026-11-10",
+ "cases": [
+  {"id":"R01","expected":"IGNORE","note":"academic-alert marketing, no action","text":"Get an email when a researcher writes a new article. Follow articles by a recommended author. Selected articles listed. This recommendation was sent by a scholarly search service. Unsubscribe."},
+  {"id":"R02","expected":"ACT","note":"registration renewal with a date; forwarded by the user's practice","text":"Don't forget to renew your registration. Just a reminder, you still need to renew your registration. Your registration expires on 30/11/2026. Renew your registration in the portal. Steps to log in and renew."},
+  {"id":"R03","expected":"IGNORE","note":"school news digest: an event happening, nothing asked of the reader","text":"News: the 2026 cricket competition is on Thursday 12 November at the local fields. We look forward to hosting it this Thursday. Read more."},
+  {"id":"R04","expected":"IGNORE","note":"forwarded thread; a colleague sends a final chapter, nothing asked","text":"Here is one. Forwarded thread: Thanks. Please find attached the final version of this chapter. Kind regards."},
+  {"id":"R05","expected":"IGNORE","note":"a shared web link with no request","text":"being in charge of thinking of things before people think they need them. Get the mobile app."}
+ ]
+}
