@@ -16,6 +16,7 @@ import type {LoadView} from '@/lib/bear/load/view';
 import {LoadPanel} from '@/components/bear/load-panel';
 import {eventForTask} from '@/lib/bear/engine/calendar-event';
 import {AddToOutlook} from '@/components/bear/add-to-outlook';
+import {FormPrep,hasFormStep} from '@/components/bear/form-prep';
 import {WhyThisMatters,trafficLight,type PriorityView} from '@/components/bear/why-this-matters';
 
 // Only asked when it would change what Bear does; never required.
@@ -81,6 +82,7 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
    </div>
    {task.pendingUpdate&&!done&&<div className="note" role="status" style={{marginTop:14,display:'block'}}><p className="small"><strong>A newer notice has a different date.</strong> It says {task.pendingUpdate.to?formatAU(task.pendingUpdate.to):'no date'}; you set {task.pendingUpdate.from?formatAU(task.pendingUpdate.from):'no date'}.</p><div className="btn-row" style={{marginTop:8}}><Button className="sm" variant="primary" disabled={busy} onClick={()=>proposal(true)}>Use the new date</Button><Button className="sm" variant="quiet" disabled={busy} onClick={()=>proposal(false)}>Keep mine</Button></div></div>}
    {data.load&&!dropped&&!onWishlist&&(!done||data.load.state==='resolved')&&<LoadPanel taskId={task.id} view={data.load} onNeedInfo={openEdit} onSaid={setToast} onChanged={d=>{if(d){router.replace(`/bear/wins?just=${encodeURIComponent(task.title+' · Sorted')}`);return;}load();}}/>}
+   {!dropped&&!onWishlist&&!done&&hasFormStep(task)&&<FormPrep task={task} onChanged={load}/>}
    {!dropped&&!onWishlist&&!done&&eventForTask(task)&&<p className="small" style={{margin:'6px 0 0'}}><a className="btn ghost sm" href={`/api/bear/tasks/${task.id}/calendar`} download>Add to calendar</a></p>}
    {!dropped&&!onWishlist&&!done&&eventForTask(task)&&!eventForTask(task)!.time&&<AddToOutlook taskId={task.id}/>}
    {data.priority&&!done&&!dropped&&!onWishlist&&<WhyThisMatters taskId={task.id} p={data.priority} onChanged={load}/>}

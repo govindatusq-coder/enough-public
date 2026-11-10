@@ -21,6 +21,8 @@ AI proposes. Code decides. `lib/bear/engine/execution.ts` is the only path to an
 | submit form, book appointment, contact provider | Unsupported |
 | make payment, make purchase | Unsupported; Bear shows amount, reference and link for the person |
 
+Uploaded PDFs (forms) are untrusted: only field names and types are read, nothing is executed, text inside the file is never treated as instructions, and files are limited to 10 MB and stored under the owner's id. See `docs/FORM_WORKFLOW.md`.
+
 Nothing simulates success. Until configured, every outward action reports `not_available` with the manual handoff. Tests use an injected test adapter; production never passes one.
 
 Enabling real actions needs the owner's explicit authorisation, a real integration per action, and a review of this document.

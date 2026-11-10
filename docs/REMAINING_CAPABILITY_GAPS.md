@@ -11,3 +11,11 @@
 9. **Settings**: no screen listing remembered offer answers.
 10. **Image-only emails** can't be read (no vision step).
 11. **Document generation** (filling a school's own form) is not built.
+
+## From the "completion engine" brief (what it asks for that is still open)
+- **Connected discovery (email/calendar OAuth):** needs a Microsoft or Google app registration and the owner's consent, which the owner has decided not to do for now. Without it, responsibilities still come from what the person shares, forwards or adds in the Outlook panel.
+- **Submission of forms:** no school system offers an API we can use. Handoff only.
+- **Subscription entitlements / pricing:** not built (no payment screens by design); no cost-per-household instrumentation yet.
+- **Work-removed metrics:** form counts are recorded; a verified-completions-per-household report is not built.
+- **Targets in the brief** (95% extraction, 99% approval compliance, 90% happy-path completion) are not claimed: the synthetic suites pass, real-world reliability is unmeasured.
+- **The 50% time-saving test with 10 to 20 working parents** has not been run; it needs participants (the study framework exists, off by default).

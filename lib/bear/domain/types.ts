@@ -83,6 +83,8 @@ export interface Profile extends Owned{
  ideasSeen?:string[];
  // What the person has told Bear about offers sent to many people ("eligible staff"): yes/no per group. Never inferred; sensitive groups are never stored.
  offerGroups?:Partial<Record<'staff'|'student'|'senior'|'parent','yes'|'no'>>;
+ // Plain contact details the person chose to reuse on forms. Never a decision, signature or anything medical.
+ formFacts?:{parentName?:string;phone?:string;email?:string;address?:string};
  // Load Bear 2.0: Coverage Packs the person turned on, and school events Bear is watching for from their own history.
  coverage?:Partial<Record<import('../coverage/types.ts').PackId,{active:boolean;since:ISODateTime}>>;
  // Research participation: off unless the person explicitly opts in (study export is pseudonymous).
@@ -175,6 +177,9 @@ export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;stat
  snoozedUntil?:ISODate|null;postpones?:number;importance?:Importance|null;
  // The person accepted "I can take more of this": Bear brings it back in smaller steps.
  bearSupport?:'more'|null;
+ // A school form the person gave Bear for this responsibility: where the original and the prepared copy are kept, and what Bear did
+ // (field names and what each was for; never the values typed into the form).
+ preparedForm?:{originalKey:string;pdfKey:string;preparedAt:string;total:number;filled:string[];needsDecision:string[];needsDetail:{field:string;role:string}[];left:string[]};
  // The person's answer to "Is someone relying on you for this?" (null = Bear decide).
  reliance?:'yes'|'little'|'no'|null;
  // Who chose time-sensitive / no rush: the person's own choice is never overridden.
