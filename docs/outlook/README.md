@@ -45,3 +45,12 @@ for Mac and Outlook mobile on the same account. Work and school tenants may bloc
 - **Single sign-on with a Microsoft account**: not needed for the MVP (Load Bear accounts are email and
   password).
 - **Unified JSON manifest (Teams-style)**: XML is used because it works in every Outlook today.
+
+## Bear's first read (off by default)
+Set `BEAR_DECISIONS_ENABLED=on` to show a small "Bear's first read" card in the panel: Looks like something
+for you / might matter / you're waiting / looks like a change / looks like a confirmation / nothing here
+needs you. It comes from `lib/bear/engine/decide.ts` (rule-based) and is worked out inside the panel, so
+the email isn't sent anywhere before the person taps. It only changes what the panel suggests; it never
+adds, closes or changes anything by itself. "Is that right?" sends labels only (what Bear said, what it
+should have said, which rule fired) to `/api/bear/decide/feedback`, never the email. Measured scores:
+`evaluation/results/decisions-*.json`; read their caveats before quoting any number.

@@ -1,8 +1,10 @@
 'use client';
-import {useCallback,useEffect,useState} from 'react';
+import {useCallback,useEffect,useMemo,useState} from 'react';
 import {CompactLockup} from './art';
 import {Button} from './ui';
 import {captureText,givenKey,readableAttachments,type OutlookAttachment,type OutlookItem} from '@/lib/bear/outlook/item';
+import {decide} from '@/lib/bear/engine/decide';
+import {presentRead,READ_CHOICES} from '@/lib/bear/outlook/read';
 import {accessToken,addinAuth,attachmentFile,authConfigured,canReadAttachments,loadOffice,onItemChanged,openInBrowser,readOpenItem,signInWithPopup} from '@/lib/bear/outlook/office-client';
 
 // Bear in Outlook. The person opens an email, taps "Give to Bear" in Outlook, then "Give this to Bear"
@@ -24,11 +26,13 @@ export function OutlookPane(){
  const [item,setItem]=useState<{id:string|null;item:OutlookItem;attachments:OutlookAttachment[]}|null>(null);
  const [picked,setPicked]=useState<Set<string>>(new Set());
  const [outcomes,setOutcomes]=useState<Outcome[]>([]);const [note,setNote]=useState<string|null>(null);const [given,setGiven]=useState(false);
+ // Bear's first read (only when switched on). Worked out here in the panel, so the email isn't sent before the tap.
+ const [firstRead,setFirstRead]=useState(false);const [fb,setFb]=useState<'idle'|'choosing'|'thanks'>('idle');
  const origin=typeof window!=='undefined'?window.location.origin:'';
 
  const signedIn=useCallback(async()=>!authConfigured()||!!(await accessToken()),[]);
  const refresh=useCallback(async()=>{
-  setOutcomes([]);setNote(null);
+  setOutcomes([]);setNote(null);setFb('idle');
   const it=await readOpenItem();setItem(it);
   setPicked(new Set(readableAttachments(it?.attachments||[]).map(a=>a.id)));
   const k=givenKey(it?.id);let seen=false;try{seen=!!(k&&localStorage.getItem(k));}catch{/* no storage */}setGiven(seen);
@@ -37,6 +41,10 @@ export function OutlookPane(){
 
  useEffect(()=>{let off=()=>{};loadOffice().then(inOutlook=>{if(!inOutlook){setPhase('outside');return;}refresh();off=onItemChanged(()=>{refresh();});});return()=>off();},[refresh]);
 
+ useEffect(()=>{fetch('/api/bear/decide',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>setFirstRead(!!j?.enabled)).catch(()=>setFirstRead(false));},[]);
+ const read=useMemo(()=>firstRead&&item?decide(captureText(item.item)):null,[firstRead,item]);
+ async function feedback(correct:boolean,expected?:string){if(!read)return;
+  try{await send('/api/bear/decide/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({predicted:read.decision,correct,expected,rule:read.rule})});setFb('thanks');}catch{setFb('idle');setNote('Bear couldn’t save that. Nothing was lost.');}}
  async function connect(){setNote(null);const r=await signInWithPopup(origin);if(r==='signed_in')setPhase('ready');else if(r==='blocked')setNote('Outlook didn’t open the sign-in window. Allow pop-ups for Outlook, then try again.');}
  async function signOut(){await addinAuth()?.auth.signOut().catch(()=>null);setPhase('signed_out');}
 
@@ -88,7 +96,13 @@ export function OutlookPane(){
     {!filesOk&&<p className="small muted" style={{marginTop:6}}>This version of Outlook can’t pass attachments to Bear. Save them and add them in Bear instead.</p>}
    </fieldset>}
    {given&&<p className="note" style={{marginTop:12}}>You’ve given this email to Bear before. Giving it again is fine: Bear won’t add the same thing twice.</p>}
-   <div className="btn-stack"><Button className="wide" disabled={phase==='sending'} onClick={give}>{phase==='sending'?'Bear is reading it…':'Give this to Bear'}</Button></div>
+   {read&&(()=>{const p=presentRead(read.decision);return <div className="ol-read" role="status" style={{marginTop:14,padding:'12px 14px',borderRadius:14,background:'rgba(255,255,255,.6)'}}>
+    <p className="eyebrow">Bear’s first read</p><p style={{fontWeight:700,margin:'2px 0 0'}}>{p.headline}</p><p className="small muted" style={{margin:'2px 0 0'}}>{p.detail}</p>
+    {fb==='idle'&&<p className="small" style={{margin:'8px 0 0'}}>Is that right? <button type="button" className="btn quiet sm" onClick={()=>feedback(true)}>Yes</button> <button type="button" className="btn quiet sm" onClick={()=>setFb('choosing')}>No</button></p>}
+    {fb==='choosing'&&<div style={{marginTop:8}}><p className="small">What should it be?</p><div className="btn-row">{READ_CHOICES.map(c=><button key={c.value} type="button" className="btn quiet sm" onClick={()=>feedback(false,c.value)}>{c.label}</button>)}</div></div>}
+    {fb==='thanks'&&<p className="small muted" style={{margin:'8px 0 0'}}>Thanks. Bear kept only your answer, not your email.</p>}
+   </div>;})()}
+   <div className="btn-stack"><Button className="wide" variant={read&&!presentRead(read.decision).primary?'quiet':'primary'} disabled={phase==='sending'} onClick={give}>{phase==='sending'?'Bear is reading it…':read?presentRead(read.decision).button:'Give this to Bear'}</Button></div>
    {note&&<p className="note" role="alert" style={{marginTop:12}}>{note}</p>}
    <p className="faint" style={{marginTop:12}}>Bear only sees this email, and only when you tap. It doesn’t read your inbox.</p>
   </section>}

@@ -12,5 +12,7 @@ export const flags={
  coveragePacks:()=>on('BEAR_COVERAGE_PACKS_ENABLED'),
  responsibilityEngine:()=>on('BEAR_COVERAGE_PACKS_ENABLED')&&on('BEAR_RESPONSIBILITY_ENGINE_ENABLED'),
  inboundEmail:()=>process.env.BEAR_INBOUND_EMAIL_ENABLED==='on',
+ // Bear's first read of an email in the Outlook panel (ACT/ASK/WAIT/UPDATE/CLOSE/IGNORE). OFF unless switched on.
+ decisions:()=>process.env.BEAR_DECISIONS_ENABLED==='on',
  bearIdeasIntelligenceV2:()=>on('BEAR_IDEAS_V2'),                                        // one curated feed; recommendations live in Bear Ideas, not My Bear
 };
