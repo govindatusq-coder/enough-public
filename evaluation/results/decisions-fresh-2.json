@@ -1,0 +1,57 @@
+{
+ "generated": "2026-11-10T07:28:38.332Z",
+ "accuracy": 1,
+ "correct": 32,
+ "n": 32,
+ "confusion": {
+  "ACT": {
+   "ACT": 10,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 0
+  },
+  "ASK": {
+   "ACT": 0,
+   "ASK": 4,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 0
+  },
+  "WAIT": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 4,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 0
+  },
+  "UPDATE": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 4,
+   "CLOSE": 0,
+   "IGNORE": 0
+  },
+  "CLOSE": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 4,
+   "IGNORE": 0
+  },
+  "IGNORE": {
+   "ACT": 0,
+   "ASK": 0,
+   "WAIT": 0,
+   "UPDATE": 0,
+   "CLOSE": 0,
+   "IGNORE": 6
+  }
+ },
+ "wrong": []
+}

@@ -19,3 +19,14 @@ test('the rule-based decision layer: every dev case, and it never creates from a
  assert.deepEqual(wrong,[],'dev failures');
  for(const c of d.cases.filter(c=>['confirmation','no_action','optional_reply','cancellation'].includes(c.category)))assert.notEqual(decide(c.text).decision,'ACT',c.id);
 });
+
+import {existsSync} from 'node:fs';
+// Regression: every labelled set stays correct. The real-email set B is local-only (private), so it is skipped when absent.
+for(const f of ['decisions','fresh-unseen','fresh-unseen-2','real-sample-5','real-sample-b5']){
+ const url=new URL(`../evaluation/dataset/${f}.json`,import.meta.url);
+ test(`decision rules: every case in ${f}`,{skip:!existsSync(url)},()=>{
+  const set=JSON.parse(readFileSync(url,'utf8'));
+  const wrong=set.cases.filter(c=>decide(c.text).decision!==c.expected).map(c=>c.id);
+  assert.deepEqual(wrong,[]);
+ });
+}
