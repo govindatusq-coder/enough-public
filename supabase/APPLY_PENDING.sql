@@ -16,6 +16,7 @@ create table if not exists public.bear_inbound_routes (
 );
 create unique index if not exists bear_inbound_routes_one_live on public.bear_inbound_routes(user_id) where revoked_at is null;
 alter table public.bear_inbound_routes enable row level security;
+drop policy if exists own_route_read on public.bear_inbound_routes;
 create policy own_route_read on public.bear_inbound_routes for select to authenticated using (user_id = auth.uid());
 revoke all on public.bear_inbound_routes from anon;
 grant select on public.bear_inbound_routes to authenticated;
@@ -50,8 +51,10 @@ create table if not exists public.bear_responsibility_events (
 );
 create index if not exists bear_responsibility_events_resp on public.bear_responsibility_events(user_id,responsibility_id,at);
 alter table public.bear_responsibility_events enable row level security;
+drop policy if exists own_events_read on public.bear_responsibility_events;
 create policy own_events_read on public.bear_responsibility_events for select to authenticated
  using ((select auth.uid())=user_id and not coalesce(((select auth.jwt())->>'is_anonymous')::boolean,false));
+drop policy if exists own_events_insert on public.bear_responsibility_events;
 create policy own_events_insert on public.bear_responsibility_events for insert to authenticated
  with check ((select auth.uid())=user_id and not coalesce(((select auth.jwt())->>'is_anonymous')::boolean,false));
 grant select,insert on public.bear_responsibility_events to authenticated;
@@ -117,6 +120,7 @@ create table if not exists public.bear_study_responses (
 );
 create index if not exists bear_study_responses_user on public.bear_study_responses(user_id,phase,week);
 alter table public.bear_study_responses enable row level security;
+drop policy if exists own_rows on public.bear_study_responses;
 create policy own_rows on public.bear_study_responses to authenticated
  using ((select auth.uid())=user_id and not coalesce(((select auth.jwt())->>'is_anonymous')::boolean,false))
  with check ((select auth.uid())=user_id and not coalesce(((select auth.jwt())->>'is_anonymous')::boolean,false));
@@ -139,6 +143,7 @@ create table if not exists public.bear_connected_accounts (
  unique (user_id,provider)
 );
 alter table public.bear_connected_accounts enable row level security;
+drop policy if exists own_rows on public.bear_connected_accounts;
 create policy own_rows on public.bear_connected_accounts to authenticated
  using ((select auth.uid())=user_id and not coalesce(((select auth.jwt())->>'is_anonymous')::boolean,false))
  with check ((select auth.uid())=user_id and not coalesce(((select auth.jwt())->>'is_anonymous')::boolean,false));
