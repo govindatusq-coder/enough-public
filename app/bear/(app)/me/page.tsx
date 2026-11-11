@@ -82,7 +82,7 @@ export default function Me(){
    <StudySettings/>
    <ForwardToBear/>
    <CalendarConnect/>
-   <section className="section"><p className="eyebrow">Privacy</p><div className="card"><p className="small">Only you can see what you give Bear. For bills it keeps the biller, amount, dates and payment reference, never card numbers, CVVs or bank passwords. <Link href="/privacy" style={{textDecoration:'underline'}}>Privacy notice</Link></p></div></section>
+   <section className="section"><p className="eyebrow">Privacy</p><div className="card"><p className="small">Only you can see what you give Bear. For bills it keeps the biller, amount, dates and payment reference, never card numbers, CVVs or bank passwords. <Link href="/bear/privacy" style={{textDecoration:'underline'}}>Privacy notice</Link></p></div></section>
    <section className="section"><p className="eyebrow">App</p><div className="card"><p className="small">Version <strong>{CURRENT_BUILD}</strong>. Bear checks for a newer version each time you open it.</p>
     <div className="btn-row">{updateState==='update'?<Button className="sm" variant="coral" onClick={applyUpdate}>Update now</Button>:<Button className="sm" variant="ghost" disabled={updateState==='checking'} onClick={async()=>{setUpdateState('checking');setUpdateState(await checkForUpdate());}}>{updateState==='checking'?'Checking…':'Check for updates'}</Button>}</div>
     {updateState==='current'&&<p className="faint" style={{marginTop:8}}>You&rsquo;re on the latest Bear.</p>}{updateState==='unknown'&&<p className="faint" style={{marginTop:8}}>Couldn&rsquo;t check right now. Try again when you&rsquo;re online.</p>}</div></section>
