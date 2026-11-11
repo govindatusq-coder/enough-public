@@ -385,7 +385,8 @@
 .bear .load-details>summary::after{content:"›";font-size:18px;line-height:1;transition:transform .2s;}
 .bear .load-details[open]>summary::after{transform:rotate(90deg);}
 .bear .hero-alert.needs{background:var(--navy);text-decoration:none;max-width:100%;}
-.bear .hero-alert.needs span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bear .hero-alert.needs{border-radius:16px;}
+.bear .hero-alert.needs span{white-space:normal;overflow:visible;text-overflow:clip;}
 .bear .stats-note a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px;}
 /* Chips that carry a small round picture (who's at home, who you care for). */
 .bear .chip.with-icon{padding-left:6px;}
@@ -438,7 +439,7 @@
 .bear .one-thing-actions .btn.sm{min-height:36px;padding:0 14px;}
 .bear .one-thing-link{background:none;border:0;padding:6px 0;font-size:14px;font-weight:600;color:var(--ink-2);text-decoration:underline;text-underline-offset:3px;min-height:36px;white-space:nowrap;}
 .bear .home-screen .home-tiles{min-height:140px;}
-.bear .hero-alert span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bear .hero-alert:not(.needs) span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 /* With the one-thing card showing, the banners give up a little height so My Bear still fits. */
 .bear .home-screen:has(.one-thing){gap:8px;}
 .bear .home-screen:has(.one-thing) .stats-banner{min-height:84px;padding-top:6px;padding-bottom:6px;}

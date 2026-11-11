@@ -73,7 +73,7 @@ export default function TaskPage({params}:{params:Promise<{id:string}>}){
    <TopBar back={{href:'/bear/home'}} right={task.isDemo?<span className="demo-tag">Example</span>:null}/>
    <div className="card">
     <p className="eyebrow">{kindLabel[task.kind]||'Task'}{project&&<span className="pill" style={{marginLeft:8}}>{areaLabels[project.areaKey]}</span>}{task.part&&<span className="pill" style={{marginLeft:8}}>Part {task.part.index} of {task.part.total}</span>}{onWishlist&&<span className="pill mustard" style={{marginLeft:8}}>Wishlist</span>}{done&&<span className="pill teal" style={{marginLeft:8}}>Done</span>}{dropped&&<span className="pill" style={{marginLeft:8}}>Let go</span>}</p>
-    <h2 style={{marginTop:6}}>{task.title}</h2>
+    <h1 style={{marginTop:6,fontSize:22}}>{task.title}</h1>
     <p className="muted" style={{marginTop:6}}>{task.timing==='flexible'?'No rush':task.dueAt?`${formatAU(task.dueAt)}${task.dueTime?' · '+task.dueTime:''}${/^(today|tomorrow|yesterday|[A-Z])/.test(relativeDay(task.dueAt,today))?' · '+relativeDay(task.dueAt,today):''}`:'No date'}</p>
     {task.forPerson&&<span className="pill" style={{marginTop:10,marginRight:6}}>For {task.forPerson}</span>}{task.location&&<span className="pill" style={{marginTop:10}}>{task.location}</span>}
     {task.notes&&<p className="small muted" style={{marginTop:12}}>{task.notes}</p>}

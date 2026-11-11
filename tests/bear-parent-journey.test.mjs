@@ -82,3 +82,9 @@ test('reading the same bill again and again gives the same answer (a shared patt
  for(let i=0;i<8;i++){const s=await fresh();const {extraction}=await createCapture(s,null,{method:'text',text,referenceYear:2026});seen.add(`${extraction.fields.amountDueCents.value}|${extraction.fields.dueDate.value}|${extraction.fields.biller.value}`);}
  assert.deepEqual([...seen],['18460|2026-11-20|AGL']);
 });
+
+test('the home greeting never says "all calm" while something is waiting on the parent',async()=>{
+ const {pickGreeting}=await import('../lib/bear/domain/greetings.ts');
+ for(const hour of [9,14,19])for(let i=0;i<60;i++){const g=pickGreeting({hour,mode:null,needsYou:true,random:()=>i/60});assert.ok(!/calm|one less/i.test(g.line),`"${g.line}" shown with something waiting`);}
+ const seen=new Set();for(let i=0;i<60;i++)seen.add(pickGreeting({hour:19,mode:null,random:()=>i/60}).id);assert.ok(seen.has('calm'),'still used when nothing is waiting');
+});

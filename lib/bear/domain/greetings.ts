@@ -21,13 +21,15 @@ export const greetingPool:Greeting[]=[
  {id:'wiped',art:'capacity-rest',focus:'22% 40%',zoom:1.1,line:'Go gently today. Bear has the rest.',modes:['wiped']},
  {id:'chaos',art:'capacity-rest',focus:'22% 40%',zoom:1.1,line:'Breathe. Bear has the rest.',modes:['chaos']},
 ];
-export function eligible(part:PartOfDay,mode:DayMode|null){
- const timed=greetingPool.filter(g=>!g.parts||g.parts.includes(part));
+// Lines that say everything is fine: never shown while something is waiting on the person.
+const CALM_IDS=new Set(['calm','one-less']);
+export function eligible(part:PartOfDay,mode:DayMode|null,needsYou=false){
+ const timed=greetingPool.filter(g=>(!g.parts||g.parts.includes(part))&&!(needsYou&&CALM_IDS.has(g.id)));
  const forMode=mode?timed.filter(g=>g.modes?.includes(mode)):[];
  // On a hard day only the gentle lines show; otherwise the general ones.
  return forMode.length&&(mode==='wiped'||mode==='chaos')?forMode:timed.filter(g=>!g.modes||(mode?g.modes.includes(mode):false));
 }
-export function pickGreeting({hour,mode,last,random=Math.random}:{hour:number;mode:DayMode|null;last?:string|null;random?:()=>number}):Greeting{
- const part=partOfDay(hour);const pool=eligible(part,mode);const fresh=pool.filter(g=>g.id!==last);const from=fresh.length?fresh:pool;
+export function pickGreeting({hour,mode,last,needsYou=false,random=Math.random}:{hour:number;mode:DayMode|null;last?:string|null;needsYou?:boolean;random?:()=>number}):Greeting{
+ const part=partOfDay(hour);const pool=eligible(part,mode,needsYou);const fresh=pool.filter(g=>g.id!==last);const from=fresh.length?fresh:pool;
  return from[Math.min(from.length-1,Math.floor(random()*from.length))];
 }
