@@ -61,6 +61,8 @@ export interface BearStore{
  update<K extends TableName>(table:K,id:string,patch:Partial<Tables[K]>):Promise<Tables[K]>;
  remove<K extends TableName>(table:K,id:string):Promise<void>;
  putFile(objectKey:string,bytes:Uint8Array,mime:string):Promise<StoredFile>;
+ // Delete everything this person has in Load Bear: every record and every stored file. Irreversible.
+ eraseAll():Promise<void>;
  getFile(objectKey:string):Promise<{bytes:Uint8Array;mime:string}|null>;
  fileUrl(objectKey:string,expiresSeconds?:number):Promise<string|null>;
 }

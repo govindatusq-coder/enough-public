@@ -46,6 +46,18 @@ export class SupabaseStore implements BearStore{
   const {error}=await this.db.from(tableName(table)).update(this.toRow(table,next)).eq('id',id).eq('user_id',this.userId);this.wrap(error);return next;
  }
  async remove<K extends TableName>(table:K,id:string){const {error}=await this.db.from(tableName(table)).delete().eq('id',id).eq('user_id',this.userId);this.wrap(error);}
+ // Everything this person has: stored files first (so a failure leaves the records and can be retried), then every record in one call.
+ private async removeTree(prefix:string,depth=0):Promise<void>{
+  if(depth>6)return;
+  for(let guard=0;guard<200;guard++){
+   const {data,error}=await this.db.storage.from(BUCKET).list(prefix,{limit:100});this.wrap(error);if(!data?.length)return;
+   const files=data.filter(x=>x.id).map(x=>`${prefix}/${x.name}`);const dirs=data.filter(x=>!x.id).map(x=>`${prefix}/${x.name}`);
+   if(files.length){const r=await this.db.storage.from(BUCKET).remove(files);this.wrap(r.error);}
+   for(const d of dirs)await this.removeTree(d,depth+1);
+   if(!files.length)return;
+  }
+ }
+ async eraseAll(){await this.removeTree(this.userId);const {error}=await this.db.rpc('bear_delete_my_data');this.wrap(error);}
  async putFile(objectKey:string,bytes:Uint8Array,mime:string):Promise<StoredFile>{
   if(!objectKey.startsWith(this.userId+'/'))throw new StoreError('File path must be owned','invalid');
   const {error}=await this.db.storage.from(BUCKET).upload(objectKey,bytes,{contentType:mime,upsert:false});

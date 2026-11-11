@@ -152,7 +152,7 @@ export interface GeneralFields{kind:CaptureKind;summary:string;title:Traced<stri
 export interface ExtractedEntity extends Owned{captureId:Id;kind:'bill'|'task';status:'draft'|'verified'|'rejected';fields:BillFields;general:GeneralFields;questions:VerificationQuestion[];sourceText:string|null;inferenceId:Id|null;duplicateOfBillId:Id|null;
  // School Admin pack reading (when the capture is a school notice).
  school?:import('../coverage/packs/school.ts').SchoolReading|null}
-export interface AIInference extends Owned{captureId:Id|null;service:string;provider:string;model:string;promptHash:string;rawOutput:unknown;latencyMs:number;ok:boolean;error:string|null}
+export interface AIInference extends Owned{captureId:Id|null;service:string;provider:string;model:string;promptHash:string;rawOutput:unknown;latencyMs:number;ok:boolean;error:string|null;usage?:{inputTokens:number;outputTokens:number}|null}
 export interface UserCorrection extends Owned{extractionId:Id;field:string;from:unknown;to:unknown}
 
 // ---------- PARA ----------

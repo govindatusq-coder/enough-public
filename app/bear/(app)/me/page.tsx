@@ -1,6 +1,7 @@
 'use client';
 import {ForwardToBear} from '@/components/bear/forward-to-bear';
 import {CalendarConnect} from '@/components/bear/calendar-connect';
+import {DeleteMyData} from '@/components/bear/delete-my-data';
 import {CoverageSettings} from '@/components/bear/coverage-settings';
 import {StudySettings} from '@/components/bear/study-settings';
 import {useCallback,useEffect,useState,useSyncExternalStore} from 'react';
@@ -90,6 +91,7 @@ export default function Me(){
     {data.emailConfirmed===false&&data.user.email&&<div className="note" role="status" style={{marginTop:12,background:'var(--mustard-tint)'}}><div><p className="small"><strong>Confirm your email when you get a chance.</strong> No rush, Bear works either way. It just means you can always get back in if you forget your password.</p>{confirmSent==='sent'?<p className="small" style={{marginTop:6}}>Sent to {data.user.email}. Open the email on any device and tap the link.</p>:<div className="btn-row" style={{marginTop:8}}><Button className="sm" variant="ghost" disabled={confirmSent==='sending'} onClick={()=>sendConfirm(data.user.email!)}>{confirmSent==='sending'?'Sending…':'Send me the link'}</Button></div>}</div></div>}
     <div className="btn-row">{loggingOut==='idle'?<Button className="sm" variant="ghost" onClick={()=>setLoggingOut('confirm')}>Log out</Button>:<><Button className="sm" variant="coral" disabled={loggingOut==='busy'} onClick={logOut}>{loggingOut==='busy'?'Logging out…':'Yes, log out'}</Button><Button className="sm" variant="quiet" disabled={loggingOut==='busy'} onClick={()=>setLoggingOut('idle')}>Stay logged in</Button></>}</div>
    </div></section>
+   <DeleteMyData/>
    <div style={{marginTop:32,textAlign:'center'}}><Art file="wordmark" className="wordmark-img" alt="Load Bear"/><Tagline size={20}/></div>
    <Toast message={toast} onDone={()=>setToast(null)}/>
    <span className="sr-only" data-tick={permTick}/>

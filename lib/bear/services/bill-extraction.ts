@@ -28,6 +28,11 @@ function pick<T>(model:{value:T|null;confidence:number}|null,rules:{value:T|null
  if(crossCheck==='exact'&&rules.value!==null&&rules.confidence>=0.6&&JSON.stringify(rules.value)!==JSON.stringify(model.value))return traced(model.value,'model',Math.min(model.confidence,0.6),false,at);
  return toTraced(model,'model',at);
 }
+// Measured token use, when the provider reports it (Anthropic: input_tokens / output_tokens). Never estimated.
+export function usageOf(raw:unknown):{inputTokens:number;outputTokens:number}|null{
+ const u=(raw&&typeof raw==='object'?(raw as {usage?:{input_tokens?:unknown;output_tokens?:unknown}}).usage:null);
+ return u&&Number.isFinite(u.input_tokens)&&Number.isFinite(u.output_tokens)?{inputTokens:Number(u.input_tokens),outputTokens:Number(u.output_tokens)}:null;
+}
 export function reconcile(model:BillOutput|null,rules:BillOutput,at:string):BillFields{
  const m=model;const r=rules;
  const amount=pick(m?.amountDueCents??null,r.amountDueCents,at,'exact');
@@ -108,7 +113,7 @@ export async function extractCapture(store:BearStore,provider:StructuredModelPro
   try{
    const result=await provider.extract({schema:generalOutputJsonSchema as unknown as Record<string,unknown>,system:generalSystemPrompt,text:input.text,images:input.images,documents:input.documents});
    const parsed=generalOutputSchema.safeParse(result.output);
-   const inference=await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:input.captureId,service:'CaptureUnderstandingService',provider:result.provider,model:result.model,promptHash:hash(generalSystemPrompt),rawOutput:result.output,latencyMs:result.latencyMs,ok:parsed.success,error:parsed.success?null:'schema_invalid'}));
+   const inference=await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:input.captureId,service:'CaptureUnderstandingService',provider:result.provider,model:result.model,promptHash:hash(generalSystemPrompt),rawOutput:result.output,latencyMs:result.latencyMs,ok:parsed.success,error:parsed.success?null:'schema_invalid',usage:usageOf(result.raw)}));
    inferenceId=inference.id;
    if(!parsed.success){if(needsVision)throw new ExtractionError('Bear read it but the result did not make sense. Try a clearer picture or paste the text.','ai_failed');}
    else model=parsed.data;

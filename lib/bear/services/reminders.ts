@@ -20,7 +20,9 @@ export async function dueReminders(store:BearStore,now=new Date()):Promise<DueRe
  const out:DueReminder[]=[];const seenTasks=new Set<string>();
  for(const reminder of reminders){
   if(seenTasks.has(reminder.taskId))continue;
-  const task=await store.get('tasks',reminder.taskId);if(!task)continue;
+  const task=await store.get('tasks',reminder.taskId);
+  // A finished, dropped or archived task never produces a reminder, even if its reminder row was left behind.
+  if(!task||task.status!=='open')continue;
   const bill=reminder.billId?await store.get('bills',reminder.billId):null;
   const decision=decide({reminder,task,bill,profile,dayMode,signals,now});
   if(decision.deliver){seenTasks.add(reminder.taskId);out.push({reminder,decision,taskTitle:task.title,billId:bill?.id||null});}
