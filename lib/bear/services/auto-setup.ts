@@ -6,7 +6,9 @@ import {confirmTask} from './task-inference.ts';
 import {breakDownTask,estimateTaskCost} from './task-edit.ts';
 import type {StructuredModelProvider} from '../ai/provider.ts';
 import {flags} from '../flags.ts';
-import {findSchoolMatch,mergeDetails} from '../coverage/matching.ts';
+import {findSchoolMatch,mergeDetails,scheduleChanges} from '../coverage/matching.ts';
+import {formatAU} from '../domain/dates.ts';
+import {applyScheduleChanges} from './load.ts';
 import {splitByEvent} from '../coverage/packs/school.ts';
 import {extractResponsibilities} from '../engine/extract.ts';
 import {findDuplicate} from '../engine/duplicates.ts';
@@ -34,11 +36,12 @@ export async function maybeAutoSetup(store:BearStore,extraction:ExtractedEntity,
  // A newsletter with several events: one item per event, each with only its own obligations.
  if(flags.coveragePacks()&&extraction.school?.isSchool&&extraction.school.events.length>1){
   const [first,...rest]=splitByEvent(extraction.school);const at=now.toISOString();
-  const general={...extraction.general,title:traced(first.events[0].title,'rules',0.85,false,at),when:traced(first.events[0].date,'rules',first.events[0].date?0.85:0,false,at)};
+  const forChild=(r:typeof first)=>r.child&&r.child.confidence>=0.6?traced(r.child.name,'rules',r.child.confidence,false,at):extraction.general.person;
+  const general={...extraction.general,title:traced(first.events[0].title,'rules',0.85,false,at),when:traced(first.events[0].date,'rules',first.events[0].date?0.85:0,false,at),person:forChild(first)};
   const firstX=await store.update('extractions',extraction.id,{school:first,general});
   const main=await maybeAutoSetup(store,firstX,now,provider).catch(()=>null);
   for(const part of rest){const ev=part.events[0];
-   const copy=await store.insert('extractions',stamp<Extraction>(store.userId,{captureId:extraction.captureId,kind:'task',status:'draft',fields:extraction.fields,general:{...extraction.general,title:traced(ev.title,'rules',0.85,false,at),when:traced(ev.date,'rules',ev.date?0.85:0,false,at)},questions:[],sourceText:extraction.sourceText,inferenceId:extraction.inferenceId,duplicateOfBillId:null,school:part}));
+   const copy=await store.insert('extractions',stamp<Extraction>(store.userId,{captureId:extraction.captureId,kind:'task',status:'draft',fields:extraction.fields,general:{...extraction.general,title:traced(ev.title,'rules',0.85,false,at),when:traced(ev.date,'rules',ev.date?0.85:0,false,at),person:forChild(part)},questions:[],sourceText:extraction.sourceText,inferenceId:extraction.inferenceId,duplicateOfBillId:null,school:part}));
    await maybeAutoSetup(store,copy,now,provider).catch(()=>null);}
   return main;
  }
@@ -76,11 +79,28 @@ export async function maybeAutoSetup(store:BearStore,extraction:ExtractedEntity,
  let joinProject:string|null=null;
  if(flags.coveragePacks()&&extraction.school?.isSchool){
   const m=await findSchoolMatch(store,extraction.school);
-  if(m){const {details,added,conflicts}=mergeDetails(m.details,extraction.school.obligations);
+  if(m){const sch=extraction.school;const changes=scheduleChanges(m.details,sch);const newEv=sch.events.find(e=>e.date)||null;
+   const {details,added,conflicts}=mergeDetails(m.details,sch.obligations,!!sch.update,newEv?.date||null,newEv?.endDate||null);
    const graph=structuredClone(m.task.load!);const primary=graph.nodes.find(n=>n.id===graph.primaryId)!;primary.entities={...primary.entities,school:details};
    // Fill a missing payment reference on the payment itself, too.
    const pay=details.obligations.find(o=>o.type==='payment');for(const n of graph.nodes)if(n.pattern==='BILL_PAYMENT'&&n.parentId===primary.id&&pay){n.entities={...n.entities,reference:n.entities.reference||pay.reference,amountCents:n.entities.amountCents??pay.amountCents};}
-   const updated=await store.update('tasks',m.task.id,{load:graph});
+   let updated=await store.update('tasks',m.task.id,{load:graph});
+   // A newer notice with a different date: either the school CHANGED it (apply it and say so) or the two notices DISAGREE (keep the earlier,
+   // safer date and say so). Never silent either way.
+   if(changes.length){
+    const noun:Record<string,string>={event:'event date',consent:'permission form deadline',payment:'payment deadline',booking:'booking deadline',order:'order deadline',reply:'reply deadline',medical:'medical form deadline',homework:'homework deadline'};
+    const when=(d:string)=>formatAU(d,'short');const notes=[...(updated.changeNotes||[])];const at=now.toISOString();
+    if(sch.update){
+     const g2=await applyScheduleChanges(store,updated,changes,now);const ev=changes.find(c=>c.what==='event');
+     updated=await store.update('tasks',updated.id,{load:g2,...(ev&&!updated.confirmedFields?.includes('dueAt')?{dueAt:ev.to}:{})});
+     for(const c of changes)notes.unshift({at,text:`The ${noun[c.what]||'date'} changed from ${when(c.from)} to ${when(c.to)} (a newer notice).`});
+     for(const c of changes)await appendEvent(store,{responsibilityId:updated.id,eventType:'update_applied',actor:'system',at,metadata:{field:c.what,from:c.from,to:c.to}});
+    }else{
+     for(const c of changes){const keep=c.to<c.from?c.to:c.from;notes.unshift({at,text:`A newer notice gives a different ${noun[c.what]||'date'}: ${when(c.to)} instead of ${when(c.from)}. Bear is keeping ${when(keep)}. Check which is right.`});}
+     for(const c of changes)await appendEvent(store,{responsibilityId:updated.id,eventType:'update_proposed',actor:'system',at,metadata:{field:c.what,from:c.from,to:c.to}});
+    }
+    updated=await store.update('tasks',updated.id,{changeNotes:notes.slice(0,5)});
+   }
    const capture=await store.get('captures',extraction.captureId);const project=await store.get('projects',m.task.projectId);
    if(project&&capture?.documentId&&!project.resourceDocumentIds.includes(capture.documentId))await store.update('projects',project.id,{resourceDocumentIds:[...project.resourceDocumentIds,capture.documentId]});
    await recordBehaviour(store,'coverage_merged',{pack:'school',added:added.map(a=>a.type),conflicts},now);

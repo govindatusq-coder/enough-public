@@ -79,12 +79,13 @@ export async function processInbound(rawBody:string,headers:Headers|Record<strin
 
 // A forwarded confirmation ("Payment received", "Consent submitted", "Booking confirmed") about an event
 // Bear holds marks that step done with email evidence, the strongest evidence Bear can have today.
-export async function applyConfirmation(store:BearStore,text:string,now:Date):Promise<string|null>{
+export async function applyConfirmationDetailed(store:BearStore,text:string,now:Date,source:'email'|'receipt'='email'):Promise<{evidence:string;taskId:string;title:string}|null>{
  const hit=CONFIRMS.find(c=>c.re.test(text));if(!hit)return null;
  const profile=(await store.list('profiles',{limit:1}))[0];
  const reading=readSchoolNotice(text,todayISO(profile?.lifeRhythm?.timezone||'Australia/Sydney',now));
  if(!reading.isSchool)return null;
  const match=await findSchoolMatch(store,reading);if(!match)return null;
- for(const n of match.task.load!.nodes)for(const st of n.steps)if(st.evidence===hit.evidence&&st.status==='pending'){await actOnLoad(store,match.task.id,{stepId:st.id,source:'email'},now);return hit.evidence;}
+ for(const n of match.task.load!.nodes)for(const st of n.steps)if(st.evidence===hit.evidence&&st.status==='pending'){await actOnLoad(store,match.task.id,{stepId:st.id,source},now);return {evidence:hit.evidence,taskId:match.task.id,title:match.task.title};}
  return null;
 }
+export async function applyConfirmation(store:BearStore,text:string,now:Date):Promise<string|null>{return (await applyConfirmationDetailed(store,text,now,'email'))?.evidence||null;}

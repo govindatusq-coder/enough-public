@@ -179,6 +179,8 @@ export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;stat
  bearSupport?:'more'|null;
  // A school form the person gave Bear for this responsibility: where the original and the prepared copy are kept, and what Bear did
  // (field names and what each was for; never the values typed into the form).
+ // Plain-language notes about what a newer notice changed (or disagreed about), shown on the task until the person says OK.
+ changeNotes?:{at:string;text:string}[];
  preparedForm?:{originalKey:string;pdfKey:string;preparedAt:string;total:number;filled:string[];needsDecision:string[];needsDetail:{field:string;role:string}[];left:string[]};
  // The person's answer to "Is someone relying on you for this?" (null = Bear decide).
  reliance?:'yes'|'little'|'no'|null;

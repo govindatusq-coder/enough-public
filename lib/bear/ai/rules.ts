@@ -2,6 +2,9 @@
 // extractor when no model key is configured and a cross-check when one is.
 import {DATE_SPAN,parseAUDate} from '../domain/dates.ts';
 import {MONEY_SPAN,parseAUD} from '../domain/money.ts';
+// MONEY_SPAN is global (for matchAll). Calling .test() on a global pattern leaves it pointing past the start, so the NEXT scan
+// silently skipped earlier amounts. Use this non-global copy for .test().
+const MONEY_ONE=new RegExp(MONEY_SPAN.source);
 import type {BillCategory,PaymentMethod,Recurrence} from '../domain/types.ts';
 import type {BillOutput} from './bill-schema.ts';
 
@@ -64,7 +67,7 @@ export function extractBillWithRules(text:string,referenceYear=new Date().getFul
  const earlyDiscountCents:F<number>=discCand?got(discCand.cents,0.8,discCand.evidence):none();
 
  const biller=knownBillers.find(b=>b.match.test(clean));
- const firstLine=clean.split('\n').map(l=>l.trim()).find(l=>l&&!/^example bill/i.test(l)&&!MONEY_SPAN.test(l)&&!/\d{2}\/\d{2}/.test(l)&&l.length<=60)||null;
+ const firstLine=clean.split('\n').map(l=>l.trim()).find(l=>l&&!/^example bill/i.test(l)&&!MONEY_ONE.test(l)&&!/\d{2}\/\d{2}/.test(l)&&l.length<=60)||null;
  // Generic matches ("electricity", "swimming") give the category; the biller's name is more likely the first line.
  const generic=!!biller&&['electricity','gas','water','internet','mobile','insurance','subscription','childcare','school-fees','sports-fees','council-rates','strata','vehicle-registration'].includes(biller.key);
  const billerField:F<string>=biller&&!generic?got(biller.name,0.9,(clean.match(biller.match)||[''])[0]):firstLine?got(firstLine.replace(/\s+(pty|ltd|limited)\b.*$/i,''),0.5,firstLine):biller?got(biller.name,0.4,biller.name):none();

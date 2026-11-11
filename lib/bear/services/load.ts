@@ -119,6 +119,19 @@ export async function relayLoadDate(store:BearStore,task:Task,date:string|null,n
  return graph;
 }
 
+// A newer notice moved the event or changed an obligation's deadline: apply it to the plan (the step dates and the reminder follow).
+export async function applyScheduleChanges(store:BearStore,task:Task,changes:{what:string;to:string}[],now=new Date()){
+ const profile=await ensureProfile(store);const today=todayISO(tzOf(profile),now);let g=structuredClone(task.load!);
+ const primary=g.nodes.find(n=>n.id===g.primaryId)!;
+ for(const c of changes){
+  if(c.what==='event'){g=withEntities(g,primary.id,{[dateEntityFor(primary)]:c.to},today,caps(),profile.loadMap);continue;}
+  const pattern=c.what==='consent'?'FORM_APPLICATION':c.what==='payment'?'BILL_PAYMENT':null;if(!pattern)continue;
+  const node=g.nodes.find(n=>n.pattern===pattern&&n.parentId===primary.id);if(node)g=withEntities(g,node.id,{[dateEntityFor(node)]:c.to},today,caps(),profile.loadMap);
+ }
+ await syncLoadReminder(store,{...task,load:g},g,profile,now);
+ return g;
+}
+
 // When a to-do in a brain-dump project is done, the next one takes its place.
 export async function syncNextInProject(store:BearStore,projectId:string,now=new Date()){
  const project=await store.get('projects',projectId);if(!project?.captureId)return;

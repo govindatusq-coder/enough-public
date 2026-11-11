@@ -30,8 +30,14 @@ export interface SchoolEvent{kind:SchoolEventKind;title:string;date:string|null;
 export interface SchoolReading{
  isSchool:boolean;confidence:number;events:SchoolEvent[];obligations:SchoolObligationDetail[];
  child:{name:string;confidence:number}|null;ambiguities:string[];untrustedInstructions:boolean;
+ // A notice written for several children: one complete reading per child (each with its own child, events and obligations).
+ parts?:SchoolReading[];
+ // The notice says something CHANGED ("now due", "has moved", "updated"): a different date is then a correction, not a conflict.
+ update?:boolean;
 }
 
+// Wording that says an earlier date has changed.
+export const UPDATE_WORDS=/\b(update[d]?|change of (?:date|time)|now due|is now|are now|has (?:now )?(?:moved|changed|been (?:moved|changed|rescheduled|postponed|extended|brought forward))|have (?:now )?(?:moved|changed)|moved to|rescheduled|postponed|extended|new (?:date|deadline)|brought forward|instead of)\b/i;
 const SCHOOL_SIGNALS=/\b(school|students?|year \d{1,2}|kindy|kindergarten|prep|foundation|parents and carers|dear (?:parents|families|carers)|teachers?|principal|classroom|our class|p&c|p&f|term \d|uniform|excursion|incursion|school camp|carnival|book week|parent[- ]teacher|permission (?:note|slip|form)|canteen|assembly|homework|school photos?)\b/gi;
 const EVENTS:{kind:SchoolEventKind;re:RegExp;title:(m:RegExpExecArray,text:string)=>string}[]=[
  {kind:'camp',re:/\b(?:(year \d{1,2}|kindy|prep)\s+)?(?:school\s+)?camp\b/i,title:m=>`${yearOf(m[1])}camp`},
@@ -67,13 +73,33 @@ function dateIn(s:string,today:string,prefer:'due'|'event'|'any'='any'){
  const pick=prefer==='any'?d[0]:d.find(x=>x.role===prefer)||d[0];return {iso:pick.iso,end:pick.end,role:pick.role};
 }
 
+// A notice written for several children ("Mia (Year 3): … Leo (Year 6): …") is read once per child, so each child's events and
+// obligations stay with that child. Text before the first name ("Dear families") is shared by all.
+function segmentByChild(text:string,names:string[]):{name:string;text:string}[]{
+ const marks=names.map(n=>{const clean=n.replace(/[^A-Za-z'-]/g,'');const m=new RegExp(`(?:^|\\n|[.!?]\\s+)\\s*(${clean})\\b\\s*(?:\\([^)]*\\))?\\s*[:\\-–—]`,'i').exec(text);return m?{name:n,at:m.index+m[0].toLowerCase().indexOf(m[1].toLowerCase())}:null;}).filter((x):x is {name:string;at:number}=>!!x).sort((a,b)=>a.at-b.at);
+ if(marks.length<2)return [];
+ const head=text.slice(0,marks[0].at);
+ return marks.map((m,i)=>({name:m.name,text:head+text.slice(m.at,i+1<marks.length?marks[i+1].at:undefined)}));
+}
+// "permission due 18 November and $180 due 20 November": each obligation takes the date from its own clause; a date that only
+// appears once in the sentence ("permission and $25 due 13 November") applies to all of it.
+function clauseDate(s:string,today:string,about:RegExp,fallback:string|null):string|null{
+ for(const c of s.split(/\s*(?:,|;|\band\b)\s*/i)){if(about.test(c)){const d=dateIn(c,today,'due');if(d)return d.iso;}}
+ return fallback;
+}
 export function readSchoolNotice(raw:string,today:string,children:string[]=[]):SchoolReading{
  const text=normaliseText(raw||'');
  const signals=new Set((text.match(SCHOOL_SIGNALS)||[]).map(s=>s.toLowerCase()));
  const strong=/\b(excursion|incursion|school camp|year \d{1,2} camp|carnival|book week|parent[- ]teacher|permission (?:note|slip|form)|school photos?|dear (?:parents|families|carers)|parents and carers)\b/i.test(text);
  const confidence=Math.min(1,signals.size*0.25+(strong?0.35:0));
- const empty:SchoolReading={isSchool:false,confidence,events:[],obligations:[],child:null,ambiguities:[],untrustedInstructions:INJECTION.test(text)};
+ const empty:SchoolReading={isSchool:false,confidence,events:[],obligations:[],child:null,ambiguities:[],untrustedInstructions:INJECTION.test(text),update:false};
  if(confidence<0.6)return empty;
+ // Several children named: one reading each, so nothing is attached to the wrong child or lost.
+ const namedAll=children.filter(n=>new RegExp(`\\b${n.replace(/[^A-Za-z'-]/g,'')}\\b`,'i').test(text));
+ if(namedAll.length>1){
+  const parts=segmentByChild(text,namedAll).map(p=>readSchoolNotice(p.text,today,[p.name])).filter(r=>r.isSchool&&(r.events.length>0||r.obligations.length>0));
+  if(parts.length>=2)return {isSchool:true,confidence,events:parts.flatMap(r=>r.events),obligations:parts.flatMap(r=>r.obligations),child:null,ambiguities:[...new Set(parts.flatMap(r=>r.ambiguities))],untrustedInstructions:parts.some(r=>r.untrustedInstructions),parts,update:parts.some(r=>r.update)};
+ }
  const ss=sentences(text);const untrusted=ss.filter(s=>INJECTION.test(s));const clean=ss.filter(s=>!INJECTION.test(s));
  // ---- events ----
  const events:SchoolEvent[]=[];const eventAt:(SchoolEventKind|null)[]=[];
@@ -111,12 +137,12 @@ export function readSchoolNotice(raw:string,today:string,children:string[]=[]):S
   // Every way the notice says it can be done ("the school office or Compass").
   const methods=[...new Set([...s.matchAll(new RegExp(METHOD.source,'gi'))].map(m=>m[1]))];const method=methods.length?methods.join(' or '):null;
   if(/\b(permission|consent|sign(?:ed)?(?: and return)? (?:the )?(?:form|note|slip)|return the (?:signed )?(?:form|note|slip)|permission (?:note|slip|form))\b/i.test(s)&&!/\bmedical\b/i.test(s))
-   add({type:'consent',dueDate,confidence:dueDate?0.9:0.7,link:/operoo|caremonkey|compass|sentral|portal/i.test(s)?link:null,method});
+   add({type:'consent',dueDate:clauseDate(s,today,/\b(permission|consent|sign|return|form|note|slip)\b/i,dueDate),confidence:dueDate?0.9:0.7,link:/operoo|caremonkey|compass|sentral|portal/i.test(s)?link:null,method});
   const amounts=findAmounts(s);
   // A cost mentioned about the past ("last year it cost $30") is history, not something to pay.
-  if(amounts.length&&/\b(pay|payment|fee|cost|costs|\$\d|contribution|levy)\b/i.test(s)&&!/\b(last year|previously|in the past|was \$|were \$|cost \$\d+(?:\.\d+)? last)\b/i.test(s)){
+  if(amounts.length&&(/\b(pay|payment|fee|cost|costs|contribution|levy)\b/i.test(s)||/\$\s?\d/.test(s))&&!/\b(last year|previously|in the past|was \$|were \$|cost \$\d+(?:\.\d+)? last)\b/i.test(s)){
    const best=[...amounts].sort((a,b)=>b.weight-a.weight)[0];
-   add({type:'payment',dueDate,amountCents:best.cents,confidence:dueDate?0.9:0.7,reference:REFERENCE.exec(s)?.[1]||null,link,method});}
+   add({type:'payment',dueDate:clauseDate(s,today,/\$\s?\d|\b(pay|payment|fee|cost|contribution|levy)\b/i,dueDate),amountCents:best.cents,confidence:dueDate?0.9:0.7,reference:REFERENCE.exec(s)?.[1]||null,link,method});}
   else if(/\b(?:pay|payment)\b/i.test(s)&&(REFERENCE.test(s)||link||method)&&obligations.some(o=>o.type==='payment'))
    add({type:'payment',dueDate,confidence:0.8,reference:REFERENCE.exec(s)?.[1]||null,link,method});
   if(/\b(students?|children|kids|they|your child)\b[^.]{0,20}\b(will )?(need|should bring|must bring|are to bring)\b|\b(please )?(bring|pack)\b[^.]*\b(water bottle|hat|lunch|sleeping bag|shoes|bag|towel|swimmers|jacket|sunscreen|torch|pillow)\b|\bequipment list\b|\bwhat to bring\b/i.test(s)){
@@ -142,7 +168,7 @@ export function readSchoolNotice(raw:string,today:string,children:string[]=[]):S
  else if(named.length>1)ambiguities.push('several_children');
  else if(children.length===1)child={name:children[0],confidence:0.6};
  else if(children.length>1)ambiguities.push('which_child');
- return {isSchool:true,confidence,events,obligations,child,ambiguities:[...new Set(ambiguities)],untrustedInstructions:untrusted.length>0};
+ return {isSchool:true,confidence,events,obligations,child,ambiguities:[...new Set(ambiguities)],untrustedInstructions:untrusted.length>0,update:UPDATE_WORDS.test(clean.join(' '))};
 }
 
 // What the Load Pattern Engine stores on the load.
@@ -166,6 +192,7 @@ export function preparationList(d:SchoolDetails):string[]{
 // A newsletter with several events becomes one reading per event, each with only its own obligations.
 // Obligations that don't name an event go with the first one.
 export function splitByEvent(r:SchoolReading):SchoolReading[]{
+ if(r.parts&&r.parts.length)return r.parts.flatMap(splitByEvent);
  if(r.events.length<=1)return [r];
  const first=r.events[0].kind;
  return r.events.map(e=>({...r,events:[e],obligations:r.obligations.filter(o=>(o.eventKind||first)===e.kind)}));

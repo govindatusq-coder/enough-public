@@ -21,6 +21,9 @@ const options=[
  {key:'voice',label:'Say it',sub:'Bear listens, then shows you the words',icon:'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3',file:false},
 ] as const;
 
+type CaptureResult={capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string};dump?:{captureId:string;projects:{title:string;count:number}[]};
+ confirmed?:{taskId:string;title:string;evidence:string};info?:{captureId:string;receipt:boolean};unclear?:boolean};
+type Outcome={kind:'confirmed';taskId:string;title:string}|{kind:'info';captureId:string;receipt:boolean}|{kind:'unclear'};
 export function CaptureSheet(){
  const router=useRouter();const params=useSearchParams();const online=useOnline();
  const [mode,setMode]=useState<Mode>('menu');const [text,setText]=useState(params.get('text')||'');const [error,setError]=useState<string|null>(null);const [aiAvailable,setAiAvailable]=useState<boolean|null>(null);
@@ -28,10 +31,14 @@ export function CaptureSheet(){
  const [manual,setManual]=useState({what:'',when:'',who:'',amount:''});
  const [listening,setListening]=useState(false);const [transcript,setTranscript]=useState('');const [interim,setInterim]=useState('');const recRef=useRef<Recognition|null>(null);const voiceSupported=recognitionCtor()!==null;
  const fileRef=useRef<HTMLInputElement>(null);const [pending,setPending]=useState<{method:string;accept:string;capture?:string}|null>(null);
- const first=params.get('first')==='1';
+ const first=params.get('first')==='1';const [outcome,setOutcome]=useState<Outcome|null>(null);
  useEffect(()=>{apiGet<{aiAvailable:boolean}>('/api/bear/profile').then(p=>setAiAvailable(p.aiAvailable)).catch(e=>{if(e.status===401)router.replace('/bear/signin');else setAiAvailable(false);});},[router]);
  const close=useCallback(()=>router.push(first?'/bear/home':'/bear/home'),[router,first]);
-const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string};dump?:{captureId:string;projects:{title:string;count:number}[]}})=>{
+const finish=useCallback((result:CaptureResult)=>{
+  // Not a new to-do: a receipt that settled something, a message that asks nothing, or something too thin to act on. Said plainly.
+  if(result.confirmed){setOutcome({kind:'confirmed',taskId:result.confirmed.taskId,title:result.confirmed.title});setMode('menu');return;}
+  if(result.info){setOutcome({kind:'info',captureId:result.info.captureId,receipt:result.info.receipt});setMode('menu');return;}
+  if(result.unclear){setOutcome({kind:'unclear'});setMode('menu');return;}
   if(result.dump){const d=result.dump;setFields([{label:'Projects',value:String(d.projects.length)},{label:'Things to do',value:String(d.projects.reduce((n,p)=>n+p.count,0))},...d.projects.slice(0,3).map(p=>({label:'Project',value:p.title.toUpperCase()}))]);setTimeout(()=>router.replace(`/bear/sort/${d.captureId}`),1800);return;}
   const f=result.extraction.fields;const g=result.extraction.general;const out:{label:string;value:string}[]=[];
   if(result.extraction.kind!=='bill'){if(g.title.value)out.push({label:'Task',value:g.title.value.toUpperCase()});if(g.when.value)out.push({label:'When',value:formatAU(g.when.value,'long').toUpperCase()});if(g.area.value)out.push({label:'Area',value:g.area.value.toUpperCase()});if(g.person.value)out.push({label:'For',value:g.person.value.toUpperCase()});}
@@ -40,12 +47,12 @@ const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;aut
   setTimeout(()=>router.replace(result.auto?`/bear/tasks/${result.auto.taskId}?auto=1`:`/bear/verify/${result.capture.id}`),Math.min(2600,700+out.length*400));
  },[router]);
  async function submitText(method:'text'|'manual'|'voice',body:string){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);setPreview({kind:'text',text:body});
-  try{finish(await apiSend<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string};dump?:{captureId:string;projects:{title:string;count:number}[]}}>('/api/bear/captures',{method,text:body}));}catch(e){setMode(method);setError((e as ApiError).message);setPreview(null);}}
+  try{finish(await apiSend<CaptureResult>('/api/bear/captures',{method,text:body}));}catch(e){setMode(method);setError((e as ApiError).message);setPreview(null);}}
  async function submitFile(file:File,method:string,extraText?:string|null){if(!online){setError("You're offline. Bear will be here when you're back.");return;}setMode('thinking');setError(null);
   const url=file.type.startsWith('image/')?URL.createObjectURL(file):null;setPreview(url?{kind:'image',url}:null);
   const upload=await shrinkImage(file);
   const form=new FormData();form.append('file',upload);form.append('method',method);if(extraText)form.append('text',extraText);
-  try{finish(await apiForm<{capture:Capture;extraction:ExtractedEntity;auto?:{taskId:string};dump?:{captureId:string;projects:{title:string;count:number}[]}}>('/api/bear/captures',form));}catch(e){setMode('menu');setError((e as ApiError).message);setPreview(null);}}
+  try{finish(await apiForm<CaptureResult>('/api/bear/captures',form));}catch(e){setMode('menu');setError((e as ApiError).message);setPreview(null);}}
  // Something was shared to Load Bear from another app on the iPhone: give it straight to Bear, no extra tap.
  useEffect(()=>{
   const take=()=>{const inbox=window.__bearInbox;if(!inbox)return;window.__bearInbox=undefined;setTimeout(()=>{if(inbox.files[0])void submitFile(inbox.files[0],'upload',inbox.text);else if(inbox.text)void submitText('text',inbox.text);},0);};
@@ -64,6 +71,14 @@ const finish=useCallback((result:{capture:Capture;extraction:ExtractedEntity;aut
    {mode==='thinking'?<BearThinking preview={preview} fields={fields}/>:<>
     <div style={{display:'flex',gap:10,alignItems:'center'}}><CaptureBear width={120}/><div><h1>{brand.captureHeading}</h1><p className="muted" style={{marginTop:6}}>{brand.captureSub}</p></div></div>
     {first&&<p className="note teal" style={{marginTop:14}}>Anything goes: a bill, a school note, an appointment, a message, or just say it.</p>}
+    {outcome&&<section className="card" role="status" style={{marginTop:14}}>
+     {outcome.kind==='confirmed'&&<><p className="eyebrow">Sorted</p><p style={{fontWeight:700,margin:'2px 0 0'}}>That settles part of “{outcome.title}”.</p><p className="small muted" style={{margin:'4px 0 0'}}>Bear matched your receipt to it and kept it as the proof.</p>
+      <div className="btn-row"><Button className="sm" href={`/bear/tasks/${outcome.taskId}`}>Open it</Button><Button className="sm" variant="quiet" onClick={()=>setOutcome(null)}>OK</Button></div></>}
+     {outcome.kind==='info'&&<><p className="eyebrow">Nothing for you to do</p><p style={{fontWeight:700,margin:'2px 0 0'}}>{outcome.receipt?'This looks like a confirmation for something Bear isn’t tracking.':'This looks like information, so Bear didn’t add a to-do.'}</p>
+      <div className="btn-row"><Button className="sm" onClick={async()=>{const id=outcome.captureId;setOutcome(null);try{const r=await apiSend<{auto:{taskId:string}|null}>(`/api/bear/captures/${id}/keep`,{});router.push(r.auto?`/bear/tasks/${r.auto.taskId}`:`/bear/verify/${id}`);}catch(e){setError((e as ApiError).message);}}}>Keep it anyway</Button><Button className="sm" variant="quiet" onClick={()=>setOutcome(null)}>OK</Button></div></>}
+     {outcome.kind==='unclear'&&<><p className="eyebrow">Couldn’t read that</p><p style={{fontWeight:700,margin:'2px 0 0'}}>There isn’t enough here for Bear to act on.</p><p className="small muted" style={{margin:'4px 0 0'}}>Add the attachment or paste the message, or type what you need.</p>
+      <div className="btn-row"><Button className="sm" variant="quiet" onClick={()=>setOutcome(null)}>OK</Button></div></>}
+    </section>}
     {error&&<div style={{marginTop:14}}><ErrorCard message={error}/></div>}
     {!online&&<p className="note" style={{marginTop:14}} role="status">You&rsquo;re offline. Bear will be here when you&rsquo;re back.</p>}
     {mode==='menu'&&<form className="quick-box glass-strong" onSubmit={e=>{e.preventDefault();if(text.trim())submitText('text',text);}}>
