@@ -122,3 +122,16 @@ test('an answer to Bear is never a to-do: "no", "that’s all", "thanks", "yes"'
  for(const t of ['yes','Yep','ok','sure','yes please','hi','test'])assert.equal(replyKind(t),'more',t);
  for(const t of ['no more screen time for the kids after 7','call mum','nothing in the fridge, buy groceries','done with the report, send it to the manager','thank the teacher for the report','yes book the dentist','ok call the plumber','cancel the gym membership','no rush but tidy the shed'])assert.equal(replyKind(t),null,t);
 });
+
+test('something told to Bear in words is never met with "What would make this feel sorted?"',async()=>{
+ const s=await person('75757575-7575-4757-8757-757575757575');
+ const items=await sortAndPlace(s,null,'find out when the next cricket match is on, sort out the thing with the neighbour and call mum','text',NOW);
+ for(const i of items){const t=await s.get('tasks',i.taskId);assert.ok(!(t.load?.nodes||[]).some(n=>n.clarification),t.title);}
+ const home=await homeView(s,NOW);assert.ok(!home.needsYou.some(n=>/feel sorted/i.test(n.message||'')),JSON.stringify(home.needsYou.map(n=>n.message)));
+ // An older task that still carries the question is tidied the first time My Bear is opened.
+ const t=await s.get('tasks',items[0].taskId);const node=t.load.nodes[0];
+ await s.update('tasks',t.id,{load:{...t.load,nodes:[{...node,clarification:{question:'What would make this feel sorted?',choices:['x']},evidence:node.evidence.filter(e=>e.key!=='clarified')},...t.load.nodes.slice(1)]}});
+ const again=await homeView(s,NOW);assert.ok(!again.needsYou.some(n=>/feel sorted/i.test(n.message||'')));assert.ok(!(await s.get('tasks',t.id)).load.nodes.some(n=>n.clarification));
+ // The banner's number always matches what is listed.
+ const listed=again.needsYou.filter(n=>!n.soft).length;assert.ok(Math.max(again.handling.needs,listed)>=listed);
+});

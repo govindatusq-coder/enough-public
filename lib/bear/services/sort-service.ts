@@ -36,6 +36,15 @@ export function itemFor(task:Task,area:AreaKey,today:string,extra:{already?:bool
  const web=!!task.dueAt&&s?.deadlineSource==='web';
  return {taskId:task.id,title:task.title,domain:area,light:l.light,reason:l.reason,deadline:task.dueAt,deadlineSource:task.dueAt?(s?.deadlineSource||'stated'):null,window:base.window,suggestedStart:suggested,when:web?`${formatAU(task.dueAt,'short')} · found online`:whenLine(base,today),nextAction:s?.nextAction||null,already:!!extra.already,check:null,error:null};
 }
+// When the person has told Bear a thing in their own words, Bear does not come back asking "What would make this feel sorted?".
+// That question is for things Bear was handed without a word of explanation; here it would only be one more demand.
+export function withoutClarifying<T extends Pick<Task,'load'>>(task:T):T['load']{
+ const load=task.load;if(!load||!load.nodes.some(n=>n.clarification))return load;
+ return {...load,nodes:load.nodes.map(n=>n.clarification?{...n,clarification:null}:n)};
+}
+async function settle(store:BearStore,task:Task):Promise<Task>{
+ const load=withoutClarifying(task);return load===task.load?task:store.update('tasks',task.id,{load});
+}
 // Anything with a date gets a reminder plan. Most tasks already have one from being set up; this covers the ones that did not.
 async function ensureReminder(store:BearStore,task:Task,now:Date){
  if(!task.dueAt||task.status!=='open')return;
@@ -96,6 +105,7 @@ export async function placeSorted(store:BearStore,s:Sorted,via:'text'|'voice',to
   if(!auto)return {...blank,check:`/bear/verify/${capture.id}`};
   let task=await updateTask(store,auto.task.id,{title:s.title,...(s.deadline?{dueAt:s.deadline}:{})});
   if(auto.area!==s.domain)await setTaskArea(store,task.id,s.domain);
+  task=await settle(store,task);
   task=await store.update('tasks',task.id,{sorted:{originalInput:s.original,via,secondaryDomains:s.secondary,urgency:s.urgency,deadlineSource:s.deadline?'stated':null,window:s.window,windowBy:s.windowBy,suggestedStart:s.suggestedStart,nextAction:s.nextAction,reason:s.reason}});
   await ensureReminder(store,task,now);
   return itemFor(task,s.domain,today);
@@ -115,6 +125,7 @@ export async function adoptSorted(store:BearStore,taskId:string,s:Sorted,via:'te
  let task=await store.get('tasks',taskId);if(!task)throw new Error('not_found');
  if(retitle){task=await updateTask(store,task.id,{title:s.title,...(s.deadline&&!task.dueAt?{dueAt:s.deadline}:{})});if((await areaOf(store,task))!==s.domain)await setTaskArea(store,task.id,s.domain);}
  const stated=!!task.dueAt;
+ task=await settle(store,task);
  task=await store.update('tasks',task.id,{sorted:{originalInput:s.original.slice(0,600),via,secondaryDomains:s.secondary,urgency:s.urgency,deadlineSource:stated?'stated':null,window:stated?null:s.window,windowBy:stated?null:s.windowBy,suggestedStart:suggestStart(task.title,task.dueAt,lightFor({deadline:task.dueAt,windowBy:s.windowBy,urgency:s.urgency,soonByNature:soonByNature(task.title)},today).light,today),nextAction:s.nextAction,reason:s.reason}});
  return itemFor(task,await areaOf(store,task),today);
 }

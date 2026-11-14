@@ -11,6 +11,7 @@ import {refreshSuggestions} from './suggestions.ts';
 import {recompute} from '../load/engine.ts';
 import {describe,type LoadView} from '../load/view.ts';
 import {caps} from './load.ts';
+import {withoutClarifying} from './sort-service.ts';
 import {prioritiseOpen,priorityEnabled} from './priority.ts';
 import {ideasCount} from './ideas.ts';
 import {flags} from '../flags.ts';
@@ -40,6 +41,9 @@ export async function homeView(store:BearStore,now=new Date(),fallbackName=''):P
  const allOpen=await store.list('tasks',{where:[{column:'status',value:'open'}]});
  const stepIds=new Set((await store.list('task_dependencies')).map(d=>d.dependsOnTaskId));
  const wished=allOpen.filter(t=>t.wishlist&&!stepIds.has(t.id));
+ // Things the person told Bear in their own words are never met with "What would make this feel sorted?" (older ones are
+ // tidied here the first time they are seen).
+ for(let i=0;i<allOpen.length;i++){const t=allOpen[i];if(t.sorted){const load=withoutClarifying(t);if(load!==t.load)allOpen[i]=await store.update('tasks',t.id,{load});}}
  const tasks=allOpen.filter(t=>!stepIds.has(t.id)&&!t.wishlist);
  const scheduled=await store.list('reminders',{where:[{column:'status',op:'in',value:['scheduled','snoozed']}]});
  const expectations=await store.list('recurring_expectations',{where:[{column:'status',value:'expecting'}]});
