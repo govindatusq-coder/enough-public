@@ -3,7 +3,9 @@ import {captureTextSchema,createCapture,MAX_FILE_BYTES} from '@/lib/bear/service
 import {maybeAutoSetup} from '@/lib/bear/services/auto-setup';
 import {intake} from '@/lib/bear/services/intake';
 import {replyKind} from '@/lib/bear/services/sorter';
-import {adoptSorted,looksLikeDocument,placeSorted,sortParts,todayFor} from '@/lib/bear/services/sort-service';
+import {adoptSorted,keptNote,looksLikeDocument,lookUp,placeSorted,sortParts,todayFor} from '@/lib/bear/services/sort-service';
+import {asksToFindOut} from '@/lib/bear/services/lookup';
+import {researcherFromEnv} from '@/lib/bear/ai/web-lookup';
 import {isBrainDump,setupBrainDump} from '@/lib/bear/services/dump';
 import type {BearStore} from '@/lib/bear/store/store';
 import type {StructuredModelProvider} from '@/lib/bear/ai/provider';
@@ -46,17 +48,27 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
   // Something said back to Bear ("no", "that's all", "thanks", "yes") is conversation, never a to-do. Nothing is saved.
   const chat=replyKind(body.text);if(chat)return json({chat,unclear:true});
   const {today,children}=await todayFor(store);const parts=await sortParts(body.text,provider,today,children);
+  // "Search for…", "find out when…": Bear looks it up and answers. Nothing is filed for the person unless the lookup comes
+  // back empty, in which case the to-do is kept and Bear says why.
+  const researcher=researcherFromEnv();
   if(parts.length>1){
-   const sorted=[];for(const p of parts)sorted.push(await placeSorted(store,p,body.method,today));
-   return json({sorted},201);
+   const sorted=[];const found=[];
+   for(const p of parts){
+    const look=asksToFindOut(p.original)?await lookUp(store,researcher,p.original,today):null;
+    if(look?.found){found.push(look.found);continue;}
+    const item=await placeSorted(store,p,body.method,today);sorted.push(look?{...item,nextAction:keptNote(look.why)||item.nextAction}:item);
+   }
+   return json({sorted,found},201);
   }
+  const look=asksToFindOut(body.text)?await lookUp(store,researcher,body.text,today):null;
+  if(look?.found)return json({sorted:[],found:[look.found]},201);
   // One thing: the usual path first, so receipts, plain information, bills and school notices are still handled as they were.
   const result=await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text:body.text}),{text:body.text,hasFile:false}) as Record<string,unknown>&{auto?:{taskId:string};extraction:{school?:unknown;kind:string;general:{kind:string;items?:unknown[]}}};
   if(!result.auto)return json(result,201);
   // Lists and school notices were named by the readers built for them: their titles, dates and areas stand.
   const plain=!result.extraction.school&&result.extraction.general.kind!=='shopping'&&!(result.extraction.general.items?.length);
   const item=await adoptSorted(store,result.auto.taskId,parts[0],body.method,today,plain).catch(()=>null);
-  return json(item?{...result,sorted:[item]}:result,201);
+  return json(item?{...result,sorted:[look?{...item,nextAction:keptNote(look.why)||item.nextAction}:item]}:result,201);
  }
  return json(await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text:body.text,isDemo:body.isDemo}),{text:body.text,hasFile:false}),201);
 });

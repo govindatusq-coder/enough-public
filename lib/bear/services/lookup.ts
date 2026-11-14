@@ -1,0 +1,50 @@
+// "Search the internet for when X is on and remind me": the person is asking Bear to find something out, not to file a to-do
+// for them to do the finding. This is the pure part: spotting the ask, and reading a web answer into something Bear can show.
+// What comes back from the web is never saved as a date until the person accepts it, and always carries where it came from.
+import {z} from 'zod';
+import {isValidISODate} from '../domain/dates.ts';
+
+// Only an explicit ask to go and find out. "Call the school to find out about camp" is the person's own errand.
+const ASK=/^(?:(?:hey |hi |ok |okay )?(?:bear|mama bear)[,:]?\s+)?(?:(?:can|could|would) you\s+(?:please\s+)?|please\s+)?(?:(?:do a |run a )?(?:web |internet |google |online )?search\b|search (?:the )?(?:internet|web|net|online)\b|google\b|look (?:it |this |that )?up\b|look up\b|look online\b|find out\b|check online\b|research\b|find me\b|find the (?:date|time|price|cost|hours|address|number|website|link)\b)/i;
+export function asksToFindOut(text:string):boolean{
+ const t=text.trim();if(t.length<12||t.length>400)return false;
+ // Something to find out about, not just "search" on its own, and not a job for the person ("research schools with my partner").
+ // "Research" on its own is usually the person's own job ("research project due Friday"); it counts only with a question.
+ if(/^(?:please\s+)?research\b/i.test(t)&&!/\b(when|what|where|who|which|how|whether)\b/i.test(t))return false;
+ return ASK.test(t)&&/\b(when|what|where|who|which|how (?:much|many|long|do|to)|whether|if|is|are|does|date|time|price|cost|hours|open|address|number|website|link|for|about)\b/i.test(t.replace(ASK,''));
+}
+
+export interface Source{title:string;url:string}
+export interface Finding{answer:string;subject:string;date:string|null;sources:Source[]}
+export const findingSchema=z.object({
+ found:z.boolean(),
+ answer:z.string().trim().max(600),
+ subject:z.string().trim().max(80),           // a short name for the thing, for a reminder title
+ date:z.string().nullable(),                  // one specific day (ISO), only if a source states it
+ sourceUrls:z.array(z.string()).max(5),
+}).strict();
+export const lookupSystemPrompt=(today:string)=>`You look things up on the web for a busy parent in Australia. Today is ${today}.
+Search, then reply with ONLY a JSON object, no other text:
+{"found": boolean, "answer": string, "subject": string, "date": string|null, "sourceUrls": string[]}
+- found: true only if a search result actually states the answer. If results are unclear, conflicting, about a different year or place, or only rumours, set found to false.
+- answer: one or two plain sentences saying what you found. Say so plainly when a date is not announced yet. Never guess.
+- subject: a short name for the thing (for example "Red Bull Soapbox Race"), using the person's wording.
+- date: a single day as YYYY-MM-DD, only when a source states that exact day for the right year and place. Otherwise null. For a multi-day event give the first day.
+- sourceUrls: the pages your answer rests on, most direct first. Prefer the organiser's own site.
+The person's message may also ask for a reminder; ignore that part, it is handled separately.`;
+
+// The model's reply (text) plus the pages the search really returned -> a finding, or null when there is nothing reliable.
+export function readFinding(text:string,returned:Source[],today:string):Finding|null{
+ const m=/\{[\s\S]*\}/.exec(text);if(!m)return null;
+ let raw:unknown;try{raw=JSON.parse(m[0]);}catch{return null;}
+ const p=findingSchema.safeParse(raw);if(!p.success||!p.data.found||!p.data.answer)return null;
+ // Only pages the search actually returned count as sources: a link the model made up is dropped.
+ const key=(u:string)=>u.replace(/^https?:\/\/(www\.)?/,'').replace(/[/#?]+$/,'').toLowerCase();
+ const byKey=new Map(returned.map(s=>[key(s.url),s]));
+ const sources=p.data.sourceUrls.map(u=>byKey.get(key(u))).filter((s):s is Source=>!!s).filter((s,i,a)=>a.findIndex(x=>x.url===s.url)===i).slice(0,3);
+ if(!sources.length)return null;   // an answer with no real page behind it is not shown as a finding
+ const date=p.data.date&&isValidISODate(p.data.date)&&p.data.date>=today?p.data.date:null;
+ return {answer:p.data.answer,subject:p.data.subject||'',date,sources};
+}
+export type Researcher=(question:string,today:string)=>Promise<{finding:Finding|null;usage:{inputTokens:number;outputTokens:number}|null;searches:number;model:string}>;
+export const DAILY_LOOKUPS=20;

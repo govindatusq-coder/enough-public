@@ -573,3 +573,7 @@
 .bear .qc-voice{background:var(--coral);}
 .bear .qc-pill .qc-voice+.qc-go{background:var(--navy);}
 .bear .qc-hint{margin:10px 4px 0;font-size:14px;color:var(--ink-2);text-align:center;}
+.bear .qc-found{width:100%;padding:14px;}
+.bear .qc-answer{margin:2px 0 6px;font-size:16px;line-height:1.4;}
+.bear .qc-sources{margin:0 0 4px;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13.5px;}
+.bear .qc-sources a{color:var(--navy);text-decoration:underline;overflow-wrap:anywhere;}

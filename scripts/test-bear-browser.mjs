@@ -138,6 +138,16 @@ try{
    await page.fill('#qc-text','no');await page.click('.qc-go[type="submit"]');await page.waitForFunction(()=>/All sorted/.test(document.querySelector('.qc-thread')?.textContent||''));
    assert.equal(await page.$('.qc-sorted'),null,'"no" is not sorted into a task');assert.equal(await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length),before,'nothing was added');
    const direct=await page.evaluate(async()=>{const r=await fetch('/api/bear/captures',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'voice',text:'No thanks, that’s all'})});return r.json();});assert.equal(direct.chat,'closing','the server refuses to make it a task too');assert.ok(!direct.sorted&&!direct.auto&&!direct.capture);}
+  // "Search for when X is on": the chat shows what Bear found and where, and saves nothing until "Remind me" is tapped.
+  // (The search itself is a paid service that is off here, so its answer is stood in for; the accept step is real.)
+  {const day=new Date(Date.now()+40*86400000).toISOString().slice(0,10);const before=await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length);
+   await page.route('**/api/bear/captures',r=>r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({sorted:[],found:[{question:'Search the internet for when the soapbox race is on and remind me',answer:'The soapbox race is on that day at The Domain.',subject:'Soapbox race',date:day,dateLabel:'the day',sources:[{title:'Organiser',url:'https://www.example.org/soapbox'}]}]})}),{times:1});
+   await page.fill('#qc-text','Search the internet for when the soapbox race is on and remind me');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-found');
+   const card=await page.textContent('.qc-found');assert.ok(card.includes('I looked it up')&&card.includes('The Domain')&&card.includes('example.org')&&/check of the source/.test(card),card);
+   assert.equal(await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length),before,'nothing is saved by a finding alone');assert.equal(await page.$('.qc-else'),null,'Bear waits for the answer to its offer');await shot('61a-bear-found');
+   await page.click('.qc-found button:has-text("Remind me")');await page.waitForFunction(()=>/Saved\./.test(document.querySelector('.qc-found')?.textContent||''));
+   assert.ok(/Soapbox race/.test(await page.textContent('.qc-found .qc-note'))&&/found online/.test(await page.textContent('.qc-found .qc-note')));assert.equal(await page.$('.qc-found button:has-text("Remind me")'),null);
+   assert.ok(await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).includes('Soapbox race')),'the reminder now exists');}
   // Several things in one breath: separated, titled, filed and grouped by traffic light, with one confirmation.
   await page.fill('#qc-text','pay the electricity bill tomorrow, book a dentist appointment, and clean out the garage sometime');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-group.green .qc-card',{timeout:30000});
   assert.equal(await page.$$eval('.qc-card',e=>e.length),3);

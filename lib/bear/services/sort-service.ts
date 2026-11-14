@@ -1,17 +1,19 @@
 // Takes one message through the sorter and into real tasks, using the same steps as anything else given to Bear
 // (capture, plan, reminders), then records how Bear sorted it. Repeats are recognised, not duplicated.
 import {z} from 'zod';
-import {daysBetween,formatAU,todayISO} from '../domain/dates.ts';
-import {areaKeys,type AreaKey,type Task} from '../domain/types.ts';
+import {daysBetween,formatAU,isValidISODate,todayISO} from '../domain/dates.ts';
+import {areaKeys,type AIInference,type AreaKey,type Task} from '../domain/types.ts';
+import {DAILY_LOOKUPS,type Researcher,type Source} from './lookup.ts';
 import type {StructuredModelProvider} from '../ai/provider.ts';
-import type {BearStore} from '../store/store.ts';
+import {stamp,type BearStore} from '../store/store.ts';
 import {maybeAutoSetup} from './auto-setup.ts';
 import {createCapture} from './capture.ts';
 import {ensureProfile} from './profile.ts';
 import {lightFor,parseCorrection,segment,soonByNature,sortOne,suggestStart,type Light,type Sorted} from './sorter.ts';
 import {setTaskArea,updateTask} from './task-edit.ts';
+import {acceptPlan,recommendPlan} from './reminder-planning.ts';
 
-export interface SortedItem{taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;deadline:string|null;deadlineSource:'stated'|null;window:string|null;suggestedStart:string|null;when:string;nextAction:string|null;already:boolean;check:string|null;error:string|null}
+export interface SortedItem{taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;deadline:string|null;deadlineSource:'stated'|'web'|null;window:string|null;suggestedStart:string|null;when:string;nextAction:string|null;already:boolean;check:string|null;error:string|null}
 const norm=(s:string)=>s.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\b(the|a|an|my|our|to|for|please)\b/g,' ').replace(/\s+/g,' ').trim();
 const weekday=(iso:string)=>formatAU(iso,'weekday').split(' ')[0];
 // The one line under a title: a stated date reads as "Due …", a proposal as "Suggested: …", a loose timeframe as the person said it.
@@ -31,7 +33,15 @@ export function itemFor(task:Task,area:AreaKey,today:string,extra:{already?:bool
  // A proposal made earlier is dropped once its day has passed, rather than shown as if it were still a plan.
  const suggested=s?.suggestedStart&&s.suggestedStart>=today?s.suggestedStart:null;
  const base={deadline:task.dueAt,window:task.dueAt?null:s?.window||null,suggestedStart:suggested};
- return {taskId:task.id,title:task.title,domain:area,light:l.light,reason:l.reason,deadline:task.dueAt,deadlineSource:task.dueAt?(s?.deadlineSource||'stated'):null,window:base.window,suggestedStart:suggested,when:whenLine(base,today),nextAction:s?.nextAction||null,already:!!extra.already,check:null,error:null};
+ const web=!!task.dueAt&&s?.deadlineSource==='web';
+ return {taskId:task.id,title:task.title,domain:area,light:l.light,reason:l.reason,deadline:task.dueAt,deadlineSource:task.dueAt?(s?.deadlineSource||'stated'):null,window:base.window,suggestedStart:suggested,when:web?`${formatAU(task.dueAt,'short')} · found online`:whenLine(base,today),nextAction:s?.nextAction||null,already:!!extra.already,check:null,error:null};
+}
+// Anything with a date gets a reminder plan. Most tasks already have one from being set up; this covers the ones that did not.
+async function ensureReminder(store:BearStore,task:Task,now:Date){
+ if(!task.dueAt||task.status!=='open')return;
+ const live=(await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed']}]})).length;
+ if(live)return;
+ try{const plan=await recommendPlan(store,null,task,now);if(plan.suggested.when)await acceptPlan(store,{taskId:task.id,when:plan.suggested.when,label:plan.suggested.label,rationale:plan.suggested.rationale,key:'bear',followUpIfUnpaid:true},now);}catch{/* held without a reminder; it still shows in the app */}
 }
 async function areaOf(store:BearStore,task:Task):Promise<AreaKey>{return ((await store.get('projects',task.projectId))?.areaKey||'me') as AreaKey;}
 
@@ -77,6 +87,7 @@ export async function placeSorted(store:BearStore,s:Sorted,via:'text'|'voice',to
   if(same){
    // A date said this time that wasn't known before is new information, and is taken.
    const task=s.deadline&&!same.dueAt?await updateTask(store,same.id,{dueAt:s.deadline}):same;
+   await ensureReminder(store,task,now);
    return itemFor(task,await areaOf(store,task),today,{already:true});
   }
   const {capture,extraction}=await createCapture(store,null,{method:via,text:s.original});
@@ -86,6 +97,7 @@ export async function placeSorted(store:BearStore,s:Sorted,via:'text'|'voice',to
   let task=await updateTask(store,auto.task.id,{title:s.title,...(s.deadline?{dueAt:s.deadline}:{})});
   if(auto.area!==s.domain)await setTaskArea(store,task.id,s.domain);
   task=await store.update('tasks',task.id,{sorted:{originalInput:s.original,via,secondaryDomains:s.secondary,urgency:s.urgency,deadlineSource:s.deadline?'stated':null,window:s.window,windowBy:s.windowBy,suggestedStart:s.suggestedStart,nextAction:s.nextAction,reason:s.reason}});
+  await ensureReminder(store,task,now);
   return itemFor(task,s.domain,today);
  }catch(e){return {...blank,error:e instanceof Error&&e.message?e.message:'Bear could not take that one.'};}
 }
@@ -120,7 +132,47 @@ export async function changeSorted(store:BearStore,input:z.infer<typeof changeSc
  if(!target)return {changed:null,index:-1};
  let task=target;
  if(change.deadline)task=await updateTask(store,task.id,{dueAt:change.deadline});
+ if(change.deadline)await ensureReminder(store,task,now);
  if(change.domain)await setTaskArea(store,task.id,change.domain);
  if(change.light)task=await store.update('tasks',task.id,{light:{level:change.light,at:now.toISOString()}});
  return {changed:itemFor(task,await areaOf(store,task),today),index:input.taskIds.indexOf(task.id)};
+}
+
+// ---------- finding things out ----------
+export interface Found{question:string;answer:string;subject:string;date:string|null;dateLabel:string|null;sources:Source[]}
+// Ask the web, within the daily allowance. Every attempt is recorded (counts and token use only, never the question's answer),
+// so the owner can see what it costs. Any failure simply means "no finding": the caller keeps the to-do for the person.
+export async function lookUp(store:BearStore,researcher:Researcher|null,question:string,today:string,now=new Date()):Promise<{found:Found|null;why:'off'|'limit'|'nothing'|null}>{
+ if(!researcher)return {found:null,why:'off'};
+ const since=now.getTime()-24*3600000;
+ const used=(await store.list('ai_inferences',{where:[{column:'service',value:'WebLookup'}]})).filter(i=>Date.parse(i.createdAt)>=since).length;
+ if(used>=DAILY_LOOKUPS)return {found:null,why:'limit'};
+ const started=Date.now();
+ try{
+  const r=await researcher(question,today);
+  await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'WebLookup',provider:'anthropic',model:r.model,promptHash:'web-lookup-1',rawOutput:{found:!!r.finding,searches:r.searches},latencyMs:Date.now()-started,ok:true,error:null,usage:r.usage}));
+  if(!r.finding)return {found:null,why:'nothing'};
+  return {found:{question,answer:r.finding.answer,subject:r.finding.subject,date:r.finding.date,dateLabel:r.finding.date?formatAU(r.finding.date,'long'):null,sources:r.finding.sources},why:null};
+ }catch{
+  await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'WebLookup',provider:'anthropic',model:'',promptHash:'web-lookup-1',rawOutput:null,latencyMs:Date.now()-started,ok:false,error:'lookup_failed'})).catch(()=>null);
+  return {found:null,why:'nothing'};
+ }
+}
+// What Bear says under a to-do it kept because the lookup came back empty. Honest about which it was.
+export const keptNote=(why:'off'|'limit'|'nothing'|null)=>why==='limit'?'I’ve done all the looking-up I can for today, so I’ve kept this for you':why==='nothing'?'I couldn’t find a reliable answer online, so I’ve kept this for you':null;
+
+// The person accepted a reminder for a date Bear found online. Only now is anything saved, with where the date came from.
+export const acceptSchema=z.object({question:z.string().trim().min(2).max(400),subject:z.string().trim().min(2).max(80),date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),answer:z.string().trim().max(600),sources:z.array(z.object({title:z.string().max(160),url:z.string().url().max(500).regex(/^https?:\/\//)}).strict()).min(1).max(3)}).strict();
+export async function acceptFound(store:BearStore,input:z.infer<typeof acceptSchema>,now=new Date()):Promise<SortedItem>{
+ const {today,children}=await todayFor(store,now);
+ if(!isValidISODate(input.date)||input.date<today)throw new Error('invalid_time');
+ const base=sortOne(input.question,today,children);const title=input.subject.charAt(0).toUpperCase()+input.subject.slice(1);
+ const s:Sorted={...base,title,original:input.question,deadline:input.date,deadlineSource:'stated',window:null,windowBy:null,suggestedStart:null,nextAction:null,...lightFor({deadline:input.date,urgency:null},today)};
+ const item=await placeSorted(store,s,'text',today,now);
+ if(!item.taskId)return item;
+ const note=`${input.answer}\nFound online: ${input.sources.map(x=>x.url).join(' , ')}\nCheck the source before relying on the date.`.slice(0,1000);
+ await updateTask(store,item.taskId,{notes:note});
+ const task=await store.get('tasks',item.taskId);
+ const next=await store.update('tasks',item.taskId,{sorted:{...(task!.sorted||{originalInput:input.question,via:'text' as const,secondaryDomains:[],urgency:null,window:null,windowBy:null,suggestedStart:null,nextAction:null,reason:''}),deadlineSource:'web' as const}});
+ return itemFor(next,item.domain,today,{already:item.already});
 }

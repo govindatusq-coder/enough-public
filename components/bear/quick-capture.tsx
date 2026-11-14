@@ -11,7 +11,8 @@ type Recognition={lang:string;continuous:boolean;interimResults:boolean;start():
 const recognitionCtor=():(new()=>Recognition)|null=>{if(typeof window==='undefined')return null;const w=window as unknown as {SpeechRecognition?:new()=>Recognition;webkitSpeechRecognition?:new()=>Recognition};return w.SpeechRecognition||w.webkitSpeechRecognition||null;};
 type Light='red'|'amber'|'green';
 export interface Item{taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;when:string;nextAction:string|null;already:boolean;check:string|null;error:string|null}
-type Result={chat?:'closing'|'more';capture?:{id:string};extraction?:{kind?:string};sorted?:Item[];auto?:{taskId:string;title:string}|null;dump?:{captureId:string}|null;confirmed?:{taskId:string;title:string}|null;info?:{captureId:string;receipt:boolean}|null;unclear?:boolean};
+export interface Found{question:string;answer:string;subject:string;date:string|null;dateLabel:string|null;sources:{title:string;url:string}[];remindedAs?:Item|null}
+type Result={found?:Found[];chat?:'closing'|'more';capture?:{id:string};extraction?:{kind?:string};sorted?:Item[];auto?:{taskId:string;title:string}|null;dump?:{captureId:string}|null;confirmed?:{taskId:string;title:string}|null;info?:{captureId:string;receipt:boolean}|null;unclear?:boolean};
 type Other={kind:'closing'}|{kind:'more'}|{kind:'done';taskId:string;title:string}|{kind:'info';captureId:string}|{kind:'unclear'}|{kind:'check';href:string;label:string};
 const areaLabel:Record<AreaKey,string>={work:'Work',family:'Family',home:'Home',money:'Money',health:'Health',me:'Me'};
 const groups:{light:Light;dot:string;label:string}[]=[{light:'red',dot:'🔴',label:'Urgent'},{light:'amber',dot:'🟠',label:'Coming up'},{light:'green',dot:'🟢',label:'Can wait'}];
@@ -20,7 +21,7 @@ const MicIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" st
 
 export function QuickCapture({onChanged}:{onChanged:()=>void}){
  const [text,setText]=useState('');const [busy,setBusy]=useState(false);const [said,setSaid]=useState<string|null>(null);const [error,setError]=useState<string|null>(null);
- const [items,setItems]=useState<Item[]>([]);const [other,setOther]=useState<Other|null>(null);const [changing,setChanging]=useState(false);const [confirmed,setConfirmed]=useState(false);const [note,setNote]=useState<string|null>(null);const [hint,setHint]=useState(false);
+ const [items,setItems]=useState<Item[]>([]);const [other,setOther]=useState<Other|null>(null);const [changing,setChanging]=useState(false);const [confirmed,setConfirmed]=useState(false);const [note,setNote]=useState<string|null>(null);const [found,setFound]=useState<Found[]>([]);const [hint,setHint]=useState(false);
  const [listening,setListening]=useState(false);const voice=useSyncExternalStore(noSub,()=>!!recognitionCtor(),()=>false);const usedVoice=useRef(false);const rec=useRef<Recognition|null>(null);
  useEffect(()=>()=>{try{rec.current?.stop();}catch{/* already stopped */}},[]);
  function listen(){
@@ -44,12 +45,14 @@ export function QuickCapture({onChanged}:{onChanged:()=>void}){
    finally{setBusy(false);}
    return;
   }
-  setItems([]);setOther(null);setConfirmed(false);setChanging(false);setSaid(body);
+  setItems([]);setFound([]);setOther(null);setConfirmed(false);setChanging(false);setSaid(body);
   const chat=replyKind(body);if(chat){setText('');usedVoice.current=false;setOther({kind:chat});setBusy(false);return;}
   try{
    const r=await apiSend<Result>('/api/bear/captures',{method:usedVoice.current?'voice':'text',text:body});setText('');usedVoice.current=false;
    if(r.chat){setOther({kind:r.chat});return;}
+   if(r.found?.length)setFound(r.found);
    if(r.sorted?.length)setItems(r.sorted);
+   else if(r.found?.length){/* only findings: nothing else to show */}
    else if(r.confirmed)setOther({kind:'done',taskId:r.confirmed.taskId,title:r.confirmed.title});
    else if(r.info)setOther({kind:'info',captureId:r.info.captureId});
    else if(r.unclear)setOther({kind:'unclear'});
@@ -65,7 +68,11 @@ export function QuickCapture({onChanged}:{onChanged:()=>void}){
   try{const r=await apiSend<{changed:Item|null}>('/api/bear/sort',{taskIds:ids(),taskId:item.taskId,...change},'PATCH');if(r.changed)replace(r.changed);onChanged();}catch{replace(before);setError('That didn’t save. Try again.');}
  }
  async function keep(id:string){try{const r=await apiSend<{auto:{taskId:string;title:string}|null}>(`/api/bear/captures/${id}/keep`,{});setOther(r.auto?{kind:'done',taskId:r.auto.taskId,title:r.auto.title}:{kind:'check',href:`/bear/verify/${id}`,label:'Check what I read'});onChanged();}catch{setError('That didn’t save. Try again.');}}
- const answered=items.length>0||!!other;const placed=items.filter(i=>i.taskId);
+ async function remind(f:Found){
+  try{const r=await apiSend<{item:Item}>('/api/bear/sort',{question:f.question,subject:f.subject||f.question.slice(0,80),date:f.date,answer:f.answer,sources:f.sources});setFound(list=>list.map(x=>x===f?{...f,remindedAs:r.item}:x));onChanged();}
+  catch(e){setError((e as ApiError).message||'That didn’t save. Try again.');}
+ }
+ const answered=items.length>0||!!other||found.length>0;const placed=items.filter(i=>i.taskId);
  return <section className="qc" aria-label="Tell Bear">
   <form className="qc-pill" onSubmit={e=>{e.preventDefault();void send();}}>
    <label htmlFor="qc-text" className="sr-only">What do you need to do?</label>
@@ -78,7 +85,16 @@ export function QuickCapture({onChanged}:{onChanged:()=>void}){
   {hint&&!voice&&!text&&<p className="qc-hint" role="status">Tap the microphone on your keyboard and say it. Bear will take it from there.</p>}
   {said&&<div className="qc-thread" aria-live="polite">
    <p className="qc-said">{said.length>220?said.slice(0,220)+'…':said}</p>
-   {busy&&!answered&&<p className="qc-reply muted">Bear’s sorting it…</p>}
+   {busy&&!answered&&<p className="qc-reply muted">{said&&/\b(search|look up|find out|google|research)\b/i.test(said)?'Bear’s looking it up…':'Bear’s sorting it…'}</p>}
+   {found.map((f,k)=><div key={k} className="qc-reply qc-found">
+    <p className="qc-head">I looked it up.</p>
+    <p className="qc-answer">{f.answer}</p>
+    <p className="qc-sources">{f.sources.map((s,i)=><a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer">{i===0?'Source: ':''}{(()=>{try{return new URL(s.url).hostname.replace(/^www\./,'');}catch{return s.title||'link';}})()}</a>)}</p>
+    <p className="qc-next">Found online. Worth a quick check of the source before you rely on it.</p>
+    {f.date&&!f.remindedAs&&<div className="btn-row" style={{marginTop:8}}><button type="button" className="btn coral sm" onClick={()=>remind(f)}>Remind me for {f.dateLabel}</button></div>}
+    {f.remindedAs&&<p className="qc-note" role="status">Saved. {f.remindedAs.taskId?<Link href={`/bear/tasks/${f.remindedAs.taskId}`} style={{textDecoration:'underline'}}>{f.remindedAs.title}</Link>:f.remindedAs.title} · {f.remindedAs.when}. I’ll remind you as it gets close.</p>}
+    {!f.date&&<p className="qc-next">No firm date to remind you about yet.</p>}
+   </div>)}
    {items.length>0&&<div className="qc-reply qc-sorted">
     <p className="qc-head">{items.length===1?'I’ve sorted this for you.':'I’ve sorted these for you.'}</p>
     {groups.map(g=>{const list=items.filter(i=>i.light===g.light);if(!list.length)return null;
@@ -114,7 +130,7 @@ export function QuickCapture({onChanged}:{onChanged:()=>void}){
    {other?.kind==='info'&&<p className="qc-reply">Nothing for you to do there, so I didn’t add a to-do. <button type="button" className="qc-link" onClick={()=>keep(other.captureId)}>Keep it anyway</button></p>}
    {other?.kind==='unclear'&&<p className="qc-reply">I couldn’t tell what you need from that. Say a little more?</p>}
    {other?.kind==='check'&&<p className="qc-reply"><Link href={other.href} style={{fontWeight:700,textDecoration:'underline'}}>{other.label}</Link></p>}
-   {answered&&!busy&&(confirmed||!placed.length)&&other?.kind!=='closing'&&other?.kind!=='more'&&<p className="qc-reply qc-else">Anything else?</p>}
+   {answered&&!busy&&(confirmed||!placed.length)&&(!found.length||found.every(f=>!f.date||f.remindedAs)||placed.length>0)&&other?.kind!=='closing'&&other?.kind!=='more'&&<p className="qc-reply qc-else">Anything else?</p>}
   </div>}
  </section>;
 }
