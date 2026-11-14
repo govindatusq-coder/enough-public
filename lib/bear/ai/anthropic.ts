@@ -30,7 +30,8 @@ export class AnthropicProvider implements StructuredModelProvider{
    if(doc.mime!=='application/pdf')throw new ProviderError('Only PDF documents are supported.','unsupported');
    content.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:Buffer.from(doc.bytes).toString('base64')}});
   }
-  content.push({type:'text',text:input.text?`Bill text:\n\n${input.text}`:'Read the attached bill and return the structured fields.'});
+  // Neutral framing: calling everything a "bill" pushed the model to read ordinary to-dos as bills.
+  content.push({type:'text',text:input.text?`What the person gave Bear:\n\n${input.text}`:'Read what is attached and return the structured fields.'});
   const started=Date.now();
   try{
    const response=await this.client.messages.create({

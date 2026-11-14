@@ -50,3 +50,24 @@ test('the model understanding is used for images, with steps as dependency tasks
  const home=await homeView(store,NOW);assert.ok(!home.needsYou.some(i=>steps.some(s=>s.id===i.taskId)),'steps never surface as separate needs');
  const everything=await everythingView(store);assert.equal(everything.areas.find(a=>a.key==='family').projects[0].openSteps,3);
 });
+
+// Seen in the live app: with the AI on, ordinary to-dos typed into the chat came back as bills.
+const modelSays=(kind,over={})=>new FakeProvider(()=>({kind,summary:'x',title:field('Call mum'),area:field('family'),when:empty(),timeOfDay:empty(),person:empty(),location:empty(),isRecurring:field(false),steps:[],estimatedMinutes:5,extractedText:null,bill:null,...over}));
+test('a to-do the model wrongly calls a bill (no amount, nobody to pay) is still set up as a to-do',async()=>{
+ const {maybeAutoSetup}=await import('../lib/bear/services/auto-setup.ts');
+ for(const text of ['call mum','book the car service next Tuesday','organise the birthday party']){
+  const store=new MemoryBackend().for(USER);await onboard(store);
+  const {extraction}=await createCapture(store,modelSays('bill'),{method:'text',text});
+  assert.equal(extraction.kind,'task',`"${text}" is not a bill`);assert.notEqual(extraction.general.kind,'bill');
+  assert.ok(await maybeAutoSetup(store,extraction,NOW),`"${text}" is set up straight away`);
+ }
+});
+test('a real bill is still a bill, with or without the model',async()=>{
+ const store=new MemoryBackend().for(USER);await onboard(store);
+ const a=await createCapture(store,null,{method:'text',text:'Energy Australia bill $184.60 due 28 November 2026'});assert.equal(a.extraction.kind,'bill');
+ const b=await createCapture(store,modelSays('bill'),{method:'text',text:'Sydney Water account. Amount due $96.40 by 3 December 2026'});assert.equal(b.extraction.kind,'bill','the rules found an amount, so the model’s "bill" stands');
+});
+test('the model is never told that what it is reading is a bill',async()=>{
+ const {readFileSync}=await import('node:fs');const src=readFileSync(new URL('../lib/bear/ai/anthropic.ts',import.meta.url),'utf8');
+ assert.ok(!/Bill text|attached bill/.test(src),'neutral framing only');
+});

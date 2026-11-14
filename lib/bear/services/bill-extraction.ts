@@ -142,8 +142,11 @@ export async function extractCapture(store:BearStore,provider:StructuredModelPro
    if(reading.child&&reading.child.confidence>=0.6)general.person=traced(reading.child.name,'rules',reading.child.confidence,false,at);
   }
  }
- const isBill=!school&&(general.kind==='bill'||(!model&&billRulesFinal.documentType==='bill'&&billRulesFinal.amountDueCents.value!==null));
  const fields=reconcile(model?.bill||null,billRulesFinal,at);
+ // A bill has an amount. If the model called something a bill, no amount was found anywhere and Bear's own bill reader does
+ // not see a bill either, it is an ordinary to-do, not a bill to verify.
+ if(!school&&general.kind==='bill'&&model&&fields.amountDueCents.value===null&&billRulesFinal.documentType!=='bill')general.kind=generalRules.kind==='bill'?'note':generalRules.kind;
+ const isBill=!school&&(general.kind==='bill'||(!model&&billRulesFinal.documentType==='bill'&&billRulesFinal.amountDueCents.value!==null));
  if(isBill&&general.kind!=='bill')general.kind='bill';
  const questions=isBill?verificationQuestions(fields):generalQuestions(general);
  const duplicate=isBill?await findDuplicate(store,fields):null;

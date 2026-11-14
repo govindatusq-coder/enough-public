@@ -9,7 +9,7 @@ import {areaKeys,type AreaKey} from '@/lib/bear/domain/types';
 // one tap corrects where it goes or how much it matters. Nothing has to be answered.
 type Recognition={lang:string;continuous:boolean;interimResults:boolean;start():void;stop():void;onresult:((e:{resultIndex:number;results:ArrayLike<ArrayLike<{transcript:string}>&{isFinal:boolean}>})=>void)|null;onend:(()=>void)|null;onerror:((e:{error:string})=>void)|null};
 const recognitionCtor=():(new()=>Recognition)|null=>{if(typeof window==='undefined')return null;const w=window as unknown as {SpeechRecognition?:new()=>Recognition;webkitSpeechRecognition?:new()=>Recognition};return w.SpeechRecognition||w.webkitSpeechRecognition||null;};
-type Result={capture:{id:string};auto?:{taskId:string;title:string;area:AreaKey;dueAt:string|null;merged:boolean};dump?:{captureId:string};confirmed?:{taskId:string;title:string};info?:{captureId:string;receipt:boolean};unclear?:boolean};
+type Result={capture:{id:string};extraction?:{kind?:string};auto?:{taskId:string;title:string;area:AreaKey;dueAt:string|null;merged:boolean};dump?:{captureId:string};confirmed?:{taskId:string;title:string};info?:{captureId:string;receipt:boolean};unclear?:boolean};
 type Reply={kind:'task';taskId:string;title:string;area:AreaKey;dueAt:string|null;merged:boolean;level:'very'|'nice'|'not'|null}|{kind:'done';taskId:string;title:string}|{kind:'info';captureId:string}|{kind:'unclear'}|{kind:'check';href:string;label:string};
 const areaLabel:Record<AreaKey,string>={work:'Work',family:'Family',home:'Home',money:'Money',health:'Health',me:'Me'};
 const levels=[{key:'very',label:'Really matters'},{key:'nice',label:'Matters'},{key:'not',label:'Low stakes'}] as const;
@@ -37,7 +37,7 @@ export function QuickCapture({onChanged}:{onChanged:()=>void}){
    else if(r.unclear)setReply({kind:'unclear'});
    else if(r.dump)setReply({kind:'check',href:`/bear/sort/${r.dump.captureId}`,label:'That’s a few things. Line them up'});
    else if(r.auto)setReply({kind:'task',taskId:r.auto.taskId,title:r.auto.title,area:r.auto.area,dueAt:r.auto.dueAt,merged:r.auto.merged,level:null});
-   else setReply({kind:'check',href:`/bear/verify/${r.capture.id}`,label:'Check what I read'});
+   else setReply({kind:'check',href:`/bear/verify/${r.capture.id}`,label:r.extraction?.kind==='bill'?'That looks like a bill. Check what I read':'Check what I read'});
    onChanged();
   }catch(e){setError((e as ApiError).message||'Bear could not take that. Try again.');setSaid(null);}
   finally{setBusy(false);}
