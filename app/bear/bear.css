@@ -570,3 +570,6 @@
 .bear .qc-confirm{margin-top:12px;}
 .bear .qc-ask{margin:0;font-weight:600;}
 .bear .qc-note{margin:10px 0 0;font-size:14px;color:var(--ink-2);}
+.bear .qc-voice{background:var(--coral);}
+.bear .qc-pill .qc-voice+.qc-go{background:var(--navy);}
+.bear .qc-hint{margin:10px 4px 0;font-size:14px;color:var(--ink-2);text-align:center;}

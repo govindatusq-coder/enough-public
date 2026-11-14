@@ -19,7 +19,7 @@ const MicIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" st
 
 export function QuickCapture({onChanged}:{onChanged:()=>void}){
  const [text,setText]=useState('');const [busy,setBusy]=useState(false);const [said,setSaid]=useState<string|null>(null);const [error,setError]=useState<string|null>(null);
- const [items,setItems]=useState<Item[]>([]);const [other,setOther]=useState<Other|null>(null);const [changing,setChanging]=useState(false);const [confirmed,setConfirmed]=useState(false);const [note,setNote]=useState<string|null>(null);
+ const [items,setItems]=useState<Item[]>([]);const [other,setOther]=useState<Other|null>(null);const [changing,setChanging]=useState(false);const [confirmed,setConfirmed]=useState(false);const [note,setNote]=useState<string|null>(null);const [hint,setHint]=useState(false);
  const [listening,setListening]=useState(false);const voice=useSyncExternalStore(noSub,()=>!!recognitionCtor(),()=>false);const usedVoice=useRef(false);const rec=useRef<Recognition|null>(null);
  useEffect(()=>()=>{try{rec.current?.stop();}catch{/* already stopped */}},[]);
  function listen(){
@@ -67,11 +67,12 @@ export function QuickCapture({onChanged}:{onChanged:()=>void}){
   <form className="qc-pill" onSubmit={e=>{e.preventDefault();void send();}}>
    <label htmlFor="qc-text" className="sr-only">What do you need to do?</label>
    <textarea id="qc-text" value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder={listening?'Listening…':changing?'e.g. “the dentist is urgent”':answered?'Anything else?':'What do you need to do?'} rows={1} maxLength={20000} disabled={busy}/>
-   {text.trim()||!voice
-    ?<button type="submit" className="qc-go" disabled={!text.trim()||busy} aria-label={changing?'Change it':'Give it to Bear'}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
-    :<button type="button" className={`qc-go${listening?' on':''}`} onClick={listen} aria-pressed={listening} aria-label={listening?'Stop listening':'Say it'}><MicIcon/></button>}
+   {/* The microphone is always there. Where the browser can't listen itself, it opens the keyboard, whose own microphone can. */}
+   <button type="button" className={`qc-go qc-voice${listening?' on':''}`} onClick={()=>{if(voice){listen();return;}document.getElementById('qc-text')?.focus();setNote(null);setHint(true);}} aria-pressed={voice?listening:undefined} aria-label={listening?'Stop listening':'Say it'}><MicIcon/></button>
+   {text.trim()&&<button type="submit" className="qc-go" disabled={busy} aria-label={changing?'Change it':'Give it to Bear'}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>}
   </form>
   {error&&<p className="note" role="alert" style={{marginTop:10}}>{error}</p>}
+  {hint&&!voice&&!text&&<p className="qc-hint" role="status">Tap the microphone on your keyboard and say it. Bear will take it from there.</p>}
   {said&&<div className="qc-thread" aria-live="polite">
    <p className="qc-said">{said.length>220?said.slice(0,220)+'…':said}</p>
    {busy&&!answered&&<p className="qc-reply muted">Bear’s sorting it…</p>}
