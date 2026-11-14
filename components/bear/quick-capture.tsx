@@ -3,6 +3,7 @@ import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import Link from 'next/link';
 import {apiSend,type ApiError} from '@/lib/bear/client';
 import {areaKeys,type AreaKey} from '@/lib/bear/domain/types';
+import {replyKind} from '@/lib/bear/services/sorter';
 
 // Tell Bear once. One message (typed or spoken) comes back sorted: each thing with a clear title, its area, a traffic light and
 // a timeframe, grouped by how soon it matters. One tap confirms the lot; one sentence or one tap changes a single thing.
@@ -10,8 +11,8 @@ type Recognition={lang:string;continuous:boolean;interimResults:boolean;start():
 const recognitionCtor=():(new()=>Recognition)|null=>{if(typeof window==='undefined')return null;const w=window as unknown as {SpeechRecognition?:new()=>Recognition;webkitSpeechRecognition?:new()=>Recognition};return w.SpeechRecognition||w.webkitSpeechRecognition||null;};
 type Light='red'|'amber'|'green';
 export interface Item{taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;when:string;nextAction:string|null;already:boolean;check:string|null;error:string|null}
-type Result={capture?:{id:string};extraction?:{kind?:string};sorted?:Item[];auto?:{taskId:string;title:string}|null;dump?:{captureId:string}|null;confirmed?:{taskId:string;title:string}|null;info?:{captureId:string;receipt:boolean}|null;unclear?:boolean};
-type Other={kind:'done';taskId:string;title:string}|{kind:'info';captureId:string}|{kind:'unclear'}|{kind:'check';href:string;label:string};
+type Result={chat?:'closing'|'more';capture?:{id:string};extraction?:{kind?:string};sorted?:Item[];auto?:{taskId:string;title:string}|null;dump?:{captureId:string}|null;confirmed?:{taskId:string;title:string}|null;info?:{captureId:string;receipt:boolean}|null;unclear?:boolean};
+type Other={kind:'closing'}|{kind:'more'}|{kind:'done';taskId:string;title:string}|{kind:'info';captureId:string}|{kind:'unclear'}|{kind:'check';href:string;label:string};
 const areaLabel:Record<AreaKey,string>={work:'Work',family:'Family',home:'Home',money:'Money',health:'Health',me:'Me'};
 const groups:{light:Light;dot:string;label:string}[]=[{light:'red',dot:'🔴',label:'Urgent'},{light:'amber',dot:'🟠',label:'Coming up'},{light:'green',dot:'🟢',label:'Can wait'}];
 const noSub=()=>()=>{};
@@ -44,8 +45,10 @@ export function QuickCapture({onChanged}:{onChanged:()=>void}){
    return;
   }
   setItems([]);setOther(null);setConfirmed(false);setChanging(false);setSaid(body);
+  const chat=replyKind(body);if(chat){setText('');usedVoice.current=false;setOther({kind:chat});setBusy(false);return;}
   try{
    const r=await apiSend<Result>('/api/bear/captures',{method:usedVoice.current?'voice':'text',text:body});setText('');usedVoice.current=false;
+   if(r.chat){setOther({kind:r.chat});return;}
    if(r.sorted?.length)setItems(r.sorted);
    else if(r.confirmed)setOther({kind:'done',taskId:r.confirmed.taskId,title:r.confirmed.title});
    else if(r.info)setOther({kind:'info',captureId:r.info.captureId});
@@ -66,7 +69,7 @@ export function QuickCapture({onChanged}:{onChanged:()=>void}){
  return <section className="qc" aria-label="Tell Bear">
   <form className="qc-pill" onSubmit={e=>{e.preventDefault();void send();}}>
    <label htmlFor="qc-text" className="sr-only">What do you need to do?</label>
-   <textarea id="qc-text" value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder={listening?'Listening…':changing?'e.g. “the dentist is urgent”':answered?'Anything else?':'What do you need to do?'} rows={1} maxLength={20000} disabled={busy}/>
+   <textarea id="qc-text" value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder={listening?'Listening…':changing?'e.g. “the dentist is urgent”':answered&&other?.kind!=='closing'?'Anything else?':'What do you need to do?'} rows={1} maxLength={20000} disabled={busy}/>
    {/* The microphone is always there. Where the browser can't listen itself, it opens the keyboard, whose own microphone can. */}
    <button type="button" className={`qc-go qc-voice${listening?' on':''}`} onClick={()=>{if(voice){listen();return;}document.getElementById('qc-text')?.focus();setNote(null);setHint(true);}} aria-pressed={voice?listening:undefined} aria-label={listening?'Stop listening':'Say it'}><MicIcon/></button>
    {text.trim()&&<button type="submit" className="qc-go" disabled={busy} aria-label={changing?'Change it':'Give it to Bear'}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>}
@@ -105,11 +108,13 @@ export function QuickCapture({onChanged}:{onChanged:()=>void}){
     </div>}
     {confirmed&&<p className="qc-note" role="status">On it. I’ll bring each one back when it needs you.</p>}
    </div>}
+   {other?.kind==='closing'&&<p className="qc-reply">All sorted. I’m here whenever you need me.</p>}
+   {other?.kind==='more'&&<p className="qc-reply">Go ahead. What else is on your mind?</p>}
    {other?.kind==='done'&&<p className="qc-reply"><strong>Sorted:</strong> <Link href={`/bear/tasks/${other.taskId}`}>{other.title}</Link>.</p>}
    {other?.kind==='info'&&<p className="qc-reply">Nothing for you to do there, so I didn’t add a to-do. <button type="button" className="qc-link" onClick={()=>keep(other.captureId)}>Keep it anyway</button></p>}
    {other?.kind==='unclear'&&<p className="qc-reply">I couldn’t tell what you need from that. Say a little more?</p>}
    {other?.kind==='check'&&<p className="qc-reply"><Link href={other.href} style={{fontWeight:700,textDecoration:'underline'}}>{other.label}</Link></p>}
-   {answered&&!busy&&(confirmed||!placed.length)&&<p className="qc-reply qc-else">Anything else?</p>}
+   {answered&&!busy&&(confirmed||!placed.length)&&other?.kind!=='closing'&&other?.kind!=='more'&&<p className="qc-reply qc-else">Anything else?</p>}
   </div>}
  </section>;
 }

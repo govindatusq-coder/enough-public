@@ -115,3 +115,10 @@ test('14. Bear never words a proposal, or anything it has only prepared, as done
  assert.ok(items.some(i=>/^Suggested/.test(i.when)));assert.ok(items.filter(i=>i.nextAction).every(i=>/\b(can|will)\b/.test(i.nextAction)),'offers, not claims');
  assert.ok((await openTasks(s)).every(t=>t.status==='open'),'everything is still open: nothing was done for the person');
 });
+
+test('an answer to Bear is never a to-do: "no", "that’s all", "thanks", "yes"',async()=>{
+ const {replyKind}=await import('../lib/bear/services/sorter.ts');
+ for(const t of ['no','No.','nope','nah','no thanks','No thank you','no thanks Bear','nothing','nothing else','that’s all','thats all','that\'s it thanks','all good','I’m good','im done','done','no that’s all for now','No thanks, that’s all','No. Thanks!','nope, all good','not now','thanks','thank you','Cheers','No!','NO','bye'])assert.equal(replyKind(t),'closing',t);
+ for(const t of ['yes','Yep','ok','sure','yes please','hi','test'])assert.equal(replyKind(t),'more',t);
+ for(const t of ['no more screen time for the kids after 7','call mum','nothing in the fridge, buy groceries','done with the report, send it to the manager','thank the teacher for the report','yes book the dentist','ok call the plumber','cancel the gym membership','no rush but tidy the shed'])assert.equal(replyKind(t),null,t);
+});

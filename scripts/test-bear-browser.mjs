@@ -133,6 +133,11 @@ try{
   assert.ok((await page.textContent('.qc-sorted')).includes('I’ve sorted this for you'));assert.ok(/Home · Due/.test(await page.textContent('.qc-card .qc-meta')),await page.textContent('.qc-card .qc-meta'));
   assert.match(page.url(),/\/bear\/capture$/,'stays on this screen');
   await page.click('button:has-text("Looks good, Bear")');await page.waitForSelector('.qc-else');assert.ok((await page.textContent('.qc-thread')).includes('Anything else?'));assert.equal(await page.getAttribute('#qc-text','placeholder'),'Anything else?');await shot('61-bear-reply');
+  // Answering Bear's question is conversation, not a to-do.
+  {const before=await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length);
+   await page.fill('#qc-text','no');await page.click('.qc-go[type="submit"]');await page.waitForFunction(()=>/All sorted/.test(document.querySelector('.qc-thread')?.textContent||''));
+   assert.equal(await page.$('.qc-sorted'),null,'"no" is not sorted into a task');assert.equal(await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length),before,'nothing was added');
+   const direct=await page.evaluate(async()=>{const r=await fetch('/api/bear/captures',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'voice',text:'No thanks, that’s all'})});return r.json();});assert.equal(direct.chat,'closing','the server refuses to make it a task too');assert.ok(!direct.sorted&&!direct.auto&&!direct.capture);}
   // Several things in one breath: separated, titled, filed and grouped by traffic light, with one confirmation.
   await page.fill('#qc-text','pay the electricity bill tomorrow, book a dentist appointment, and clean out the garage sometime');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-group.green .qc-card',{timeout:30000});
   assert.equal(await page.$$eval('.qc-card',e=>e.length),3);

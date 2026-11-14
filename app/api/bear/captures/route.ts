@@ -2,6 +2,7 @@ import {HttpError,json,withBear} from '@/lib/bear/server/context';
 import {captureTextSchema,createCapture,MAX_FILE_BYTES} from '@/lib/bear/services/capture';
 import {maybeAutoSetup} from '@/lib/bear/services/auto-setup';
 import {intake} from '@/lib/bear/services/intake';
+import {replyKind} from '@/lib/bear/services/sorter';
 import {adoptSorted,looksLikeDocument,placeSorted,sortParts,todayFor} from '@/lib/bear/services/sort-service';
 import {isBrainDump,setupBrainDump} from '@/lib/bear/services/dump';
 import type {BearStore} from '@/lib/bear/store/store';
@@ -42,6 +43,8 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
  // Typed or spoken: Bear sorts it. One message can hold several responsibilities; each gets a clear title, one of the six
  // areas, a traffic light and a timeframe. Pasted documents (emails, notices) keep to the ordinary reading below.
  if((body.method==='text'||body.method==='voice')&&!body.isDemo&&!looksLikeDocument(body.text)){
+  // Something said back to Bear ("no", "that's all", "thanks", "yes") is conversation, never a to-do. Nothing is saved.
+  const chat=replyKind(body.text);if(chat)return json({chat,unclear:true});
   const {today,children}=await todayFor(store);const parts=await sortParts(body.text,provider,today,children);
   if(parts.length>1){
    const sorted=[];for(const p of parts)sorted.push(await placeSorted(store,p,body.method,today));

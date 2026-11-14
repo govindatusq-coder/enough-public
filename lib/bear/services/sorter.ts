@@ -180,3 +180,18 @@ export function parseCorrection(text:string,items:{title:string}[],today:string)
  if(best<0){if(items.length===1)best=0;else return null;}
  return {index:best,...(light?{light}:{}),...(domain?{domain}:{}),...(deadline?{deadline}:{})};
 }
+
+// ---------- an answer to Bear is not a to-do ----------
+// "No", "that's all", "thanks", "yes": words said back to Bear in conversation. They never become tasks.
+const CLOSE_WORDS="no+|nope|nah|na|no thanks|no thank you|not now|not really|not today|not at the moment|nothing|nothing else|nothing more|none|that(?:'|’)?s (?:all|it|everything)|that is (?:all|it|everything)|that will do|that(?:'|’)?ll do|all good|all done|all sorted|i(?:'|’)?m (?:good|done|all good|all set|fine)|im (?:good|done|fine)|we(?:'|’)?re (?:good|done)|done|finished|bye|goodbye|see ya|good ?night|thanks|thank you|thankyou|ta|cheers|ok(?:ay)?";
+const POLITE_WORDS="bear|mama bear|for now|for today|at the moment|right now|i think";
+// One or more closing phrases in a row ("nope, all good, thanks Bear"), and nothing else.
+const CLOSING=new RegExp(`^(?:${CLOSE_WORDS})(?:\\s+(?:${CLOSE_WORDS}|${POLITE_WORDS}))*$`,'i');
+const AFFIRM=/^(?:yes|yep|yeah|yup|ya|sure|ok|okay|k|yes please|please|go on|go ahead|one more|a few more|there(?:'|’)?s more|i do|i have more|hang on|wait|hmm+|um+|uh+|hi|hello|hey|test|testing)$/i;
+export function replyKind(text:string):'closing'|'more'|null{
+ const t=text.trim().replace(/[\s.!?,…]+$/,'').replace(/[,;.!]+/g,' ').replace(/\s+/g,' ');
+ if(!t||t.length>60)return null;
+ if(AFFIRM.test(t))return 'more';
+ if(CLOSING.test(t))return 'closing';
+ return null;
+}
