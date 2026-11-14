@@ -45,15 +45,12 @@ export function QuickCapture({onChanged}:{onChanged:()=>void}){
  async function setArea(area:AreaKey){if(reply?.kind!=='task'||reply.area===area)return;const before=reply;setReply({...reply,area});try{await apiSend(`/api/bear/tasks/${reply.taskId}/area`,{area});onChanged();}catch{setReply(before);setError('That didn’t save. Try again.');}}
  async function setLevel(level:'very'|'nice'|'not'){if(reply?.kind!=='task')return;const before=reply;const next=reply.level===level?null:level;setReply({...reply,level:next});try{await apiSend(`/api/bear/tasks/${reply.taskId}/importance`,{level:next});onChanged();}catch{setReply(before);setError('That didn’t save. Try again.');}}
  return <section className="qc" aria-label="Tell Bear">
-  <form className="qc-box glass-strong" onSubmit={e=>{e.preventDefault();void send();}}>
-   <label htmlFor="qc-text" className="sr-only">Tell Bear what’s on your mind</label>
-   <textarea id="qc-text" value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder={listening?'Listening…':'Tell Bear anything'} rows={2} maxLength={20000} disabled={busy}/>
-   <div className="qc-bar">
-    <Link href="/bear/capture?more=1" className="qc-more" aria-label="Other ways: photo, screenshot or PDF"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></Link>
-    <span className="qc-grow"/>
-    {voice&&<button type="button" className={`qc-mic${listening?' on':''}`} onClick={listen} aria-pressed={listening} aria-label={listening?'Stop listening':'Say it'}><MicIcon/></button>}
-    <button type="submit" className="qc-send" disabled={!text.trim()||busy} aria-label="Give it to Bear"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
-   </div>
+  <form className="qc-pill" onSubmit={e=>{e.preventDefault();void send();}}>
+   <label htmlFor="qc-text" className="sr-only">What do you need to do?</label>
+   <textarea id="qc-text" value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder={listening?'Listening…':'What do you need to do?'} rows={1} maxLength={20000} disabled={busy}/>
+   {text.trim()||!voice
+    ?<button type="submit" className="qc-go" disabled={!text.trim()||busy} aria-label="Give it to Bear"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+    :<button type="button" className={`qc-go${listening?' on':''}`} onClick={listen} aria-pressed={listening} aria-label={listening?'Stop listening':'Say it'}><MicIcon/></button>}
   </form>
   {error&&<p className="note" role="alert" style={{marginTop:10}}>{error}</p>}
   {said&&<div className="qc-thread" aria-live="polite">

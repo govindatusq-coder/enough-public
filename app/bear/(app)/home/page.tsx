@@ -31,24 +31,18 @@ export default function Home(){
  async function demo(){setBusy('demo');try{const res=await apiSend<{capture:{id:string}}>('/api/bear/demo',{});router.push(`/bear/verify/${res.capture.id}`);}catch(e){setError((e as Error).message);setBusy(null);}}
  if(error&&!home)return <main id="main" className="bear-screen"><ErrorCard message={error} retry={load}/></main>;
  if(!home)return <main id="main" className="bear-screen"><div className="skeleton" style={{minHeight:40,maxWidth:220,marginBottom:16}}/><Skeleton/></main>;
- const needs=home.needsYou.filter(n=>!n.soft).sort((x,y)=>(y.overdueDays-x.overdueDays)||((x.due||'9999')<(y.due||'9999')?-1:1));
  const firstNeed=home.needsYou.filter(n=>!n.soft).sort((a,b)=>(b.overdueDays-a.overdueDays)||((a.due||'9999')<(b.due||'9999')?-1:1))[0]||null;
  return (
-  <main id="main" className="bear-screen home-screen">
+  <main id="main" className="bear-screen home-screen home-hero">
    <FirstTimeTour show={home.showTour}/>
-   <header className="home-min">
-    <span className="home-min-art" aria-hidden="true"><Art file={greet?greet.art:'hero-bear'} className="hero-img" style={{objectPosition:greet?greet.focus:'60% 22%'}}/></span>
-    <div><h1 className="hero-greeting">{home.greeting}</h1><p className="hero-line hand">{greet?greet.line:brand.gotYou}</p></div>
+   <header className="hh">
+    <div className="hh-art" aria-hidden="true"><span className="hh-circle"/><Art file="hero-bear-cut" className="hh-bear"/></div>
+    <h1 className="hh-welcome hand hero-greeting">Welcome{home.name?`, ${home.name}`:''}!</h1>
+    <p className="hh-sub">I’ve got you. What do you need me to take care of today?</p>
    </header>
    <QuickCapture onChanged={load}/>
    {!online&&<p className="note" style={{marginTop:14}} role="status">You&rsquo;re offline. Showing what Bear last knew.</p>}
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
-   {(home.overdue.length>0||needs.length>0)&&<section className="needs-min" aria-labelledby="needs-h">
-    <p className="eyebrow" id="needs-h" style={{color:'#B42318'}}>{needs.length===1?'1 thing needs you':`${needs.length} things need you`}</p>
-    {home.overdue.length>0&&<p className="hero-alert" role="alert"><span>{home.overdue.length} overdue</span></p>}
-    <ul>{needs.slice(0,3).map(n=><li key={n.taskId||n.billId}><Link href={n.billId?`/bear/bills/${n.billId}`:`/bear/tasks/${n.taskId}`}><span className="needs-title">{n.message||n.title}</span><span className="needs-sub">{n.title}{n.dueLabel?` · ${n.dueLabel}`:''}</span></Link></li>)}</ul>
-    {needs.length>3&&<Link className="small" href="/bear/me/everything" style={{textDecoration:'underline'}}>See all {needs.length}</Link>}
-   </section>}
    <Fold id="home" summary="Everything Bear’s holding">
     <div className="home-more-body">
    {/* Once today's level is rated the card goes away; the reply shows as a note, and it can be changed in Settings. */}
