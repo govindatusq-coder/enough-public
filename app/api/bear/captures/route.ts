@@ -19,7 +19,7 @@ async function withAuto<T extends {extraction:ExtractedEntity;capture:{id:string
 export const dynamic='force-dynamic';
 export const maxDuration=120;
 // A generous daily limit per person, so a bug, a loop or misuse can't run up the AI bill. Real use is a handful a day.
-export const DAILY_CAPTURE_LIMIT=60;
+const DAILY_CAPTURE_LIMIT=60;
 async function checkDailyLimit(store:BearStore){
  const since=Date.now()-24*3600000;const n=(await store.list('captures')).filter(c=>Date.parse(c.createdAt)>=since).length;
  if(n>=DAILY_CAPTURE_LIMIT)throw new HttpError('That’s a lot for one day. Bear will take more tomorrow, or you can wait a few hours and try again.',429);
