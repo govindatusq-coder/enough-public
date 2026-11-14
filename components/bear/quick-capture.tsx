@@ -2,7 +2,7 @@
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import Link from 'next/link';
 import {apiForm,apiSend,type ApiError} from '@/lib/bear/client';
-import {shrinkImage} from '@/lib/bear/client-image';
+import {shrinkAll,UPLOAD_BUDGET} from '@/lib/bear/client-image';
 import {areaKeys,type AreaKey} from '@/lib/bear/domain/types';
 import {replyKind} from '@/lib/bear/services/sorter';
 
@@ -78,7 +78,10 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
   if(busy||!files.length)return;setError(null);setHint(false);setChanging(null);const list=files.slice(0,6);
   const turn={...blank(list.length>1?`${list.length} pictures`:list[0].name||'A photo'),file:true};setTurns(l=>[...l,turn]);
   try{
-   const form=new FormData();for(const f of list)form.append('file',await shrinkImage(f));form.append('method',list[0].type==='application/pdf'?'upload':'screenshot');
+   const ready=await shrinkAll(list);const total=ready.reduce((n,f)=>n+f.size,0);
+   // A PDF cannot be made smaller here; say so plainly rather than let the upload fail.
+   if(total>UPLOAD_BUDGET*1.15)throw new Error(ready.some(f=>f.type==='application/pdf')?'That PDF is too big to send with the pictures. Send it on its own.':'Those pictures are too big to send together. Try fewer at once.');
+   const form=new FormData();for(const f of ready)form.append('file',f);form.append('method',list[0].type==='application/pdf'?'upload':'screenshot');
    const r=await apiForm<Result>('/api/bear/captures',form);
    patch(turn.id,t=>({...t,busy:false,items:r.sorted||[],found:[],other:otherFor(r),page:r.page||null}));onChanged();
   }catch(e){setTurns(l=>l.filter(t=>t.id!==turn.id));setError((e as ApiError).message||'Bear could not read that. Try again.');}
