@@ -2,7 +2,7 @@ import {HttpError,json,withBear} from '@/lib/bear/server/context';
 import {captureTextSchema,createCapture,MAX_FILE_BYTES} from '@/lib/bear/services/capture';
 import {maybeAutoSetup} from '@/lib/bear/services/auto-setup';
 import {intake} from '@/lib/bear/services/intake';
-import {splitTodos} from '@/lib/bear/services/split-todos';
+import {adoptSorted,looksLikeDocument,placeSorted,sortParts,todayFor} from '@/lib/bear/services/sort-service';
 import {isBrainDump,setupBrainDump} from '@/lib/bear/services/dump';
 import type {BearStore} from '@/lib/bear/store/store';
 import type {StructuredModelProvider} from '@/lib/bear/ai/provider';
@@ -39,17 +39,21 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
  }
  const raw=await req.text();if(new TextEncoder().encode(raw).length>64*1024)throw new HttpError('That is a lot of text. Paste just the bill.',413);
  let body;try{body=captureTextSchema.parse(JSON.parse(raw));}catch{throw new HttpError('Tell Bear something first.',400);}
- // Several to-dos in one breath ("call mum, buy milk and book the dentist") are taken one at a time, each through the same
- // steps as if it had been given on its own. The reply lists each one; the first is also returned in the usual shape.
- const parts=(body.method==='text'||body.method==='voice')&&!body.isDemo?splitTodos(body.text):[body.text];
- if(parts.length<2)return json(await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text:body.text,isDemo:body.isDemo}),{text:body.text,hasFile:false}),201);
- const many:Record<string,unknown>[]=[];let first:Record<string,unknown>|null=null;
- for(const text of parts){
-  try{
-   const r=await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text}),{text,hasFile:false}) as Record<string,unknown>&{capture:{id:string};extraction:{kind:string}};
-   first??=r;many.push({text,captureId:r.capture.id,kind:r.extraction.kind,auto:r.auto||null,confirmed:r.confirmed||null,info:r.info||null,unclear:!!r.unclear,dump:r.dump||null});
-  }catch(e){many.push({text,error:e instanceof Error?e.message:'Bear could not take that one.'});}
+ // Typed or spoken: Bear sorts it. One message can hold several responsibilities; each gets a clear title, one of the six
+ // areas, a traffic light and a timeframe. Pasted documents (emails, notices) keep to the ordinary reading below.
+ if((body.method==='text'||body.method==='voice')&&!body.isDemo&&!looksLikeDocument(body.text)){
+  const {today,children}=await todayFor(store);const parts=await sortParts(body.text,provider,today,children);
+  if(parts.length>1){
+   const sorted=[];for(const p of parts)sorted.push(await placeSorted(store,p,body.method,today));
+   return json({sorted},201);
+  }
+  // One thing: the usual path first, so receipts, plain information, bills and school notices are still handled as they were.
+  const result=await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text:body.text}),{text:body.text,hasFile:false}) as Record<string,unknown>&{auto?:{taskId:string};extraction:{school?:unknown;kind:string;general:{kind:string;items?:unknown[]}}};
+  if(!result.auto)return json(result,201);
+  // Lists and school notices were named by the readers built for them: their titles, dates and areas stand.
+  const plain=!result.extraction.school&&result.extraction.general.kind!=='shopping'&&!(result.extraction.general.items?.length);
+  const item=await adoptSorted(store,result.auto.taskId,parts[0],body.method,today,plain).catch(()=>null);
+  return json(item?{...result,sorted:[item]}:result,201);
  }
- if(!first)throw new HttpError('Bear could not take that. Try again.',422);
- return json({...first,many},201);
+ return json(await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text:body.text,isDemo:body.isDemo}),{text:body.text,hasFile:false}),201);
 });

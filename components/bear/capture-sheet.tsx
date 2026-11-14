@@ -36,6 +36,8 @@ export function CaptureSheet(){
  useEffect(()=>{apiGet<{aiAvailable:boolean}>('/api/bear/profile').then(p=>setAiAvailable(p.aiAvailable)).catch(e=>{if(e.status===401)router.replace('/bear/signin');else setAiAvailable(false);});},[router]);
  const close=useCallback(()=>router.push(first?'/bear/home':'/bear/home'),[router,first]);
 const finish=useCallback((result:CaptureResult)=>{
+  // Several things in one message: Bear has sorted each into its area, so go and see them.
+  if(!result.capture){router.replace('/bear/home');return;}
   // Not a new to-do: a receipt that settled something, a message that asks nothing, or something too thin to act on. Said plainly.
   if(result.confirmed){setOutcome({kind:'confirmed',taskId:result.confirmed.taskId,title:result.confirmed.title});setMode('menu');return;}
   if(result.info){setOutcome({kind:'info',captureId:result.info.captureId,receipt:result.info.receipt});setMode('menu');return;}

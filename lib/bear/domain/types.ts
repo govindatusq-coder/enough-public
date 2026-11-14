@@ -188,7 +188,12 @@ export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;stat
  timingBy?:'user'|'bear'|null;
  // Responsibility Engine: fields the person set themselves (never silently overwritten), and a change a
  // newer document proposes for one of them, waiting for the person's yes.
- confirmedFields?:string[];pendingUpdate?:{field:'dueAt';from:string|null;to:string|null;at:ISODateTime}|null}
+ confirmedFields?:string[];pendingUpdate?:{field:'dueAt';from:string|null;to:string|null;at:ISODateTime}|null;
+ // How Bear sorted this when it was told (chat or voice): the person's words, what was stated and what Bear only proposed.
+ // The traffic light itself is worked out fresh from the date each time it is shown, so it moves as the deadline nears.
+ sorted?:{originalInput:string;via:'text'|'voice';secondaryDomains:AreaKey[];urgency:'red'|'amber'|'green'|null;deadlineSource:'stated'|null;window:string|null;windowBy:ISODate|null;suggestedStart:ISODate|null;nextAction:string|null;reason:string}|null;
+ // The person's own call on the traffic light. It stands until the deadline itself arrives.
+ light?:{level:'red'|'amber'|'green';at:ISODateTime}|null}
 export interface TaskDependency extends Owned{taskId:Id;dependsOnTaskId:Id}
 
 // ---------- Bill ----------

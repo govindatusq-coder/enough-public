@@ -125,17 +125,24 @@ try{
   assert.equal(await page.$('.needs-min'),null,'nothing is asked of the person here');assert.equal(await page.$('.bear-nav'),null,'no navigation bar on this screen');
   const fit=await page.evaluate(()=>({scroll:document.scrollingElement.scrollHeight,view:innerHeight}));assert.ok(fit.scroll<=fit.view+1,'fits one screen: '+JSON.stringify(fit));
   await shot('60-bear-first');
-  await page.fill('#qc-text','Book the car service for next Tuesday');await page.click('.qc-go');await page.waitForSelector('.qc-reply .qc-chips',{timeout:20000});
-  await page.waitForSelector('.qc-else');assert.ok((await page.textContent('.qc-thread')).includes('Anything else?'));assert.equal(await page.getAttribute('#qc-text','placeholder'),'Anything else?');
-  assert.match(page.url(),/\/bear\/capture$/,'stays on this screen');await shot('61-bear-reply');
-  await page.click('.qc-chips button:has-text("▾") >> nth=0');await page.click('.qc-chips [aria-pressed] >> text=Work');await page.waitForFunction(()=>/Work/.test(document.querySelector('.qc-chips button')?.textContent||''));
-  await page.fill('#qc-text','buy milk');await page.keyboard.press('Enter');await page.waitForFunction(()=>/milk/i.test(document.querySelector('.qc-said')?.textContent||''));await page.waitForSelector('.qc-else');
-  // Several to-dos in one breath: each is taken on its own.
-  await page.fill('#qc-text','call the plumber, order school shoes and renew the passport by Friday');await page.click('.qc-go');await page.waitForSelector('.qc-count',{timeout:30000});
-  const lines=await page.$$eval('.qc-line',e=>e.map(x=>x.textContent));assert.equal(lines.length,3,'three to-dos: '+JSON.stringify(lines));
-  assert.ok(/plumber/i.test(lines[0])&&/shoes/i.test(lines[1])&&/passport/i.test(lines[2]),JSON.stringify(lines));assert.ok((await page.textContent('.qc-count')).includes('3 things'));await shot('61b-bear-three');
-  await page.fill('#qc-text','buy milk, eggs and bread');await page.click('.qc-go');await page.waitForSelector('.qc-else');assert.equal(await page.$$eval('.qc-line',e=>e.length),1,'a shopping list stays one thing');
+  await page.fill('#qc-text','Book the car service for next Tuesday');await page.click('.qc-go');await page.waitForSelector('.qc-sorted .qc-card',{timeout:20000});
+  assert.ok((await page.textContent('.qc-sorted')).includes('I’ve sorted this for you'));assert.ok(/Home · Due/.test(await page.textContent('.qc-card .qc-meta')),await page.textContent('.qc-card .qc-meta'));
+  assert.match(page.url(),/\/bear\/capture$/,'stays on this screen');
+  await page.click('button:has-text("Looks good, Bear")');await page.waitForSelector('.qc-else');assert.ok((await page.textContent('.qc-thread')).includes('Anything else?'));assert.equal(await page.getAttribute('#qc-text','placeholder'),'Anything else?');await shot('61-bear-reply');
+  // Several things in one breath: separated, titled, filed and grouped by traffic light, with one confirmation.
+  await page.fill('#qc-text','pay the electricity bill tomorrow, book a dentist appointment, and clean out the garage sometime');await page.click('.qc-go');await page.waitForSelector('.qc-group.green .qc-card',{timeout:30000});
+  assert.equal(await page.$$eval('.qc-card',e=>e.length),3);
+  assert.ok(/Pay the electricity bill/.test(await page.textContent('.qc-group.red')),'the bill due tomorrow is urgent');assert.ok(/Money · Due tomorrow/.test(await page.textContent('.qc-group.red')));
+  assert.ok(/Book a dentist appointment/.test(await page.textContent('.qc-group.amber')));assert.ok(/Health · Suggested: /.test(await page.textContent('.qc-group.amber')),'a proposal is labelled as one');
+  assert.ok(/Clean out the garage/.test(await page.textContent('.qc-group.green')));assert.ok((await page.textContent('.qc-confirm')).includes('Want me to get started?'));await shot('61b-bear-sorted');
+  // One sentence changes one thing.
+  await page.click('button:has-text("Change something")');await page.fill('#qc-text','Actually, the dentist is urgent');await page.click('.qc-go');
+  await page.waitForFunction(()=>/dentist/i.test(document.querySelector('.qc-group.red')?.textContent||''));assert.ok(/Clean out the garage/.test(await page.textContent('.qc-group.green')),'the rest is untouched');await shot('61c-bear-changed');
+  await page.click('button:has-text("Looks good, Bear")');await page.waitForSelector('.qc-else');
+  await page.fill('#qc-text','buy milk, eggs and bread');await page.click('.qc-go');await page.waitForFunction(()=>/milk/i.test(document.querySelector('.qc-said')?.textContent||''));await page.waitForSelector('.qc-sorted .qc-card');assert.equal(await page.$$eval('.qc-card',e=>e.length),1,'a shopping list stays one thing');
   await page.click('a:has-text("Everything Bear’s holding")');await page.waitForURL(/\/bear\/home/);await page.waitForSelector('.hero-banner');await page.waitForSelector('.area-grid.six');
+  // The area cards count what the chat sorted.
+  assert.ok(/1 current/.test(await page.getAttribute('.area-tile[href="/bear/areas/health"]','aria-label')||''),'Health shows the dentist');
  });
  await step('voice option is present',async()=>{await page.goto(base+'/bear/capture/more');await page.click('button:has-text("Say it")');await page.waitForSelector('#voicetext');await shot('28-voice');});
  await step('me screen',async()=>{await page.goto(base+'/bear/me');await page.waitForSelector('text=Reminders');await shot('24-me');});

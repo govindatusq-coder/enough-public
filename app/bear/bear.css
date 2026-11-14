@@ -549,3 +549,24 @@
 .bear .hh-links a{font-size:14px;color:var(--ink-3);text-decoration:none;padding:6px 10px;}
 .bear .qc-else{color:var(--ink-2);}
 .bear .qc-item{display:contents;}
+
+/* Sorted reply: grouped by traffic light. */
+.bear .qc-sorted{width:100%;padding:14px;}
+.bear .qc-head{margin:0 0 4px;font-weight:700;font-size:16px;}
+.bear .qc-group{margin-top:10px;}
+.bear .qc-group-head{margin:0 0 6px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);}
+.bear .qc-group ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;}
+.bear .qc-card{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:14px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--line);}
+.bear .qc-group.red .qc-card{border-left-color:#E5484D;}
+.bear .qc-group.amber .qc-card{border-left-color:#F5A524;}
+.bear .qc-group.green .qc-card{border-left-color:#30A46C;}
+.bear .qc-title{font-weight:700;line-height:1.25;color:var(--ink);text-decoration:none;overflow-wrap:anywhere;}
+.bear .qc-meta{font-size:13.5px;color:var(--ink-2);}
+.bear .qc-area{font-weight:700;color:var(--navy);}
+.bear .qc-next{font-size:13px;color:var(--ink-3);}
+.bear .qc-edit{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+.bear .qc-lights{display:flex;flex-wrap:wrap;gap:6px;}
+.bear .qc-select{min-height:38px;border-radius:999px;border:1px solid var(--line);background:#fff;padding:0 12px;font:inherit;font-size:14px;align-self:flex-start;}
+.bear .qc-confirm{margin-top:12px;}
+.bear .qc-ask{margin:0;font-weight:600;}
+.bear .qc-note{margin:10px 0 0;font-size:14px;color:var(--ink-2);}
