@@ -37,6 +37,8 @@ export function CaptureSheet(){
  const close=useCallback(()=>router.push(first?'/bear/home':'/bear/home'),[router,first]);
 const finish=useCallback((result:CaptureResult)=>{
   // Several things in one message: Bear has sorted each into its area, so go and see them.
+  // Bear could not read the picture and wants to ask one question: that conversation happens in the chat.
+  const ask=(result as unknown as {ask?:{captureId:string;question:string}}).ask;if(ask){router.replace(`/bear/verify/${ask.captureId}`);return;}
   if(!result.capture){router.replace('/bear/home');return;}
   // Not a new to-do: a receipt that settled something, a message that asks nothing, or something too thin to act on. Said plainly.
   if(result.confirmed){setOutcome({kind:'confirmed',taskId:result.confirmed.taskId,title:result.confirmed.title});setMode('menu');return;}

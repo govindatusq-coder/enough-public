@@ -181,6 +181,17 @@ try{
    const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64');
    await page.setInputFiles('#qc-file',[{name:'a.png',mimeType:'image/png',buffer:png},{name:'b.png',mimeType:'image/png',buffer:png},{name:'c.png',mimeType:'image/png',buffer:png}]);
    await page.waitForSelector('.qc-turn:last-of-type .qc-sorted');assert.equal(parts,3,'all three pictures went up in one go');assert.ok((await page.textContent('.qc-turn:last-of-type')).includes('3 pictures'));}
+  // A picture Bear cannot make sense of: it asks ONE question, and the answer becomes the task (with a date if one is given).
+  {const cap=await page.evaluate(async()=>{const r=await fetch('/api/bear/captures',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'text',text:'qwerty asdfgh zxcvbn'})});return (await r.json()).capture?.id;});assert.ok(cap,'a capture to stand for the picture');
+   await page.route('**/api/bear/captures',r=>r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({ask:{captureId:cap,guess:'Swimming lessons',question:'I think this is about “Swimming lessons”. What do you need to do, and by when?'}})}),{times:1});
+   const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64');
+   await page.setInputFiles('#qc-file',{name:'blurry.png',mimeType:'image/png',buffer:png});await page.waitForSelector('.qc-turn:last-of-type .qc-question');
+   assert.ok((await page.textContent('.qc-turn:last-of-type .qc-question')).includes('What do you need to do, and by when?'));assert.equal(await page.$('.qc-else'),null,'Bear waits for the answer');
+   assert.match(await page.getAttribute('#qc-text','placeholder'),/Pay the \$25 by Friday/);await shot('61f-bear-asks');
+   await page.fill('#qc-text','Book swimming lessons for Ava by Friday');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-turn:last-of-type .qc-sorted .qc-card');
+   const card=await page.textContent('.qc-turn:last-of-type .qc-card');assert.ok(/Book swimming lessons for Ava/.test(card)&&/Due /.test(card),card);
+   const n=await page.$$eval('.qc-question',e=>e.length);await page.fill('#qc-text','pick up the dry cleaning');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-turn:last-of-type .qc-sorted');
+   assert.equal(await page.$$eval('.qc-question',e=>e.length),n,'only one question: the next message is an ordinary one');}
   // It is a chat: earlier turns are still there, the newest is in view, and the box has not moved off the bottom.
   await page.waitForTimeout(900);
   {const c=await page.evaluate(()=>{const box=document.querySelector('.qc-pill').getBoundingClientRect();const lastTurn=[...document.querySelectorAll('.qc-turn')].pop().getBoundingClientRect();return {turns:document.querySelectorAll('.qc-turn').length,boxBottom:Math.round(innerHeight-box.bottom),boxTop:box.top,lastVisible:lastTurn.bottom<=box.top+2&&lastTurn.bottom>0,pageScroll:document.scrollingElement.scrollHeight-innerHeight};});

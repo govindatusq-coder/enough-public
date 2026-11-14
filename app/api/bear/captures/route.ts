@@ -1,5 +1,5 @@
 import {HttpError,json,withBear} from '@/lib/bear/server/context';
-import {captureTextSchema,createCapture,MAX_FILE_BYTES} from '@/lib/bear/services/capture';
+import {CaptureError,captureTextSchema,createCapture,MAX_FILE_BYTES} from '@/lib/bear/services/capture';
 import {maybeAutoSetup} from '@/lib/bear/services/auto-setup';
 import {intake} from '@/lib/bear/services/intake';
 import {replyKind} from '@/lib/bear/services/sorter';
@@ -22,6 +22,8 @@ async function withAuto<T extends {extraction:ExtractedEntity;capture:{id:string
  // A page of projects (a brain dump) is filed as projects with their to-dos, then lined up together.
  if(result.extraction.kind==='task'&&isBrainDump(result.extraction.general))return {...result,dump:await setupBrainDump(store,result.extraction)};
  const auto=await maybeAutoSetup(store,result.extraction,new Date(),provider).catch(()=>null);return auto?{...result,auto:{taskId:auto.task.id,title:auto.task.title,area:auto.area,planned:auto.planned,dueAt:auto.task.dueAt,merged:!!auto.merged}}:result;}
+// A short, plain version of what Bear thinks a page is about, for its question. Nothing long or garbled is offered.
+const bestGuess=(s:string)=>{const t=s.replace(/\s+/g,' ').trim().replace(/[.\s]+$/,'');return t.length>=4&&t.length<=90&&/[a-z]{3}/i.test(t)?t:'';};
 export const dynamic='force-dynamic';
 export const maxDuration=120;
 const MAX_PAGE_FILES=6;
@@ -49,23 +51,37 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
   for(const f of form.getAll('file').slice(1,MAX_PAGE_FILES)){if(!(f instanceof File))continue;if(f.size>MAX_FILE_BYTES)throw new HttpError('One of those files is bigger than 10 MB. Try smaller screenshots.',413);extra.push({mime:f.type||'application/octet-stream',bytes:new Uint8Array(await f.arrayBuffer())});}
   const all=[{mime,bytes},...extra];
   const pageInput={text:note,images:all.filter(f=>f.mime.startsWith('image/')),documents:all.filter(f=>f.mime==='application/pdf')};
-  const [result,listed]=await Promise.all([
+  // Neither reading may sink the other: if the ordinary reading fails, the event listing can still carry the page, and the
+  // other way round.
+  const [r1,r2]=await Promise.allSettled([
    createCapture(store,provider,{method:(['photo','screenshot','upload','email'] as const).includes(method as 'photo')?method as 'photo'|'screenshot'|'upload'|'email':'upload',text:note,file:{bytes,mime,name:file.name||'bill'}}),
    provider?readPageEvents(provider,pageInput,today):Promise.resolve([]),
   ]);
-  const events=result.extraction.kind==='bill'?[]:keepOnPage(listed,result.extraction.sourceText);
-  if(events.length>=2||(extra.length>0&&events.length>=1)){
+  const result=r1.status==='fulfilled'?r1.value:null;const listed=r2.status==='fulfilled'?r2.value:[];
+  const failedCapture=r1.status==='rejected'&&r1.reason instanceof CaptureError?r1.reason.capture:null;
+  if(!result&&!listed.length&&r1.status==='rejected'&&!(r1.reason instanceof CaptureError&&failedCapture))throw r1.reason;   // e.g. the AI service is off: said as before
+  const events=result?.extraction.kind==='bill'?[]:keepOnPage(listed,result?.extraction.sourceText||null);
+  const markDone=async()=>{if(result){await store.update('extractions',result.extraction.id,{status:'verified'}).catch(()=>null);await store.update('captures',result.capture.id,{status:'verified'}).catch(()=>null);}};
+  if(events.length>=2||(events.length>=1&&(extra.length>0||!result))){
    const sorted=await placePage(store,events,today,children);
    if(sorted.some(i=>i.taskId)){
     // The page has been dealt with as its separate events; it is not also filed as one big item.
-    await store.update('extractions',result.extraction.id,{status:'verified'}).catch(()=>null);await store.update('captures',result.capture.id,{status:'verified'}).catch(()=>null);
+    await markDone();
     return json({sorted,page:{events:events.length,undated:events.filter(e=>!e.date&&!e.actionDue).length}},201);
    }
   }
-  const single=await withAuto(store,provider,result,{text:note,hasFile:true}) as Record<string,unknown>&{auto?:{taskId:string;dueAt:string|null}};
-  // One thing on the page: if the usual reading found no date and the page listing did, the date is taken.
-  if(single.auto&&!single.auto.dueAt&&events.length===1){const day=events[0].actionDue||events[0].date;if(day&&day>=today){await updateTask(store,single.auto.taskId,{dueAt:day}).catch(()=>null);single.auto={...single.auto,dueAt:day};}}
-  return json(single,201);
+  if(result){
+   const single=await withAuto(store,provider,result,{text:note,hasFile:true}) as Record<string,unknown>&{auto?:{taskId:string;dueAt:string|null};dump?:unknown;confirmed?:unknown;info?:unknown};
+   // One thing on the page: if the usual reading found no date and the page listing did, the date is taken.
+   if(single.auto&&!single.auto.dueAt&&events.length===1){const day=events[0].actionDue||events[0].date;if(day&&day>=today){await updateTask(store,single.auto.taskId,{dueAt:day}).catch(()=>null);single.auto={...single.auto,dueAt:day};}}
+   // A bill keeps its own check screen; anything else Bear could not settle is one question in the chat, not a dead end.
+   if(single.auto||single.dump||single.confirmed||single.info||result.extraction.kind==='bill')return json(single,201);
+  }
+  // Bear could not work out what the picture asks of the person. It asks ONE question, with its best guess, and the answer
+  // becomes the task (see captures/[id]/answer).
+  const captureId=result?.capture.id||failedCapture?.id;if(!captureId)throw new HttpError('Bear could not read that. Try again.',422);
+  const guess=result?bestGuess(result.extraction.general.summary||result.extraction.general.title.value||''):listed[0]?.title||'';
+  return json({ask:{captureId,guess,question:guess?`I think this is about “${guess}”. What do you need to do, and by when?`:'I couldn’t quite read that. What do you need to do, and by when?'}},201);
  }
  const raw=await req.text();if(new TextEncoder().encode(raw).length>64*1024)throw new HttpError('That is a lot of text. Paste just the bill.',413);
  let body;try{body=captureTextSchema.parse(JSON.parse(raw));}catch{throw new HttpError('Tell Bear something first.',400);}

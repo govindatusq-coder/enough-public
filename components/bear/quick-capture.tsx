@@ -13,8 +13,8 @@ const recognitionCtor=():(new()=>Recognition)|null=>{if(typeof window==='undefin
 type Light='red'|'amber'|'green';
 export interface Item{taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;when:string;nextAction:string|null;already:boolean;check:string|null;error:string|null}
 export interface Found{question:string;answer:string;subject:string;date:string|null;dateLabel:string|null;sources:{title:string;url:string}[];remindedAs?:Item|null}
-type Result={say?:string;page?:{events:number;undated:number};found?:Found[];chat?:'closing'|'more';capture?:{id:string};extraction?:{kind?:string};sorted?:Item[];auto?:{taskId:string;title:string}|null;dump?:{captureId:string}|null;confirmed?:{taskId:string;title:string}|null;info?:{captureId:string;receipt:boolean}|null;unclear?:boolean};
-type Other={kind:'say';text:string}|{kind:'closing'}|{kind:'more'}|{kind:'done';taskId:string;title:string}|{kind:'info';captureId:string}|{kind:'unclear'}|{kind:'check';href:string;label:string};
+type Result={ask?:{captureId:string;guess:string;question:string};say?:string;page?:{events:number;undated:number};found?:Found[];chat?:'closing'|'more';capture?:{id:string};extraction?:{kind?:string};sorted?:Item[];auto?:{taskId:string;title:string}|null;dump?:{captureId:string}|null;confirmed?:{taskId:string;title:string}|null;info?:{captureId:string;receipt:boolean}|null;unclear?:boolean};
+type Other={kind:'ask';captureId:string;guess:string;question:string;answered?:boolean}|{kind:'say';text:string}|{kind:'closing'}|{kind:'more'}|{kind:'done';taskId:string;title:string}|{kind:'info';captureId:string}|{kind:'unclear'}|{kind:'check';href:string;label:string};
 const areaLabel:Record<AreaKey,string>={work:'Work',family:'Family',home:'Home',money:'Money',health:'Health',me:'Me'};
 const groups:{light:Light;dot:string;label:string}[]=[{light:'red',dot:'🔴',label:'Urgent'},{light:'amber',dot:'🟠',label:'Coming up'},{light:'green',dot:'🟢',label:'Can wait'}];
 const noSub=()=>()=>{};
@@ -28,7 +28,7 @@ let turnSeq=0;
 const blank=(said:string):Turn=>({id:++turnSeq,said,busy:true,items:[],found:[],other:null,confirmed:false,note:null});
 
 // What Bear says when the answer is not a sorted list or a finding.
-const otherFor=(r:Result):Other|null=>r.say?{kind:'say',text:r.say}:r.chat?{kind:r.chat}:r.sorted?.length||r.found?.length?null:r.confirmed?{kind:'done',taskId:r.confirmed.taskId,title:r.confirmed.title}:r.info?{kind:'info',captureId:r.info.captureId}:r.unclear?{kind:'unclear'}
+const otherFor=(r:Result):Other|null=>r.ask?{kind:'ask',...r.ask}:r.say?{kind:'say',text:r.say}:r.chat?{kind:r.chat}:r.sorted?.length||r.found?.length?null:r.confirmed?{kind:'done',taskId:r.confirmed.taskId,title:r.confirmed.title}:r.info?{kind:'info',captureId:r.info.captureId}:r.unclear?{kind:'unclear'}
     :r.dump?{kind:'check',href:`/bear/sort/${r.dump.captureId}`,label:'That’s a few things. Line them up'}:r.auto?{kind:'done',taskId:r.auto.taskId,title:r.auto.title}
     :r.capture?{kind:'check',href:`/bear/verify/${r.capture.id}`,label:r.extraction?.kind==='bill'?'That looks like a bill. Check what I read':'Check what I read'}:{kind:'unclear'};
 
@@ -47,12 +47,22 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
   rec.current=r;setError(null);try{r.start();setListening(true);}catch{setListening(false);}
  }
  const busy=turns.some(t=>t.busy);
+ const pendingAsk=()=>{const last=turns[turns.length-1];const o=last?.other;return o?.kind==='ask'&&!o.answered?{turnId:last.id,captureId:o.captureId,guess:o.guess}:null;};
  const patch=(id:number,fn:(t:Turn)=>Turn)=>setTurns(list=>list.map(t=>t.id===id?fn(t):t));
  const idsOf=(t:Turn)=>t.items.map(i=>i.taskId).filter((x):x is string=>!!x);
  const swap=(id:number,next:Item)=>patch(id,t=>({...t,items:t.items.map(x=>x.taskId===next.taskId?{...next,already:x.already}:x)}));
  async function send(){
   const body=text.trim();if(!body||busy)return;try{rec.current?.stop();}catch{/* not listening */}
   setError(null);setHint(false);setText('');const viaVoice=usedVoice.current;usedVoice.current=false;
+  // Bear asked its one question about a picture: this message is the answer, and it becomes the task.
+  const asking=pendingAsk();
+  if(asking&&changing===null){
+   const turn=blank(body);setTurns(l=>[...l.map(x=>x.id===asking.turnId&&x.other?.kind==='ask'?{...x,other:{...x.other,answered:true}}:x),turn]);
+   try{const r=await apiSend<Result>(`/api/bear/captures/${asking.captureId}/answer`,{text:body,...(asking.guess?{guess:asking.guess}:{})});
+    patch(turn.id,t=>({...t,busy:false,items:r.sorted||[],other:r.sorted?.length?null:otherFor(r)}));onChanged();}
+   catch(e){setTurns(l=>l.filter(t=>t.id!==turn.id).map(x=>x.id===asking.turnId&&x.other?.kind==='ask'?{...x,other:{...x.other,answered:false}}:x));setText(body);setError((e as ApiError).message||'That didn’t save. Try again.');}
+   return;
+  }
   // "Change something": the next thing said is a correction to that turn, not a new to-do.
   const target=changing!==null?turns.find(t=>t.id===changing):null;
   if(target&&idsOf(target).length){
@@ -97,7 +107,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
  }
  const started=turns.length>0;const last=turns[turns.length-1];
  // Bear asks "Anything else?" once the latest turn needs nothing more from the person.
- const settled=(t:Turn)=>!t.busy&&t.other?.kind!=='closing'&&t.other?.kind!=='more'&&(t.confirmed||t.items.length===1||!t.items.some(i=>i.taskId))&&t.found.every(f=>!f.date||f.remindedAs||t.items.length>0);
+ const settled=(t:Turn)=>!t.busy&&!(t.other?.kind==='ask'&&!t.other.answered)&&t.other?.kind!=='closing'&&t.other?.kind!=='more'&&(t.confirmed||t.items.length===1||!t.items.some(i=>i.taskId))&&t.found.every(f=>!f.date||f.remindedAs||t.items.length>0);
  return <div className={`chat${started?' started':''}`}>
   <div className="chat-scroll">
    {hero?.(started)}
@@ -144,6 +154,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
       </div>}
       {turn.confirmed&&<p className="qc-note" role="status">On it. I’ll bring each one back when it needs you.</p>}
      </div>}
+     {turn.other?.kind==='ask'&&<p className="qc-reply qc-question">{turn.other.question}</p>}
      {turn.other?.kind==='say'&&<p className="qc-reply">{turn.other.text}</p>}
      {turn.other?.kind==='closing'&&<div className="qc-reply qc-closing">
       <p style={{margin:0}}>All sorted. I’m here whenever you need me.</p>
@@ -164,7 +175,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
    {hint&&!voice&&!text&&<p className="qc-hint" role="status">Tap the microphone on your keyboard and say it. Bear will take it from there.</p>}
    <form className="qc-pill" onSubmit={e=>{e.preventDefault();void send();}}>
     <label htmlFor="qc-text" className="sr-only">What do you need to do?</label>
-    <textarea id="qc-text" value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder={listening?'Listening…':changing!==null?'e.g. “the dentist is urgent”':started&&last?.other?.kind!=='closing'?'Anything else?':'What do you need to do?'} rows={1} maxLength={20000} disabled={busy}/>
+    <textarea id="qc-text" value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void send();}}} placeholder={listening?'Listening…':last?.other?.kind==='ask'&&!last.other.answered?'e.g. “Pay the $25 by Friday”':changing!==null?'e.g. “the dentist is urgent”':started&&last?.other?.kind!=='closing'?'Anything else?':'What do you need to do?'} rows={1} maxLength={20000} disabled={busy}/>
     {/* The microphone is always there. Where the browser can't listen itself, it opens the keyboard, whose own microphone can. */}
     <button type="button" className={`qc-go qc-voice${listening?' on':''}`} onClick={()=>{if(voice){listen();return;}document.getElementById('qc-text')?.focus();setHint(true);}} aria-pressed={voice?listening:undefined} aria-label={listening?'Stop listening':'Say it'}><MicIcon/></button>
     {text.trim()&&<button type="submit" className="qc-go" disabled={busy} aria-label={changing!==null?'Change it':'Give it to Bear'}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>}
