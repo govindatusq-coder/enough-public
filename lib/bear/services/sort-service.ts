@@ -3,8 +3,8 @@
 import {z} from 'zod';
 import {daysBetween,formatAU,isValidISODate,todayISO} from '../domain/dates.ts';
 import {areaKeys,type AIInference,type AreaKey,type Task} from '../domain/types.ts';
-import {DAILY_LOOKUPS,type Researcher,type Source} from './lookup.ts';
-import {eventNote,eventsToSorted,type PageEvent} from './page-events.ts';
+import {DAILY_LOOKUPS,type PageReader,type Researcher,type Source} from './lookup.ts';
+import {checkEvents,eventNote,eventsToSorted,type PageEvent} from './page-events.ts';
 import type {StructuredModelProvider} from '../ai/provider.ts';
 import {stamp,type BearStore} from '../store/store.ts';
 import {maybeAutoSetup} from './auto-setup.ts';
@@ -200,3 +200,23 @@ export async function placePage(store:BearStore,events:PageEvent[],today:string,
  }
  return out;
 }
+
+// ---------- a link to a page ----------
+// Read the page behind a link, within the same daily allowance as lookups. Every attempt is recorded (counts and token use).
+export async function readLink(store:BearStore,reader:PageReader|null,url:string,today:string,now=new Date()):Promise<{events:PageEvent[];why:'off'|'limit'|'unreadable'|'nothing'|null}>{
+ if(!reader)return {events:[],why:'off'};
+ const since=now.getTime()-24*3600000;
+ const used=(await store.list('ai_inferences',{where:[{column:'service',value:'WebLookup'}]})).filter(i=>Date.parse(i.createdAt)>=since).length;
+ if(used>=DAILY_LOOKUPS)return {events:[],why:'limit'};
+ const started=Date.now();
+ try{
+  const r=await reader(url,today);const events=r.failed?[]:checkEvents(r.events,today,null);
+  await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'WebLookup',provider:'anthropic',model:r.model,promptHash:'page-link-1',rawOutput:{opened:!r.failed,events:events.length},latencyMs:Date.now()-started,ok:true,error:null,usage:r.usage}));
+  return {events,why:r.failed?'unreadable':events.length?null:'nothing'};
+ }catch{
+  await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'WebLookup',provider:'anthropic',model:'',promptHash:'page-link-1',rawOutput:null,latencyMs:Date.now()-started,ok:false,error:'link_failed'})).catch(()=>null);
+  return {events:[],why:'unreadable'};
+ }
+}
+export const linkNote=(why:'off'|'limit'|'unreadable'|'nothing'|null)=>why==='unreadable'?'I couldn’t open that page. It may need a login. Save it as a PDF, or add screenshots of it, and I’ll read those.'
+ :why==='nothing'?'I opened that page but couldn’t find any dates or things to do on it.':why==='limit'?'I’ve done all the reading from the web I can for today. Add screenshots or a PDF and I’ll read those.':why==='off'?'I can’t open links here yet. Add screenshots or a PDF and I’ll read those.':null;

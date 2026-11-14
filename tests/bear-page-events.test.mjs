@@ -65,3 +65,26 @@ test('if the page cannot be listed, Bear falls back to its ordinary reading inst
  assert.deepEqual(await readPageEvents(new FakeProvider(()=>new ProviderError('busy','rate_limited')),{text:'x',images:[],documents:[]},TODAY),[]);
  assert.deepEqual(await readPageEvents(new FakeProvider(()=>({nonsense:true})),{text:'x',images:[],documents:[]},TODAY),[]);
 });
+
+// ---------- a link to a page ----------
+test('a message that is a link means "read this page"; a long message that mentions one does not',async()=>{
+ const {linkIn}=await import('../lib/bear/services/lookup.ts');
+ assert.equal(linkIn('https://www.school.example.edu.au/term-4-dates'),'https://www.school.example.edu.au/term-4-dates');
+ assert.equal(linkIn('Term 4 dates | Our School\nhttps://school.example/term4?x=1.'),'https://school.example/term4?x=1');
+ assert.equal(linkIn('read this for me https://school.example/news and add the dates'),'https://school.example/news');
+ for(const t of ['call the school about the excursion','www.school.example','ftp://school.example/file','http://localhost:3000/x','http://192.168.1.1/admin','https://nodots/x',
+  'Hi parents, a long newsletter with lots of words in it about many things happening this term, see https://school.example/news for the rest of it'])assert.equal(linkIn(t),null,t);
+});
+test('a page read from a link becomes its separate dated tasks; a page that cannot be opened is said plainly',async()=>{
+ const {readLink,linkNote}=await import('../lib/bear/services/sort-service.ts');const {DAILY_LOOKUPS}=await import('../lib/bear/services/lookup.ts');
+ const s=await person();const calls=[];const reader=out=>async(url,today)=>{calls.push(url);if(out instanceof Error)throw out;return {usage:{inputTokens:5000,outputTokens:600},model:'fake',...out};};
+ const ok=await readLink(s,reader({events:PAGE,failed:false}),'https://school.example/term4',TODAY,NOW);assert.equal(ok.events.length,7);assert.equal(ok.why,null);
+ const items=await placePage(s,ok.events,TODAY,[],NOW);assert.equal(items.filter(i=>i.taskId).length,7);
+ const log=(await s.list('ai_inferences')).filter(i=>i.service==='WebLookup');assert.equal(log.length,1);assert.deepEqual(log[0].rawOutput,{opened:true,events:7},'counts only');
+ const wall=await readLink(s,reader({events:null,failed:true}),'https://portal.example/login',TODAY,NOW);assert.deepEqual([wall.events.length,wall.why],[0,'unreadable']);assert.match(linkNote(wall.why),/may need a login.*PDF.*screenshots/);
+ assert.equal((await readLink(s,reader(new Error('network')),'https://x.example/a',TODAY,NOW)).why,'unreadable');
+ assert.equal((await readLink(s,reader({events:{events:[]},failed:false}),'https://x.example/b',TODAY,NOW)).why,'nothing');
+ assert.equal((await readLink(s,null,'https://x.example/c',TODAY,NOW)).why,'off');
+ const before=calls.length;for(let i=(await s.list('ai_inferences')).filter(x=>x.service==='WebLookup').length;i<DAILY_LOOKUPS;i++)await readLink(s,reader({events:{events:[]},failed:false}),'https://x.example/d',TODAY,NOW);
+ const over=await readLink(s,reader({events:PAGE,failed:false}),'https://x.example/e',TODAY,NOW);assert.equal(over.why,'limit');assert.ok(calls.length>before&&calls[calls.length-1]!=='https://x.example/e','past the daily allowance the page is not fetched');
+});

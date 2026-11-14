@@ -74,3 +74,17 @@ export function readFinding(text:string,returned:Source[],today:string):Finding|
 }
 export type Researcher=(question:string,today:string)=>Promise<{finding:Finding|null;usage:{inputTokens:number;outputTokens:number}|null;searches:number;model:string}>;
 export const DAILY_LOOKUPS=20;
+
+// ---------- a link to a page ----------
+// A message that is a web address (with at most a few words around it) means "read this page", not "file this address".
+const URL_RE=/\bhttps?:\/\/[^\s<>"')\]]+/i;
+export function linkIn(text:string):string|null{
+ const m=URL_RE.exec(text);if(!m)return null;
+ const url=m[0].replace(/[.,;:!?]+$/,'');
+ const rest=text.replace(m[0],' ').trim().split(/\s+/).filter(Boolean);
+ if(rest.length>14)return null;                       // a long message that happens to mention a link is not a request to read it
+ try{const u=new URL(url);if(!/^https?:$/.test(u.protocol)||!u.hostname.includes('.')||/^(localhost|127\.|10\.|192\.168\.|169\.254\.)/.test(u.hostname))return null;return u.toString();}catch{return null;}
+}
+// Reads the page at a public address and lists what is on it. `events` is the model's raw list (checked by page-events.ts);
+// `failed` says the page could not be opened (a login wall, a dead link), so Bear can say so plainly.
+export type PageReader=(url:string,today:string)=>Promise<{events:unknown|null;failed:boolean;usage:{inputTokens:number;outputTokens:number}|null;model:string}>;

@@ -3,11 +3,11 @@ import {captureTextSchema,createCapture,MAX_FILE_BYTES} from '@/lib/bear/service
 import {maybeAutoSetup} from '@/lib/bear/services/auto-setup';
 import {intake} from '@/lib/bear/services/intake';
 import {replyKind} from '@/lib/bear/services/sorter';
-import {adoptSorted,keptNote,looksLikeDocument,lookUp,placePage,placeSorted,sortParts,todayFor} from '@/lib/bear/services/sort-service';
-import {asksToFindOut} from '@/lib/bear/services/lookup';
+import {adoptSorted,keptNote,linkNote,looksLikeDocument,lookUp,placePage,placeSorted,readLink,sortParts,todayFor} from '@/lib/bear/services/sort-service';
+import {asksToFindOut,linkIn} from '@/lib/bear/services/lookup';
 import {keepOnPage,readPageEvents} from '@/lib/bear/services/page-events';
 import {updateTask} from '@/lib/bear/services/task-edit';
-import {researcherFromEnv} from '@/lib/bear/ai/web-lookup';
+import {pageReaderFromEnv,researcherFromEnv} from '@/lib/bear/ai/web-lookup';
 import {isBrainDump,setupBrainDump} from '@/lib/bear/services/dump';
 import type {BearStore} from '@/lib/bear/store/store';
 import type {StructuredModelProvider} from '@/lib/bear/ai/provider';
@@ -24,6 +24,7 @@ async function withAuto<T extends {extraction:ExtractedEntity;capture:{id:string
  const auto=await maybeAutoSetup(store,result.extraction,new Date(),provider).catch(()=>null);return auto?{...result,auto:{taskId:auto.task.id,title:auto.task.title,area:auto.area,planned:auto.planned,dueAt:auto.task.dueAt,merged:!!auto.merged}}:result;}
 export const dynamic='force-dynamic';
 export const maxDuration=120;
+const MAX_PAGE_FILES=6;
 // A generous daily limit per person, so a bug, a loop or misuse can't run up the AI bill. Real use is a handful a day.
 const DAILY_CAPTURE_LIMIT=60;
 async function checkDailyLimit(store:BearStore){
@@ -43,13 +44,17 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
   // While Bear reads the page the usual way, it also lists every separate event on it (a calendar, a newsletter, a fixtures
   // list is many things, not one). The two run side by side so the person does not wait twice.
   const {today,children}=await todayFor(store);
-  const pageInput={text:note,images:mime.startsWith('image/')?[{mime,bytes}]:[],documents:mime==='application/pdf'?[{mime,bytes}]:[]};
+  // Several pictures given together are one long page (screenshots of the same notice): they are read as a whole.
+  const extra:{mime:string;bytes:Uint8Array}[]=[];
+  for(const f of form.getAll('file').slice(1,MAX_PAGE_FILES)){if(!(f instanceof File))continue;if(f.size>MAX_FILE_BYTES)throw new HttpError('One of those files is bigger than 10 MB. Try smaller screenshots.',413);extra.push({mime:f.type||'application/octet-stream',bytes:new Uint8Array(await f.arrayBuffer())});}
+  const all=[{mime,bytes},...extra];
+  const pageInput={text:note,images:all.filter(f=>f.mime.startsWith('image/')),documents:all.filter(f=>f.mime==='application/pdf')};
   const [result,listed]=await Promise.all([
    createCapture(store,provider,{method:(['photo','screenshot','upload','email'] as const).includes(method as 'photo')?method as 'photo'|'screenshot'|'upload'|'email':'upload',text:note,file:{bytes,mime,name:file.name||'bill'}}),
    provider?readPageEvents(provider,pageInput,today):Promise.resolve([]),
   ]);
   const events=result.extraction.kind==='bill'?[]:keepOnPage(listed,result.extraction.sourceText);
-  if(events.length>=2){
+  if(events.length>=2||(extra.length>0&&events.length>=1)){
    const sorted=await placePage(store,events,today,children);
    if(sorted.some(i=>i.taskId)){
     // The page has been dealt with as its separate events; it is not also filed as one big item.
@@ -64,6 +69,17 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
  }
  const raw=await req.text();if(new TextEncoder().encode(raw).length>64*1024)throw new HttpError('That is a lot of text. Paste just the bill.',413);
  let body;try{body=captureTextSchema.parse(JSON.parse(raw));}catch{throw new HttpError('Tell Bear something first.',400);}
+ // A link: Bear reads the page behind it and lists what is on it, so nobody has to screenshot a long page piece by piece.
+ const link=(body.method==='text'||body.method==='voice')&&!body.isDemo?linkIn(body.text):null;
+ if(link){
+  const {today,children}=await todayFor(store);const read=await readLink(store,pageReaderFromEnv(),link,today);
+  if(read.events.length){
+   const sorted=await placePage(store,read.events,today,children);
+   if(sorted.length)return json({sorted,page:{events:read.events.length,undated:read.events.filter(e=>!e.date&&!e.actionDue).length}},201);
+   return json({say:'Everything on that page is already past, so there is nothing to add.'});
+  }
+  return json({say:linkNote(read.why)||'I couldn’t read that page.'});
+ }
  // Typed or spoken: Bear sorts it. One message can hold several responsibilities; each gets a clear title, one of the six
  // areas, a traffic light and a timeframe. Pasted documents (emails, notices) keep to the ordinary reading below.
  if((body.method==='text'||body.method==='voice')&&!body.isDemo&&!looksLikeDocument(body.text)){

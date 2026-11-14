@@ -13,7 +13,7 @@ const recognitionCtor=():(new()=>Recognition)|null=>{if(typeof window==='undefin
 type Light='red'|'amber'|'green';
 export interface Item{taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;when:string;nextAction:string|null;already:boolean;check:string|null;error:string|null}
 export interface Found{question:string;answer:string;subject:string;date:string|null;dateLabel:string|null;sources:{title:string;url:string}[];remindedAs?:Item|null}
-type Result={page?:{events:number;undated:number};found?:Found[];chat?:'closing'|'more';capture?:{id:string};extraction?:{kind?:string};sorted?:Item[];auto?:{taskId:string;title:string}|null;dump?:{captureId:string}|null;confirmed?:{taskId:string;title:string}|null;info?:{captureId:string;receipt:boolean}|null;unclear?:boolean};
+type Result={say?:string;page?:{events:number;undated:number};found?:Found[];chat?:'closing'|'more';capture?:{id:string};extraction?:{kind?:string};sorted?:Item[];auto?:{taskId:string;title:string}|null;dump?:{captureId:string}|null;confirmed?:{taskId:string;title:string}|null;info?:{captureId:string;receipt:boolean}|null;unclear?:boolean};
 type Other={kind:'say';text:string}|{kind:'closing'}|{kind:'more'}|{kind:'done';taskId:string;title:string}|{kind:'info';captureId:string}|{kind:'unclear'}|{kind:'check';href:string;label:string};
 const areaLabel:Record<AreaKey,string>={work:'Work',family:'Family',home:'Home',money:'Money',health:'Health',me:'Me'};
 const groups:{light:Light;dot:string;label:string}[]=[{light:'red',dot:'🔴',label:'Urgent'},{light:'amber',dot:'🟠',label:'Coming up'},{light:'green',dot:'🟢',label:'Can wait'}];
@@ -28,13 +28,13 @@ let turnSeq=0;
 const blank=(said:string):Turn=>({id:++turnSeq,said,busy:true,items:[],found:[],other:null,confirmed:false,note:null});
 
 // What Bear says when the answer is not a sorted list or a finding.
-const otherFor=(r:Result):Other|null=>r.chat?{kind:r.chat}:r.sorted?.length||r.found?.length?null:r.confirmed?{kind:'done',taskId:r.confirmed.taskId,title:r.confirmed.title}:r.info?{kind:'info',captureId:r.info.captureId}:r.unclear?{kind:'unclear'}
+const otherFor=(r:Result):Other|null=>r.say?{kind:'say',text:r.say}:r.chat?{kind:r.chat}:r.sorted?.length||r.found?.length?null:r.confirmed?{kind:'done',taskId:r.confirmed.taskId,title:r.confirmed.title}:r.info?{kind:'info',captureId:r.info.captureId}:r.unclear?{kind:'unclear'}
     :r.dump?{kind:'check',href:`/bear/sort/${r.dump.captureId}`,label:'That’s a few things. Line them up'}:r.auto?{kind:'done',taskId:r.auto.taskId,title:r.auto.title}
     :r.capture?{kind:'check',href:`/bear/verify/${r.capture.id}`,label:r.extraction?.kind==='bill'?'That looks like a bill. Check what I read':'Check what I read'}:{kind:'unclear'};
 
 // A conversation: what you said and what Bear did with it stay on screen, newest at the bottom, with the box docked under it.
-export function QuickCapture({onChanged,hero,links}:{onChanged:()=>void;hero?:(started:boolean)=>React.ReactNode;links?:(attach:()=>void)=>React.ReactNode}){
- const [text,setText]=useState('');const [turns,setTurns]=useState<Turn[]>([]);const [error,setError]=useState<string|null>(null);const [changing,setChanging]=useState<number|null>(null);const [hint,setHint]=useState(false);
+export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;hero?:(started:boolean)=>React.ReactNode;links?:(attach:()=>void)=>React.ReactNode;initial?:string}){
+ const [text,setText]=useState(initial||'');const [turns,setTurns]=useState<Turn[]>([]);const [error,setError]=useState<string|null>(null);const [changing,setChanging]=useState<number|null>(null);const [hint,setHint]=useState(false);
  const [listening,setListening]=useState(false);const voice=useSyncExternalStore(noSub,()=>!!recognitionCtor(),()=>false);const usedVoice=useRef(false);const rec=useRef<Recognition|null>(null);const end=useRef<HTMLSpanElement>(null);
  useEffect(()=>()=>{try{rec.current?.stop();}catch{/* already stopped */}},[]);
  // Keep the newest thing in view, the way a chat does.
@@ -74,11 +74,11 @@ export function QuickCapture({onChanged,hero,links}:{onChanged:()=>void;hero?:(s
   }catch(e){setTurns(l=>l.filter(t=>t.id!==turn.id));setText(body);setError((e as ApiError).message||'Bear could not take that. Try again.');}
  }
  // A photo, screenshot or PDF given in the chat: Bear reads the page and answers here, the same as for words.
- async function upload(file:File){
-  if(busy)return;setError(null);setHint(false);setChanging(null);
-  const turn={...blank(file.name||'A photo'),file:true};setTurns(l=>[...l,turn]);
+ async function upload(files:File[]){
+  if(busy||!files.length)return;setError(null);setHint(false);setChanging(null);const list=files.slice(0,6);
+  const turn={...blank(list.length>1?`${list.length} pictures`:list[0].name||'A photo'),file:true};setTurns(l=>[...l,turn]);
   try{
-   const form=new FormData();form.append('file',await shrinkImage(file));form.append('method',file.type==='application/pdf'?'upload':'screenshot');
+   const form=new FormData();for(const f of list)form.append('file',await shrinkImage(f));form.append('method',list[0].type==='application/pdf'?'upload':'screenshot');
    const r=await apiForm<Result>('/api/bear/captures',form);
    patch(turn.id,t=>({...t,busy:false,items:r.sorted||[],found:[],other:otherFor(r),page:r.page||null}));onChanged();
   }catch(e){setTurns(l=>l.filter(t=>t.id!==turn.id));setError((e as ApiError).message||'Bear could not read that. Try again.');}
@@ -101,7 +101,7 @@ export function QuickCapture({onChanged,hero,links}:{onChanged:()=>void;hero?:(s
    {started&&<div className="qc-thread" aria-live="polite">
     {turns.map(turn=>{const placed=turn.items.filter(i=>i.taskId);const isChanging=changing===turn.id;return <div key={turn.id} className="qc-turn">
      <p className="qc-said">{turn.file?<><span aria-hidden="true">📎 </span><span className="sr-only">File: </span></>:null}{turn.said.length>220?turn.said.slice(0,220)+'…':turn.said}</p>
-     {turn.busy&&<p className="qc-reply muted">{turn.file?'Bear’s reading the page…':/\b(search|look up|find out|google|research|when|what|how much)\b/i.test(turn.said)?'Bear’s looking into it…':'Bear’s sorting it…'}</p>}
+     {turn.busy&&<p className="qc-reply muted">{turn.file||/^https?:\/\//i.test(turn.said.trim())?'Bear’s reading the page…':/\b(search|look up|find out|google|research|when|what|how much)\b/i.test(turn.said)?'Bear’s looking into it…':'Bear’s sorting it…'}</p>}
      {turn.found.map((f,k)=><div key={k} className="qc-reply qc-found">
       <p className="qc-head">I looked it up.</p>
       <p className="qc-answer">{f.answer}</p>
@@ -166,7 +166,7 @@ export function QuickCapture({onChanged,hero,links}:{onChanged:()=>void;hero?:(s
     <button type="button" className={`qc-go qc-voice${listening?' on':''}`} onClick={()=>{if(voice){listen();return;}document.getElementById('qc-text')?.focus();setHint(true);}} aria-pressed={voice?listening:undefined} aria-label={listening?'Stop listening':'Say it'}><MicIcon/></button>
     {text.trim()&&<button type="submit" className="qc-go" disabled={busy} aria-label={changing!==null?'Change it':'Give it to Bear'}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>}
    </form>
-   <input id="qc-file" type="file" className="sr-only" accept="image/*,application/pdf" aria-label="Add a photo or file" tabIndex={-1} onChange={e=>{const f=e.target.files?.[0];e.target.value='';if(f)void upload(f);}}/>
+   <input id="qc-file" type="file" className="sr-only" accept="image/*,application/pdf" multiple aria-label="Add photos or a file" tabIndex={-1} onChange={e=>{const fs=[...(e.target.files||[])];e.target.value='';if(fs.length)void upload(fs);}}/>
    {links?.(openPicker)}
   </div>
  </div>;
