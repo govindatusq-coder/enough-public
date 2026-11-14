@@ -1,6 +1,7 @@
 import {createClient} from '@supabase/supabase-js';
 import {HttpError,json,readJson,withBear} from '@/lib/bear/server/context';
 import {serverClient} from '@/lib/supabase/server';
+import {removeOutbox} from '@/lib/bear/server/outbox-robot';
 export const dynamic='force-dynamic';
 export const maxDuration=60;
 // Delete everything this person has in Load Bear: records, stored files, forms, reminders, settings. Irreversible, and only after
@@ -9,6 +10,7 @@ export const maxDuration=60;
 export const DELETE=(req:Request)=>withBear(req,async({store,user})=>{
  const body=await readJson(req,512) as {confirm?:string};
  if(body.confirm!=='DELETE')throw new HttpError('Type DELETE to confirm.',400);
+ await removeOutbox(user.id).catch(()=>{});   // the reminder job's copy goes first
  const {leftover}=await store.eraseAll();
  let loginRemoved=false;const key=process.env.SUPABASE_SERVICE_ROLE_KEY,url=process.env.NEXT_PUBLIC_SUPABASE_URL;
  if(key&&url){try{const admin=createClient(url,key,{auth:{persistSession:false}});const {error}=await admin.auth.admin.deleteUser(user.id);loginRemoved=!error;}catch{loginRemoved=false;}}

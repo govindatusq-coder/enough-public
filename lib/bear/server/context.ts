@@ -1,5 +1,7 @@
 import 'server-only';
 import {ZodError} from 'zod';
+import {after} from 'next/server';
+import {syncOutbox} from '@/lib/bear/server/outbox-sync';
 import {bearSession} from '@/lib/bear/server/session';
 import {trustedWrite} from '@/lib/public-auth';
 import {providerFromEnv,type StructuredModelProvider} from '@/lib/bear/ai/provider';
@@ -20,7 +22,13 @@ export async function withBear(req:Request,handler:(ctx:BearContext)=>Promise<Re
   const session=await bearSession(req);
   if(!session)return json({error:'Sign in to give things to Bear.',signIn:'/bear/signin'},401);
   const provider=providerFromEnv();
-  return await handler({store:session.store,provider,user:session.user,aiAvailable:!!provider});
+  const response=await handler({store:session.store,provider,user:session.user,aiAvailable:!!provider});
+  // After the person changes something (or opens the main screen), refresh what the reminder job will send for them.
+  const path=new URL(req.url).pathname;
+  if(response.status<400&&(req.method!=='GET'||path==='/api/bear/home')&&!path.startsWith('/api/bear/me/data')){
+   try{after(()=>syncOutbox(session.store));}catch{/* outside a request: nothing to schedule */}
+  }
+  return response;
  }catch(error){return errorResponse(error);}
 }
 export function errorResponse(error:unknown){

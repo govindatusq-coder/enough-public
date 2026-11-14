@@ -14,7 +14,7 @@ export type OutboxSub={endpoint:string;keys:{p256dh:string;auth:string}};
 export interface OutboxItem{reminder:Pick<Reminder,'id'|'taskId'|'billId'|'status'|'scheduledFor'|'kind'|'message'|'attempts'|'deliveredAt'|'deliveredVia'>;task:Pick<Task,'id'|'title'|'status'|'dueAt'|'timing'|'estimatedMinutes'>;bill:Pick<Bill,'id'|'category'>|null}
 export interface Outbox{v:1;userId:string;builtAt:string;subs:OutboxSub[];profile:Pick<Profile,'lifeRhythm'|'notification'|'dayMode'|'dayModeSetAt'>;signals:BehaviourSignals;items:OutboxItem[];
  // reminder id -> the scheduled time it was sent for (a snoozed reminder has a new time, so it can be sent again)
- sent:Record<string,{for:string;at:string}>}
+ sent:Record<string,{for:string;at:string;task?:string}>}
 const MAX_ITEMS=150;
 const sentKey=(r:{id:string;scheduledFor:string})=>r.id;
 
@@ -25,6 +25,7 @@ export async function buildOutbox(store:BearStore,previous:Outbox|null,now=new D
  if(!subs.length)return null;
  const sent:Outbox['sent']={};
  for(const [id,s] of Object.entries(previous?.sent||{})){
+  if(now.getTime()-new Date(s.at).getTime()>7*86400000)continue;   // old sends are forgotten
   const r=await store.get('reminders',id);if(!r)continue;
   if(r.scheduledFor===s.for){if(!r.deliveredVia.includes('push')&&(r.status==='scheduled'||r.status==='snoozed'))await markDelivered(store,id,'push',new Date(s.at)).catch(()=>null);sent[id]=s;}
  }
@@ -49,13 +50,15 @@ export async function deliverOutbox(box:Outbox,send:PushSender,now=new Date()):P
  for(const item of items){
   if(seenTasks.has(item.task.id))continue;
   const prior=sent[sentKey(item.reminder)];if(prior&&prior.for===item.reminder.scheduledFor)continue;
+  // One push per task per day at most: a task with several reminders lined up never buzzes again and again.
+  if(Object.values(sent).some(s=>s.task===item.task.id&&now.getTime()-new Date(s.at).getTime()<20*3600000)){seenTasks.add(item.task.id);continue;}
   const d=decide({reminder:item.reminder as Reminder,task:item.task as Task,bill:item.bill as Bill|null,profile,dayMode,signals:box.signals,now});
   if(!d.deliver)continue;
   seenTasks.add(item.task.id);let ok=false;
   for(const s of box.subs){if(gone.has(s.endpoint))continue;
    let r:'sent'|'gone'|'failed';try{r=await send(s,{title:'Load Bear',body:d.message,url:reminderUrl({billId:item.bill?.id||null,reminder:item.reminder as Reminder}),tag:item.reminder.id});}catch{r='failed';}
    if(r==='sent')ok=true;else if(r==='gone')gone.add(s.endpoint);}
-  if(ok){delivered++;changed=true;sent[item.reminder.id]={for:item.reminder.scheduledFor,at:now.toISOString()};item.reminder.deliveredAt=item.reminder.deliveredAt||now.toISOString();item.reminder.deliveredVia=[...new Set([...item.reminder.deliveredVia,'push' as const])];}
+  if(ok){delivered++;changed=true;sent[item.reminder.id]={for:item.reminder.scheduledFor,at:now.toISOString(),task:item.task.id};item.reminder.deliveredAt=item.reminder.deliveredAt||now.toISOString();item.reminder.deliveredVia=[...new Set([...item.reminder.deliveredVia,'push' as const])];}
   else failed++;
  }
  if(gone.size)changed=true;
