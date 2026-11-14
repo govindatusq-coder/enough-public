@@ -7,6 +7,11 @@ const tableName=(t:TableName)=>'bear_'+t;
 // Request-scoped Supabase store. The client carries the signed-in user's session so
 // row-level security enforces owner isolation server-side; user_id is also set
 // explicitly on every write so a policy mismatch fails closed rather than open.
+// Same order as supabase/migrations/20261112120000_bear_delete_my_data.sql (children before parents).
+export const ERASE_ORDER=['responsibility_events','connected_accounts','study_responses','push_subscriptions','reminder_interactions','reminders','wins','completions','value_ledger',
+ 'behaviour_events','suggestions','recurring_expectations','bills','task_dependencies','tasks','projects','user_corrections','ai_inferences','extractions','source_documents','captures','people','areas',
+ 'inbound_messages','inbound_routes','profiles'];
+const NO_FUNCTION=new Set(['PGRST202','42883']),NO_TABLE=new Set(['42P01','PGRST205']);
 export class SupabaseStore implements BearStore{
  readonly userId:string;private db:SupabaseClient;
  constructor(userId:string,db:SupabaseClient){this.userId=userId;this.db=db;}
@@ -57,7 +62,24 @@ export class SupabaseStore implements BearStore{
    if(!files.length)return;
   }
  }
- async eraseAll(){await this.removeTree(this.userId);const {error}=await this.db.rpc('bear_delete_my_data');this.wrap(error);}
+ async eraseAll(){
+  await this.removeTree(this.userId);
+  const {error}=await this.db.rpc('bear_delete_my_data');
+  if(!error)return {leftover:[] as string[]};
+  // The database helper isn't installed (its migration hasn't been applied): remove the rows directly, as this person, table by table.
+  if(!NO_FUNCTION.has(error.code||''))this.wrap(error);
+  const leftover:string[]=[];
+  for(const t of ERASE_ORDER){
+   const r=await this.db.from('bear_'+t).delete().eq('user_id',this.userId);
+   if(!r.error||NO_TABLE.has(r.error.code||''))continue;
+   if(r.error.code==='42501'){ // not allowed to delete (the append-only history): only a problem if this person has rows there
+    const c=await this.db.from('bear_'+t).select('id',{count:'exact',head:true}).eq('user_id',this.userId);
+    if(c.error||(c.count||0)>0)leftover.push(t);continue;
+   }
+   this.wrap(r.error);
+  }
+  return {leftover};
+ }
  async putFile(objectKey:string,bytes:Uint8Array,mime:string):Promise<StoredFile>{
   if(!objectKey.startsWith(this.userId+'/'))throw new StoreError('File path must be owned','invalid');
   const {error}=await this.db.storage.from(BUCKET).upload(objectKey,bytes,{contentType:mime,upsert:false});

@@ -19,7 +19,7 @@ export class MemoryStore implements BearStore{
   const a=v as number|string,b=w.value as number|string;
   return op==='lte'?a<=b:op==='gte'?a>=b:op==='lt'?a<b:a>b;
  }
- async eraseAll(){for(const rows of this.tables.values())for(const [id,r] of [...rows])if((r as {userId?:string}).userId===this.userId)rows.delete(id);for(const k of [...this.files.keys()])if(k.startsWith(this.userId+'/'))this.files.delete(k);}
+ async eraseAll(){for(const rows of this.tables.values())for(const [id,r] of [...rows])if((r as {userId?:string}).userId===this.userId)rows.delete(id);for(const k of [...this.files.keys()])if(k.startsWith(this.userId+'/'))this.files.delete(k);return {leftover:[] as string[]};}
  async get<K extends TableName>(table:K,id:string){const row=this.table(table).get(id);return row&&row.userId===this.userId?structuredClone(row):null;}
  async list<K extends TableName>(table:K,query:Query={}){
   let rows=[...this.table(table).values()].filter(r=>r.userId===this.userId);

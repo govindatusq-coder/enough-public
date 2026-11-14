@@ -9,9 +9,9 @@ export const maxDuration=60;
 export const DELETE=(req:Request)=>withBear(req,async({store,user})=>{
  const body=await readJson(req,512) as {confirm?:string};
  if(body.confirm!=='DELETE')throw new HttpError('Type DELETE to confirm.',400);
- await store.eraseAll();
+ const {leftover}=await store.eraseAll();
  let loginRemoved=false;const key=process.env.SUPABASE_SERVICE_ROLE_KEY,url=process.env.NEXT_PUBLIC_SUPABASE_URL;
  if(key&&url){try{const admin=createClient(url,key,{auth:{persistSession:false}});const {error}=await admin.auth.admin.deleteUser(user.id);loginRemoved=!error;}catch{loginRemoved=false;}}
  try{if(process.env.NEXT_PUBLIC_SUPABASE_URL)await (await serverClient()).auth.signOut();}catch{/* the data is gone; the session just ends */}
- return json({deleted:true,loginRemoved});
+ return json({deleted:true,loginRemoved,historyKept:leftover.length>0});
 },{write:true});

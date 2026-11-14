@@ -10,7 +10,7 @@
 - [x] Nothing claims Bear sends, submits, books or pays
 
 **Blocked on the owner (see OWNER_ACTIONS.md):**
-- [ ] Apply the seven pending database migrations
+- [ ] (Optional) Apply the pending database migrations: the app no longer depends on them
 - [ ] Service role key, cron secret, VAPID keys, GitHub secrets/variable
 - [ ] Confirm backups on the Supabase plan
 - [ ] Real-phone push test

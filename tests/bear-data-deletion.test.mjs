@@ -49,3 +49,25 @@ test('the database function deletes from EVERY table the app uses (so a new tabl
  assert.match(sql,/auth\.uid\(\)/,'only ever the caller’s rows');assert.match(sql,/revoke all on function public\.bear_delete_my_data\(\) from public,anon/);assert.match(sql,/to_regclass/,'skips tables that don’t exist yet');
  assert.match(sql,/set search_path=''/,'no search-path hijacking');
 });
+
+// Without the database helper (migration not applied) deletion still works, table by table, and says what it could not remove.
+test('deletion works without the database helper, and reports a history log it cannot remove',async()=>{
+ const {SupabaseStore,ERASE_ORDER}=await import('../lib/bear/store/supabase.ts');
+ const fake=(opts)=>{const deleted=[];const db={
+  rpc:async()=>({error:{code:'PGRST202',message:'function not found'}}),
+  storage:{from:()=>({list:async()=>({data:[],error:null}),remove:async()=>({error:null})})},
+  from:(table)=>({
+   delete:()=>({eq:async(col,val)=>{assert.equal(col,'user_id');assert.equal(val,'u1');if(opts.missing?.includes(table))return {error:{code:'PGRST205',message:'no table'}};if(table==='bear_responsibility_events')return {error:{code:'42501',message:'permission denied'}};deleted.push(table);return {error:null};}}),
+   select:()=>({eq:async()=>({count:opts.events,error:null})}),
+  })};return {db,deleted};};
+ const a=fake({events:3,missing:['bear_study_responses']});const r=await new SupabaseStore('u1',a.db).eraseAll();
+ assert.deepEqual(r.leftover,['responsibility_events'],'the history log is reported, not hidden');
+ assert.equal(a.deleted.length,ERASE_ORDER.length-2,'every other table that exists was cleared, only this person’s rows');
+ assert.ok(a.deleted.indexOf('bear_tasks')<a.deleted.indexOf('bear_profiles'),'children before parents');
+ const b=fake({events:0});assert.deepEqual((await new SupabaseStore('u1',b.db).eraseAll()).leftover,[],'nothing left when there is no history');
+});
+test('any other database failure during deletion is an error, never a silent success',async()=>{
+ const {SupabaseStore}=await import('../lib/bear/store/supabase.ts');
+ const db={rpc:async()=>({error:{code:'PGRST202',message:'x'}}),storage:{from:()=>({list:async()=>({data:[],error:null}),remove:async()=>({error:null})})},from:()=>({delete:()=>({eq:async()=>({error:{code:'57014',message:'timeout'}})})})};
+ await assert.rejects(()=>new SupabaseStore('u1',db).eraseAll());
+});

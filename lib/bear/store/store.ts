@@ -62,7 +62,8 @@ export interface BearStore{
  remove<K extends TableName>(table:K,id:string):Promise<void>;
  putFile(objectKey:string,bytes:Uint8Array,mime:string):Promise<StoredFile>;
  // Delete everything this person has in Load Bear: every record and every stored file. Irreversible.
- eraseAll():Promise<void>;
+ // Removes everything this person has. `leftover` names anything that could not be removed, so the app never claims more than it did.
+ eraseAll():Promise<{leftover:string[]}>;
  getFile(objectKey:string):Promise<{bytes:Uint8Array;mime:string}|null>;
  fileUrl(objectKey:string,expiresSeconds?:number):Promise<string|null>;
 }

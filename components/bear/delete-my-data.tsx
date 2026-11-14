@@ -8,8 +8,8 @@ import {Button} from './ui';
 export function DeleteMyData(){
  const router=useRouter();const [phase,setPhase]=useState<'idle'|'confirm'|'busy'|'done'|'error'>('idle');const [typed,setTyped]=useState('');const [msg,setMsg]=useState<string|null>(null);
  async function run(){setPhase('busy');setMsg(null);
-  try{const r=await apiSend<{loginRemoved:boolean}>('/api/bear/me/data',{confirm:typed},'DELETE');
-   setMsg(r.loginRemoved?'Everything is deleted, including your sign-in.':'Everything in Load Bear is deleted. Your sign-in (email and password) still exists. To have it removed too, email support and say so.');setPhase('done');
+  try{const r=await apiSend<{loginRemoved:boolean;historyKept?:boolean}>('/api/bear/me/data',{confirm:typed},'DELETE');
+   setMsg((r.loginRemoved?'Everything is deleted, including your sign-in.':'Everything in Load Bear is deleted. Your sign-in (email and password) still exists. To have it removed too, ask the person who runs Load Bear.')+(r.historyKept?' One thing remains: a log of status changes (what changed and when) that Bear could not remove by itself. Ask the person who runs Load Bear to remove it.':''));setPhase('done');
    setTimeout(()=>router.replace('/bear/welcome'),4500);}
   catch(e){setMsg((e as Error).message||'That didn’t finish. Nothing more was deleted. Try again.');setPhase('error');}}
  return <section className="section" aria-labelledby="del"><p className="eyebrow" id="del">Your data</p><div className="card">

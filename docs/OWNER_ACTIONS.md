@@ -4,7 +4,7 @@ Only you can do these: they need your accounts or decisions. "App works without 
 
 | # | Action | Why only you | Enables | Works without it? |
 |---|---|---|---|---|
-| 1 | In Supabase SQL editor, run migrations from `supabase/migrations` not yet applied: `20261108…inbound_email`, `20261109…responsibility_events`, `20261109…enterprise`, `20261110…study_responses`, `20261111…connected_accounts`, `20261112120000_bear_delete_my_data`, `20261112121000_bear_job_runs` | Your database | Delete-my-data, reminder run records, health check | Core app works; delete button and health check will report missing tables |
+| 1 (optional) | In Supabase SQL editor, paste and run `supabase/APPLY_PENDING.sql` (safe to run twice) | Your database | Reminder run records, health check detail, and full removal of the status-change log when someone deletes their data | **Yes.** Delete-my-data works without it (it removes rows directly and tells the person if the status log remains); reminders run without the record |
 | 2 | Vercel env: add `SUPABASE_SERVICE_ROLE_KEY` (Supabase → Settings → API) | Secret | Cron reminders, delete-my-data sign-in removal | In-app reminders only |
 | 3 | Vercel env: `BEAR_CRON_SECRET` (any long random string), and the same value as GitHub secret `BEAR_CRON_SECRET`; GitHub secret `BEAR_APP_URL`; GitHub variable `BEAR_REMINDERS_ENABLED=true` | Secrets/accounts | Push reminders every 15 min, health check | In-app reminders only |
 | 4 | Vercel env: VAPID keys `BEAR_VAPID_PUBLIC_KEY`, `BEAR_VAPID_PRIVATE_KEY`, `BEAR_VAPID_SUBJECT` | Secret | Push notifications | In-app reminders only |
