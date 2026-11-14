@@ -143,9 +143,9 @@ export async function extractCapture(store:BearStore,provider:StructuredModelPro
   }
  }
  const fields=reconcile(model?.bill||null,billRulesFinal,at);
- // A bill has an amount. If the model called something a bill, no amount was found anywhere and Bear's own bill reader does
- // not see a bill either, it is an ordinary to-do, not a bill to verify.
- if(!school&&general.kind==='bill'&&model&&fields.amountDueCents.value===null&&billRulesFinal.documentType!=='bill')general.kind=generalRules.kind==='bill'?'note':generalRules.kind;
+ // A bill has an amount. Typed or spoken words with no amount anywhere ("pay the electricity bill") are an ordinary to-do,
+ // not a bill to verify, whatever the model or the wording suggests. Photos and PDFs keep the bill reading.
+ if(!school&&!needsVision&&general.kind==='bill'&&fields.amountDueCents.value===null)general.kind=generalRules.kind==='bill'?'note':generalRules.kind;
  const isBill=!school&&(general.kind==='bill'||(!model&&billRulesFinal.documentType==='bill'&&billRulesFinal.amountDueCents.value!==null));
  if(isBill&&general.kind!=='bill')general.kind='bill';
  const questions=isBill?verificationQuestions(fields):generalQuestions(general);

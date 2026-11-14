@@ -20,7 +20,7 @@ export function BearChat(){
   </header>
   <QuickCapture onChanged={()=>{}}/>
   <nav className="hh-links" aria-label="More">
-   <Link href="/bear/capture/more?more=1">Add a photo or file</Link>
+   <Link href="/bear/capture/more?more=1" prefetch={false}>Add a photo or file</Link>
    <Link href="/bear/home">Everything Bear’s holding <span aria-hidden="true">›</span></Link>
   </nav>
  </main>;

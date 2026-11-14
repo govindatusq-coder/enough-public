@@ -2,6 +2,7 @@ import {HttpError,json,withBear} from '@/lib/bear/server/context';
 import {captureTextSchema,createCapture,MAX_FILE_BYTES} from '@/lib/bear/services/capture';
 import {maybeAutoSetup} from '@/lib/bear/services/auto-setup';
 import {intake} from '@/lib/bear/services/intake';
+import {splitTodos} from '@/lib/bear/services/split-todos';
 import {isBrainDump,setupBrainDump} from '@/lib/bear/services/dump';
 import type {BearStore} from '@/lib/bear/store/store';
 import type {StructuredModelProvider} from '@/lib/bear/ai/provider';
@@ -38,5 +39,17 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
  }
  const raw=await req.text();if(new TextEncoder().encode(raw).length>64*1024)throw new HttpError('That is a lot of text. Paste just the bill.',413);
  let body;try{body=captureTextSchema.parse(JSON.parse(raw));}catch{throw new HttpError('Tell Bear something first.',400);}
- return json(await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text:body.text,isDemo:body.isDemo}),{text:body.text,hasFile:false}),201);
+ // Several to-dos in one breath ("call mum, buy milk and book the dentist") are taken one at a time, each through the same
+ // steps as if it had been given on its own. The reply lists each one; the first is also returned in the usual shape.
+ const parts=(body.method==='text'||body.method==='voice')&&!body.isDemo?splitTodos(body.text):[body.text];
+ if(parts.length<2)return json(await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text:body.text,isDemo:body.isDemo}),{text:body.text,hasFile:false}),201);
+ const many:Record<string,unknown>[]=[];let first:Record<string,unknown>|null=null;
+ for(const text of parts){
+  try{
+   const r=await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text}),{text,hasFile:false}) as Record<string,unknown>&{capture:{id:string};extraction:{kind:string}};
+   first??=r;many.push({text,captureId:r.capture.id,kind:r.extraction.kind,auto:r.auto||null,confirmed:r.confirmed||null,info:r.info||null,unclear:!!r.unclear,dump:r.dump||null});
+  }catch(e){many.push({text,error:e instanceof Error?e.message:'Bear could not take that one.'});}
+ }
+ if(!first)throw new HttpError('Bear could not take that. Try again.',422);
+ return json({...first,many},201);
 });

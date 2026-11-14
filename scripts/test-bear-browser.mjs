@@ -130,6 +130,11 @@ try{
   assert.match(page.url(),/\/bear\/capture$/,'stays on this screen');await shot('61-bear-reply');
   await page.click('.qc-chips button:has-text("▾") >> nth=0');await page.click('.qc-chips [aria-pressed] >> text=Work');await page.waitForFunction(()=>/Work/.test(document.querySelector('.qc-chips button')?.textContent||''));
   await page.fill('#qc-text','buy milk');await page.keyboard.press('Enter');await page.waitForFunction(()=>/milk/i.test(document.querySelector('.qc-said')?.textContent||''));await page.waitForSelector('.qc-else');
+  // Several to-dos in one breath: each is taken on its own.
+  await page.fill('#qc-text','call the plumber, order school shoes and renew the passport by Friday');await page.click('.qc-go');await page.waitForSelector('.qc-count',{timeout:30000});
+  const lines=await page.$$eval('.qc-line',e=>e.map(x=>x.textContent));assert.equal(lines.length,3,'three to-dos: '+JSON.stringify(lines));
+  assert.ok(/plumber/i.test(lines[0])&&/shoes/i.test(lines[1])&&/passport/i.test(lines[2]),JSON.stringify(lines));assert.ok((await page.textContent('.qc-count')).includes('3 things'));await shot('61b-bear-three');
+  await page.fill('#qc-text','buy milk, eggs and bread');await page.click('.qc-go');await page.waitForSelector('.qc-else');assert.equal(await page.$$eval('.qc-line',e=>e.length),1,'a shopping list stays one thing');
   await page.click('a:has-text("Everything Bear’s holding")');await page.waitForURL(/\/bear\/home/);await page.waitForSelector('.hero-banner');await page.waitForSelector('.area-grid.six');
  });
  await step('voice option is present',async()=>{await page.goto(base+'/bear/capture/more');await page.click('button:has-text("Say it")');await page.waitForSelector('#voicetext');await shot('28-voice');});

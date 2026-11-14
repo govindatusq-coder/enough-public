@@ -548,3 +548,4 @@
 .bear .hh-links{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:8px;}
 .bear .hh-links a{font-size:14px;color:var(--ink-3);text-decoration:none;padding:6px 10px;}
 .bear .qc-else{color:var(--ink-2);}
+.bear .qc-item{display:contents;}
