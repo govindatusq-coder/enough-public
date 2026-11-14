@@ -16,11 +16,12 @@ const openTasks=async s=>(await s.list('tasks')).filter(t=>t.status==='open');
 
 test('Bear knows when it is being asked to find something out',()=>{
  for(const t of [Q,'look up when the school holidays start','find out what time the pool closes on Sunday','google how much a passport renewal costs','Can you search for swimming lessons near me','please look up the opening hours for Bunnings','research when term 1 starts in 2027','Bear, find out when rego is due for renewal in NSW','check online if the library is open tomorrow'])assert.ok(asksToFindOut(t),t);
- for(const t of ['call the school to find out about camp','book the dentist','search','pay the electricity bill tomorrow','buy milk','look after mum on Sunday','check the tyres','find my keys','research project due Friday for Ava'])assert.ok(!asksToFindOut(t),t);
+ for(const t of ['call the school to find out about camp','book the dentist','search','search it','pay the electricity bill tomorrow','buy milk','look after mum on Sunday','check the tyres','find my keys','research project due Friday for Ava'])assert.ok(!asksToFindOut(t),t);
 });
 test('a web answer becomes a finding only with a real page behind it, and a date only when it is a real future day',()=>{
  const f=readFinding(reply({}),PAGES,TODAY);assert.deepEqual([f.date,f.subject,f.sources.length],['2026-12-06','Red Bull Soapbox Race',1]);assert.equal(f.sources[0].url,PAGES[0].url);
- assert.equal(readFinding(reply({sourceUrls:['https://made-up.example/page']}),PAGES,TODAY),null,'a link the search never returned is not a source');
+ const swapped=readFinding(reply({sourceUrls:['https://made-up.example/page']}),PAGES,TODAY);assert.ok(swapped.sources.every(s=>PAGES.some(p=>p.url===s.url))&&swapped.sources.length>0,'a link the search never returned is dropped; only real results are shown');
+ assert.equal(readFinding(reply({}),[],TODAY),null,'no search results at all: no finding');
  assert.equal(readFinding(reply({found:false}),PAGES,TODAY),null);assert.equal(readFinding('I think it is in December.',PAGES,TODAY),null,'no free-text answers');
  assert.equal(readFinding(reply({date:'2026-10-01'}),PAGES,TODAY).date,null,'a day already gone is not offered as a reminder');
  assert.equal(readFinding(reply({date:'December'}),PAGES,TODAY).date,null);assert.equal(readFinding(reply({date:null,answer:'The 2026 date has not been announced yet.'}),PAGES,TODAY).date,null);
@@ -60,4 +61,9 @@ test('a reminder for something whose date the person does not know is also a thi
  for(const t of ['Remind me when the next Ind NZ odi is on','remind me when the Easter Show starts','let me know when the new Bluey season comes out','tell me when Taylor Swift tickets go on sale','Remind me what date the school holidays start','when do the school holidays start in Queensland?','When is the next India v New Zealand ODI','what time does Bunnings close on Sunday','how much is a passport renewal','remind me when daylight saving ends'])assert.ok(asksAboutTheWorld(t)&&asksToFindOut(t),t);
  for(const t of ['remind me when I get home to call mum','remind me when we land','remind me to call the plumber','remind me when my rego is due','when is my dentist appointment','let me know when mum arrives','remind me tomorrow','tell me when you are done','where are my keys','when is it','who is picking up Ava today','where is the permission form','which bin goes out this week'])assert.ok(!asksAboutTheWorld(t),t);
  assert.equal(sortOne('Remind me when the next Ind NZ odi is on','2026-11-14').title,'Find out when the next Ind NZ odi is on','if the lookup comes back empty, the kept to-do says what it is');
+});
+
+test('questions about the world are looked up; questions about the household are not',async()=>{
+ for(const t of ['what is the best time to visit Uluru','where is the nearest passport office to Toowoomba','how do I renew a passport online','is there a public holiday next week','are Coles open on Good Friday','what’s the weather in Brisbane this weekend','search red bull soapbox','google toowoomba carnival of flowers dates','best pizza in Toowoomba?','which airlines fly Brisbane to Auckland','how long is the flight from Sydney to Perth','can dogs eat grapes'])assert.ok(asksToFindOut(t),t);
+ for(const t of ['where is the permission form','who is picking up Ava today','what’s on my list','is dinner tonight sorted?','where are the car keys','did I pay the gas bill','can you remind me to call mum','what do we need from the shops','which bin goes out this week','buy milk','organise the party','is Ava’s excursion on Friday?'])assert.ok(!asksToFindOut(t,['Ava']),t);
 });

@@ -54,13 +54,13 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
   if(parts.length>1){
    const sorted=[];const found=[];
    for(const p of parts){
-    const look=asksToFindOut(p.original)?await lookUp(store,researcher,p.original,today):null;
+    const look=asksToFindOut(p.original,children)?await lookUp(store,researcher,p.original,today):null;
     if(look?.found){found.push(look.found);continue;}
     const item=await placeSorted(store,p,body.method,today);sorted.push(look?{...item,nextAction:keptNote(look.why)||item.nextAction}:item);
    }
    return json({sorted,found},201);
   }
-  const look=asksToFindOut(body.text)?await lookUp(store,researcher,body.text,today):null;
+  const look=asksToFindOut(body.text,children)?await lookUp(store,researcher,body.text,today):null;
   if(look?.found)return json({sorted:[],found:[look.found]},201);
   // One thing: the usual path first, so receipts, plain information, bills and school notices are still handled as they were.
   const result=await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text:body.text}),{text:body.text,hasFile:false}) as Record<string,unknown>&{auto?:{taskId:string};extraction:{school?:unknown;kind:string;general:{kind:string;items?:unknown[]}}};

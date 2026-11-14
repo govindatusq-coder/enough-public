@@ -12,16 +12,16 @@ export function BearChat(){
   apiGet<{profile:{name?:string;onboardingComplete?:boolean}}>('/api/bear/profile').then(r=>{if(!live)return;if(r.profile&&r.profile.onboardingComplete===false){router.replace('/bear/onboarding');return;}setName((r.profile?.name||'').trim().split(/\s+/)[0]||'');})
    .catch(e=>{if(!live)return;if((e as ApiError).status===401){router.replace('/bear/welcome');return;}setName('');});
   return()=>{live=false;};},[router]);
- return <main id="main" className="bear-screen home-screen home-hero">
-  <header className="hh">
-   <div className="hh-art" aria-hidden="true"><span className="hh-circle"/><Art file="hero-bear-cut" className="hh-bear"/></div>
-   <h1 className="hh-welcome hand hero-greeting">Welcome{name?`, ${name}`:''}!</h1>
-   <p className="hh-sub">I’ve got you. What do you need me to take care of today?</p>
-  </header>
-  <QuickCapture onChanged={()=>{}}/>
-  <nav className="hh-links" aria-label="More">
-   <Link href="/bear/capture/more?more=1" prefetch={false}>Add a photo or file</Link>
-   <Link href="/bear/home">Everything Bear’s holding <span aria-hidden="true">›</span></Link>
-  </nav>
+ return <main id="main" className="bear-screen chat-screen">
+  <QuickCapture onChanged={()=>{}}
+   hero={started=><header className={`hh${started?' small':''}`}>
+    <div className="hh-art" aria-hidden="true"><span className="hh-circle"/><Art file="hero-bear-cut" className="hh-bear"/></div>
+    <h1 className="hh-welcome hand hero-greeting">Welcome{name?`, ${name}`:''}!</h1>
+    {!started&&<p className="hh-sub">I’ve got you. What do you need me to take care of today?</p>}
+   </header>}
+   links={<nav className="hh-links" aria-label="More">
+    <Link href="/bear/capture/more?more=1" prefetch={false}>Add a photo or file</Link>
+    <Link href="/bear/home">Everything Bear’s holding <span aria-hidden="true">›</span></Link>
+   </nav>}/>
  </main>;
 }
