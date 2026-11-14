@@ -31,7 +31,7 @@ export function BearRuntime(){
  });},[]);
  // Accept what the iPhone Share Extension saved: keep it for the capture screen, which gives it to Bear straight away.
  useEffect(()=>{
-  window.__bearShare=(payload)=>{const inbox=payloadToInbox(payload);if(!inbox.text&&!inbox.files.length)return false;window.__bearInbox=inbox;window.dispatchEvent(new Event('bear-share'));if(!path.startsWith('/bear/capture'))router.push('/bear/capture?native=1');return true;};
+  window.__bearShare=(payload)=>{const inbox=payloadToInbox(payload);if(!inbox.text&&!inbox.files.length)return false;window.__bearInbox=inbox;window.dispatchEvent(new Event('bear-share'));if(path!=='/bear/capture/more')router.push('/bear/capture/more?native=1');return true;};
   return()=>{delete window.__bearShare;};
  },[path,router]);
  useEffect(()=>{

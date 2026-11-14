@@ -6,8 +6,6 @@ import {useRouter} from 'next/navigation';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import {brand,dayModeReply} from '@/lib/bear/domain/copy';
 import {pickGreeting,type Greeting} from '@/lib/bear/domain/greetings';
-import {QuickCapture} from '@/components/bear/quick-capture';
-import {Fold} from '@/components/bear/fold';
 import {formatAU} from '@/lib/bear/domain/dates';
 import {overdueLabel} from '@/lib/bear/domain/overdue';
 import type {DayMode} from '@/lib/bear/domain/types';
@@ -33,18 +31,19 @@ export default function Home(){
  if(!home)return <main id="main" className="bear-screen"><div className="skeleton" style={{minHeight:40,maxWidth:220,marginBottom:16}}/><Skeleton/></main>;
  const firstNeed=home.needsYou.filter(n=>!n.soft).sort((a,b)=>(b.overdueDays-a.overdueDays)||((a.due||'9999')<(b.due||'9999')?-1:1))[0]||null;
  return (
-  <main id="main" className="bear-screen home-screen home-hero">
+  <main id="main" className="bear-screen home-screen">
    <FirstTimeTour show={home.showTour}/>
-   <header className="hh">
-    <div className="hh-art" aria-hidden="true"><span className="hh-circle"/><Art file="hero-bear-cut" className="hh-bear"/></div>
-    <h1 className="hh-welcome hand hero-greeting">Welcome{home.name?`, ${home.name}`:''}!</h1>
-    <p className="hh-sub">I’ve got you. What do you need me to take care of today?</p>
+   <header className="hero-banner">
+    <div className="hero-text">
+     <h1 className="hero-greeting">{home.greeting}</h1>
+     <p className="hero-line hand">{greet?greet.line:brand.gotYou}</p>
+     {home.overdue.length>0&&<p className="hero-alert" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/></svg><span>{home.overdue.length} overdue · see the red numbers</span></p>}
+     {home.overdue.length===0&&firstNeed&&!home.oneThing&&<Link className="hero-alert needs" href={firstNeed.billId?`/bear/bills/${firstNeed.billId}`:`/bear/tasks/${firstNeed.taskId}`}><span>{home.handling.needs===1?'1 thing needs you':`${home.handling.needs} things need you`}: {firstNeed.message||firstNeed.title}</span></Link>}
+    </div>
+    <div className="hero-art" aria-hidden="true"><Art file={greet?greet.art:'hero-bear'} className="hero-img" style={{objectPosition:greet?greet.focus:'60% 22%',...(greet?.zoom?{transform:`scale(${greet.zoom})`,transformOrigin:'25% 100%'}:{})}}/></div>
    </header>
-   <QuickCapture onChanged={load}/>
    {!online&&<p className="note" style={{marginTop:14}} role="status">You&rsquo;re offline. Showing what Bear last knew.</p>}
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
-   <Fold id="home" summary="Everything Bear’s holding">
-    <div className="home-more-body">
    {/* Once today's level is rated the card goes away; the reply shows as a note, and it can be changed in Settings. */}
    {!home.dayMode&&<section className="section how-row" aria-labelledby="how">
     <div className="glass" style={{padding:'12px 16px',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}><span id="how" className="small" style={{fontWeight:600}}>How&rsquo;s today?</span><div className="chips" style={{gap:6}}>{modes.map(m=><button key={m.key} type="button" className="chip" style={{minHeight:38,padding:'0 12px',fontSize:14}} aria-pressed={home.dayMode===m.key} disabled={busy==='mode'} onClick={()=>setMode(m.key)}>{m.label}</button>)}</div></div>
@@ -68,8 +67,6 @@ export default function Home(){
      {home.handling.covered+home.handling.waiting+home.handling.needs===0?<p className="stats-note">Give Bear anything and these start to grow.</p>:home.handling.needs===0?<p className="stats-note">Nothing for you to do right now. <Link href="/bear/me/everything">See what&rsquo;s covered</Link></p>:<p className="stats-note"><Link href="/bear/me/everything">See what Bear has covered</Link></p>}
     </div>
    </section>
-    </div>
-   </Fold>
    <Toast message={toast} onDone={()=>setToast(null)}/>
   </main>
  );

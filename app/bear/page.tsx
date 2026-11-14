@@ -5,6 +5,6 @@ export default async function BearRoot(){
  const session=await bearSession();
  if(!session)redirect('/bear/welcome');
  let target='/bear/onboarding';
- try{const profile=await session.loadProfile();if(profile?.onboardingComplete)target='/bear/home';}catch{target='/bear/home';}
+ try{const profile=await session.loadProfile();if(profile?.onboardingComplete)target='/bear/capture';}catch{target='/bear/capture';}
  redirect(target);
 }

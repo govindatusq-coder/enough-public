@@ -9,7 +9,7 @@ function Share(){
  const router=useRouter();const p=useSearchParams();
  useEffect(()=>{
   const text=sharedText({title:p.get('title'),text:p.get('text'),url:p.get('url')});
-  router.replace(text?`/bear/capture?text=${encodeURIComponent(text)}&shared=1`:'/bear/capture');
+  router.replace(text?`/bear/capture/more?text=${encodeURIComponent(text)}&shared=1`:'/bear/capture');
  },[p,router]);
  return <main id="main" className="bear-screen"><p className="muted" role="status">Opening Bear…</p></main>;
 }
