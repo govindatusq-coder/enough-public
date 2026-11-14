@@ -8,5 +8,5 @@ export const POST=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear
  const extraction=await store.get('extractions',capture.extractionId);if(!extraction)throw new HttpError('Bear couldn’t find that.',404);
  const draft=await store.update('extractions',extraction.id,{status:'draft'});const c=await store.update('captures',capture.id,{status:'needs_verification'});
  const a=await maybeAutoSetup(store,draft,new Date(),provider).catch(()=>null);
- return json({capture:c,auto:a?{taskId:a.task.id,title:a.task.title}:null});
+ return json({capture:c,auto:a?{taskId:a.task.id,title:a.task.title,area:a.area,dueAt:a.task.dueAt}:null});
 });

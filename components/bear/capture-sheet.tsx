@@ -1,6 +1,7 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {shrinkImage} from '@/lib/bear/client-image';
+import {Fold} from './fold';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {apiForm,apiGet,apiSend,ApiError} from '@/lib/bear/client';
 import {brand} from '@/lib/bear/domain/copy';
@@ -87,15 +88,14 @@ const finish=useCallback((result:CaptureResult)=>{
      {params.get('shared')==='1'&&<p className="small" role="status" style={{margin:'0 0 6px',color:'var(--teal)',fontWeight:600}}>Shared with Bear. Check it, then give it over.</p>}
      <div className="quick-actions"><span className="faint">No dates or times needed. Bear works the rest out.</span><Button variant="coral" type="submit" disabled={!text.trim()}>{brand.giveIt}</Button></div>
     </form>}
-    {mode==='menu'&&<p className="eyebrow" style={{marginTop:18}}>Or give it another way</p>}
-    {mode==='menu'&&<div className="glass-strong" style={{padding:'8px 16px',marginTop:8}}>
+    {mode==='menu'&&<Fold id="capture" open={params.get('more')==='1'} style={{marginTop:10}} summary="Other ways: say it, photo, screenshot, PDF"><div className="glass-strong" style={{padding:'8px 16px',marginTop:4}}>
      {[...options].sort((a,b)=>Number(('unavailable' in a&&a.unavailable)||(a.file&&aiAvailable===false))-Number(('unavailable' in b&&b.unavailable)||(b.file&&aiAvailable===false))).map(o=>{const off=Boolean(('unavailable' in o&&o.unavailable)||(o.file&&aiAvailable===false));return <button key={o.key} type="button" className="row" style={{width:'100%',textAlign:'left',opacity:off?.55:1}} onClick={()=>pick(o)} aria-disabled={off} disabled={off}>
       <span className={`icon-dot ${o.key==='photo'?'coral':o.key==='screenshot'?'sky':o.key==='upload'?'mustard':'blush'}`}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={o.icon}/></svg></span>
       <span className="grow"><span className="title">{o.label}</span><br/><span className="faint">{off?(o.file?'Needs the AI service connected':'Coming soon'):o.sub}</span></span>
       {!off&&<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" style={{color:'var(--ink-3)'}}><path d="M9 6l6 6-6 6"/></svg>}
      </button>;})}
      <input ref={fileRef} type="file" className="sr-only" accept={pending?.accept||'image/*'} {...(pending?.capture?{capture:pending.capture as 'environment'}:{})} aria-label="Choose a file" onChange={e=>{const f=e.target.files?.[0];if(f&&pending)submitFile(f,pending.method);e.target.value='';}}/>
-    </div>}
+    </div></Fold>}
     {aiAvailable===false&&mode==='menu'&&<p className="faint" style={{marginTop:12}}>Pictures and PDFs need the AI service connected. Typed, pasted and spoken things work now.</p>}
     {mode==='text'&&<form onSubmit={e=>{e.preventDefault();submitText('text',text);}} style={{marginTop:14}}>
      <div className="field"><label htmlFor="billtext">Paste it here</label><textarea id="billtext" value={text} onChange={e=>setText(e.target.value)} placeholder={"Hi parents, the Year 2 excursion is on Friday 14 November. Please return the permission form by…"} required maxLength={20000}/><span className="hint">Bear works out what it is, when it matters and who it&rsquo;s for. Nothing is paid without you.</span></div>

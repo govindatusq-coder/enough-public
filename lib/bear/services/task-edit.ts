@@ -4,6 +4,7 @@ import {reopenLoad,relayLoadDate,retitleLoad} from './load.ts';
 import {addDays,formatWhen,localParts,todayISO,zonedDateTime} from '../domain/dates.ts';
 import {formatAUD} from '../domain/money.ts';
 import {itemCost,totalCost} from '../domain/items.ts';
+import {areaKeys,type AreaKey} from '../domain/types.ts';
 import type {Project,Reminder,ReminderPlan,ShoppingItem,Task,TaskDependency} from '../domain/types.ts';
 import {newId,stamp,type BearStore} from '../store/store.ts';
 import type {StructuredModelProvider} from '../ai/provider.ts';
@@ -313,4 +314,18 @@ export async function reopenTask(store:BearStore,taskId:string){
  const project=await store.get('projects',task.projectId);if(project)await store.update('projects',project.id,{status:'active'});
  for(const d of await store.list('task_dependencies',{where:[{column:'task_id',value:task.id}]})){const dep=await store.get('tasks',d.dependsOnTaskId);if(dep&&dep.status==='done')await store.update('tasks',dep.id,{status:'open'});}
  return next;
+}
+
+// Move one task to another area (the "where does this go?" correction). A task's area is its project's; if the project holds
+// other tasks too, this task gets its own project so the others stay where they are.
+export const areaSchema=z.object({area:z.enum(areaKeys)}).strict();
+export async function setTaskArea(store:BearStore,taskId:string,area:AreaKey){
+ const task=await store.get('tasks',taskId);if(!task)throw new Error('not_found');
+ const project=await store.get('projects',task.projectId);if(!project)throw new Error('not_found');
+ if(project.areaKey===area)return {area};
+ const siblings=await store.list('tasks',{where:[{column:'project_id',value:project.id}]});
+ if(siblings.length<=1){await store.update('projects',project.id,{areaKey:area});return {area};}
+ const next=await store.insert('projects',stamp<Project>(store.userId,{areaKey:area,title:task.title.slice(0,120),status:'active',dueAt:task.dueAt,resourceDocumentIds:[],billId:null}));
+ await store.update('tasks',task.id,{projectId:next.id});
+ return {area};
 }
