@@ -79,6 +79,8 @@ export function titleFor(original:string,span:[number,number]|null):string{
  let t=original;
  // The date is kept as a field; a date hanging off the end (or "X is due Monday") comes out of the title.
  if(span){const before=t.slice(0,span[0]),after=t.slice(span[1]);if(!after.trim()||/^[\s,.!]*$/.test(after))t=before;else if(!before.trim())t=after;}
+ // "Remind me when X is on" is, for the person, a thing to find out: say so, and keep the whole question.
+ {const m=/^(?:please\s+)?(?:remind me|let me know|tell me|alert me|notify me)\s+(when|what (?:date|day|time)|where|if|whether)\s+(.+)$/i.exec(original.trim().replace(/[?.!\s]+$/,''));if(m)return cap(`Find out ${m[1].toLowerCase()} ${m[2]}`).slice(0,90);}
  t=t.replace(FILLER,'').replace(/\s+(?:is|are|was|were)\s+(?:now\s+)?(?:due|overdue|coming up|on|urgent)\s*$/i,'').replace(/[\s,]+(?:some ?time|some ?day|eventually|at some point|when(?:ever)? i (?:can|get (?:a )?(?:chance|time))|asap|urgently|no rush)\s*$/i,'').replace(/\s+(?:is|are)\s*$/i,'').replace(/[\s,;:.!\-–]+$/,'').replace(/^[\s,;:.\-–]+/,'').trim();
  if(!t)t=original.trim();
  if(VERB_LED.test(t))return cap(t).slice(0,90);

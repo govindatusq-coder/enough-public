@@ -54,3 +54,10 @@ test(`no more than ${DAILY_LOOKUPS} lookups per person per day`,async()=>{
  for(let i=0;i<DAILY_LOOKUPS;i++)assert.ok((await lookUp(s,r,Q,TODAY,NOW)).found);
  const over=await lookUp(s,r,Q,TODAY,NOW);assert.deepEqual([over.found,over.why],[null,'limit']);assert.equal(calls.length,DAILY_LOOKUPS,'the search is not even called');assert.match(keptNote('limit'),/for today/);
 });
+
+test('a reminder for something whose date the person does not know is also a thing to look up',async()=>{
+ const {asksAboutTheWorld}=await import('../lib/bear/services/lookup.ts');const {sortOne}=await import('../lib/bear/services/sorter.ts');
+ for(const t of ['Remind me when the next Ind NZ odi is on','remind me when the Easter Show starts','let me know when the new Bluey season comes out','tell me when Taylor Swift tickets go on sale','Remind me what date the school holidays start','when do the school holidays start in Queensland?','When is the next India v New Zealand ODI','what time does Bunnings close on Sunday','how much is a passport renewal','remind me when daylight saving ends'])assert.ok(asksAboutTheWorld(t)&&asksToFindOut(t),t);
+ for(const t of ['remind me when I get home to call mum','remind me when we land','remind me to call the plumber','remind me when my rego is due','when is my dentist appointment','let me know when mum arrives','remind me tomorrow','tell me when you are done','where are my keys','when is it','who is picking up Ava today','where is the permission form','which bin goes out this week'])assert.ok(!asksAboutTheWorld(t),t);
+ assert.equal(sortOne('Remind me when the next Ind NZ odi is on','2026-11-14').title,'Find out when the next Ind NZ odi is on','if the lookup comes back empty, the kept to-do says what it is');
+});

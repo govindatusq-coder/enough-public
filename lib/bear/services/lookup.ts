@@ -6,7 +6,22 @@ import {isValidISODate} from '../domain/dates.ts';
 
 // Only an explicit ask to go and find out. "Call the school to find out about camp" is the person's own errand.
 const ASK=/^(?:(?:hey |hi |ok |okay )?(?:bear|mama bear)[,:]?\s+)?(?:(?:can|could|would) you\s+(?:please\s+)?|please\s+)?(?:(?:do a |run a )?(?:web |internet |google |online )?search\b|search (?:the )?(?:internet|web|net|online)\b|google\b|look (?:it |this |that )?up\b|look up\b|look online\b|find out\b|check online\b|research\b|find me\b|find the (?:date|time|price|cost|hours|address|number|website|link)\b)/i;
+// The same ask without the word "search": a reminder for something whose date the person doesn't know ("remind me when the next
+// India v NZ ODI is on"), or a plain question about the world ("when do the school holidays start?"). Things only the person
+// knows ("when I get home", "when is my rego due") are not questions for the web.
+const OWN=/\b(?:i|we|my|our|me|us|you|your|mum|mom|dad|he|she|they)\b/i;
+const HAPPENS='(?:is|are|will be|gets?|goes?|go|starts?|begins?|opens?|closes?|ends?|finish(?:es)?|comes? out|is released|releases?|airs?|is on|are on|happens?|takes? place|kicks? off|drops?|launch(?:es)?|returns?|plays?|play|on sale)';
+const REMIND_WHEN=new RegExp(`^(?:please\\s+)?(?:remind me|let me know|tell me|alert me|notify me|give me a reminder|set a reminder)\\s+(?:for\\s+)?(?:of\\s+)?(?:about\\s+)?(when|what (?:date|day|time)|where|if|whether)\\s+(.+)$`,'i');
+const QUESTION=/^(?:when(?:'|’)?s?|what (?:time|date|day)|how much)\s+(?:is|are|does|do|did|will|was|were|'s|’s)?\s*(.+)$/i;
+export function asksAboutTheWorld(text:string):boolean{
+ const t=text.trim().replace(/[?.!\s]+$/,'');if(t.length<12||t.length>300)return false;
+ const r=REMIND_WHEN.exec(t);
+ if(r)return !OWN.test(r[2])&&new RegExp(`\\b${HAPPENS}\\b`,'i').test(r[2]);
+ const q=QUESTION.exec(t);
+ return !!q&&!OWN.test(q[1])&&q[1].split(/\s+/).length>=2;
+}
 export function asksToFindOut(text:string):boolean{
+ if(asksAboutTheWorld(text))return true;
  const t=text.trim();if(t.length<12||t.length>400)return false;
  // Something to find out about, not just "search" on its own, and not a job for the person ("research schools with my partner").
  // "Research" on its own is usually the person's own job ("research project due Friday"); it counts only with a question.
