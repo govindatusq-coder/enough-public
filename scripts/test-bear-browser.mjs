@@ -137,7 +137,8 @@ try{
   // Answering Bear's question is conversation, not a to-do.
   {const before=await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length);
    await page.fill('#qc-text','no');await page.click('.qc-go[type="submit"]');await page.waitForFunction(()=>/All sorted/.test(document.querySelector('.qc-thread')?.textContent||''));
-   assert.equal(await page.$('.qc-turn:last-of-type .qc-sorted'),null,'"no" is not sorted into a task');assert.equal(await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length),before,'nothing was added');
+   assert.equal(await page.$('.qc-turn:last-of-type .qc-sorted'),null,'"no" is not sorted into a task');
+   assert.deepEqual(await page.$$eval('.qc-turn:last-of-type .qc-places a',e=>e.map(a=>[a.textContent,a.getAttribute('href')])),[['My Bear','/bear/home'],['Bear Ideas','/bear/ideas'],['My Wins','/bear/wins'],['Settings','/bear/me']],'when the chat ends, Bear offers the other pages');assert.equal(await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length),before,'nothing was added');
    const direct=await page.evaluate(async()=>{const r=await fetch('/api/bear/captures',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'voice',text:'No thanks, that’s all'})});return r.json();});assert.equal(direct.chat,'closing','the server refuses to make it a task too');assert.ok(!direct.sorted&&!direct.auto&&!direct.capture);}
   // "Search for when X is on": the chat shows what Bear found and where, and saves nothing until "Remind me" is tapped.
   // (The search itself is a paid service that is off here, so its answer is stood in for; the accept step is real.)

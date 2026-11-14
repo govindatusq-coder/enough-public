@@ -17,6 +17,8 @@ type Other={kind:'say';text:string}|{kind:'closing'}|{kind:'more'}|{kind:'done';
 const areaLabel:Record<AreaKey,string>={work:'Work',family:'Family',home:'Home',money:'Money',health:'Health',me:'Me'};
 const groups:{light:Light;dot:string;label:string}[]=[{light:'red',dot:'🔴',label:'Urgent'},{light:'amber',dot:'🟠',label:'Coming up'},{light:'green',dot:'🟢',label:'Can wait'}];
 const noSub=()=>()=>{};
+// Where the person can go once they have finished telling Bear things.
+const places=[{href:'/bear/home',label:'My Bear'},{href:'/bear/ideas',label:'Bear Ideas'},{href:'/bear/wins',label:'My Wins'},{href:'/bear/me',label:'Settings'}];
 const MicIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>;
 
 type Turn={id:number;said:string;busy:boolean;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
@@ -123,7 +125,10 @@ export function QuickCapture({onChanged,hero,links}:{onChanged:()=>void;hero?:(s
       {turn.confirmed&&<p className="qc-note" role="status">On it. I’ll bring each one back when it needs you.</p>}
      </div>}
      {turn.other?.kind==='say'&&<p className="qc-reply">{turn.other.text}</p>}
-     {turn.other?.kind==='closing'&&<p className="qc-reply">All sorted. I’m here whenever you need me.</p>}
+     {turn.other?.kind==='closing'&&<div className="qc-reply qc-closing">
+      <p style={{margin:0}}>All sorted. I’m here whenever you need me.</p>
+      <nav className="qc-places" aria-label="Where to next">{places.map(p=><Link key={p.href} href={p.href} className="chip sm">{p.label}</Link>)}</nav>
+     </div>}
      {turn.other?.kind==='more'&&<p className="qc-reply">Go ahead. What else is on your mind?</p>}
      {turn.other?.kind==='done'&&<p className="qc-reply"><strong>Sorted:</strong> <Link href={`/bear/tasks/${turn.other.taskId}`}>{turn.other.title}</Link>.</p>}
      {turn.other?.kind==='info'&&<p className="qc-reply">Nothing for you to do there, so I didn’t add a to-do. <button type="button" className="qc-link" onClick={()=>{const o=turn.other;if(o?.kind==='info')void keep(turn,o.captureId);}}>Keep it anyway</button></p>}
