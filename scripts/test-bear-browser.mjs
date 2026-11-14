@@ -162,6 +162,16 @@ try{
   assert.ok(/^Done\. /.test(await page.textContent('.qc-turn:last-of-type .qc-reply')),'Bear answers the correction in the conversation');await shot('61c-bear-changed');
   await page.click('button:has-text("Looks good, Bear")');await page.waitForSelector('.qc-else');
   await page.fill('#qc-text','buy milk, eggs and bread');await page.click('.qc-go[type="submit"]');await page.waitForFunction(()=>/milk/i.test([...document.querySelectorAll('.qc-said')].pop()?.textContent||''));await page.waitForSelector('.qc-turn:last-of-type .qc-sorted .qc-card');assert.equal(await page.$$eval('.qc-turn:last-of-type .qc-card',e=>e.length),1,'a shopping list stays one thing');
+  // A photo of a page with several events, given in the chat: each event comes back as its own dated item.
+  // (Reading a picture needs the AI service, which is off here, so its answer is stood in for; the chat's handling is real.)
+  {await page.route('**/api/bear/captures',r=>r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({page:{events:4,undated:1},sorted:[
+     {taskId:null,title:'School photos',domain:'family',light:'amber',reason:'',when:'Due Tuesday',nextAction:null,already:false,check:null,error:null},
+     {taskId:null,title:'Return the permission form for year 3 excursion to the zoo',domain:'family',light:'amber',reason:'',when:'Due Wednesday',nextAction:null,already:false,check:null,error:null},
+     {taskId:null,title:'Uniform shop sale',domain:'family',light:'green',reason:'',when:'No date',nextAction:null,already:false,check:null,error:null}]})}),{times:1});
+   await page.setInputFiles('#qc-file',{name:'term-calendar.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')});
+   await page.waitForSelector('.qc-turn:last-of-type .qc-sorted');const txt=await page.textContent('.qc-turn:last-of-type');
+   assert.ok(txt.includes('term-calendar.png'),'the file shows in the conversation');assert.ok(txt.includes('I found 4 things on that page'));assert.equal(await page.$$eval('.qc-turn:last-of-type .qc-card',e=>e.length),3);
+   assert.ok(/1 already past/.test(txt)&&/no date on the page, so I haven’t guessed one/.test(txt),txt);await shot('61e-bear-page');}
   // It is a chat: earlier turns are still there, the newest is in view, and the box has not moved off the bottom.
   await page.waitForTimeout(900);
   {const c=await page.evaluate(()=>{const box=document.querySelector('.qc-pill').getBoundingClientRect();const lastTurn=[...document.querySelectorAll('.qc-turn')].pop().getBoundingClientRect();return {turns:document.querySelectorAll('.qc-turn').length,boxBottom:Math.round(innerHeight-box.bottom),boxTop:box.top,lastVisible:lastTurn.bottom<=box.top+2&&lastTurn.bottom>0,pageScroll:document.scrollingElement.scrollHeight-innerHeight};});

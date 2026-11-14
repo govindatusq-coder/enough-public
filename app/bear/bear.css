@@ -597,3 +597,4 @@
 .bear .qc-change{margin-top:8px;font-size:13.5px;font-weight:500;color:var(--ink-3);align-self:flex-start;}
 .bear .qc-places{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
 .bear .qc-places .chip{text-decoration:none;color:var(--ink);}
+.bear .hh-attach{border:0;background:none;font:inherit;font-size:13px;color:var(--ink-3);padding:4px 6px;cursor:pointer;}

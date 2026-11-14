@@ -3,8 +3,10 @@ import {captureTextSchema,createCapture,MAX_FILE_BYTES} from '@/lib/bear/service
 import {maybeAutoSetup} from '@/lib/bear/services/auto-setup';
 import {intake} from '@/lib/bear/services/intake';
 import {replyKind} from '@/lib/bear/services/sorter';
-import {adoptSorted,keptNote,looksLikeDocument,lookUp,placeSorted,sortParts,todayFor} from '@/lib/bear/services/sort-service';
+import {adoptSorted,keptNote,looksLikeDocument,lookUp,placePage,placeSorted,sortParts,todayFor} from '@/lib/bear/services/sort-service';
 import {asksToFindOut} from '@/lib/bear/services/lookup';
+import {keepOnPage,readPageEvents} from '@/lib/bear/services/page-events';
+import {updateTask} from '@/lib/bear/services/task-edit';
 import {researcherFromEnv} from '@/lib/bear/ai/web-lookup';
 import {isBrainDump,setupBrainDump} from '@/lib/bear/services/dump';
 import type {BearStore} from '@/lib/bear/store/store';
@@ -37,8 +39,28 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
   if(!(file instanceof File))throw new HttpError('Choose a picture or PDF first.',400);
   if(file.size>MAX_FILE_BYTES)throw new HttpError('That file is bigger than 10 MB. Try a screenshot or a smaller photo.',413);
   const bytes=new Uint8Array(await file.arrayBuffer());
-  const result=await createCapture(store,provider,{method:(['photo','screenshot','upload','email'] as const).includes(method as 'photo')?method as 'photo'|'screenshot'|'upload'|'email':'upload',text:typeof text==='string'&&text.trim()?text:null,file:{bytes,mime:file.type||'application/octet-stream',name:file.name||'bill'}});
-  return json(await withAuto(store,provider,result,{text:typeof text==='string'&&text.trim()?text:null,hasFile:true}),201);
+  const mime=file.type||'application/octet-stream';const note=typeof text==='string'&&text.trim()?text:null;
+  // While Bear reads the page the usual way, it also lists every separate event on it (a calendar, a newsletter, a fixtures
+  // list is many things, not one). The two run side by side so the person does not wait twice.
+  const {today,children}=await todayFor(store);
+  const pageInput={text:note,images:mime.startsWith('image/')?[{mime,bytes}]:[],documents:mime==='application/pdf'?[{mime,bytes}]:[]};
+  const [result,listed]=await Promise.all([
+   createCapture(store,provider,{method:(['photo','screenshot','upload','email'] as const).includes(method as 'photo')?method as 'photo'|'screenshot'|'upload'|'email':'upload',text:note,file:{bytes,mime,name:file.name||'bill'}}),
+   provider?readPageEvents(provider,pageInput,today):Promise.resolve([]),
+  ]);
+  const events=result.extraction.kind==='bill'?[]:keepOnPage(listed,result.extraction.sourceText);
+  if(events.length>=2){
+   const sorted=await placePage(store,events,today,children);
+   if(sorted.some(i=>i.taskId)){
+    // The page has been dealt with as its separate events; it is not also filed as one big item.
+    await store.update('extractions',result.extraction.id,{status:'verified'}).catch(()=>null);await store.update('captures',result.capture.id,{status:'verified'}).catch(()=>null);
+    return json({sorted,page:{events:events.length,undated:events.filter(e=>!e.date&&!e.actionDue).length}},201);
+   }
+  }
+  const single=await withAuto(store,provider,result,{text:note,hasFile:true}) as Record<string,unknown>&{auto?:{taskId:string;dueAt:string|null}};
+  // One thing on the page: if the usual reading found no date and the page listing did, the date is taken.
+  if(single.auto&&!single.auto.dueAt&&events.length===1){const day=events[0].actionDue||events[0].date;if(day&&day>=today){await updateTask(store,single.auto.taskId,{dueAt:day}).catch(()=>null);single.auto={...single.auto,dueAt:day};}}
+  return json(single,201);
  }
  const raw=await req.text();if(new TextEncoder().encode(raw).length>64*1024)throw new HttpError('That is a lot of text. Paste just the bill.',413);
  let body;try{body=captureTextSchema.parse(JSON.parse(raw));}catch{throw new HttpError('Tell Bear something first.',400);}
@@ -69,6 +91,11 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
   const plain=!result.extraction.school&&result.extraction.general.kind!=='shopping'&&!(result.extraction.general.items?.length);
   const item=await adoptSorted(store,result.auto.taskId,parts[0],body.method,today,plain).catch(()=>null);
   return json(item?{...result,sorted:[look?{...item,nextAction:keptNote(look.why)||item.nextAction}:item]}:result,201);
+ }
+ // A pasted notice or email with several dated things on it is taken the same way as a photographed page.
+ if(provider&&!body.isDemo&&looksLikeDocument(body.text)){
+  const {today,children}=await todayFor(store);const events=await readPageEvents(provider,{text:body.text,images:[],documents:[]},today,body.text);
+  if(events.length>=2){const sorted=await placePage(store,events,today,children);if(sorted.some(i=>i.taskId))return json({sorted,page:{events:events.length,undated:events.filter(e=>!e.date&&!e.actionDue).length}},201);}
  }
  return json(await withAuto(store,provider,await createCapture(store,provider,{method:body.method,text:body.text,isDemo:body.isDemo}),{text:body.text,hasFile:false}),201);
 });

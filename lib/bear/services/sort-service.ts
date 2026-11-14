@@ -4,6 +4,7 @@ import {z} from 'zod';
 import {daysBetween,formatAU,isValidISODate,todayISO} from '../domain/dates.ts';
 import {areaKeys,type AIInference,type AreaKey,type Task} from '../domain/types.ts';
 import {DAILY_LOOKUPS,type Researcher,type Source} from './lookup.ts';
+import {eventNote,eventsToSorted,type PageEvent} from './page-events.ts';
 import type {StructuredModelProvider} from '../ai/provider.ts';
 import {stamp,type BearStore} from '../store/store.ts';
 import {maybeAutoSetup} from './auto-setup.ts';
@@ -186,4 +187,16 @@ export async function acceptFound(store:BearStore,input:z.infer<typeof acceptSch
  const task=await store.get('tasks',item.taskId);
  const next=await store.update('tasks',item.taskId,{sorted:{...(task!.sorted||{originalInput:input.question,via:'text' as const,secondaryDomains:[],urgency:null,window:null,windowBy:null,suggestedStart:null,nextAction:null,reason:''}),deadlineSource:'web' as const}});
  return itemFor(next,item.domain,today,{already:item.already});
+}
+
+// ---------- a page with several things on it ----------
+// Each event on the page becomes its own task, with its own date, through the same steps as anything told to Bear.
+export async function placePage(store:BearStore,events:PageEvent[],today:string,children:string[],now=new Date()):Promise<SortedItem[]>{
+ const out:SortedItem[]=[];const sorted=eventsToSorted(events,today,children);
+ for(const s of sorted){
+  const item=await placeSorted(store,s,'text',today,now);out.push(item);
+  const e=events.find(x=>(x.source.slice(0,400)||x.title)===s.original);
+  if(item.taskId&&e&&!item.already)await updateTask(store,item.taskId,{notes:eventNote(e).slice(0,1000)}).catch(()=>null);
+ }
+ return out;
 }

@@ -19,8 +19,8 @@ export function BearChat(){
     <h1 className="hh-welcome hand hero-greeting">Welcome{name?`, ${name}`:''}!</h1>
     {!started&&<p className="hh-sub">I’ve got you. What do you need me to take care of today?</p>}
    </header>}
-   links={<nav className="hh-links" aria-label="More">
-    <Link href="/bear/capture/more?more=1" prefetch={false}>Add a photo or file</Link>
+   links={attach=><nav className="hh-links" aria-label="More">
+    <button type="button" className="hh-attach" onClick={attach}>Add a photo or file</button>
     <Link href="/bear/home">Everything Bear’s holding <span aria-hidden="true">›</span></Link>
    </nav>}/>
  </main>;
