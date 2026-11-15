@@ -48,7 +48,7 @@ function Card({c,reasoning,debug,editing,onChange}:{c:TriageCardView&{removed?:b
   {c.lookedUp&&<span className="tc-looked">I looked it up: {c.lookedUp.answer} <a href={c.lookedUp.source.url} target="_blank" rel="noopener noreferrer">{(()=>{try{return new URL(c.lookedUp.source.url).hostname.replace(/^www\./,'');}catch{return 'source';}})()}</a></span>}
   {(chips.length>0||p.calendar_hold||c.hard_deadline)&&<span className="tc-actions">
    {chips.map(x=><button key={x.k} type="button" className="chip sm" aria-expanded={open===x.k} onClick={()=>toggle(x.k)}>{x.label}</button>)}
-   <CalendarButton title={c.card_headline} deadline={c.hard_deadline} hold={p.calendar_hold}/>
+   <CalendarButton title={c.card_headline} deadline={c.hard_deadline} hold={p.calendar_hold} taskId={c.taskId}/>
   </span>}
   {open==='email'&&p.email&&<div className="tc-draft">{p.email.to&&<p className="qc-next">To {p.email.to}</p>}<p className="tc-subject">{p.email.subject}</p><p className="tc-body">{p.email.body}</p>
    <span className="tc-actions"><a className="chip sm" href={mailto(p.email)}>Open in email</a><button type="button" className="chip sm" onClick={()=>did('email',`${p.email!.subject}\n\n${p.email!.body}`)}>{copied==='email'?'Copied':'Copy'}</button></span></div>}
@@ -64,6 +64,9 @@ function Card({c,reasoning,debug,editing,onChange}:{c:TriageCardView&{removed?:b
 
 // Bear's questions, one at a time, with somewhere to answer. A question about when gets a date picker and sets the due date;
 // any other answer is kept in the task's notes. Skipping is fine.
+// A question is asked once: answered or skipped, it is not asked again on another card, batch or message this session.
+const askedBefore=new Set<string>();
+const qKey=(q:string)=>q.toLowerCase().replace(/[^a-z0-9 ]+/g,' ').replace(/\b(the|a|an|is|are|for|of|to|this|that|it|be|will)\b/g,' ').replace(/\s+/g,' ').trim();
 const isWhen=(q:string)=>/\b(when|what date|which date|what day|due|by when|deadline)\b/i.test(q);
 function Question({card,onDone}:{card:TriageCardView;onDone:(change:CardChange|null)=>void}){
  const q=card.missing_blocker||'';const when=isWhen(q);const [v,setV]=useState('');const [busy,setBusy]=useState(false);const [err,setErr]=useState<string|null>(null);
@@ -87,7 +90,7 @@ export function TriageCards({t,onApproved}:{t:TriageView;onApproved?:()=>void}){
  const [cards,setCards]=useState<(TriageCardView&{removed?:boolean;asked?:boolean})[]>(t.cards);const [editing,setEditing]=useState(false);const [confirmed,setConfirmed]=useState(false);
  const change=(id:string,x:CardChange)=>setCards(l=>l.map(c=>c.card_id!==id?c:{...c,...(x.title?{card_headline:x.title}:{}),...(x.deadline!==undefined?{hard_deadline:x.deadline}:{}),...(x.when?{when:x.when}:{}),...(x.light?{urgency:x.light}:{}),...(x.area?{area:x.area}:{}),...(x.removed?{removed:true}:{})}));
  const placed=cards.filter(c=>c.taskId&&!c.removed);
- const next=cards.find(c=>c.missing_blocker&&c.taskId&&!c.removed&&!c.asked);
+ const next=cards.find(c=>c.missing_blocker&&c.taskId&&!c.removed&&!c.asked&&!askedBefore.has(qKey(c.missing_blocker)));
  const drafted=cards.some(c=>{const p=c.execution_payload;return !!(p.email||p.sms);});
  return <div className="qc-reply qc-sorted tc">
   <p className="qc-head">{t.cards.length?(t.cards.length===1?'I’ve sorted this for you.':`I found ${t.cards.length} things.`):'I read it. Nothing in it needs you.'}</p>
@@ -95,7 +98,7 @@ export function TriageCards({t,onApproved}:{t:TriageView;onApproved?:()=>void}){
    return <section key={g.light} className={`qc-group ${g.light}`} aria-label={g.label}><p className="qc-group-head"><span aria-hidden="true">{g.dot}</span> {g.label}</p>
     <ul>{list.map(c=><Card key={c.card_id} c={c} reasoning={t.reasoning} debug={debug} editing={editing} onChange={x=>change(c.card_id,x)}/>)}</ul></section>;})}
   {debug&&!t.cards.length&&<details className="tc-debug"><summary>AI Reasoning</summary><pre>{t.reasoning||'The service did not return a summary of its thinking for this one.'}</pre></details>}
-  {next&&!editing&&<Question key={next.card_id} card={next} onDone={x=>{if(x)change(next.card_id,x);setCards(l=>l.map(c=>c.card_id===next.card_id?{...c,asked:true}:c));}}/>}
+  {next&&!editing&&<Question key={next.card_id} card={next} onDone={x=>{if(x)change(next.card_id,x);const k=qKey(next.missing_blocker||'');askedBefore.add(k);setCards(l=>l.map(c=>c.card_id===next.card_id||qKey(c.missing_blocker||'')===k?{...c,asked:true}:c));}}/>}
   {drafted&&<p className="qc-next">Drafts are ready. Nothing’s been sent.</p>}
   {placed.length>0&&!confirmed&&!next&&<div className="btn-row tc-confirm">
    <button type="button" className="btn coral sm" onClick={()=>{setConfirmed(true);setEditing(false);onApproved?.();}}>{editing?'Done':'Looks good'}</button>

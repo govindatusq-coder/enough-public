@@ -139,7 +139,16 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
    const context=acc.view?.cards.length?`Earlier pictures in this same set have already been read. Already listed: ${acc.view.cards.map(c=>c.card_headline).join('; ')}. List only new things; leave out anything already listed.`:'';
    try{
     const req=await buildTriageRequest({files:batches[i],text:[i===0?input.text||'':'',context].filter(Boolean).join('\n\n')||undefined},await familyProfile());
-    const r=await apiSend<TriageView&{code?:string}>('/api/bear/triage',req);
+    // The reading service can be busy for a moment when batches come one after another: wait and try the batch again
+    // (twice at most) rather than stopping part-way.
+    let r:TriageView&{code?:string}|null=null;
+    for(let attempt=0;;attempt++){
+     try{r=await apiSend<TriageView&{code?:string}>('/api/bear/triage',req);break;}
+     catch(e){const s=(e as ApiError).status;if(attempt>=2||!(s===0||s===429||s===502||s===503||s===504))throw e;
+      patch(turnId,t=>({...t,batch:`The reading service is busy. Trying pictures ${from}–${to} again in a moment…`}));await new Promise(res=>setTimeout(res,attempt===0?12000:25000));
+      patch(turnId,t=>({...t,batch:batches.length>1?`Reading pictures ${from}–${to} of ${files.length}…`:null}));}
+    }
+    if(!r)throw new Error('Bear could not read those pictures.');
     if(r.code==='missing_key'){if(i===0){patch(turnId,t=>({...t,triaging:false,batch:null}));return false;}break;}
     const prev=acc.view;const seen=new Set<string>((prev?.cards||[]).map(c=>c.taskId).filter((x):x is string=>!!x));
     acc.view=prev?{reasoning:[prev.reasoning,r.reasoning].filter(Boolean).join(`\n\n— pictures ${from}–${to} —\n`),summary:prev.summary||r.summary,cards:[...prev.cards,...r.cards.filter(c=>!c.taskId||!seen.has(c.taskId))]}:{reasoning:r.reasoning,summary:r.summary,cards:r.cards};
@@ -215,7 +224,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
          {i.nextAction&&!i.error&&!i.check&&<span className="qc-next">{i.nextAction}</span>}
          {i.check&&<Link className="qc-next" href={i.check} style={{textDecoration:'underline'}}>That looks like a bill. Check what I read</Link>}
          {i.error&&<span className="qc-next">I couldn’t take this one. {i.error}</span>}
-         {i.deadline&&!i.removed&&<span className="tc-actions"><CalendarButton title={i.title} deadline={i.deadline}/></span>}
+         {i.deadline&&!i.removed&&<span className="tc-actions"><CalendarButton title={i.title} deadline={i.deadline} taskId={i.taskId}/></span>}
          {isChanging&&i.taskId&&!i.removed&&<CardEditor taskId={i.taskId} title={i.title} deadline={i.deadline??null} light={i.light} area={i.domain} onChange={x=>swap(turn.id,{...i,...(x.title?{title:x.title}:{}),...(x.deadline!==undefined?{deadline:x.deadline}:{}),...(x.when?{when:x.when}:{}),...(x.light?{light:x.light}:{}),...(x.area?{domain:x.area as AreaKey}:{}),...(x.removed?{removed:true}:{})})}/>}
         </li>)}</ul>
        </section>;})}

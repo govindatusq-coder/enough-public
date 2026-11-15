@@ -56,7 +56,8 @@ test('the checks: invented people, impossible dates and bad calendar times are n
  const one=o=>checkTriage({...SCHOOL_OUT,action_cards:[card(o)]},TODAY,['Ava','Sam']);
  const ghost=one({family_member:'Oliver'});assert.equal(ghost.cards[0].family_member,null);assert.ok(ghost.cards[0].problems.length);
  assert.equal(one({family_member:'ava'}).cards[0].family_member,'Ava');assert.equal(one({family_member:'Ava & Sam'}).cards[0].family_member,'Ava');
- for(const d of ['2026-02-30','Wednesday','2024-01-01','2030-01-01']){const r=one({hard_deadline:d});assert.equal(r.cards[0].hard_deadline,null,d);assert.ok(r.cards[0].missing_blocker,'a missing date becomes the one question');}
+ const noHold={...card({}).execution_payload,calendar_hold:null};
+ for(const d of ['2026-02-30','Wednesday','2024-01-01','2030-01-01']){const r=one({hard_deadline:d,execution_payload:noHold});assert.equal(r.cards[0].hard_deadline,null,d);assert.ok(r.cards[0].missing_blocker,'a missing date becomes the one question');}
  assert.equal(one({hard_deadline:'2026-11-18T15:00'}).cards[0].hard_deadline,'2026-11-18');
  assert.equal(one({execution_payload:{...card({}).execution_payload,calendar_hold:{title:'x',start:'next Friday',end:null,all_day:true,location:null}}}).cards[0].execution_payload.calendar_hold,null);
  assert.equal(checkTriage({...SCHOOL_OUT,action_cards:[card({urgency:'purple'})]},TODAY,[]).ok,false);
@@ -109,4 +110,12 @@ test('Bear answers its own questions about the world from the web, and leaves th
  assert.equal(b.missing_blocker,'Who is going with Sam?','the family’s question still comes to the parent');
  const none=await triage(s,new FakeProvider(()=>out),{images:[],documents:[],text:'Presentation night, again.'},NOW,async()=>({finding:null,usage:null,searches:1,model:'fake'}));
  assert.ok(none.cards.some(c=>c.missing_blocker==='When is presentation night?'),'nothing reliable found: Bear asks after all');
+});
+
+test('an event’s day from the document is its date, and Bear does not ask when it is',()=>{
+ const ev=card({hard_deadline:null,action_type:'calendar_hold',missing_blocker:'When is the athletics carnival?',execution_payload:{email:null,sms:null,calendar_hold:{title:'Athletics carnival',start:'2026-11-26T09:00',end:null,all_day:false,location:'School oval'},shopping_list:null,steps:null}});
+ const r=checkTriage({source_summary:'Term calendar.',action_cards:[ev]},TODAY,['Ava']);assert.ok(r.ok);
+ assert.equal(r.cards[0].hard_deadline,'2026-11-26','the event day is the date');assert.equal(r.cards[0].missing_blocker,null,'no question about something the document says');
+ const p=triageSystemPrompt(anchorsFor(NOW,'Australia/Sydney',[]));assert.match(p,/each dated line there is its own card/);assert.match(p,/Do not ask the parent anything the document already answers/);
+ assert.match(JSON.stringify(triageJsonSchema),/for an event, the day it happens/);
 });

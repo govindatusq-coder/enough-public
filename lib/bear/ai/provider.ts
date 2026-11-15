@@ -2,7 +2,9 @@
 // so the vendor can be swapped without touching services. Keys live server-side only.
 export interface ExtractInput{schema:Record<string,unknown>;system:string;text:string|null;images:{mime:string;bytes:Uint8Array}[];documents:{mime:string;bytes:Uint8Array}[];maxOutputTokens?:number;
  // Ask the service for its own summary of the model's thinking (the supported way to see how it read something).
- thinkingSummary?:boolean}
+ thinkingSummary?:boolean;
+ // How hard the model works on it. Documents with tables and calendars need more than a short message.
+ effort?:'low'|'medium'|'high'}
 export interface ExtractResult{output:unknown;raw:unknown;provider:string;model:string;latencyMs:number;thinking?:string|null}
 export interface StructuredModelProvider{readonly name:string;readonly model:string;readonly supportsVision:boolean;extract(input:ExtractInput):Promise<ExtractResult>}
 export type ProviderErrorKind='unavailable'|'refused'|'invalid_output'|'rate_limited'|'network'|'unsupported';

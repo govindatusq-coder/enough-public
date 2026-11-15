@@ -38,7 +38,7 @@ export class AnthropicProvider implements StructuredModelProvider{
   try{
    const base={max_tokens:input.maxOutputTokens||8000,
     system:[{type:'text' as const,text:input.system,cache_control:{type:'ephemeral' as const}}],
-    output_config:{format:{type:'json_schema' as const,schema:structuredOutputSchema(input.schema) as Record<string,unknown>},effort:'medium' as const},
+    output_config:{format:{type:'json_schema' as const,schema:structuredOutputSchema(input.schema) as Record<string,unknown>},effort:(input.effort||'medium') as 'low'|'medium'|'high'},
     messages:[{role:'user' as const,content}],
     ...(input.thinkingSummary?{thinking:{type:'adaptive' as const,display:'summarized' as const}}:{})};
    // A safety filter can decline an ordinary school note by mistake. The service first re-runs a declined request on its own

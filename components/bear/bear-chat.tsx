@@ -21,6 +21,7 @@ export function BearChat(){
    </header>}
    links={attach=><nav className="hh-links" aria-label="More">
     <button type="button" className="hh-attach" onClick={attach}>Add photos or a file</button>
+    <Link href="/bear/calendar">Calendar</Link>
     <Link href="/bear/home">Everything Bear’s holding <span aria-hidden="true">›</span></Link>
    </nav>}/>
  </main>;

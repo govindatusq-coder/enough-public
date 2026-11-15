@@ -641,3 +641,12 @@
 .bear .tc-looked{font-size:13.5px;color:var(--ink-2);margin-top:4px;}
 .bear .tc-looked a{color:var(--navy);text-decoration:underline;margin-left:4px;}
 .bear .qc-batch{font-weight:600;color:var(--ink-2);margin:0 4px;}
+/* Load Bear's own calendar */
+.bear .cal-list{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px;}
+.bear .cal-row{display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:#fff;border:1px solid var(--line);border-left:5px solid var(--ac,#ccc);}
+.bear .cal-row.red{box-shadow:inset 0 0 0 1px #F5C2C0;}
+.bear .cal-time{font-size:13px;font-weight:700;color:var(--ink-2);}
+.bear .cal-title{color:var(--ink);text-decoration:none;font-weight:600;line-height:1.25;overflow-wrap:anywhere;}
+.bear .cal-sub{display:block;font-size:12.5px;font-weight:400;color:var(--ink-3);}
+.bear .cal-add{font-size:13px;font-weight:700;color:var(--navy);text-decoration:underline;padding:6px;}
+.bear .home-cal-link{display:inline-block;margin-top:8px;font-weight:700;color:var(--navy);}

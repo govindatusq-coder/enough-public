@@ -42,6 +42,7 @@ export default function Home(){
      {home.overdue.length>0&&<p className="hero-alert" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/></svg><span>{home.overdue.length} overdue · see the red numbers</span></p>}
      {home.overdue.length===0&&firstNeed&&!home.oneThing&&<Link className="hero-alert needs" href={firstNeed.billId?`/bear/bills/${firstNeed.billId}`:`/bear/tasks/${firstNeed.taskId}`}><span>{needCount===1?'1 thing needs you':`${needCount} things need you`}: {firstNeed.message||firstNeed.title}</span></Link>}
     </div>
+    <Link href="/bear/calendar" className="home-cal-link" style={{position:'relative',zIndex:2}}>Calendar ›</Link>
     <div className="hero-art" aria-hidden="true"><Art file={greet?greet.art:'hero-bear'} className="hero-img" style={{objectPosition:greet?greet.focus:'60% 22%',...(greet?.zoom?{transform:`scale(${greet.zoom})`,transformOrigin:'25% 100%'}:{})}}/></div>
    </header>
    {!online&&<p className="note" style={{marginTop:14}} role="status">You&rsquo;re offline. Showing what Bear last knew.</p>}

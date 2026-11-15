@@ -64,7 +64,7 @@ export const triageJsonSchema={
     family_member:nul('string',{description:'The family member this is for, exactly as named in the family profile, or null if it is for the parent or nobody in particular.'}),
     action_type:{type:'string',enum:[...ACTION_TYPES]},
     urgency:{type:'string',enum:[...URGENCY],description:'red: due today or tomorrow, overdue, or serious consequences if late. amber: due within two weeks or needs preparing. green: can wait. Several can be red; none need be.'},
-    hard_deadline:nul('string',{description:'The date it must be done by, YYYY-MM-DD, only if the source states or clearly implies one. Never guess.'}),
+    hard_deadline:nul('string',{description:'YYYY-MM-DD. The date the parent must act by (a form or payment due date), or, for an event, the day it happens. Take it from the document: dates in tables, calendars, headings and footers all count. Null only if the document gives no day at all for this item.'}),
     card_headline:{type:'string',description:'Action verb + the specific thing + the outcome, under 12 words. No date in it.'},
     ai_work_completed:{type:'string',description:'One plain line on what you have already prepared (e.g. "Drafted the reply to Mrs Lee confirming Ava will attend"). Never claim anything was sent, booked or paid.'},
     execution_payload:{type:'object',additionalProperties:false,required:['email','sms','calendar_hold','shopping_list','steps'],properties:{
@@ -75,7 +75,7 @@ export const triageJsonSchema={
      steps:{anyOf:[{type:'array',items:{type:'string'}},{type:'null'}],description:'For forms, payments or bookings: the exact steps, with any reference numbers, amounts, links or codes from the source.'},
     }},
     confidence_score:{type:'number',description:'0 to 1: how sure you are this card is right.'},
-    missing_blocker:nul('string',{description:'If something stops this being done (a missing date, amount, or who to contact), ONE short question to ask the parent. Otherwise null.'}),
+    missing_blocker:nul('string',{description:'Usually null. Only if the parent must decide or supply something the document does not say and that cannot be looked up (for example who will go, or a choice between options): ONE short question. Never ask about anything the document already says, such as a date, time, place or cost on the page.'}),
    }}},
  },
 } as const;
@@ -116,6 +116,7 @@ Then one action card per separate thing the parent must do. Make each card ready
 - an event: calendar_hold with the exact time if given;
 - things to buy or pack: shopping_list;
 - a form, payment or booking: steps with every reference number, amount, link or code from the source.
+Read every page in full, including tables and calendar grids: each dated line there is its own card with its own date. Do not ask the parent anything the document already answers.
 Leave out anything that needs nothing from the parent. Never claim you have sent, booked, paid or submitted anything: you prepare, the parent acts. Never invent a date, name, amount or contact; if one is missing and it matters, put ONE short question in missing_blocker.`;
 
 // ---------- the checks every card passes ----------
@@ -133,6 +134,8 @@ export function checkTriage(raw:unknown,today:string,familyNames:string[]):{ok:t
   if(card.family_member){const hit=names.get(card.family_member.trim().toLowerCase())||[...names.values()].find(n=>card.family_member!.toLowerCase().split(/[\s,&]+/).includes(n.toLowerCase()));if(hit)card.family_member=hit;else{problems.push(`family_member "${card.family_member}" is not in the profile`);card.family_member=null;}}
   if(card.hard_deadline){const d=plausible(card.hard_deadline,today);if(!d){problems.push(`hard_deadline "${card.hard_deadline}" is not a usable date`);card.hard_deadline=null;card.missing_blocker=card.missing_blocker||'When is this due?';}else card.hard_deadline=d;}
   const h=card.execution_payload.calendar_hold;if(h&&(!okStart(h.start)||!plausible(h.start,today)||(h.end&&!okStart(h.end)))){problems.push('calendar_hold has an unusable time');card.execution_payload.calendar_hold=null;}
+  // An event with a usable time but no due date: the event's day is the date that matters, and there is nothing to ask about it.
+  const hold=card.execution_payload.calendar_hold;if(!card.hard_deadline&&hold){card.hard_deadline=plausible(hold.start,today);if(card.hard_deadline&&card.missing_blocker&&/\b(when|what date|which day|what day|what time|date|time)\b/i.test(card.missing_blocker))card.missing_blocker=null;}
   if(card.execution_payload.shopping_list)card.execution_payload.shopping_list=card.execution_payload.shopping_list.map(s=>s.trim()).filter(Boolean);
   card={...card,card_headline:card.card_headline.replace(/[\s.]+$/,'')};
   return {...card,problems};

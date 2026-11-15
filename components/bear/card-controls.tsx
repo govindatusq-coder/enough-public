@@ -22,7 +22,10 @@ export function icsHref(h:Hold){
   allDay?`DTSTART;VALUE=DATE:${start}`:`DTSTART:${start}`,allDay?`DTEND;VALUE=DATE:${end}`:`DTEND:${end}`,`SUMMARY:${esc(h.title)}`,...(h.location?[`LOCATION:${esc(h.location)}`]:[]),'END:VEVENT','END:VCALENDAR'];
  return 'data:text/calendar;charset=utf-8,'+encodeURIComponent(lines.join('\r\n'));
 }
-export function CalendarButton({title,deadline,hold}:{title:string;deadline:string|null;hold?:Hold|null}){
+// Saved tasks get the file from the server (iPhones open a served calendar file and offer "Add"; they ignore one built inside
+// the page). Only something not yet saved falls back to a file made here.
+export function CalendarButton({title,deadline,hold,taskId}:{title:string;deadline:string|null;hold?:Hold|null;taskId?:string|null}){
+ if(taskId&&deadline)return <a className="chip sm" href={`/api/bear/tasks/${taskId}/ics`}>Add to calendar</a>;
  const h=hold||(deadline?{title,start:deadline,end:null,all_day:true,location:null}:null);if(!h)return null;
  return <a className="chip sm" href={icsHref(h)} download={`${h.title.replace(/[^\w ]+/g,'').slice(0,40)||'event'}.ics`}>Add to calendar</a>;
 }

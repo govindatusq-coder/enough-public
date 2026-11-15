@@ -22,7 +22,7 @@ export interface TriageInput{images:{mime:string;bytes:Uint8Array}[];documents:{
 export interface TriageCardView{lookedUp?:{question:string;answer:string;source:{title:string;url:string}}|null;linkedFrom?:string|null;card_id:string;family_member:string|null;action_type:string;urgency:Light;hard_deadline:string|null;card_headline:string;ai_work_completed:string;execution_payload:CheckedCard['execution_payload'];confidence_score:number;missing_blocker:string|null;taskId:string|null;area:AreaKey;when:string;already:boolean}
 export interface TriageResult{reasoning:string;summary:string;cards:TriageCardView[]}
 export class TriageError extends Error{readonly code:string;readonly status:number;constructor(message:string,code:string,status=502){super(message);this.code=code;this.status=status;}}
-export const DAILY_TRIAGE=40;
+export const DAILY_TRIAGE=100;
 
 export async function familyOf(store:BearStore):Promise<{family:FamilyMember[];parentName:string;timeZone:string}>{
  const p=await ensureProfile(store);
@@ -39,7 +39,7 @@ export async function triage(store:BearStore,provider:StructuredModelProvider|nu
  const text=input.text?cleanEmailInput(input.text):null;const started=Date.now();
  let raw:unknown;
  try{
-  const r=await provider.extract({schema:triageJsonSchema as unknown as Record<string,unknown>,system:triageSystemPrompt(a),text,images:input.images,documents:input.documents,maxOutputTokens:12000,thinkingSummary:true});
+  const r=await provider.extract({schema:triageJsonSchema as unknown as Record<string,unknown>,system:triageSystemPrompt(a),text,images:input.images,documents:input.documents,maxOutputTokens:16000,thinkingSummary:true,effort:'high'});
   raw=r.output;
   const checked=checkTriage(raw,a.isoDate,family.map(f=>f.name));
   await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'Triage',provider:r.provider,model:r.model,promptHash:'triage-1',rawOutput:checked.ok?{cards:checked.cards.length,problems:checked.cards.flatMap(c=>c.problems).length}:null,latencyMs:r.latencyMs,ok:checked.ok,error:checked.ok?null:checked.error.slice(0,400),usage:usageFrom(r.raw)}));
@@ -50,9 +50,9 @@ export async function triage(store:BearStore,provider:StructuredModelProvider|nu
   // a price) from the web. Questions only the family can answer are left for them. At most three lookups per reading.
   let looked=0;
   for(const c of cards){
-   if(!c.missing_blocker||!c.taskId||looked>=3||!webAnswerable(c.missing_blocker,family.map(f=>f.name)))continue;looked++;
+   if(!c.missing_blocker||!c.taskId||looked>=2||!webAnswerable(c.missing_blocker,family.map(f=>f.name)))continue;looked++;
    const q=`${c.missing_blocker} (about: ${c.card_headline}. Context: ${checked.output.source_summary})`;
-   const r=await lookUp(store,researcher,q,a.isoDate,now).catch(()=>({found:null,why:'nothing' as const}));
+   const r=await Promise.race([lookUp(store,researcher,q,a.isoDate,now),new Promise<{found:null;why:'nothing'}>(res=>setTimeout(()=>res({found:null,why:'nothing'}),25000))]).catch(()=>({found:null,why:'nothing' as const}));
    if(!r.found)continue;
    const src=r.found.sources[0];const task=await store.get('tasks',c.taskId);if(!task)continue;
    const useDate=!!r.found.date&&!c.hard_deadline&&/\b(when|date|day|time)\b/i.test(c.missing_blocker);
@@ -84,6 +84,8 @@ async function placeCard(store:BearStore,c:CheckedCard,today:string,family:Famil
  const item:SortedItem=await placeSorted(store,{title:c.card_headline.slice(0,90),original,domain:area,secondary,deadline:c.hard_deadline,deadlineSource:c.hard_deadline?'stated':null,window:null,windowBy:null,suggestedStart:suggestStart(c.card_headline,c.hard_deadline,light.light,today),urgency:c.urgency,nextAction:null,...light},'text',today,now);
  // Drafts go with the task, including one this card was added to, unless that task already has its own.
  if(item.taskId&&(!item.already||!(await store.get('tasks',item.taskId))?.prepared)){
+  const h=c.execution_payload.calendar_hold;const tm=h&&/T(\d{2}:\d{2})/.exec(h.start)?.[1];
+  if(h&&(tm||h.location)&&h.start.slice(0,10)===item.deadline)await updateTask(store,item.taskId,{...(tm?{dueTime:tm}:{}),...(h.location?{location:h.location.slice(0,160)}:{})}).catch(()=>null);
   await store.update('tasks',item.taskId,{prepared:{actionType:c.action_type,member:c.family_member,work:c.ai_work_completed,blocker:c.missing_blocker,confidence:c.confidence_score,payload:c.execution_payload}}).catch(()=>null);
  }
  return {card_id:c.card_id,family_member:c.family_member,action_type:c.action_type,urgency:item.light,hard_deadline:c.hard_deadline,card_headline:item.title,ai_work_completed:c.ai_work_completed,execution_payload:c.execution_payload,confidence_score:c.confidence_score,missing_blocker:c.missing_blocker,taskId:item.taskId,area:item.domain,when:item.when,already:item.already,linkedFrom:item.linkedFrom||null};

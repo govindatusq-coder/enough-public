@@ -222,7 +222,7 @@ try{
     if(!dbg){assert.equal(req.inputs[0].kind,'image');assert.match(req.inputs[0].data,/^data:image\/jpeg;base64,/);assert.match(req.currentDateTime,/day/);assert.ok(Array.isArray(req.familyProfile));assert.ok(req.timeZone);
      const txt=await p4.textContent('.tc');assert.ok(txt.includes('I found 2 things')&&txt.includes('Nothing’s been sent'),txt);assert.ok(!txt.includes('Drafted an RSVP'),'cards stay short');
      await p4.click('.tc button:has-text("Email draft")');assert.match(await p4.getAttribute('.tc a:has-text("Open in email")','href'),/^mailto:club%40soccer\.example\?subject=RSVP/);
-     assert.match(await p4.getAttribute('.tc a:has-text("Add to calendar")','href'),/^data:text\/calendar/);
+     assert.match(await p4.getAttribute('.tc a:has-text("Add to calendar")','href'),/^\/api\/bear\/tasks\/c1c1c1c1-c1c1-4c1c-8c1c-c1c1c1c1c1c1\/ics$/);
      assert.equal(await p4.$$eval('.tc a:has-text("Add to calendar")',e=>e.length),2,'a card with only a due date gets a calendar button too');
      // Bear's question has somewhere to answer, and the answer is saved to that task; then the cards can be approved or changed.
      assert.ok((await p4.textContent('.tc-question')).includes('Who is going with Sam?'));assert.equal(await p4.$('.tc button:has-text("Looks good")'),null,'one thing at a time: the question first');
@@ -251,7 +251,8 @@ try{
    await p5.goto(base+'/bear/capture');await p5.waitForSelector('#qc-text');
    await p5.fill('#qc-text','renew the passport by 20 December and tidy the shed');await p5.click('.qc-go[type="submit"]');await p5.waitForSelector('div.qc-turn:last-of-type .qc-confirm');
    assert.equal(await p5.$$eval('div.qc-turn:last-of-type a:has-text("Add to calendar")',e=>e.length),1,'the dated one can go in the calendar');
-   assert.match(await p5.getAttribute('div.qc-turn:last-of-type a:has-text("Add to calendar")','href'),/^data:text\/calendar.*DTSTART%3BVALUE%3DDATE%3A20261220/);
+   {const href=await p5.getAttribute('div.qc-turn:last-of-type a:has-text("Add to calendar")','href');assert.match(href,/^\/api\/bear\/tasks\/[0-9a-f-]{36}\/ics$/,'served by the server, which phones open');
+    const ics=await p5.evaluate(async h=>{const r=await fetch(h);return {type:r.headers.get('content-type'),body:await r.text()};},href);assert.match(ics.type,/text\/calendar/);assert.match(ics.body,/DTSTART;VALUE=DATE:20261220/);assert.match(ics.body,/SUMMARY:Renew the passport/);}
    await p5.click('div.qc-turn:last-of-type button:has-text("Change something")');await p5.waitForSelector('.ce');assert.equal(await p5.$$eval('.ce',e=>e.length),2,'every card can be changed');
    const passport=p5.locator('.qc-card',{hasText:'passport'});
    await passport.locator('.ce-field input').first().fill('Renew Ava’s passport');await passport.locator('input[type="date"]').fill('2026-12-18');await passport.locator('button:has-text("Save")').click();
@@ -260,7 +261,12 @@ try{
    const shed=p5.locator('.qc-card',{hasText:'shed'});await shed.locator('select').selectOption('me');await shed.locator('button:has-text("Remove")').click();await p5.waitForSelector('div.qc-turn:last-of-type .qc-removed');
    const all=await p5.evaluate(async()=>await (await fetch('/api/bear/everything')).text());assert.ok(all.includes('Renew Ava’s passport')&&!all.includes('Tidy the shed'),'the changes are saved, and the removed one is gone');
    await p5.click('div.qc-turn:last-of-type button:has-text("Looks good, Bear")');await p5.waitForSelector('div.qc-turn:last-of-type .qc-note');
-   await p5.screenshot({path:resolve(results,'61j-bear-edit.png'),fullPage:true});await c5.close();}
+   await p5.screenshot({path:resolve(results,'61j-bear-edit.png'),fullPage:true});
+   // Load Bear's own calendar: the dated task, by day, openable, and addable to the phone's calendar.
+   await p5.goto(base+'/bear/calendar');await p5.waitForSelector('.cal-row');const cal=await p5.textContent('main');
+   assert.ok(cal.includes('Renew Ava’s passport')&&cal.includes('All day'),cal.slice(0,300));assert.ok(!cal.includes('Tidy the shed'),'removed things are not in the calendar');
+   assert.match(await p5.getAttribute('.cal-row a.cal-add','href'),/\/ics$/);await p5.screenshot({path:resolve(results,'61k-bear-calendar.png'),fullPage:true});
+   await c5.close();}
   // It is a chat: earlier turns are still there, the newest is in view, and the box has not moved off the bottom.
   await page.waitForTimeout(900);
   {const c=await page.evaluate(()=>{const box=document.querySelector('.qc-pill').getBoundingClientRect();const lastTurn=[...document.querySelectorAll('.qc-turn')].pop().getBoundingClientRect();return {turns:document.querySelectorAll('.qc-turn').length,boxBottom:Math.round(innerHeight-box.bottom),boxTop:box.top,lastVisible:lastTurn.bottom<=box.top+2&&lastTurn.bottom>0,pageScroll:document.scrollingElement.scrollHeight-innerHeight};});
