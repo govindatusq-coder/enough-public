@@ -1,5 +1,6 @@
 'use client';
 import {useState} from 'react';
+import Link from 'next/link';
 import {apiSend,type ApiError} from '@/lib/bear/client';
 import {formatAU} from '@/lib/bear/domain/dates';
 
@@ -22,12 +23,17 @@ export function icsHref(h:Hold){
   allDay?`DTSTART;VALUE=DATE:${start}`:`DTSTART:${start}`,allDay?`DTEND;VALUE=DATE:${end}`:`DTEND:${end}`,`SUMMARY:${esc(h.title)}`,...(h.location?[`LOCATION:${esc(h.location)}`]:[]),'END:VEVENT','END:VCALENDAR'];
  return 'data:text/calendar;charset=utf-8,'+encodeURIComponent(lines.join('\r\n'));
 }
-// Saved tasks get the file from the server (iPhones open a served calendar file and offer "Add"; they ignore one built inside
-// the page). Only something not yet saved falls back to a file made here.
-export function CalendarButton({title,deadline,hold,taskId}:{title:string;deadline:string|null;hold?:Hold|null;taskId?:string|null}){
- if(taskId&&deadline)return <a className="chip sm" href={`/api/bear/tasks/${taskId}/ics`}>Add to calendar</a>;
- const h=hold||(deadline?{title,start:deadline,end:null,all_day:true,location:null}:null);if(!h)return null;
- return <a className="chip sm" href={icsHref(h)} download={`${h.title.replace(/[^\w ]+/g,'').slice(0,40)||'event'}.ics`}>Add to calendar</a>;
+// "Add to calendar" means Load Bear's own calendar. Anything with a date is already in it, so the card says so and opens that day;
+// something with no date gets a day picker, and once it has a day it is in the calendar.
+export function CalendarButton({title,deadline,hold,taskId,onDated}:{title:string;deadline:string|null;hold?:Hold|null;taskId?:string|null;onDated?:(date:string)=>void}){
+ const [picking,setPicking]=useState(false);const [d,setD]=useState('');const [busy,setBusy]=useState(false);const [err,setErr]=useState<string|null>(null);
+ const day=deadline||(hold?hold.start.slice(0,10):null);
+ if(day)return <Link className="chip sm" href={`/bear/calendar#d-${day}`} aria-label={`${title} is in Bear’s calendar on ${formatAU(day,'short')}. Open the calendar`}>📅 In Bear’s calendar · {formatAU(day,'short')}</Link>;
+ if(!taskId)return null;
+ if(!picking)return <button type="button" className="chip sm" onClick={()=>setPicking(true)}>Add to calendar</button>;
+ return <span className="ce-row"><label className="sr-only" htmlFor={`cal-${taskId}`}>Which day for {title}</label><input id={`cal-${taskId}`} type="date" className="qc-select" value={d} onChange={e=>setD(e.target.value)}/>
+  <button type="button" className="btn coral sm" disabled={!d||busy} onClick={async()=>{setBusy(true);setErr(null);try{await apiSend(`/api/bear/tasks/${taskId}`,{dueAt:d},'PATCH');onDated?.(d);setPicking(false);}catch(e){setErr((e as ApiError).message||'That didn’t save.');}finally{setBusy(false);}}}>Add</button>
+  {err&&<span className="tc-blocker" role="alert">{err}</span>}</span>;
 }
 const whenFor=(d:string|null)=>d?`Due ${formatAU(d,'short')}`:'No date';
 export function CardEditor({taskId,title,deadline,light,area,onChange}:{taskId:string;title:string;deadline:string|null;light:Light;area:string;onChange:(c:CardChange)=>void}){

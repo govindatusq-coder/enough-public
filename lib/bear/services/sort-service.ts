@@ -88,7 +88,7 @@ export async function sortParts(text:string,provider:StructuredModelProvider|nul
 }
 
 // Make (or recognise) the task for one sorted thing.
-export async function placeSorted(store:BearStore,s:Sorted,via:'text'|'voice',today:string,now=new Date()):Promise<SortedItem>{
+export async function placeSorted(store:BearStore,s:Sorted,via:'text'|'voice',today:string,now=new Date(),opts:{noLink?:boolean}={}):Promise<SortedItem>{
  const blank={taskId:null,title:s.title,domain:s.domain,light:s.light,reason:s.reason,deadline:s.deadline,deadlineSource:s.deadlineSource,window:s.window,suggestedStart:s.suggestedStart,when:whenLine(s,today),nextAction:s.nextAction,already:false,check:null,error:null} satisfies SortedItem;
  try{
   // Seen before? The same responsibility told twice (chat, voice, again tomorrow) stays one task.
@@ -104,7 +104,7 @@ export async function placeSorted(store:BearStore,s:Sorted,via:'text'|'voice',to
   // to that task instead of becoming another one. The earlier due date wins: part of the job is due then.
   const profile=await ensureProfile(store);const kids=(profile.people||[]).filter(p=>p.role==='child').map(p=>p.name).filter(Boolean).concat((profile.family||[]).filter(f=>f.relation==='child').map(f=>f.name));
   let best:Task|null=null,score=0;
-  for(const t of open){const r=Math.max(relatedTo(s.title,t.title,kids),t.sorted?relatedTo(s.original,t.sorted.originalInput,kids):0);if(r>score){score=r;best=t;}}
+  if(!opts.noLink)for(const t of open){const r=Math.max(relatedTo(s.title,t.title,kids),t.sorted?relatedTo(s.original,t.sorted.originalInput,kids):0);if(r>score){score=r;best=t;}}
   if(best){
    const line=`• ${s.title}${s.deadline?` (by ${formatAU(s.deadline,'short')})`:''}`;
    const notes=(best.notes||'').includes(line)?best.notes:[best.notes||'',line].filter(Boolean).join('\n').slice(0,1000);

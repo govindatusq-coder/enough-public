@@ -226,8 +226,11 @@ const LINK_STOP=new Set(('the a an and or for to of on in at by with from my our
  'register enrol renew cancel order fix clean find ask tell confirm arrange sort finish start submit prepare remind remember need needs due '+
  'bill bills fee fees appointment appointments form forms note notes slip school family thing things today tomorrow week month').split(' '));
 const linkWords=(s:string)=>new Set(s.toLowerCase().replace(/(?:'|’)s\b/g,'').replace(/[^a-z0-9 ]+/g,' ').split(/\s+/).filter(w=>w.length>2&&!LINK_STOP.has(w)&&!/^\d+$/.test(w)).map(w=>w.length>4?w.replace(/(?:es|s)$/,''):w));
+// Names (anyone's, written with a capital) say who a thing is for, not what it is: they never count towards a match, though two
+// different names keep things apart.
+const namesIn=(s:string)=>new Set((s.match(/(?<!^|[.!?]\s)\b[A-Z][a-z]{2,}(?:(?:'|’)s)?\b/g)||[]).map(w=>w.replace(/(?:'|’)s$/,'').toLowerCase()));
 export function relatedTo(a:string,b:string,children:string[]=[]):number{
- const kids=children.map(n=>n.toLowerCase());const A=linkWords(a),B=linkWords(b);
+ const kids=[...new Set([...children.map(n=>n.toLowerCase()),...namesIn(a),...namesIn(b)])].filter(n=>!LINK_STOP.has(n));const A=linkWords(a),B=linkWords(b);
  const ka=kids.filter(k=>A.has(k)),kb=kids.filter(k=>B.has(k));
  if(ka.length&&kb.length&&!ka.some(k=>kb.includes(k)))return 0;   // about different children
  for(const k of kids){A.delete(k);B.delete(k);}

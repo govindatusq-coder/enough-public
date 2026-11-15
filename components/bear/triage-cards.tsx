@@ -46,9 +46,9 @@ function Card({c,reasoning,debug,editing,onChange}:{c:TriageCardView&{removed?:b
   {c.taskId?<Link className="qc-title" href={`/bear/tasks/${c.taskId}`}>{c.card_headline}</Link>:<span className="qc-title">{c.card_headline}</span>}
   <span className="qc-meta"><span className="qc-area">{areaLabel[c.area]||c.area}</span>{c.family_member?` · ${c.family_member}`:''} · {c.when}{c.linkedFrom?` · Added “${c.linkedFrom}” to this`:c.already?' · Already on my list':''}</span>
   {c.lookedUp&&<span className="tc-looked">I looked it up: {c.lookedUp.answer} <a href={c.lookedUp.source.url} target="_blank" rel="noopener noreferrer">{(()=>{try{return new URL(c.lookedUp.source.url).hostname.replace(/^www\./,'');}catch{return 'source';}})()}</a></span>}
-  {(chips.length>0||p.calendar_hold||c.hard_deadline)&&<span className="tc-actions">
+  {(chips.length>0||p.calendar_hold||c.hard_deadline||c.taskId)&&<span className="tc-actions">
    {chips.map(x=><button key={x.k} type="button" className="chip sm" aria-expanded={open===x.k} onClick={()=>toggle(x.k)}>{x.label}</button>)}
-   <CalendarButton title={c.card_headline} deadline={c.hard_deadline} hold={p.calendar_hold} taskId={c.taskId}/>
+   <CalendarButton title={c.card_headline} deadline={c.hard_deadline} hold={p.calendar_hold} taskId={c.taskId} onDated={d=>onChange({deadline:d,when:`Due ${formatAU(d,'short')}`})}/>
   </span>}
   {open==='email'&&p.email&&<div className="tc-draft">{p.email.to&&<p className="qc-next">To {p.email.to}</p>}<p className="tc-subject">{p.email.subject}</p><p className="tc-body">{p.email.body}</p>
    <span className="tc-actions"><a className="chip sm" href={mailto(p.email)}>Open in email</a><button type="button" className="chip sm" onClick={()=>did('email',`${p.email!.subject}\n\n${p.email!.body}`)}>{copied==='email'?'Copied':'Copy'}</button></span></div>}

@@ -8,6 +8,7 @@ import {looksLikeEmail,type FamilyMember} from '@/lib/bear/services/triage-core'
 import {TriageCards,TriageProgress,type TriageView} from './triage-cards';
 import {CalendarButton,CardEditor} from './card-controls';
 import {areaKeys,type AreaKey} from '@/lib/bear/domain/types';
+import {formatAU} from '@/lib/bear/domain/dates';
 import {chatterReply,replyKind} from '@/lib/bear/services/sorter';
 
 // Tell Bear once. One message (typed or spoken) comes back sorted: each thing with a clear title, its area, a traffic light and
@@ -224,7 +225,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
          {i.nextAction&&!i.error&&!i.check&&<span className="qc-next">{i.nextAction}</span>}
          {i.check&&<Link className="qc-next" href={i.check} style={{textDecoration:'underline'}}>That looks like a bill. Check what I read</Link>}
          {i.error&&<span className="qc-next">I couldn’t take this one. {i.error}</span>}
-         {i.deadline&&!i.removed&&<span className="tc-actions"><CalendarButton title={i.title} deadline={i.deadline} taskId={i.taskId}/></span>}
+         {i.taskId&&!i.removed&&<span className="tc-actions"><CalendarButton title={i.title} deadline={i.deadline??null} taskId={i.taskId} onDated={d=>swap(turn.id,{...i,deadline:d,when:`Due ${formatAU(d,'short')}`})}/></span>}
          {isChanging&&i.taskId&&!i.removed&&<CardEditor taskId={i.taskId} title={i.title} deadline={i.deadline??null} light={i.light} area={i.domain} onChange={x=>swap(turn.id,{...i,...(x.title?{title:x.title}:{}),...(x.deadline!==undefined?{deadline:x.deadline}:{}),...(x.when?{when:x.when}:{}),...(x.light?{light:x.light}:{}),...(x.area?{domain:x.area as AreaKey}:{}),...(x.removed?{removed:true}:{})})}/>}
         </li>)}</ul>
        </section>;})}
