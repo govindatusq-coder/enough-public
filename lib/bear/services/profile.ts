@@ -21,6 +21,7 @@ export async function ensureProfile(store:BearStore){const existing=await loadPr
 const block=z.object({id:z.string().min(1).max(60),kind:z.enum(rhythmKinds),label:z.string().trim().min(1).max(40),days:z.array(z.enum(weekdays)).max(7),startMinute:z.number().int().min(0).max(1439),endMinute:z.number().int().min(0).max(1439),capacity:z.enum(['none','low','some','good'])}).strict();
 export const profilePatchSchema=z.object({
  name:z.string().trim().max(40).optional(),
+ family:z.array(z.object({name:z.string().trim().min(1).max(40),relation:z.enum(['child','partner','other']),age:z.number().int().min(0).max(120).nullable(),yearLevel:z.string().trim().max(40).nullable(),school:z.string().trim().max(80).nullable(),allergies:z.string().trim().max(160).nullable(),notes:z.string().trim().max(200).nullable()}).strict()).max(12).optional(),
  onboardingComplete:z.boolean().optional(),onboardingStep:z.number().int().min(0).max(20).optional(),
  areas:z.array(z.enum(areaKeys)).max(6).optional(),
  people:z.array(z.object({role:z.enum(personRoles),name:z.string().trim().max(40)}).strict()).max(20).optional(),

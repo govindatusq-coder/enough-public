@@ -203,6 +203,27 @@ try{
    await p3.fill('#qc-text','book the car service for Tuesday');await p3.click('.qc-go[type="submit"]');await p3.waitForSelector('.qc-turn:last-of-type .qc-card');
    assert.ok((await p3.textContent('.qc-turn:last-of-type')).includes('Done. Booked in'));assert.equal(sent[1].history.length,2,'the earlier exchange goes with the next message');assert.equal(sent[1].history[1].role,'assistant');
    await c3.close();}
+  // Triage of a photo: the picture goes as it is, with today and the family; the answer comes back as ready-to-use cards.
+  // (Claude is stood in for, in a fresh page; ?debug=1 shows the AI Reasoning drawer, which parents never see.)
+  {const c4=await browser.newContext({viewport:{width:390,height:844},locale:'en-AU',timezoneId:'Australia/Sydney'});const p4=await c4.newPage();let req=null;
+   await p4.route('**/api/bear/chat',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({fallback:true,reason:'off'})}));
+   await p4.route('**/api/bear/triage',async r=>{req=JSON.parse(r.request().postData()||'{}');await new Promise(x=>setTimeout(x,1500));await r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({reasoning:'Club flyer. Presentation night Saturday 28 November = 2026-11-28. RSVP by Thursday.',summary:'Eastside Soccer presentation night.',cards:[
+    {card_id:'r1',family_member:'Sam',action_type:'email_reply',urgency:'amber',hard_deadline:'2026-11-19',card_headline:'RSVP for Sam’s soccer presentation night',ai_work_completed:'Drafted an RSVP to the club.',execution_payload:{email:{to:'club@soccer.example',subject:'RSVP: Presentation night',body:'Hi, Sam will be there. Thanks!'},sms:null,calendar_hold:null,shopping_list:null,steps:null},confidence_score:0.9,missing_blocker:null,taskId:null,area:'family',when:'Due Thursday',already:false},
+    {card_id:'r2',family_member:'Sam',action_type:'calendar_hold',urgency:'green',hard_deadline:null,card_headline:'Hold Saturday evening for presentation night',ai_work_completed:'Prepared a calendar hold.',execution_payload:{email:null,sms:null,calendar_hold:{title:'Soccer presentation night',start:'2026-11-28T17:00',end:'2026-11-28T19:00',all_day:false,location:'Clubhouse'},shopping_list:['Gold coin for the raffle'],steps:null},confidence_score:0.8,missing_blocker:'Who is going with Sam?',taskId:null,area:'family',when:'No date',already:false}]})});});
+   const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64');
+   for(const dbg of [false,true]){
+    await p4.goto(base+'/bear/capture'+(dbg?'?debug=1':''));await p4.waitForSelector('#qc-file',{state:'attached'});
+    await p4.setInputFiles('#qc-file',{name:'flyer.png',mimeType:'image/png',buffer:png});
+    if(!dbg){await p4.waitForSelector('.qc-progress');assert.ok((await p4.textContent('.qc-progress')).includes('Reading layout & dates'));}
+    await p4.waitForSelector('.tc .qc-card');
+    if(!dbg){assert.equal(req.inputs[0].kind,'image');assert.match(req.inputs[0].data,/^data:image\/jpeg;base64,/);assert.match(req.currentDateTime,/day/);assert.ok(Array.isArray(req.familyProfile));assert.ok(req.timeZone);
+     const txt=await p4.textContent('.tc');assert.ok(txt.includes('I found 2 things')&&txt.includes('Drafted an RSVP')&&txt.includes('Who is going with Sam?')&&txt.includes('I haven’t sent anything'),txt);
+     assert.match(await p4.getAttribute('.tc a:has-text("Open in email")','href'),/^mailto:club%40soccer\.example\?subject=RSVP/);
+     assert.match(await p4.getAttribute('.tc a:has-text("Add to calendar")','href'),/^data:text\/calendar/);
+     assert.equal(await p4.$('.tc-debug'),null,'parents never see the AI reasoning');await p4.screenshot({path:resolve(results,'61h-bear-triage.png'),fullPage:true});}
+    else{await p4.click('.tc-debug >> nth=0');assert.ok((await p4.textContent('.tc-debug')).includes('Club flyer. Presentation night'));await p4.screenshot({path:resolve(results,'61i-bear-triage-debug.png'),fullPage:true});}
+   }
+   await c4.close();}
   // It is a chat: earlier turns are still there, the newest is in view, and the box has not moved off the bottom.
   await page.waitForTimeout(900);
   {const c=await page.evaluate(()=>{const box=document.querySelector('.qc-pill').getBoundingClientRect();const lastTurn=[...document.querySelectorAll('.qc-turn')].pop().getBoundingClientRect();return {turns:document.querySelectorAll('.qc-turn').length,boxBottom:Math.round(innerHeight-box.bottom),boxTop:box.top,lastVisible:lastTurn.bottom<=box.top+2&&lastTurn.bottom>0,pageScroll:document.scrollingElement.scrollHeight-innerHeight};});

@@ -1,8 +1,11 @@
 'use client';
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import Link from 'next/link';
-import {apiForm,apiSend,type ApiError} from '@/lib/bear/client';
+import {apiForm,apiGet,apiSend,type ApiError} from '@/lib/bear/client';
 import {shrinkAll,UPLOAD_BUDGET} from '@/lib/bear/client-image';
+import {buildTriageRequest} from '@/lib/bear/inputProcessor';
+import {looksLikeEmail,type FamilyMember} from '@/lib/bear/services/triage-core';
+import {TriageCards,TriageProgress,type TriageView} from './triage-cards';
 import {areaKeys,type AreaKey} from '@/lib/bear/domain/types';
 import {chatterReply,replyKind} from '@/lib/bear/services/sorter';
 
@@ -23,7 +26,7 @@ const openPicker=()=>{(document.getElementById('qc-file') as HTMLInputElement|nu
 const places=[{href:'/bear/home',label:'My Bear'},{href:'/bear/ideas',label:'Bear Ideas'},{href:'/bear/wins',label:'My Wins'},{href:'/bear/me',label:'Settings'}];
 const MicIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>;
 
-type Turn={id:number;said:string;busy:boolean;reply?:string;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
+type Turn={id:number;said:string;busy:boolean;reply?:string;triage?:TriageView|null;triaging?:boolean;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
 let turnSeq=0;
 const blank=(said:string):Turn=>({id:++turnSeq,said,busy:true,items:[],found:[],other:null,confirmed:false,note:null});
 
@@ -49,7 +52,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
  const busy=turns.some(t=>t.busy);
  // The recent conversation, as the AI needs it: what the person said, and what Bear said and did in reply.
  const history=()=>turns.filter(t=>!t.busy).slice(-10).flatMap(t=>{
-  const bear=[t.reply,...t.items.map(i=>`${i.already?'Already on the list':'Added'}: ${i.title} (${areaLabel[i.domain]}, ${i.when})`),...t.found.map(f=>f.answer),
+  const bear=[t.reply,t.triage?.summary,...(t.triage?.cards||[]).map(c=>`Added: ${c.card_headline} (${c.area}, ${c.when})`),...t.items.map(i=>`${i.already?'Already on the list':'Added'}: ${i.title} (${areaLabel[i.domain]}, ${i.when})`),...t.found.map(f=>f.answer),
    t.other?.kind==='say'?t.other.text:t.other?.kind==='ask'?t.other.question:t.other?.kind==='closing'?'All sorted. I’m here whenever you need me.':''].filter(Boolean).join('\n');
   return [{role:'user' as const,content:t.file?`(gave Bear a picture: ${t.said})`:t.said.slice(0,3500)},...(bear?[{role:'assistant' as const,content:bear.slice(0,3500)}]:[])];
  });
@@ -82,6 +85,10 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
    return;
   }
   setChanging(null);const turn=blank(body);const past=history();setTurns(l=>[...l,turn]);
+  // A pasted or forwarded email, or a long notice: read in full by triage, not chatted about.
+  if((looksLikeEmail(body)||body.length>700)&&!/^\s*https?:\/\/\S+\s*$/.test(body)){
+   try{if(await runTriage(turn.id,{text:body}))return;}catch(e){setTurns(l=>l.filter(t=>t.id!==turn.id));setText(body);setError((e as ApiError).message||'Bear could not read that. Try again.');return;}
+  }
   // Mama Bear's chat: the AI decides whether this is a chat, a question, a link or things to do.
   if(aiChat!==false){
    try{const recent=turns.flatMap(t=>t.items.map(i=>i.taskId)).filter((x):x is string=>!!x).slice(-60);
@@ -103,10 +110,22 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
    patch(turn.id,t=>({...t,busy:false,items:r.sorted||[],found:r.found||[],other,page:r.page||null}));onChanged();
   }catch(e){setTurns(l=>l.filter(t=>t.id!==turn.id));setText(body);setError((e as ApiError).message||'Bear could not take that. Try again.');}
  }
+ // Triage: photos, PDFs and pasted emails go to Claude's vision in one pass, anchored to today and the family.
+ const family=useRef<FamilyMember[]|null>(null);
+ async function familyProfile(){if(family.current)return family.current;try{const r=await apiGet<{profile:{family?:FamilyMember[]}}>('/api/bear/profile');family.current=r.profile.family||[];}catch{family.current=[];}return family.current;}
+ // Returns false when triage is not available (no AI key), so the caller uses the app's older reading.
+ async function runTriage(turnId:number,input:{files?:File[];text?:string}):Promise<boolean>{
+  patch(turnId,t=>({...t,triaging:true}));
+  try{const req=await buildTriageRequest(input,await familyProfile());const r=await apiSend<TriageView&{code?:string}>('/api/bear/triage',req);
+   if(r.code==='missing_key'){patch(turnId,t=>({...t,triaging:false}));return false;}
+   patch(turnId,t=>({...t,busy:false,triaging:false,triage:r}));if(r.cards.length)onChanged();return true;}
+  catch(e){const err=e as ApiError;if(err.body?.code==='missing_key'){patch(turnId,t=>({...t,triaging:false}));return false;}throw e;}
+ }
  // A photo, screenshot or PDF given in the chat: Bear reads the page and answers here, the same as for words.
  async function upload(files:File[]){
   if(busy||!files.length)return;setError(null);setHint(false);setChanging(null);const list=files.slice(0,6);
   const turn={...blank(list.length>1?`${list.length} pictures`:list[0].name||'A photo'),file:true};setTurns(l=>[...l,turn]);
+  try{if(await runTriage(turn.id,{files:list}))return;}catch(e){setTurns(l=>l.filter(t=>t.id!==turn.id));setError((e as ApiError).message||'Bear could not read that. Try again.');return;}
   try{
    const ready=await shrinkAll(list);const total=ready.reduce((n,f)=>n+f.size,0);
    // A PDF cannot be made smaller here; say so plainly rather than let the upload fail.
@@ -134,7 +153,9 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
    {started&&<div className="qc-thread" aria-live="polite">
     {turns.map(turn=>{const placed=turn.items.filter(i=>i.taskId);const isChanging=changing===turn.id;return <div key={turn.id} className="qc-turn">
      <p className="qc-said">{turn.file?<><span aria-hidden="true">📎 </span><span className="sr-only">File: </span></>:null}{turn.said.length>220?turn.said.slice(0,220)+'…':turn.said}</p>
-     {turn.busy&&<p className="qc-reply muted">{turn.file||/^https?:\/\//i.test(turn.said.trim())?'Bear’s reading the page…':/\b(search|look up|find out|google|research|when|what|how much)\b/i.test(turn.said)?'Bear’s looking into it…':'Bear’s sorting it…'}</p>}
+     {turn.busy&&turn.triaging&&<TriageProgress/>}
+     {turn.triage&&<TriageCards t={turn.triage}/>}
+     {turn.busy&&!turn.triaging&&<p className="qc-reply muted">{turn.file||/^https?:\/\//i.test(turn.said.trim())?'Bear’s reading the page…':/\b(search|look up|find out|google|research|when|what|how much)\b/i.test(turn.said)?'Bear’s looking into it…':'Bear’s sorting it…'}</p>}
      {turn.reply&&<p className="qc-reply qc-bear">{turn.reply}</p>}
      {turn.found.map((f,k)=><div key={k} className="qc-reply qc-found">
       <p className="qc-head">I looked it up.</p>

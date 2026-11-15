@@ -599,3 +599,24 @@
 .bear .qc-places .chip{text-decoration:none;color:var(--ink);}
 .bear .hh-attach{border:0;background:none;font:inherit;font-size:13px;color:var(--ink-3);padding:4px 6px;cursor:pointer;}
 .bear .qc-question{font-weight:600;}
+.bear .fam-member{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0 0;display:grid;gap:8px;}
+.bear .fam-member label{display:grid;gap:4px;font-size:13px;color:var(--ink-2);}
+.bear .fam-member input,.bear .fam-member select{min-height:40px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font:inherit;font-size:15px;background:#fff;color:var(--ink);}
+.bear .fam-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+/* Triage cards */
+.bear .qc-progress{list-style:none;padding:12px 14px;display:grid;gap:6px;font-size:14.5px;color:var(--ink-3);}
+.bear .qc-progress li.done{color:var(--ink-2);}
+.bear .qc-progress li.now{color:var(--ink);font-weight:600;}
+.bear .tc-work{font-size:13.5px;color:var(--ink-2);margin-top:2px;}
+.bear .tc-draft{margin-top:6px;border-top:1px dashed var(--line);padding-top:6px;}
+.bear .tc-draft>summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--navy);}
+.bear .tc-subject{margin:6px 0 2px;font-weight:600;font-size:14px;}
+.bear .tc-body{margin:2px 0 6px;white-space:pre-wrap;font-size:14px;line-height:1.4;color:var(--ink);}
+.bear .tc-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.bear .tc-actions .chip{text-decoration:none;color:var(--ink);}
+.bear .tc-list{margin:6px 0;padding-left:20px;font-size:14px;}
+.bear .tc-blocker{margin-top:6px;font-size:14px;font-weight:600;color:#9A3412;}
+.bear .tc-debug{margin-top:8px;border-radius:10px;background:#F6F1E8;padding:6px 8px;}
+.bear .tc-debug>summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink-2);}
+.bear .tc-debug pre{white-space:pre-wrap;font-size:12px;line-height:1.4;max-height:320px;overflow:auto;margin:6px 0 0;}
+.bear .tc-meta-debug{font-size:11.5px;color:var(--ink-3);margin:4px 0 0;}
