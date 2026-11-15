@@ -28,14 +28,14 @@ export async function triage(store:BearStore,provider:StructuredModelProvider|nu
  const text=input.text?cleanEmailInput(input.text):null;const started=Date.now();
  let raw:unknown;
  try{
-  const r=await provider.extract({schema:triageJsonSchema as unknown as Record<string,unknown>,system:triageSystemPrompt(a),text,images:input.images,documents:input.documents,maxOutputTokens:12000});
+  const r=await provider.extract({schema:triageJsonSchema as unknown as Record<string,unknown>,system:triageSystemPrompt(a),text,images:input.images,documents:input.documents,maxOutputTokens:12000,thinkingSummary:true});
   raw=r.output;
   const checked=checkTriage(raw,a.isoDate,family.map(f=>f.name));
   await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'Triage',provider:r.provider,model:r.model,promptHash:'triage-1',rawOutput:checked.ok?{cards:checked.cards.length,problems:checked.cards.flatMap(c=>c.problems).length}:null,latencyMs:r.latencyMs,ok:checked.ok,error:checked.ok?null:checked.error.slice(0,400),usage:usageFrom(r.raw)}));
   if(!checked.ok)throw new TriageError('Bear read it but its answer didn’t hold together. Try again, or send a clearer picture.','invalid_output',502);
   const cards:TriageCardView[]=[];
   for(const c of checked.cards)cards.push(await placeCard(store,c,a.isoDate,family,now));
-  return {reasoning:checked.output.reasoning_scratchpad,summary:checked.output.source_summary,cards};
+  return {reasoning:r.thinking||'',summary:checked.output.source_summary,cards};
  }catch(e){
   if(e instanceof TriageError)throw e;
   const message=e instanceof Error?e.message:'The reading service had a problem.';

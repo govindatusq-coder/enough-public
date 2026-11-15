@@ -1,7 +1,9 @@
 // Model provider abstraction. The application only ever talks to StructuredModelProvider,
 // so the vendor can be swapped without touching services. Keys live server-side only.
-export interface ExtractInput{schema:Record<string,unknown>;system:string;text:string|null;images:{mime:string;bytes:Uint8Array}[];documents:{mime:string;bytes:Uint8Array}[];maxOutputTokens?:number}
-export interface ExtractResult{output:unknown;raw:unknown;provider:string;model:string;latencyMs:number}
+export interface ExtractInput{schema:Record<string,unknown>;system:string;text:string|null;images:{mime:string;bytes:Uint8Array}[];documents:{mime:string;bytes:Uint8Array}[];maxOutputTokens?:number;
+ // Ask the service for its own summary of the model's thinking (the supported way to see how it read something).
+ thinkingSummary?:boolean}
+export interface ExtractResult{output:unknown;raw:unknown;provider:string;model:string;latencyMs:number;thinking?:string|null}
 export interface StructuredModelProvider{readonly name:string;readonly model:string;readonly supportsVision:boolean;extract(input:ExtractInput):Promise<ExtractResult>}
 export type ProviderErrorKind='unavailable'|'refused'|'invalid_output'|'rate_limited'|'network'|'unsupported';
 export class ProviderError extends Error{readonly kind:ProviderErrorKind;constructor(message:string,kind:ProviderErrorKind='unavailable'){super(message);this.name='ProviderError';this.kind=kind;}}

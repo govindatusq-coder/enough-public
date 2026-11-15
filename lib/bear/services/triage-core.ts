@@ -45,15 +45,17 @@ export function cleanEmailInput(raw:string,maxChars=20000):string{
 }
 export const looksLikeEmail=(s:string)=>/<\s*(html|body|div|p|br|table)\b/i.test(s)||/^\s*(?:From|Subject|To|Date|Sent)\s*:/im.test(s)||/-{2,}\s*(?:Forwarded message|Original Message)/i.test(s)||/^On .{4,160}wrote:\s*$/im.test(s);
 
-// ---------- 2. the strict output schema (reasoning first) ----------
+// ---------- 2. the strict output schema ----------
+// The model works the document out before it writes (its built-in thinking); the app shows the service's own summary of that
+// thinking in the debug drawer. The answer itself carries no field for the model's reasoning: asking a model to write out its
+// reasoning in the answer is something the service's safety filter declines, and it should not be worked around.
 const nul=(type:string,extra:Record<string,unknown>={})=>({type:[type,'null'],...extra});
 export const ACTION_TYPES=['email_reply','sms','calendar_hold','shopping_list','form','payment','booking','task'] as const;
 export const URGENCY=['red','amber','green'] as const;
 export const triageJsonSchema={
  type:'object',additionalProperties:false,
- required:['reasoning_scratchpad','source_summary','action_cards'],
+ required:['source_summary','action_cards'],
  properties:{
-  reasoning_scratchpad:{type:'string',description:'Working notes about the document, written before the cards: (1) kind of document and sender; (2) each date or day mentioned, with its YYYY-MM-DD from today’s date and what it is for; (3) which family member each item concerns, from the family profile; (4) every explicit request and every implicit one (money to send, clothes or food to pack, a form to sign, a reply expected); (5) what can be prepared for each.'},
   source_summary:{type:'string',description:'One sentence: what this is and who it is from.'},
   action_cards:{type:'array',items:{type:'object',additionalProperties:false,
    required:['card_id','family_member','action_type','urgency','hard_deadline','card_headline','ai_work_completed','execution_payload','confidence_score','missing_blocker'],
@@ -86,7 +88,7 @@ export const cardSchema=z.object({
  execution_payload:z.object({email:email.nullable(),sms:sms.nullable(),calendar_hold:hold.nullable(),shopping_list:z.array(z.string().max(200)).max(80).nullable(),steps:z.array(z.string().max(400)).max(20).nullable()}).strict(),
  confidence_score:z.number().min(0).max(1),missing_blocker:z.string().max(300).nullable(),
 }).strict();
-export const triageOutputSchema=z.object({reasoning_scratchpad:z.string().min(1).max(20000),source_summary:z.string().max(600),action_cards:z.array(cardSchema).max(30)}).strict();
+export const triageOutputSchema=z.object({source_summary:z.string().max(600),action_cards:z.array(cardSchema).max(30)}).strict();
 export type TriageCard=z.infer<typeof cardSchema>;export type TriageOutput=z.infer<typeof triageOutputSchema>;
 
 // ---------- 4. anchors: the exact local date and the family ----------
@@ -107,7 +109,7 @@ Today is ${a.weekday} ${a.isoDate}, ${a.time} local time (${a.timeZone}). Resolv
 ${a.parentName?`The parent is ${a.parentName}.\n`:''}Family profile:
 ${familyLines(a.family)}
 
-Fill reasoning_scratchpad first with short working notes about the document: its kind and sender; every date with its YYYY-MM-DD; which family member each item is for (by name, year level, class or school from the profile; never invent a person); and implicit tasks (money or a gold coin to send, uniform or food to pack, a form to sign, a reply expected, something to buy).
+Before you write any card, work out from the document: its kind and sender; every date with its YYYY-MM-DD; which family member each item is for (by name, year level, class or school from the profile; never invent a person); and the implicit tasks (money or a gold coin to send, uniform or food to pack, a form to sign, a reply expected, something to buy).
 
 Then one action card per separate thing the parent must do. Make each card ready to act on, not a reminder:
 - a reply or confirmation: email_reply or sms with the message written in full, in the parent's voice, plain and polite;

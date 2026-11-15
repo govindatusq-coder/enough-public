@@ -33,20 +33,20 @@ test('cleanEmailInput: a forward keeps the forwarded message and the person’s 
  assert.ok(looksLikeEmail(SCHOOL_EMAIL)&&looksLikeEmail(FORWARDED)&&!looksLikeEmail('buy milk'));
 });
 
-test('the schema: reasoning comes first, and every object is closed with every property required',()=>{
- assert.equal(Object.keys(triageJsonSchema.properties)[0],'reasoning_scratchpad');
+test('the schema: every object is closed with every property required, and nothing asks the model to write out its thinking',()=>{
+ assert.ok(!/reasoning|scratchpad|step by step/i.test(JSON.stringify(triageJsonSchema)));
  const walk=(n,path)=>{if(!n||typeof n!=='object')return;if(Array.isArray(n)){n.forEach((x,i)=>walk(x,path+'['+i+']'));return;}
   if(n.type==='object'&&n.properties){assert.equal(n.additionalProperties,false,path);assert.deepEqual([...n.required].sort(),Object.keys(n.properties).sort(),path);}
   for(const [k,v] of Object.entries(n))walk(v,path+'.'+k);};
  walk(triageJsonSchema,'root');
- const wire=structuredOutputSchema(triageJsonSchema);assert.equal(Object.keys(wire.properties)[0],'reasoning_scratchpad','still first on the wire');
+ assert.ok(structuredOutputSchema(triageJsonSchema).properties.action_cards,'the schema converts for the service');
 });
 
 const card=o=>({card_id:'c1',family_member:'Ava',action_type:'form',urgency:'amber',hard_deadline:'2026-11-18',card_headline:'Return Ava’s zoo excursion permission note and $25',ai_work_completed:'Listed the steps and what to pack.',
  execution_payload:{email:null,sms:null,calendar_hold:{title:'Year 3 zoo excursion',start:'2026-11-20',end:null,all_day:true,location:'Taronga Zoo'},shopping_list:['Packed lunch (nut free)','Hat'],steps:['Sign the permission note','Put $25 in an envelope','Hand both to Mrs Lee by Wednesday']},
  confidence_score:0.92,missing_blocker:null,...o});
-const SCHOOL_OUT={reasoning_scratchpad:'School newsletter from Mrs Lee (Year 3). "Friday 20 November" resolves to 2026-11-20. "Wednesday" before it is 2026-11-18. Year 3 = Ava (profile). Implicit: $25, sports uniform, hat, nut-free lunch.',source_summary:'Year 3 excursion note from Mrs Lee.',action_cards:[card({})]};
-const FLYER_OUT={reasoning_scratchpad:'Club flyer. Presentation night Saturday 28 November 5pm = 2026-11-28T17:00. RSVP by Thursday = 2026-11-19. Soccer is Sam’s (profile notes).',source_summary:'Eastside Soccer presentation night.',action_cards:[
+const SCHOOL_OUT={source_summary:'Year 3 excursion note from Mrs Lee.',action_cards:[card({})]};
+const FLYER_OUT={source_summary:'Eastside Soccer presentation night.',action_cards:[
  card({card_id:'r1',family_member:'Sam',action_type:'email_reply',urgency:'amber',hard_deadline:'2026-11-19',card_headline:'RSVP for Sam’s soccer presentation night',ai_work_completed:'Drafted an RSVP to the club.',execution_payload:{email:{to:'club@soccer.example',subject:'RSVP: Presentation night',body:'Hi, Sam will be there with two adults. Thanks!'},sms:null,calendar_hold:null,shopping_list:null,steps:null}}),
  card({card_id:'r2',family_member:'Sam',action_type:'calendar_hold',urgency:'green',hard_deadline:null,card_headline:'Hold Saturday evening for presentation night',ai_work_completed:'Prepared a calendar hold.',execution_payload:{email:null,sms:null,calendar_hold:{title:'Soccer presentation night',start:'2026-11-28T17:00',end:'2026-11-28T19:00',all_day:false,location:'Clubhouse'},shopping_list:null,steps:null}})]};
 test('sample outputs for a messy school email and a club flyer pass the schema and the checks',()=>{
@@ -60,7 +60,7 @@ test('the checks: invented people, impossible dates and bad calendar times are n
  assert.equal(one({hard_deadline:'2026-11-18T15:00'}).cards[0].hard_deadline,'2026-11-18');
  assert.equal(one({execution_payload:{...card({}).execution_payload,calendar_hold:{title:'x',start:'next Friday',end:null,all_day:true,location:null}}}).cards[0].execution_payload.calendar_hold,null);
  assert.equal(checkTriage({...SCHOOL_OUT,action_cards:[card({urgency:'purple'})]},TODAY,[]).ok,false);
- assert.equal(checkTriage({source_summary:'x',action_cards:[]},TODAY,[]).ok,false,'no reasoning: refused');
+ assert.equal(checkTriage({action_cards:[]},TODAY,[]).ok,false,'no summary: refused');
  assert.equal(checkTriage({...SCHOOL_OUT,action_cards:[{...card({}),extra:1}]},TODAY,[]).ok,false,'unexpected fields: refused');
  assert.equal(checkTriage({...SCHOOL_OUT,action_cards:[card({confidence_score:1.4})]},TODAY,[]).ok,false);
 });
@@ -70,14 +70,14 @@ async function person(){const s=new MemoryBackend().for('b2b2b2b2-b2b2-4b2b-8b2b
 test('the prompt is anchored to the exact local day and the saved family',()=>{
  const p=triageSystemPrompt(anchorsFor(NOW,'Australia/Sydney',[{name:'Ava',relation:'child',age:8,yearLevel:'Year 3',school:'Eastside Public',allergies:'peanuts',notes:null}],'Govind'));
  assert.match(p,/Today is Monday 2026-11-16, 09:30 local time \(Australia\/Sydney\)/);assert.match(p,/Ava \(child, age 8, Year 3, Eastside Public; allergies: peanuts\)/);assert.match(p,/The parent is Govind/);
- assert.match(p,/Fill reasoning_scratchpad first/);assert.ok(!/step by step|think/i.test(p+JSON.stringify(triageJsonSchema)),'no wording that asks the model to reveal its own thinking');assert.match(p,/Never claim you have sent, booked, paid or submitted/);
+ assert.match(p,/Before you write any card, work out/);assert.ok(!/reasoning_scratchpad|step by step/i.test(p));assert.match(p,/Never claim you have sent, booked, paid or submitted/);
 });
 test('triage end to end: raw pictures and a cleaned email go in; tasks with drafts attached come out; nothing is sent',async()=>{
  const s=await person();const provider=new FakeProvider(()=>FLYER_OUT);const png=new Uint8Array([0x89,0x50,0x4e,0x47,1,2,3]);
  const r=await triage(s,provider,{images:[{mime:'image/png',bytes:png}],documents:[],text:FORWARDED},NOW);
  const call=provider.calls[0];assert.equal(call.images[0].bytes,png,'the picture itself is sent, not text read out of it');
  assert.ok(!/Forwarded message|old stuff/.test(call.text),'the email is cleaned before it is sent');assert.match(call.system,/Sam \(child, age 11, Year 6/);
- assert.equal(r.cards.length,2);assert.match(r.reasoning,/^Club flyer/);
+ assert.equal(r.cards.length,2);assert.equal(call.thinkingSummary,true,'the service’s own thinking summary is asked for, for the debug drawer');
  const rsvp=r.cards.find(c=>c.card_id==='r1');assert.equal(rsvp.area,'family');assert.equal(rsvp.hard_deadline,'2026-11-19');assert.ok(rsvp.taskId);
  const task=await s.get('tasks',rsvp.taskId);assert.equal(task.dueAt,'2026-11-19');assert.equal(task.prepared.payload.email.to,'club@soccer.example');assert.equal(task.status,'open','prepared, not done');
  const log=(await s.list('ai_inferences')).filter(i=>i.service==='Triage');assert.equal(log.length,1);assert.ok(!JSON.stringify(log[0].rawOutput).includes('Sam'),'the log holds counts, not content');

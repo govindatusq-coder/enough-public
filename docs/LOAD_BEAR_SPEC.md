@@ -191,11 +191,10 @@ For photos, PDFs, and pasted or forwarded emails.
   - "Today is {Weekday} {YYYY-MM-DD}, {HH:MM} local time ({IANA zone})";
   - the parent's first name;
   - the family profile: name, relation, age, year level, school, allergies, notes.
+- **The model works the document out before it writes.** The prompt tells it to settle the kind of document and the sender, every date (as YYYY-MM-DD), the family match and the implicit tasks before writing any card. This happens in its built-in thinking. The debug drawer shows the service's own summary of that thinking (`thinking.display: "summarized"`). The answer has **no** field for the model's reasoning: asking the model to write out its reasoning inside the answer is declined by the service's reasoning-extraction safety filter, and that safeguard is not to be worked around.
 - **Strict JSON schema** (closed objects, every property required, nullable fields as `["string","null"]`):
 
 ```
-reasoning_scratchpad  (FIRST: document type and sender; every date resolved to YYYY-MM-DD;
-                       family match; explicit and implicit tasks; what Bear can prepare)
 source_summary
 action_cards[]:
   card_id, family_member|null, action_type (email_reply|sms|calendar_hold|shopping_list|form|payment|booking|task),
@@ -342,7 +341,7 @@ Key records:
 2. Auth, and a per-user data store with the records in section 9.
 3. **+ Bear chat** as the first screen, with the docked box, an always-present microphone, file attach, conversation bubbles and the reply types in section 4.
 4. The chat AI with the `add_tasks` and `change_task` tools, web search and fetch, and the system prompt rules in 5.1.
-5. Triage with the strict schema (reasoning first), email cleaning, date and family anchors, and the card checks in 5.2.
+5. Triage with the strict schema, the model's built-in thinking (summary in the debug drawer), email cleaning, date and family anchors, and the card checks in 5.2.
 6. The deterministic rules in section 6: splitting, titles, dates, areas, traffic light, suggested start, duplicates, and the chatter guard.
 7. My Bear, Area, Task, Settings (including Family details), Bear Ideas and My Wins.
 8. Reminders: quiet hours, at most one push per task per day, an in-app list and push.

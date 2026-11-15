@@ -58,7 +58,7 @@ function Card({c,reasoning,debug}:{c:TriageCardView;reasoning:string;debug:boole
    <span className="tc-actions"><button type="button" className="chip sm" onClick={()=>did('list',p.shopping_list!.join('\n'))}>{copied==='list'?'Copied':'Copy list'}</button></span></details>:null}
   {p.steps?.length?<details className="tc-draft"><summary>Steps</summary><ol className="tc-list">{p.steps.map((s,i)=><li key={i}>{s}</li>)}</ol></details>:null}
   {c.missing_blocker&&<span className="tc-blocker">{c.missing_blocker}</span>}
-  {debug&&<details className="tc-debug"><summary>AI Reasoning</summary><pre>{reasoning}</pre><p className="tc-meta-debug">{c.action_type} · urgency {c.urgency} · confidence {Math.round(c.confidence_score*100)}%{c.hard_deadline?` · deadline ${c.hard_deadline}`:''}</p></details>}
+  {debug&&<details className="tc-debug"><summary>AI Reasoning</summary><pre>{reasoning||'The service did not return a summary of its thinking for this one.'}</pre><p className="tc-meta-debug">{c.action_type} · urgency {c.urgency} · confidence {Math.round(c.confidence_score*100)}%{c.hard_deadline?` · deadline ${c.hard_deadline}`:''}</p></details>}
  </li>;
 }
 export function TriageCards({t}:{t:TriageView}){

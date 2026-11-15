@@ -39,7 +39,8 @@ export class AnthropicProvider implements StructuredModelProvider{
    const base={max_tokens:input.maxOutputTokens||8000,
     system:[{type:'text' as const,text:input.system,cache_control:{type:'ephemeral' as const}}],
     output_config:{format:{type:'json_schema' as const,schema:structuredOutputSchema(input.schema) as Record<string,unknown>},effort:'medium' as const},
-    messages:[{role:'user' as const,content}]};
+    messages:[{role:'user' as const,content}],
+    ...(input.thinkingSummary?{thinking:{type:'adaptive' as const,display:'summarized' as const}}:{})};
    // A safety filter can decline an ordinary school note by mistake. The service first re-runs a declined request on its own
    // backup model; if that also declines (or the option is not accepted), Bear tries once more on a second model itself.
    let response:Anthropic.Message|Anthropic.Beta.BetaMessage;const declined:string[]=[];
@@ -55,7 +56,8 @@ export class AnthropicProvider implements StructuredModelProvider{
    if(response.stop_reason==='max_tokens')throw new ProviderError('The AI response was cut short.','invalid_output');
    const text=response.content.filter((b):b is Anthropic.TextBlock=>b.type==='text').map(b=>b.text).join('');
    let output:unknown;try{output=restoreNullables(input.schema,JSON.parse(text));}catch{throw new ProviderError('The AI service returned something Bear could not read.','invalid_output');}
-   return {output,raw:{id:response.id,usage:response.usage,stop:response.stop_reason},provider:this.name,model:response.model,latencyMs:Date.now()-started};
+   const thinking=input.thinkingSummary?(response.content as {type:string;thinking?:string}[]).filter(b=>b.type==='thinking'&&b.thinking).map(b=>b.thinking).join('\n\n')||null:null;
+   return {output,raw:{id:response.id,usage:response.usage,stop:response.stop_reason},provider:this.name,model:response.model,latencyMs:Date.now()-started,thinking};
   }catch(error){
    if(error instanceof ProviderError)throw error;
    if(error instanceof Anthropic.AuthenticationError)throw new ProviderError('The AI service key is not valid.','unavailable');
