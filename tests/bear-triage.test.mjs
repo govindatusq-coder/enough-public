@@ -70,7 +70,7 @@ async function person(){const s=new MemoryBackend().for('b2b2b2b2-b2b2-4b2b-8b2b
 test('the prompt is anchored to the exact local day and the saved family',()=>{
  const p=triageSystemPrompt(anchorsFor(NOW,'Australia/Sydney',[{name:'Ava',relation:'child',age:8,yearLevel:'Year 3',school:'Eastside Public',allergies:'peanuts',notes:null}],'Govind'));
  assert.match(p,/Today is Monday 2026-11-16, 09:30 local time \(Australia\/Sydney\)/);assert.match(p,/Ava \(child, age 8, Year 3, Eastside Public; allergies: peanuts\)/);assert.match(p,/The parent is Govind/);
- assert.match(p,/reasoning_scratchpad FIRST/);assert.match(p,/Never claim you have sent, booked, paid or submitted/);
+ assert.match(p,/Fill reasoning_scratchpad first/);assert.ok(!/step by step|think/i.test(p+JSON.stringify(triageJsonSchema)),'no wording that asks the model to reveal its own thinking');assert.match(p,/Never claim you have sent, booked, paid or submitted/);
 });
 test('triage end to end: raw pictures and a cleaned email go in; tasks with drafts attached come out; nothing is sent',async()=>{
  const s=await person();const provider=new FakeProvider(()=>FLYER_OUT);const png=new Uint8Array([0x89,0x50,0x4e,0x47,1,2,3]);

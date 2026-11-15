@@ -53,7 +53,7 @@ export const triageJsonSchema={
  type:'object',additionalProperties:false,
  required:['reasoning_scratchpad','source_summary','action_cards'],
  properties:{
-  reasoning_scratchpad:{type:'string',description:'Think here FIRST, step by step, before any card: (1) what kind of document this is and who sent it; (2) every date or day mentioned, each resolved to YYYY-MM-DD from today’s date, and what each is for; (3) which family member each item concerns, matched to the family profile; (4) every explicit request, and every implicit one (money to send, clothes or food to pack, a form to sign, a reply expected); (5) what Bear can prepare for each.'},
+  reasoning_scratchpad:{type:'string',description:'Working notes about the document, written before the cards: (1) kind of document and sender; (2) each date or day mentioned, with its YYYY-MM-DD from today’s date and what it is for; (3) which family member each item concerns, from the family profile; (4) every explicit request and every implicit one (money to send, clothes or food to pack, a form to sign, a reply expected); (5) what can be prepared for each.'},
   source_summary:{type:'string',description:'One sentence: what this is and who it is from.'},
   action_cards:{type:'array',items:{type:'object',additionalProperties:false,
    required:['card_id','family_member','action_type','urgency','hard_deadline','card_headline','ai_work_completed','execution_payload','confidence_score','missing_blocker'],
@@ -107,7 +107,7 @@ Today is ${a.weekday} ${a.isoDate}, ${a.time} local time (${a.timeZone}). Resolv
 ${a.parentName?`The parent is ${a.parentName}.\n`:''}Family profile:
 ${familyLines(a.family)}
 
-Write your reasoning_scratchpad FIRST, then the cards. In it: name the kind of document and the sender; list every date with its resolved YYYY-MM-DD; match each item to a family member from the profile (by name, year level, class or school; never invent a person); and find implicit tasks (money or a gold coin to send, uniform or food to pack, a form to sign, a reply expected, something to buy).
+Fill reasoning_scratchpad first with short working notes about the document: its kind and sender; every date with its YYYY-MM-DD; which family member each item is for (by name, year level, class or school from the profile; never invent a person); and implicit tasks (money or a gold coin to send, uniform or food to pack, a form to sign, a reply expected, something to buy).
 
 Then one action card per separate thing the parent must do. Make each card ready to act on, not a reminder:
 - a reply or confirmation: email_reply or sms with the message written in full, in the parent's voice, plain and polite;

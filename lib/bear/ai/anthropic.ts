@@ -14,6 +14,8 @@ async function prepareImage(image:{mime:string;bytes:Uint8Array}):Promise<{mime:
  while(out.byteLength>MAX_IMAGE_BYTES&&quality>40){quality-=15;out=await sharp(image.bytes).rotate().resize({width:1800,height:1800,fit:'inside',withoutEnlargement:true}).jpeg({quality}).toBuffer();}
  return {mime:'image/jpeg',bytes:new Uint8Array(out)};
 }
+// Models tried when the main one declines a document. Different models have different safety filters.
+const BACKUP_MODEL='claude-sonnet-5-5',OTHER_BACKUP='claude-opus-4-8';
 export class AnthropicProvider implements StructuredModelProvider{
  readonly name='anthropic';readonly supportsVision=true;
  private client:Anthropic;
@@ -34,13 +36,22 @@ export class AnthropicProvider implements StructuredModelProvider{
   content.push({type:'text',text:input.text?`What the person gave Bear:\n\n${input.text}`:'Read what is attached and return the structured fields.'});
   const started=Date.now();
   try{
-   const response=await this.client.messages.create({
-    model:this.model,max_tokens:input.maxOutputTokens||8000,
-    system:[{type:'text',text:input.system,cache_control:{type:'ephemeral'}}],
-    output_config:{format:{type:'json_schema',schema:structuredOutputSchema(input.schema) as Record<string,unknown>},effort:'medium'},
-    messages:[{role:'user',content}],
-   });
-   if(response.stop_reason==='refusal')throw new ProviderError('The AI service declined to read this document.','refused');
+   const base={max_tokens:input.maxOutputTokens||8000,
+    system:[{type:'text' as const,text:input.system,cache_control:{type:'ephemeral' as const}}],
+    output_config:{format:{type:'json_schema' as const,schema:structuredOutputSchema(input.schema) as Record<string,unknown>},effort:'medium' as const},
+    messages:[{role:'user' as const,content}]};
+   // A safety filter can decline an ordinary school note by mistake. The service first re-runs a declined request on its own
+   // backup model; if that also declines (or the option is not accepted), Bear tries once more on a second model itself.
+   let response:Anthropic.Message|Anthropic.Beta.BetaMessage;const declined:string[]=[];
+   try{response=await this.client.beta.messages.create({...base,model:this.model,betas:['server-side-fallback-2026-07-01'],fallbacks:'default'} as Anthropic.Beta.MessageCreateParamsNonStreaming);}
+   catch(e){if(!(e instanceof Anthropic.BadRequestError))throw e;response=await this.client.messages.create({...base,model:this.model});}
+   if(response.stop_reason==='refusal'){
+    declined.push(`${response.model}:${(response as {stop_details?:{category?:string|null}}).stop_details?.category??'?'}`);
+    const second=this.model===BACKUP_MODEL?OTHER_BACKUP:BACKUP_MODEL;
+    response=await this.client.messages.create({...base,model:second});
+    if(response.stop_reason==='refusal')declined.push(`${response.model}:${(response as {stop_details?:{category?:string|null}}).stop_details?.category??'?'}`);
+   }
+   if(response.stop_reason==='refusal')throw new ProviderError(`The AI service’s safety filter declined to read this (${declined.join(', ')}).`,'refused');
    if(response.stop_reason==='max_tokens')throw new ProviderError('The AI response was cut short.','invalid_output');
    const text=response.content.filter((b):b is Anthropic.TextBlock=>b.type==='text').map(b=>b.text).join('');
    let output:unknown;try{output=restoreNullables(input.schema,JSON.parse(text));}catch{throw new ProviderError('The AI service returned something Bear could not read.','invalid_output');}
