@@ -10,11 +10,11 @@ import {stamp,type BearStore} from '../store/store.ts';
 import {maybeAutoSetup} from './auto-setup.ts';
 import {createCapture} from './capture.ts';
 import {ensureProfile} from './profile.ts';
-import {lightFor,parseCorrection,segment,soonByNature,sortOne,suggestStart,type Light,type Sorted} from './sorter.ts';
+import {lightFor,parseCorrection,relatedTo,segment,soonByNature,sortOne,suggestStart,type Light,type Sorted} from './sorter.ts';
 import {setTaskArea,updateTask} from './task-edit.ts';
 import {acceptPlan,recommendPlan} from './reminder-planning.ts';
 
-export interface SortedItem{taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;deadline:string|null;deadlineSource:'stated'|'web'|null;window:string|null;suggestedStart:string|null;when:string;nextAction:string|null;already:boolean;check:string|null;error:string|null}
+export interface SortedItem{linkedFrom?:string|null;taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;deadline:string|null;deadlineSource:'stated'|'web'|null;window:string|null;suggestedStart:string|null;when:string;nextAction:string|null;already:boolean;check:string|null;error:string|null}
 const norm=(s:string)=>s.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\b(the|a|an|my|our|to|for|please)\b/g,' ').replace(/\s+/g,' ').trim();
 const weekday=(iso:string)=>formatAU(iso,'weekday').split(' ')[0];
 // The one line under a title: a stated date reads as "Due …", a proposal as "Suggested: …", a loose timeframe as the person said it.
@@ -99,6 +99,19 @@ export async function placeSorted(store:BearStore,s:Sorted,via:'text'|'voice',to
    const task=s.deadline&&!same.dueAt?await updateTask(store,same.id,{dueAt:s.deadline}):same;
    await ensureReminder(store,task,now);
    return itemFor(task,await areaOf(store,task),today,{already:true});
+  }
+  // Part of something already on the list (a second notice about the same excursion, the payment for that form): it is added
+  // to that task instead of becoming another one. The earlier due date wins: part of the job is due then.
+  const profile=await ensureProfile(store);const kids=(profile.people||[]).filter(p=>p.role==='child').map(p=>p.name).filter(Boolean).concat((profile.family||[]).filter(f=>f.relation==='child').map(f=>f.name));
+  let best:Task|null=null,score=0;
+  for(const t of open){const r=Math.max(relatedTo(s.title,t.title,kids),t.sorted?relatedTo(s.original,t.sorted.originalInput,kids):0);if(r>score){score=r;best=t;}}
+  if(best){
+   const line=`• ${s.title}${s.deadline?` (by ${formatAU(s.deadline,'short')})`:''}`;
+   const notes=(best.notes||'').includes(line)?best.notes:[best.notes||'',line].filter(Boolean).join('\n').slice(0,1000);
+   const earlier=s.deadline&&(!best.dueAt||s.deadline<best.dueAt);
+   const task=await updateTask(store,best.id,{notes,...(earlier?{dueAt:s.deadline}:{})});
+   await ensureReminder(store,task,now);
+   return {...itemFor(task,await areaOf(store,task),today,{already:true}),linkedFrom:s.title};
   }
   const {capture,extraction}=await createCapture(store,null,{method:via,text:s.original});
   if(extraction.kind==='bill')return {...blank,check:`/bear/verify/${capture.id}`};

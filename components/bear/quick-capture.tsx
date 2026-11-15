@@ -15,7 +15,7 @@ import {chatterReply,replyKind} from '@/lib/bear/services/sorter';
 type Recognition={lang:string;continuous:boolean;interimResults:boolean;start():void;stop():void;onresult:((e:{resultIndex:number;results:ArrayLike<ArrayLike<{transcript:string}>&{isFinal:boolean}>})=>void)|null;onend:(()=>void)|null;onerror:((e:{error:string})=>void)|null};
 const recognitionCtor=():(new()=>Recognition)|null=>{if(typeof window==='undefined')return null;const w=window as unknown as {SpeechRecognition?:new()=>Recognition;webkitSpeechRecognition?:new()=>Recognition};return w.SpeechRecognition||w.webkitSpeechRecognition||null;};
 type Light='red'|'amber'|'green';
-export interface Item{taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;when:string;deadline?:string|null;removed?:boolean;nextAction:string|null;already:boolean;check:string|null;error:string|null}
+export interface Item{linkedFrom?:string|null;taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;when:string;deadline?:string|null;removed?:boolean;nextAction:string|null;already:boolean;check:string|null;error:string|null}
 export interface Found{question:string;answer:string;subject:string;date:string|null;dateLabel:string|null;sources:{title:string;url:string}[];remindedAs?:Item|null}
 type Result={ask?:{captureId:string;guess:string;question:string};say?:string;page?:{events:number;undated:number};found?:Found[];chat?:'closing'|'more';capture?:{id:string};extraction?:{kind?:string};sorted?:Item[];auto?:{taskId:string;title:string}|null;dump?:{captureId:string}|null;confirmed?:{taskId:string;title:string}|null;info?:{captureId:string;receipt:boolean}|null;unclear?:boolean};
 type Other={kind:'ask';captureId:string;guess:string;question:string;answered?:boolean}|{kind:'say';text:string}|{kind:'closing'}|{kind:'more'}|{kind:'done';taskId:string;title:string}|{kind:'info';captureId:string}|{kind:'unclear'}|{kind:'check';href:string;label:string};
@@ -190,7 +190,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
         <p className="qc-group-head"><span aria-hidden="true">{g.dot}</span> {g.label}</p>
         <ul>{list.map((i,k)=><li key={i.taskId||i.title+k} className="qc-card">
          {i.removed?<span className="qc-removed">{i.title}</span>:i.taskId?<Link className="qc-title" href={`/bear/tasks/${i.taskId}`}>{i.title}</Link>:<span className="qc-title">{i.title}</span>}
-         <span className="qc-meta"><span className={`qc-area area-${i.domain}`}>{areaLabel[i.domain]}</span> · {i.when}{i.already?' · Already on my list':''}</span>
+         <span className="qc-meta"><span className={`qc-area area-${i.domain}`}>{areaLabel[i.domain]}</span> · {i.when}{i.linkedFrom?` · Added “${i.linkedFrom}” to this`:i.already?' · Already on my list':''}</span>
          {i.nextAction&&!i.error&&!i.check&&<span className="qc-next">{i.nextAction}</span>}
          {i.check&&<Link className="qc-next" href={i.check} style={{textDecoration:'underline'}}>That looks like a bill. Check what I read</Link>}
          {i.error&&<span className="qc-next">I couldn’t take this one. {i.error}</span>}

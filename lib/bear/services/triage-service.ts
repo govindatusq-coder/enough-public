@@ -8,7 +8,7 @@ import {placeSorted,type SortedItem} from './sort-service.ts';
 import {anchorsFor,checkTriage,cleanEmailInput,triageJsonSchema,triageSystemPrompt,type CheckedCard,type FamilyMember} from './triage-core.ts';
 
 export interface TriageInput{images:{mime:string;bytes:Uint8Array}[];documents:{mime:string;bytes:Uint8Array}[];text:string|null}
-export interface TriageCardView{card_id:string;family_member:string|null;action_type:string;urgency:Light;hard_deadline:string|null;card_headline:string;ai_work_completed:string;execution_payload:CheckedCard['execution_payload'];confidence_score:number;missing_blocker:string|null;taskId:string|null;area:AreaKey;when:string;already:boolean}
+export interface TriageCardView{linkedFrom?:string|null;card_id:string;family_member:string|null;action_type:string;urgency:Light;hard_deadline:string|null;card_headline:string;ai_work_completed:string;execution_payload:CheckedCard['execution_payload'];confidence_score:number;missing_blocker:string|null;taskId:string|null;area:AreaKey;when:string;already:boolean}
 export interface TriageResult{reasoning:string;summary:string;cards:TriageCardView[]}
 export class TriageError extends Error{readonly code:string;readonly status:number;constructor(message:string,code:string,status=502){super(message);this.code=code;this.status=status;}}
 export const DAILY_TRIAGE=40;
@@ -55,8 +55,9 @@ async function placeCard(store:BearStore,c:CheckedCard,today:string,family:Famil
  const light=lightFor({deadline:c.hard_deadline,urgency:c.urgency,soonByNature:false},today);
  const original=[c.card_headline,c.hard_deadline?`by ${c.hard_deadline}`:''].filter(Boolean).join(' ');
  const item:SortedItem=await placeSorted(store,{title:c.card_headline.slice(0,90),original,domain:area,secondary,deadline:c.hard_deadline,deadlineSource:c.hard_deadline?'stated':null,window:null,windowBy:null,suggestedStart:suggestStart(c.card_headline,c.hard_deadline,light.light,today),urgency:c.urgency,nextAction:null,...light},'text',today,now);
- if(item.taskId&&!item.already){
+ // Drafts go with the task, including one this card was added to, unless that task already has its own.
+ if(item.taskId&&(!item.already||!(await store.get('tasks',item.taskId))?.prepared)){
   await store.update('tasks',item.taskId,{prepared:{actionType:c.action_type,member:c.family_member,work:c.ai_work_completed,blocker:c.missing_blocker,confidence:c.confidence_score,payload:c.execution_payload}}).catch(()=>null);
  }
- return {card_id:c.card_id,family_member:c.family_member,action_type:c.action_type,urgency:item.light,hard_deadline:c.hard_deadline,card_headline:item.title,ai_work_completed:c.ai_work_completed,execution_payload:c.execution_payload,confidence_score:c.confidence_score,missing_blocker:c.missing_blocker,taskId:item.taskId,area:item.domain,when:item.when,already:item.already};
+ return {card_id:c.card_id,family_member:c.family_member,action_type:c.action_type,urgency:item.light,hard_deadline:c.hard_deadline,card_headline:item.title,ai_work_completed:c.ai_work_completed,execution_payload:c.execution_payload,confidence_score:c.confidence_score,missing_blocker:c.missing_blocker,taskId:item.taskId,area:item.domain,when:item.when,already:item.already,linkedFrom:item.linkedFrom||null};
 }

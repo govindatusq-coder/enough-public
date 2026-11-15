@@ -216,3 +216,24 @@ export function chatterReply(text:string):string|null{
  if(!actionable&&!listy&&t.split(/\s+/).length<=12)return 'I’m not sure that’s something for me to do. Tell me what you need doing, like “pay the water bill Friday”, and I’ll sort it.';
  return null;
 }
+
+// ---------- is this part of something already on the list? ----------
+// "Pay $25 for the zoo excursion" belongs with "Return Ava's zoo excursion permission note"; "Pay the water bill" does not
+// belong with "Pay the electricity bill". Two things are related when the words that name the thing (not the action, not
+// generic words like "bill" or "appointment") mostly match, and they are not about different children.
+const LINK_STOP=new Set(('the a an and or for to of on in at by with from my our your his her their this that next new some please '+
+ 'book pay return complete fill sign send reply rsvp call ring email text buy get pick drop organise organize plan check make take bring collect '+
+ 'register enrol renew cancel order fix clean find ask tell confirm arrange sort finish start submit prepare remind remember need needs due '+
+ 'bill bills fee fees appointment appointments form forms note notes slip school family thing things today tomorrow week month').split(' '));
+const linkWords=(s:string)=>new Set(s.toLowerCase().replace(/(?:'|’)s\b/g,'').replace(/[^a-z0-9 ]+/g,' ').split(/\s+/).filter(w=>w.length>2&&!LINK_STOP.has(w)&&!/^\d+$/.test(w)).map(w=>w.length>4?w.replace(/(?:es|s)$/,''):w));
+export function relatedTo(a:string,b:string,children:string[]=[]):number{
+ const kids=children.map(n=>n.toLowerCase());const A=linkWords(a),B=linkWords(b);
+ const ka=kids.filter(k=>A.has(k)),kb=kids.filter(k=>B.has(k));
+ if(ka.length&&kb.length&&!ka.some(k=>kb.includes(k)))return 0;   // about different children
+ for(const k of kids){A.delete(k);B.delete(k);}
+ if(!A.size||!B.size)return 0;
+ const shared=[...A].filter(w=>B.has(w)).length;
+ const ratio=shared/Math.min(A.size,B.size);
+ // Two shared naming words, or the one word that names the whole of the smaller thing (e.g. "dentist").
+ return (shared>=2&&ratio>=0.6)||(shared===1&&ratio===1&&[...A].some(w=>B.has(w)&&w.length>=5))?ratio:0;
+}

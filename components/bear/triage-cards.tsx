@@ -8,7 +8,7 @@ import {formatAU} from '@/lib/bear/domain/dates';
 // The action cards from triage: what Bear found, what it already prepared, and one tap to use each draft. Bear never sends:
 // every button opens the person's own email, messages or calendar with the draft filled in.
 export interface Payload{email:{to:string|null;subject:string;body:string}|null;sms:{to:string|null;body:string}|null;calendar_hold:{title:string;start:string;end:string|null;all_day:boolean;location:string|null}|null;shopping_list:string[]|null;steps:string[]|null}
-export interface TriageCardView{card_id:string;family_member:string|null;action_type:string;urgency:'red'|'amber'|'green';hard_deadline:string|null;card_headline:string;ai_work_completed:string;execution_payload:Payload;confidence_score:number;missing_blocker:string|null;taskId:string|null;area:string;when:string;already:boolean}
+export interface TriageCardView{linkedFrom?:string|null;card_id:string;family_member:string|null;action_type:string;urgency:'red'|'amber'|'green';hard_deadline:string|null;card_headline:string;ai_work_completed:string;execution_payload:Payload;confidence_score:number;missing_blocker:string|null;taskId:string|null;area:string;when:string;already:boolean}
 export interface TriageView{reasoning:string;summary:string;cards:TriageCardView[]}
 const areaLabel:Record<string,string>={work:'Work',family:'Family',home:'Home',money:'Money',health:'Health',me:'Me'};
 const groups=[{light:'red',dot:'🔴',label:'Urgent'},{light:'amber',dot:'🟠',label:'Coming up'},{light:'green',dot:'🟢',label:'Can wait'}] as const;
@@ -44,7 +44,7 @@ function Card({c,reasoning,debug,editing,onChange}:{c:TriageCardView&{removed?:b
  const chips=[p.email&&{k:'email' as const,label:'Email draft'},p.sms&&{k:'sms' as const,label:'Text draft'},p.shopping_list?.length&&{k:'list' as const,label:`List (${p.shopping_list.length})`},p.steps?.length&&{k:'steps' as const,label:'Steps'}].filter(Boolean) as {k:NonNullable<typeof open>;label:string}[];
  return <li className="qc-card tc-card">
   {c.taskId?<Link className="qc-title" href={`/bear/tasks/${c.taskId}`}>{c.card_headline}</Link>:<span className="qc-title">{c.card_headline}</span>}
-  <span className="qc-meta"><span className="qc-area">{areaLabel[c.area]||c.area}</span>{c.family_member?` · ${c.family_member}`:''} · {c.when}{c.already?' · Already on my list':''}</span>
+  <span className="qc-meta"><span className="qc-area">{areaLabel[c.area]||c.area}</span>{c.family_member?` · ${c.family_member}`:''} · {c.when}{c.linkedFrom?` · Added “${c.linkedFrom}” to this`:c.already?' · Already on my list':''}</span>
   {(chips.length>0||p.calendar_hold||c.hard_deadline)&&<span className="tc-actions">
    {chips.map(x=><button key={x.k} type="button" className="chip sm" aria-expanded={open===x.k} onClick={()=>toggle(x.k)}>{x.label}</button>)}
    <CalendarButton title={c.card_headline} deadline={c.hard_deadline} hold={p.calendar_hold}/>

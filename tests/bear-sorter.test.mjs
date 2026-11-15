@@ -135,3 +135,16 @@ test('something told to Bear in words is never met with "What would make this fe
  // The banner's number always matches what is listed.
  const listed=again.needsYou.filter(n=>!n.soft).length;assert.ok(Math.max(again.handling.needs,listed)>=listed);
 });
+
+test('something related to a task already on the list is added to it, not made into a second task',async()=>{
+ const {relatedTo}=await import('../lib/bear/services/sorter.ts');
+ for(const [a,b] of [['Pay $25 for the zoo excursion','Return Ava’s zoo excursion permission note'],['Buy a present for Mum’s birthday','Plan Mum’s birthday'],['Book the dentist','Book Ava’s dentist appointment'],['RSVP for the soccer presentation night','Hold Saturday for soccer presentation night']])assert.ok(relatedTo(a,b,['Ava','Sam'])>0,`${a} ~ ${b}`);
+ for(const [a,b] of [['Pay the water bill','Pay the electricity bill'],['Book Sam’s dentist appointment','Book Ava’s dentist appointment'],['Call mum','Call the plumber'],['Return the library books','Return the permission form'],['Buy milk','Buy a birthday present']])assert.equal(relatedTo(a,b,['Ava','Sam']),0,`${a} vs ${b}`);
+ const s=await person('76767676-7676-4767-8767-767676767676');await saveProfile(s,{people:[{role:'child',name:'Ava'}]});
+ const [first]=await sortAndPlace(s,null,'Ava’s zoo excursion permission note is due Friday','text',NOW);
+ const [second]=await sortAndPlace(s,null,'pay $25 for the zoo excursion by Wednesday','text',NOW);
+ assert.equal(second.taskId,first.taskId,'linked to the one task');assert.ok(second.already&&second.linkedFrom,'and it says so');
+ const open=(await s.list('tasks')).filter(t=>t.status==='open');assert.equal(open.length,1,'no duplicate');
+ const t=await s.get('tasks',first.taskId);assert.match(t.notes,/Pay \$25 for the zoo excursion/);assert.equal(t.dueAt,'2026-11-18','the earlier due date wins');
+ const [other]=await sortAndPlace(s,null,'pay the water bill','text',NOW);assert.notEqual(other.taskId,first.taskId,'unrelated things stay separate');
+});
