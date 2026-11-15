@@ -107,6 +107,9 @@ export async function dropTask(store:BearStore,taskId:string){
  await store.update('tasks',taskId,{status:'dropped'});
  for(const r of await store.list('reminders',{where:[{column:'task_id',value:taskId},{column:'status',op:'in',value:['scheduled','snoozed','delivered']}]}))await store.update('reminders',r.id,{status:'cancelled'});
  for(const b of await store.list('bills',{where:[{column:'task_id',value:taskId}]})){await store.update('bills',b.id,{status:'dropped'});await store.update('projects',b.projectId,{status:'archived'});}
+ // A project left with nothing open in it is put away, so it no longer shows in the lists.
+ const open=(await store.list('tasks',{where:[{column:'project_id',value:task.projectId}]})).filter(t=>t.id!==taskId&&t.status==='open');
+ if(!open.length)await store.update('projects',task.projectId,{status:'archived'}).catch(()=>null);
  await recordBehaviour(store,'task_dropped',{taskId});
  await syncState(store,taskId,'user').catch(()=>null);
 }

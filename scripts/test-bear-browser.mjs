@@ -208,8 +208,8 @@ try{
   {const c4=await browser.newContext({viewport:{width:390,height:844},locale:'en-AU',timezoneId:'Australia/Sydney'});const p4=await c4.newPage();let req=null;
    await p4.route('**/api/bear/chat',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({fallback:true,reason:'off'})}));
    await p4.route('**/api/bear/triage',async r=>{req=JSON.parse(r.request().postData()||'{}');await new Promise(x=>setTimeout(x,1500));await r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({reasoning:'Club flyer. Presentation night Saturday 28 November = 2026-11-28. RSVP by Thursday.',summary:'Eastside Soccer presentation night.',cards:[
-    {card_id:'r1',family_member:'Sam',action_type:'email_reply',urgency:'amber',hard_deadline:'2026-11-19',card_headline:'RSVP for Sam’s soccer presentation night',ai_work_completed:'Drafted an RSVP to the club.',execution_payload:{email:{to:'club@soccer.example',subject:'RSVP: Presentation night',body:'Hi, Sam will be there. Thanks!'},sms:null,calendar_hold:null,shopping_list:null,steps:null},confidence_score:0.9,missing_blocker:null,taskId:null,area:'family',when:'Due Thursday',already:false},
-    {card_id:'r2',family_member:'Sam',action_type:'calendar_hold',urgency:'green',hard_deadline:null,card_headline:'Hold Saturday evening for presentation night',ai_work_completed:'Prepared a calendar hold.',execution_payload:{email:null,sms:null,calendar_hold:{title:'Soccer presentation night',start:'2026-11-28T17:00',end:'2026-11-28T19:00',all_day:false,location:'Clubhouse'},shopping_list:['Gold coin for the raffle'],steps:null},confidence_score:0.8,missing_blocker:'Who is going with Sam?',taskId:null,area:'family',when:'No date',already:false}]})});});
+    {card_id:'r1',family_member:'Sam',action_type:'email_reply',urgency:'amber',hard_deadline:'2026-11-19',card_headline:'RSVP for Sam’s soccer presentation night',ai_work_completed:'Drafted an RSVP to the club.',execution_payload:{email:{to:'club@soccer.example',subject:'RSVP: Presentation night',body:'Hi, Sam will be there. Thanks!'},sms:null,calendar_hold:null,shopping_list:null,steps:null},confidence_score:0.9,missing_blocker:null,taskId:'c1c1c1c1-c1c1-4c1c-8c1c-c1c1c1c1c1c1',area:'family',when:'Due Thursday',already:false},
+    {card_id:'r2',family_member:'Sam',action_type:'calendar_hold',urgency:'green',hard_deadline:null,card_headline:'Hold Saturday evening for presentation night',ai_work_completed:'Prepared a calendar hold.',execution_payload:{email:null,sms:null,calendar_hold:{title:'Soccer presentation night',start:'2026-11-28T17:00',end:'2026-11-28T19:00',all_day:false,location:'Clubhouse'},shopping_list:['Gold coin for the raffle'],steps:null},confidence_score:0.8,missing_blocker:'Who is going with Sam?',taskId:'c2c2c2c2-c2c2-4c2c-8c2c-c2c2c2c2c2c2',area:'family',when:'No date',already:false}]})});});
    const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64');
    for(const dbg of [false,true]){
     await p4.goto(base+'/bear/capture'+(dbg?'?debug=1':''));await p4.waitForSelector('#qc-file',{state:'attached'});
@@ -217,13 +217,35 @@ try{
     if(!dbg){await p4.waitForSelector('.qc-progress');assert.ok((await p4.textContent('.qc-progress')).includes('Reading layout & dates'));}
     await p4.waitForSelector('.tc .qc-card');
     if(!dbg){assert.equal(req.inputs[0].kind,'image');assert.match(req.inputs[0].data,/^data:image\/jpeg;base64,/);assert.match(req.currentDateTime,/day/);assert.ok(Array.isArray(req.familyProfile));assert.ok(req.timeZone);
-     const txt=await p4.textContent('.tc');assert.ok(txt.includes('I found 2 things')&&txt.includes('Drafted an RSVP')&&txt.includes('Who is going with Sam?')&&txt.includes('I haven’t sent anything'),txt);
-     assert.match(await p4.getAttribute('.tc a:has-text("Open in email")','href'),/^mailto:club%40soccer\.example\?subject=RSVP/);
+     const txt=await p4.textContent('.tc');assert.ok(txt.includes('I found 2 things')&&txt.includes('Nothing’s been sent'),txt);assert.ok(!txt.includes('Drafted an RSVP'),'cards stay short');
+     await p4.click('.tc button:has-text("Email draft")');assert.match(await p4.getAttribute('.tc a:has-text("Open in email")','href'),/^mailto:club%40soccer\.example\?subject=RSVP/);
      assert.match(await p4.getAttribute('.tc a:has-text("Add to calendar")','href'),/^data:text\/calendar/);
+     assert.equal(await p4.$$eval('.tc a:has-text("Add to calendar")',e=>e.length),2,'a card with only a due date gets a calendar button too');
+     // Bear's question has somewhere to answer, and the answer is saved to that task; then the cards can be approved or changed.
+     assert.ok((await p4.textContent('.tc-question')).includes('Who is going with Sam?'));assert.equal(await p4.$('.tc button:has-text("Looks good")'),null,'one thing at a time: the question first');
+     let patched=null;await p4.route('**/api/bear/tasks/c2c2c2c2-c2c2-4c2c-8c2c-c2c2c2c2c2c2',async r=>{if(r.request().method()==='PATCH'){patched=JSON.parse(r.request().postData()||'{}');await r.fulfill({status:200,contentType:'application/json',body:'{"task":{}}'});}else await r.fulfill({status:200,contentType:'application/json',body:'{"task":{"notes":null}}'});});
+     await p4.fill('.tc-question input','Me and Dad');await p4.click('.tc-question button:has-text("Save")');await p4.waitForSelector('.tc-question',{state:'detached'});
+     assert.match(patched.notes,/Who is going with Sam\? Me and Dad/);
+     assert.ok(await p4.$('.tc button:has-text("Looks good")')&&await p4.$('.tc button:has-text("Change something")'),'the cards can be approved or changed');
      assert.equal(await p4.$('.tc-debug'),null,'parents never see the AI reasoning');await p4.screenshot({path:resolve(results,'61h-bear-triage.png'),fullPage:true});}
     else{await p4.click('.tc-debug >> nth=0');assert.ok((await p4.textContent('.tc-debug')).includes('Club flyer. Presentation night'));await p4.screenshot({path:resolve(results,'61i-bear-triage-debug.png'),fullPage:true});}
    }
    await c4.close();}
+  // Change something: every card can be renamed, re-dated, recoloured, moved or removed, and anything dated can go in the calendar.
+  {const c5=await browser.newContext({viewport:{width:390,height:844},locale:'en-AU',timezoneId:'Australia/Sydney'});const p5=await c5.newPage();
+   await p5.goto(base+'/bear/capture');await p5.waitForSelector('#qc-text');
+   await p5.fill('#qc-text','renew the passport by 20 December and tidy the shed');await p5.click('.qc-go[type="submit"]');await p5.waitForSelector('.qc-turn:last-of-type .qc-confirm');
+   assert.equal(await p5.$$eval('.qc-turn:last-of-type a:has-text("Add to calendar")',e=>e.length),1,'the dated one can go in the calendar');
+   assert.match(await p5.getAttribute('.qc-turn:last-of-type a:has-text("Add to calendar")','href'),/^data:text\/calendar.*DTSTART%3BVALUE%3DDATE%3A20261220/);
+   await p5.click('.qc-turn:last-of-type button:has-text("Change something")');await p5.waitForSelector('.ce');assert.equal(await p5.$$eval('.ce',e=>e.length),2,'every card can be changed');
+   const passport=p5.locator('.qc-card',{hasText:'passport'});
+   await passport.locator('.ce-field input').first().fill('Renew Ava’s passport');await passport.locator('input[type="date"]').fill('2026-12-18');await passport.locator('button:has-text("Save")').click();
+   await p5.waitForFunction(()=>/Renew Ava’s passport/.test(document.querySelector('.qc-turn:last-of-type')?.textContent||''));
+   await passport.locator('button:has-text("Urgent")').click();await p5.waitForFunction(()=>/Renew Ava/.test(document.querySelector('.qc-turn:last-of-type .qc-group.red')?.textContent||''));
+   const shed=p5.locator('.qc-card',{hasText:'shed'});await shed.locator('select').selectOption('me');await shed.locator('button:has-text("Remove")').click();await p5.waitForSelector('.qc-turn:last-of-type .qc-removed');
+   const all=await p5.evaluate(async()=>await (await fetch('/api/bear/everything')).text());assert.ok(all.includes('Renew Ava’s passport')&&!all.includes('Tidy the shed'),'the changes are saved, and the removed one is gone');
+   await p5.click('.qc-turn:last-of-type button:has-text("Looks good, Bear")');await p5.waitForSelector('.qc-turn:last-of-type .qc-note');
+   await p5.screenshot({path:resolve(results,'61j-bear-edit.png'),fullPage:true});await c5.close();}
   // It is a chat: earlier turns are still there, the newest is in view, and the box has not moved off the bottom.
   await page.waitForTimeout(900);
   {const c=await page.evaluate(()=>{const box=document.querySelector('.qc-pill').getBoundingClientRect();const lastTurn=[...document.querySelectorAll('.qc-turn')].pop().getBoundingClientRect();return {turns:document.querySelectorAll('.qc-turn').length,boxBottom:Math.round(innerHeight-box.bottom),boxTop:box.top,lastVisible:lastTurn.bottom<=box.top+2&&lastTurn.bottom>0,pageScroll:document.scrollingElement.scrollHeight-innerHeight};});

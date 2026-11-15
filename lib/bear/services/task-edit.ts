@@ -60,6 +60,8 @@ export async function updateTask(store:BearStore,taskId:string,input:UpdateTaskI
  // A new date is a new fact for the load: Bear re-plans around it (and stops asking for it).
  if(input.dueAt!==undefined&&input.dueAt!==task.dueAt&&next.load&&!next.load.migrated){next=await store.update('tasks',task.id,{load:await relayLoadDate(store,next,input.dueAt)});}
  if(input.title!==undefined&&input.title!==task.title&&next.load&&!next.load.migrated){next=await store.update('tasks',task.id,{load:await retitleLoad(store,next,input.title)});}
+ // A project that holds only this task is named after it, so a rename shows on My Bear and in the area lists too.
+ if(input.title!==undefined&&input.title!==task.title){const siblings=await store.list('tasks',{where:[{column:'project_id',value:task.projectId}]});if(siblings.length===1)await store.update('projects',task.projectId,{title:input.title.slice(0,120)}).catch(()=>null);}
  // Keep the project name and any Win in step with an edited title.
  if(input.title!==undefined&&input.title!==task.title){
   const project=await store.get('projects',task.projectId);if(project&&project.title===task.title)await store.update('projects',project.id,{title:input.title});

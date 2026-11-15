@@ -6,6 +6,7 @@ import {shrinkAll,UPLOAD_BUDGET} from '@/lib/bear/client-image';
 import {buildTriageRequest} from '@/lib/bear/inputProcessor';
 import {looksLikeEmail,type FamilyMember} from '@/lib/bear/services/triage-core';
 import {TriageCards,TriageProgress,type TriageView} from './triage-cards';
+import {CalendarButton,CardEditor} from './card-controls';
 import {areaKeys,type AreaKey} from '@/lib/bear/domain/types';
 import {chatterReply,replyKind} from '@/lib/bear/services/sorter';
 
@@ -14,7 +15,7 @@ import {chatterReply,replyKind} from '@/lib/bear/services/sorter';
 type Recognition={lang:string;continuous:boolean;interimResults:boolean;start():void;stop():void;onresult:((e:{resultIndex:number;results:ArrayLike<ArrayLike<{transcript:string}>&{isFinal:boolean}>})=>void)|null;onend:(()=>void)|null;onerror:((e:{error:string})=>void)|null};
 const recognitionCtor=():(new()=>Recognition)|null=>{if(typeof window==='undefined')return null;const w=window as unknown as {SpeechRecognition?:new()=>Recognition;webkitSpeechRecognition?:new()=>Recognition};return w.SpeechRecognition||w.webkitSpeechRecognition||null;};
 type Light='red'|'amber'|'green';
-export interface Item{taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;when:string;nextAction:string|null;already:boolean;check:string|null;error:string|null}
+export interface Item{taskId:string|null;title:string;domain:AreaKey;light:Light;reason:string;when:string;deadline?:string|null;removed?:boolean;nextAction:string|null;already:boolean;check:string|null;error:string|null}
 export interface Found{question:string;answer:string;subject:string;date:string|null;dateLabel:string|null;sources:{title:string;url:string}[];remindedAs?:Item|null}
 type Result={ask?:{captureId:string;guess:string;question:string};say?:string;page?:{events:number;undated:number};found?:Found[];chat?:'closing'|'more';capture?:{id:string};extraction?:{kind?:string};sorted?:Item[];auto?:{taskId:string;title:string}|null;dump?:{captureId:string}|null;confirmed?:{taskId:string;title:string}|null;info?:{captureId:string;receipt:boolean}|null;unclear?:boolean};
 type Other={kind:'ask';captureId:string;guess:string;question:string;answered?:boolean}|{kind:'say';text:string}|{kind:'closing'}|{kind:'more'}|{kind:'done';taskId:string;title:string}|{kind:'info';captureId:string}|{kind:'unclear'}|{kind:'check';href:string;label:string};
@@ -173,22 +174,19 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
        return <section key={g.light} className={`qc-group ${g.light}`} aria-label={g.label}>
         <p className="qc-group-head"><span aria-hidden="true">{g.dot}</span> {g.label}</p>
         <ul>{list.map((i,k)=><li key={i.taskId||i.title+k} className="qc-card">
-         {i.taskId?<Link className="qc-title" href={`/bear/tasks/${i.taskId}`}>{i.title}</Link>:<span className="qc-title">{i.title}</span>}
+         {i.removed?<span className="qc-removed">{i.title}</span>:i.taskId?<Link className="qc-title" href={`/bear/tasks/${i.taskId}`}>{i.title}</Link>:<span className="qc-title">{i.title}</span>}
          <span className="qc-meta"><span className={`qc-area area-${i.domain}`}>{areaLabel[i.domain]}</span> · {i.when}{i.already?' · Already on my list':''}</span>
          {i.nextAction&&!i.error&&!i.check&&<span className="qc-next">{i.nextAction}</span>}
          {i.check&&<Link className="qc-next" href={i.check} style={{textDecoration:'underline'}}>That looks like a bill. Check what I read</Link>}
          {i.error&&<span className="qc-next">I couldn’t take this one. {i.error}</span>}
-         {isChanging&&i.taskId&&<span className="qc-edit">
-          <span className="qc-lights" role="group" aria-label={`How soon: ${i.title}`}>{groups.map(x=><button key={x.light} type="button" className="chip sm" aria-pressed={i.light===x.light} onClick={()=>tap(turn,i,{light:x.light})}><span aria-hidden="true">{x.dot}</span> {x.label}</button>)}</span>
-          <label className="sr-only" htmlFor={`qc-area-${i.taskId}`}>Area for {i.title}</label>
-          <select id={`qc-area-${i.taskId}`} className="qc-select" value={i.domain} onChange={e=>tap(turn,i,{domain:e.target.value as AreaKey})}>{areaKeys.map(a=><option key={a} value={a}>{areaLabel[a]}</option>)}</select>
-         </span>}
+         {i.deadline&&!i.removed&&<span className="tc-actions"><CalendarButton title={i.title} deadline={i.deadline}/></span>}
+         {isChanging&&i.taskId&&!i.removed&&<CardEditor taskId={i.taskId} title={i.title} deadline={i.deadline??null} light={i.light} area={i.domain} onChange={x=>swap(turn.id,{...i,...(x.title?{title:x.title}:{}),...(x.deadline!==undefined?{deadline:x.deadline}:{}),...(x.when?{when:x.when}:{}),...(x.light?{light:x.light}:{}),...(x.area?{domain:x.area as AreaKey}:{}),...(x.removed?{removed:true}:{})})}/>}
         </li>)}</ul>
        </section>;})}
       {/* One thing needs no ceremony: it is simply done, with a quiet way to change it. Several things get one confirmation. */}
       {placed.length>0&&turn.items.length===1&&!isChanging&&!turn.confirmed&&<button type="button" className="qc-link qc-change" onClick={()=>{setChanging(turn.id);document.getElementById('qc-text')?.focus();}}>Change something</button>}
       {placed.length>0&&!turn.confirmed&&(turn.items.length>1||isChanging)&&<div className="qc-confirm">
-       <p className="qc-ask">{isChanging?'Tell me what to change, or tap it above.':'Want me to get started?'}</p>
+       <p className="qc-ask">{isChanging?'Change what you need above (it saves as you go), or tell me in a sentence.':'Want me to get started?'}</p>
        <div className="btn-row" style={{marginTop:6}}>
         <button type="button" className="btn coral sm" onClick={()=>{patch(turn.id,t=>({...t,confirmed:true}));if(isChanging)setChanging(null);}}>Looks good, Bear</button>
         {!isChanging&&<button type="button" className="btn quiet sm" onClick={()=>{setChanging(turn.id);document.getElementById('qc-text')?.focus();}}>Change something</button>}
