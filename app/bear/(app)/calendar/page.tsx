@@ -37,7 +37,7 @@ export default function CalendarPage(){
   {err&&<ErrorCard message={err}/>}{!v&&!err&&<Skeleton/>}
   {v&&<>
    {v.overdue.length>0&&<section className="section"><p className="eyebrow" style={{color:'#B42318'}}>Past its date</p><ul className="cal-list">{v.overdue.map(e=><Row key={e.taskId} e={e}/>)}</ul></section>}
-   {v.days.map(d=><section key={d.date} id={`d-${d.date}`} className="section"><p className="eyebrow">{dayLabel(d.date,v.today)}{daysBetween(v.today,d.date)!>1?` · ${formatAU(d.date,'short')}`:''}</p><ul className="cal-list">{d.items.map(e=><Row key={e.taskId} e={e}/>)}</ul></section>)}
+   {v.days.map(d=><section key={d.date} id={`d-${d.date}`} className="section"><p className="eyebrow">{dayLabel(d.date,v.today)}{(daysBetween(v.today,d.date)??0)>1&&(daysBetween(v.today,d.date)??0)<7?` · ${formatAU(d.date,'short')}`:''}</p><ul className="cal-list">{d.items.map(e=><Row key={e.taskId} e={e}/>)}</ul></section>)}
    {!v.days.length&&!v.overdue.length&&<div className="card"><p className="muted">Nothing with a date yet. Anything you give Bear with a date shows here.</p><div className="btn-row"><Link href="/bear/capture" className="btn sm">Give it to Bear</Link></div></div>}
    {v.undated>0&&<p className="small muted" style={{marginTop:14}}>{v.undated} more {v.undated===1?'thing has':'things have'} no date. <Link href="/bear/me/everything" style={{textDecoration:'underline'}}>See them</Link></p>}
   </>}
