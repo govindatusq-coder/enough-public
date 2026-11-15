@@ -197,3 +197,22 @@ export function replyKind(text:string):'closing'|'more'|null{
  if(CLOSING.test(t))return 'closing';
  return null;
 }
+
+// ---------- when Bear is talked to, not given something to do ----------
+// Used only when the AI is not available. Questions about the app, frustration, and anything that has no action, date or
+// recognisable thing in it get a plain answer; they are never turned into tasks.
+const ABOUT_APP=/\b(?:what(?:'|’)?s|what is|what does|what do you|how do(?:es)? (?:i|this|it)|how to use|who are you|what are you|what can you|help me understand|explain)\b.*\b(?:this|app|bear|you|do|work|for|use)\b|^\s*(?:help|\?+)\s*$/i;
+const FRUSTRATED=/\b(?:fuck|f\*+k|fk|shit|crap|useless|stupid|hopeless|rubbish|garbage|hate (?:this|you)|piss off|shut up|go away|bugger off|wtf|ffs|doesn(?:'|’)?t work|not working)\b/i;
+const ABOUT_APP_REPLY='I’m Mama Bear. Tell me anything you need to remember or do, like “pay the water bill Friday” or “Ava’s excursion form is due Monday”, or give me a photo or link of a notice. I’ll sort it, work out when it matters, and remind you.';
+export function chatterReply(text:string):string|null{
+ const t=text.trim();if(!t)return null;
+ if(FRUSTRATED.test(t)&&t.length<200)return 'Sorry, I’ve let you down there. '+(ABOUT_APP.test(t)?ABOUT_APP_REPLY:'Tell me one thing you need done, like “book the dentist next week”, and I’ll take it from there.');
+ if(ABOUT_APP.test(t)&&t.length<160)return ABOUT_APP_REPLY;
+ // Nothing to act on: no action word, nothing Bear recognises (a date on its own, as in "I'm tired today", is not a task) (a bill, school, an appointment…).
+ const parts=segment(t);
+ const actionable=parts.some(p=>{const s=sortOne(p,'2000-01-01');return VERB_LED.test(p.replace(FILLER,'').trim())||classify(p).domain!=='me'||soonByNature(s.title)||/\b(remind|remember|don(?:'|’)?t forget|need|have to|must|should)\b/i.test(p);});
+ // A list ("Bunnings: deck boards, paint, screws") is something to get, even with no verb in it.
+ const listy=/:\s*\S/.test(t)||t.split(/,|\band\b|\n/).filter(x=>x.trim()).length>=3;
+ if(!actionable&&!listy&&t.split(/\s+/).length<=12)return 'I’m not sure that’s something for me to do. Tell me what you need doing, like “pay the water bill Friday”, and I’ll sort it.';
+ return null;
+}

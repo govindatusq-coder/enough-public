@@ -182,7 +182,7 @@ try{
    await page.setInputFiles('#qc-file',[{name:'a.png',mimeType:'image/png',buffer:png},{name:'b.png',mimeType:'image/png',buffer:png},{name:'c.png',mimeType:'image/png',buffer:png}]);
    await page.waitForSelector('.qc-turn:last-of-type .qc-sorted');assert.equal(parts,3,'all three pictures went up in one go');assert.ok((await page.textContent('.qc-turn:last-of-type')).includes('3 pictures'));}
   // A picture Bear cannot make sense of: it asks ONE question, and the answer becomes the task (with a date if one is given).
-  {const cap=await page.evaluate(async()=>{const r=await fetch('/api/bear/captures',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'text',text:'qwerty asdfgh zxcvbn'})});return (await r.json()).capture?.id;});assert.ok(cap,'a capture to stand for the picture');
+  {const cap=await page.evaluate(async()=>{const r=await fetch('/api/bear/captures',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'text',text:'renew the library card'})});return (await r.json()).capture?.id;});assert.ok(cap,'a capture to stand for the picture');
    await page.route('**/api/bear/captures',r=>r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({ask:{captureId:cap,guess:'Swimming lessons',question:'I think this is about “Swimming lessons”. What do you need to do, and by when?'}})}),{times:1});
    const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64');
    await page.setInputFiles('#qc-file',{name:'blurry.png',mimeType:'image/png',buffer:png});await page.waitForSelector('.qc-turn:last-of-type .qc-question');

@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import type Anthropic from '@anthropic-ai/sdk';
 import {json,readJson,withBear} from '@/lib/bear/server/context';
-import {chatFromEnv} from '@/lib/bear/ai/chat';
+import {ChatError,chatFromEnv,describeError} from '@/lib/bear/ai/chat';
 import {addTasksTool,changeTaskTool,runAddTasks,runChangeTask} from '@/lib/bear/services/chat-tools';
 import {todayFor,type SortedItem} from '@/lib/bear/services/sort-service';
 import {ensureProfile} from '@/lib/bear/services/profile';
@@ -32,11 +32,13 @@ export const POST=(req:Request)=>withBear(req,async({store})=>{
    if(name!=='add_tasks')return 'Unknown tool.';
    const out=await runAddTasks(store,input,said,today,children);items.push(...out.items);return out.result;
   });
-  await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'Chat',provider:'anthropic',model:r.model,promptHash:'chat-1',rawOutput:{tools:r.toolCalls.map(c=>c.name),added:items.length,changed:changed.length},latencyMs:Date.now()-started,ok:true,error:null,usage:r.usage}));
+  await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'Chat',provider:'anthropic',model:r.model,promptHash:'chat-1',rawOutput:{tools:r.toolCalls.map(c=>c.name),added:items.length,changed:changed.length,retried:r.notes},latencyMs:Date.now()-started,ok:true,error:null,usage:r.usage}));
   return json({reply:r.text,sorted:items,changed});
- }catch{
-  await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'Chat',provider:'anthropic',model:'',promptHash:'chat-1',rawOutput:null,latencyMs:Date.now()-started,ok:false,error:'chat_failed'})).catch(()=>null);
+ }catch(e){
+  const why=e instanceof ChatError?e.message:describeError(e);const code=e instanceof ChatError&&e.status?String(e.status):'net';
+  console.error('[bear] chat failed:',why);   // the service's error only; never the person's words
+  await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'Chat',provider:'anthropic',model:'',promptHash:'chat-1',rawOutput:null,latencyMs:Date.now()-started,ok:false,error:why.slice(0,600)})).catch(()=>null);
   // Anything already added stays added; the person is told, and the app takes the message its own way if nothing was.
-  return json(items.length?{reply:'I’ve added what I could. Something went wrong after that, so check the list.',sorted:items}:{fallback:true,reason:'error'},200);
+  return json(items.length?{reply:'I’ve added what I could. Something went wrong after that, so check the list.',sorted:items}:{fallback:true,reason:'error',code},200);
  }
 },{write:true});

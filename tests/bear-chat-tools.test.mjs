@@ -36,3 +36,10 @@ test('the tools and the instructions say what they must',()=>{
  const p=chatSystemPrompt({today:TODAY,weekday:'Saturday',name:'Govind',children:['Ava']});
  assert.match(p,/Just talking/);assert.match(p,/Do not add tasks/);assert.match(p,/Never ask more than one question/);assert.match(p,/never say you have/);assert.match(p,/Govind/);assert.match(p,/Ava/);
 });
+
+test('without the AI, talk is answered and never filed as a task',async()=>{
+ const {chatterReply}=await import('../lib/bear/services/sorter.ts');
+ for(const t of ['fuck off what is this app even for','what is this app','how does this work','who are you','help','this is useless','wtf','fuck off','hmm interesting','that’s cool','lol','I am tired today','nice one'])assert.ok(chatterReply(t),t);
+ assert.match(chatterReply('fuck off what is this app even for'),/^Sorry.*Mama Bear/);
+ for(const t of ['call mum','electricity bill','dentist','pay the water bill Friday','buy milk, eggs and bread','Ava’s permission form is due Monday','remind me to ring the plumber','renew rego','book the car service for Tuesday','mum’s birthday next month','pick up the dry cleaning'])assert.equal(chatterReply(t),null,t);
+});

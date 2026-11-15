@@ -2,7 +2,7 @@ import {HttpError,json,withBear} from '@/lib/bear/server/context';
 import {CaptureError,captureTextSchema,createCapture,MAX_FILE_BYTES} from '@/lib/bear/services/capture';
 import {maybeAutoSetup} from '@/lib/bear/services/auto-setup';
 import {intake} from '@/lib/bear/services/intake';
-import {replyKind} from '@/lib/bear/services/sorter';
+import {chatterReply,replyKind} from '@/lib/bear/services/sorter';
 import {adoptSorted,keptNote,linkNote,looksLikeDocument,lookUp,placePage,placeSorted,readLink,sortParts,todayFor} from '@/lib/bear/services/sort-service';
 import {asksToFindOut,linkIn} from '@/lib/bear/services/lookup';
 import {keepOnPage,readPageEvents} from '@/lib/bear/services/page-events';
@@ -101,6 +101,7 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
  if((body.method==='text'||body.method==='voice')&&!body.isDemo&&!looksLikeDocument(body.text)){
   // Something said back to Bear ("no", "that's all", "thanks", "yes") is conversation, never a to-do. Nothing is saved.
   const chat=replyKind(body.text);if(chat)return json({chat,unclear:true});
+  const talk=chatterReply(body.text);if(talk&&!asksToFindOut(body.text)&&!linkIn(body.text))return json({say:talk});
   const {today,children}=await todayFor(store);const parts=await sortParts(body.text,provider,today,children);
   // "Search for…", "find out when…": Bear looks it up and answers. Nothing is filed for the person unless the lookup comes
   // back empty, in which case the to-do is kept and Bear says why.

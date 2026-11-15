@@ -4,7 +4,7 @@ import Link from 'next/link';
 import {apiForm,apiSend,type ApiError} from '@/lib/bear/client';
 import {shrinkAll,UPLOAD_BUDGET} from '@/lib/bear/client-image';
 import {areaKeys,type AreaKey} from '@/lib/bear/domain/types';
-import {replyKind} from '@/lib/bear/services/sorter';
+import {chatterReply,replyKind} from '@/lib/bear/services/sorter';
 
 // Tell Bear once. One message (typed or spoken) comes back sorted: each thing with a clear title, its area, a traffic light and
 // a timeframe, grouped by how soon it matters. One tap confirms the lot; one sentence or one tap changes a single thing.
@@ -53,7 +53,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
    t.other?.kind==='say'?t.other.text:t.other?.kind==='ask'?t.other.question:t.other?.kind==='closing'?'All sorted. I’m here whenever you need me.':''].filter(Boolean).join('\n');
   return [{role:'user' as const,content:t.file?`(gave Bear a picture: ${t.said})`:t.said.slice(0,3500)},...(bear?[{role:'assistant' as const,content:bear.slice(0,3500)}]:[])];
  });
- const [aiChat,setAiChat]=useState<boolean|null>(null);
+ const [aiChat,setAiChat]=useState<boolean|null>(null);const aiTrouble=useRef<string|null>(null);
  const pendingAsk=()=>{const last=turns[turns.length-1];const o=last?.other;return o?.kind==='ask'&&!o.answered?{turnId:last.id,captureId:o.captureId,guess:o.guess}:null;};
  const patch=(id:number,fn:(t:Turn)=>Turn)=>setTurns(list=>list.map(t=>t.id===id?fn(t):t));
  const idsOf=(t:Turn)=>t.items.map(i=>i.taskId).filter((x):x is string=>!!x);
@@ -85,16 +85,18 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
   // Mama Bear's chat: the AI decides whether this is a chat, a question, a link or things to do.
   if(aiChat!==false){
    try{const recent=turns.flatMap(t=>t.items.map(i=>i.taskId)).filter((x):x is string=>!!x).slice(-60);
-    const r=await apiSend<{reply?:string;sorted?:Item[];changed?:Item[];fallback?:boolean;reason?:string}>('/api/bear/chat',{text:body,history:past,recent});
+    const r=await apiSend<{reply?:string;sorted?:Item[];changed?:Item[];fallback?:boolean;reason?:string;code?:string}>('/api/bear/chat',{text:body,history:past,recent});
     if(!r.fallback){for(const c of r.changed||[])setTurns(l=>l.map(x=>x.items.some(i=>i.taskId===c.taskId)?{...x,items:x.items.map(i=>i.taskId===c.taskId?{...c,already:i.already}:i)}:x));
      patch(turn.id,t=>({...t,busy:false,reply:r.reply||'',items:r.sorted||[],confirmed:true}));if(r.changed?.length)onChanged();if(r.sorted?.length)onChanged();setAiChat(true);return;}
     // Only a missing AI stops the app asking again; a one-off failure or the daily limit is tried afresh next message.
     if(r.reason==='off')setAiChat(false);
+    aiTrouble.current=r.reason==='error'?`code ${r.code||'?'}`:null;
    }catch{/* the app's own reading takes it below */}
   }
-  // Without the AI: the app's own reading.
+  // Without the AI: the app's own reading. Chatter, frustration and questions about the app are answered, never filed.
   const chat=replyKind(body);
   if(chat){patch(turn.id,t=>({...t,busy:false,other:{kind:chat}}));return;}
+  const talk=chatterReply(body);if(talk){patch(turn.id,t=>({...t,busy:false,other:{kind:'say',text:talk+(aiTrouble.current?` (Bear’s thinking had a problem: ${aiTrouble.current})`:'')}}));return;}
   try{
    const r=await apiSend<Result>('/api/bear/captures',{method:viaVoice?'voice':'text',text:body});
    const other=otherFor(r);
