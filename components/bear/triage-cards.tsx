@@ -81,7 +81,7 @@ function Question({card,onDone}:{card:TriageCardView;onDone:(change:CardChange|n
  </form>;
 }
 
-export function TriageCards({t}:{t:TriageView}){
+export function TriageCards({t,onApproved}:{t:TriageView;onApproved?:()=>void}){
  const debug=useDebug();
  const [cards,setCards]=useState<(TriageCardView&{removed?:boolean;asked?:boolean})[]>(t.cards);const [editing,setEditing]=useState(false);const [confirmed,setConfirmed]=useState(false);
  const change=(id:string,x:CardChange)=>setCards(l=>l.map(c=>c.card_id!==id?c:{...c,...(x.title?{card_headline:x.title}:{}),...(x.deadline!==undefined?{hard_deadline:x.deadline}:{}),...(x.when?{when:x.when}:{}),...(x.light?{urgency:x.light}:{}),...(x.area?{area:x.area}:{}),...(x.removed?{removed:true}:{})}));
@@ -97,7 +97,7 @@ export function TriageCards({t}:{t:TriageView}){
   {next&&!editing&&<Question key={next.card_id} card={next} onDone={x=>{if(x)change(next.card_id,x);setCards(l=>l.map(c=>c.card_id===next.card_id?{...c,asked:true}:c));}}/>}
   {drafted&&<p className="qc-next">Drafts are ready. Nothing’s been sent.</p>}
   {placed.length>0&&!confirmed&&!next&&<div className="btn-row tc-confirm">
-   <button type="button" className="btn coral sm" onClick={()=>{setConfirmed(true);setEditing(false);}}>{editing?'Done':'Looks good'}</button>
+   <button type="button" className="btn coral sm" onClick={()=>{setConfirmed(true);setEditing(false);onApproved?.();}}>{editing?'Done':'Looks good'}</button>
    {!editing&&<button type="button" className="btn quiet sm" onClick={()=>setEditing(true)}>Change something</button>}
   </div>}
   {confirmed&&<p className="qc-note" role="status">On it. I’ll remind you when each one needs you.</p>}

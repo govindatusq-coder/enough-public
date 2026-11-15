@@ -22,12 +22,20 @@ type Other={kind:'ask';captureId:string;guess:string;question:string;answered?:b
 const areaLabel:Record<AreaKey,string>={work:'Work',family:'Family',home:'Home',money:'Money',health:'Health',me:'Me'};
 const groups:{light:Light;dot:string;label:string}[]=[{light:'red',dot:'🔴',label:'Urgent'},{light:'amber',dot:'🟠',label:'Coming up'},{light:'green',dot:'🟢',label:'Can wait'}];
 const noSub=()=>()=>{};
+// One faded line for an exchange that is dealt with.
+function doneLine(t:{said:string;items:{removed?:boolean}[];triage?:{cards:unknown[]}|null;found:unknown[];reply?:string;other:{kind:string}|null;file?:boolean}){
+ const n=t.items.filter(i=>!i.removed).length+(t.triage?.cards.length||0);
+ const said=t.said.length>48?t.said.slice(0,48)+'…':t.said;
+ if(n)return `${said} · ${n===1?'1 thing':`${n} things`} sorted`;
+ if(t.found.length)return `${said} · looked up`;
+ return said;
+}
 const openPicker=()=>{(document.getElementById('qc-file') as HTMLInputElement|null)?.click();};
 // Where the person can go once they have finished telling Bear things.
 const places=[{href:'/bear/home',label:'My Bear'},{href:'/bear/ideas',label:'Bear Ideas'},{href:'/bear/wins',label:'My Wins'},{href:'/bear/me',label:'Settings'}];
 const MicIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>;
 
-type Turn={id:number;said:string;busy:boolean;reply?:string;triage?:TriageView|null;triaging?:boolean;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
+type Turn={id:number;said:string;busy:boolean;reply?:string;done?:boolean;triage?:TriageView|null;triaging?:boolean;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
 let turnSeq=0;
 const blank=(said:string):Turn=>({id:++turnSeq,said,busy:true,items:[],found:[],other:null,confirmed:false,note:null});
 
@@ -51,6 +59,9 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
   rec.current=r;setError(null);try{r.start();setListening(true);}catch{setListening(false);}
  }
  const busy=turns.some(t=>t.busy);
+ const [open,setOpen]=useState<Set<number>>(()=>new Set());
+ // After "Looks good", the list shows its confirmation for a moment, then folds away.
+ const fold=(id:number)=>{setOpen(s=>{const n=new Set(s);n.delete(id);return n;});setTimeout(()=>patch(id,t=>({...t,done:true})),1600);};
  // The recent conversation, as the AI needs it: what the person said, and what Bear said and did in reply.
  const history=()=>turns.filter(t=>!t.busy).slice(-10).flatMap(t=>{
   const bear=[t.reply,t.triage?.summary,...(t.triage?.cards||[]).map(c=>`Added: ${c.card_headline} (${c.area}, ${c.when})`),...t.items.map(i=>`${i.already?'Already on the list':'Added'}: ${i.title} (${areaLabel[i.domain]}, ${i.when})`),...t.found.map(f=>f.answer),
@@ -152,10 +163,14 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
   <div className="chat-scroll">
    {hero?.(started)}
    {started&&<div className="qc-thread" aria-live="polite">
-    {turns.map(turn=>{const placed=turn.items.filter(i=>i.taskId);const isChanging=changing===turn.id;return <div key={turn.id} className="qc-turn">
+    {turns.map(turn=>{const placed=turn.items.filter(i=>i.taskId);const isChanging=changing===turn.id;
+     // Dealt with: an earlier exchange, or a list the person approved, folds into one faded line. Tap to see it again.
+     const waiting=turn.other?.kind==='ask'&&!turn.other.answered;
+     if(!turn.busy&&!waiting&&!isChanging&&!open.has(turn.id)&&(turn.done||turn.id!==last?.id))return <button key={turn.id} type="button" className="qc-turn qc-done" onClick={()=>setOpen(s=>new Set(s).add(turn.id))} aria-label={`Show: ${doneLine(turn)}`}><span aria-hidden="true">✓</span> {doneLine(turn)}</button>;
+     return <div key={turn.id} className="qc-turn">
      <p className="qc-said">{turn.file?<><span aria-hidden="true">📎 </span><span className="sr-only">File: </span></>:null}{turn.said.length>220?turn.said.slice(0,220)+'…':turn.said}</p>
      {turn.busy&&turn.triaging&&<TriageProgress/>}
-     {turn.triage&&<TriageCards t={turn.triage}/>}
+     {turn.triage&&<TriageCards t={turn.triage} onApproved={()=>fold(turn.id)}/>}
      {turn.busy&&!turn.triaging&&<p className="qc-reply muted">{turn.file||/^https?:\/\//i.test(turn.said.trim())?'Bear’s reading the page…':/\b(search|look up|find out|google|research|when|what|how much)\b/i.test(turn.said)?'Bear’s looking into it…':'Bear’s sorting it…'}</p>}
      {turn.reply&&<p className="qc-reply qc-bear">{turn.reply}</p>}
      {turn.found.map((f,k)=><div key={k} className="qc-reply qc-found">
@@ -188,7 +203,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
       {placed.length>0&&!turn.confirmed&&(turn.items.length>1||isChanging)&&<div className="qc-confirm">
        <p className="qc-ask">{isChanging?'Change what you need above (it saves as you go), or tell me in a sentence.':'Want me to get started?'}</p>
        <div className="btn-row" style={{marginTop:6}}>
-        <button type="button" className="btn coral sm" onClick={()=>{patch(turn.id,t=>({...t,confirmed:true}));if(isChanging)setChanging(null);}}>Looks good, Bear</button>
+        <button type="button" className="btn coral sm" onClick={()=>{patch(turn.id,t=>({...t,confirmed:true}));fold(turn.id);if(isChanging)setChanging(null);}}>Looks good, Bear</button>
         {!isChanging&&<button type="button" className="btn quiet sm" onClick={()=>{setChanging(turn.id);document.getElementById('qc-text')?.focus();}}>Change something</button>}
        </div>
       </div>}

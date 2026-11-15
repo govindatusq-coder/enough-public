@@ -129,39 +129,42 @@ try{
   // On a phone whose browser cannot listen by itself, the microphone is still there and points to the keyboard's own.
   {const c2=await browser.newContext({viewport:{width:390,height:844},locale:'en-AU'});await c2.addInitScript(()=>{delete window.SpeechRecognition;delete window.webkitSpeechRecognition;});const p2=await c2.newPage();await p2.goto(base+'/bear/capture');await p2.waitForSelector('.qc-voice');await p2.click('.qc-voice');await p2.waitForSelector('.qc-hint');assert.ok((await p2.textContent('.qc-hint')).includes('microphone on your keyboard'));assert.equal(await p2.evaluate(()=>document.activeElement?.id),'qc-text','the box is ready for dictation');await c2.close();}
   await shot('60-bear-first');
-  await page.fill('#qc-text','Book the car service for next Tuesday');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-turn:last-of-type .qc-sorted .qc-card',{timeout:20000});
-  assert.ok((await page.textContent('.qc-turn:last-of-type .qc-sorted')).includes('I’ve sorted this for you'));assert.ok(/Home · Due/.test(await page.textContent('.qc-turn:last-of-type .qc-card .qc-meta')),await page.textContent('.qc-turn:last-of-type .qc-card .qc-meta'));
+  await page.fill('#qc-text','Book the car service for next Tuesday');await page.click('.qc-go[type="submit"]');await page.waitForSelector('div.qc-turn:last-of-type .qc-sorted .qc-card',{timeout:20000});
+  assert.ok((await page.textContent('div.qc-turn:last-of-type .qc-sorted')).includes('I’ve sorted this for you'));assert.ok(/Home · Due/.test(await page.textContent('div.qc-turn:last-of-type .qc-card .qc-meta')),await page.textContent('div.qc-turn:last-of-type .qc-card .qc-meta'));
   assert.match(page.url(),/\/bear\/capture$/,'stays on this screen');
   assert.equal(await page.$('button:has-text("Looks good, Bear")'),null,'one thing needs no confirmation');assert.ok(await page.$('.qc-change'),'but it can still be changed');
   await page.waitForSelector('.qc-else');assert.ok((await page.textContent('.qc-thread')).includes('Anything else?'));assert.equal(await page.getAttribute('#qc-text','placeholder'),'Anything else?');await shot('61-bear-reply');
   // Answering Bear's question is conversation, not a to-do.
   {const before=await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length);
    await page.fill('#qc-text','no');await page.click('.qc-go[type="submit"]');await page.waitForFunction(()=>/All sorted/.test(document.querySelector('.qc-thread')?.textContent||''));
-   assert.equal(await page.$('.qc-turn:last-of-type .qc-sorted'),null,'"no" is not sorted into a task');
-   assert.deepEqual(await page.$$eval('.qc-turn:last-of-type .qc-places a',e=>e.map(a=>[a.textContent,a.getAttribute('href')])),[['My Bear','/bear/home'],['Bear Ideas','/bear/ideas'],['My Wins','/bear/wins'],['Settings','/bear/me']],'when the chat ends, Bear offers the other pages');assert.equal(await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length),before,'nothing was added');
+   assert.equal(await page.$('div.qc-turn:last-of-type .qc-sorted'),null,'"no" is not sorted into a task');
+   assert.deepEqual(await page.$$eval('div.qc-turn:last-of-type .qc-places a',e=>e.map(a=>[a.textContent,a.getAttribute('href')])),[['My Bear','/bear/home'],['Bear Ideas','/bear/ideas'],['My Wins','/bear/wins'],['Settings','/bear/me']],'when the chat ends, Bear offers the other pages');assert.equal(await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length),before,'nothing was added');
    const direct=await page.evaluate(async()=>{const r=await fetch('/api/bear/captures',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'voice',text:'No thanks, that’s all'})});return r.json();});assert.equal(direct.chat,'closing','the server refuses to make it a task too');assert.ok(!direct.sorted&&!direct.auto&&!direct.capture);}
   // "Search for when X is on": the chat shows what Bear found and where, and saves nothing until "Remind me" is tapped.
   // (The search itself is a paid service that is off here, so its answer is stood in for; the accept step is real.)
   {const day=new Date(Date.now()+40*86400000).toISOString().slice(0,10);const before=await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length);
    await page.route('**/api/bear/captures',r=>r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({sorted:[],found:[{question:'Search the internet for when the soapbox race is on and remind me',answer:'The soapbox race is on that day at The Domain.',subject:'Soapbox race',date:day,dateLabel:'the day',sources:[{title:'Organiser',url:'https://www.example.org/soapbox'}]}]})}),{times:1});
-   await page.fill('#qc-text','Search the internet for when the soapbox race is on and remind me');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-turn:last-of-type .qc-found');
-   const card=await page.textContent('.qc-turn:last-of-type .qc-found');assert.ok(card.includes('I looked it up')&&card.includes('The Domain')&&card.includes('example.org')&&/check of the source/.test(card),card);
+   await page.fill('#qc-text','Search the internet for when the soapbox race is on and remind me');await page.click('.qc-go[type="submit"]');await page.waitForSelector('div.qc-turn:last-of-type .qc-found');
+   const card=await page.textContent('div.qc-turn:last-of-type .qc-found');assert.ok(card.includes('I looked it up')&&card.includes('The Domain')&&card.includes('example.org')&&/check of the source/.test(card),card);
    assert.equal(await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).length),before,'nothing is saved by a finding alone');assert.equal(await page.$('.qc-else'),null,'Bear waits for the answer to its offer');await shot('61a-bear-found');
-   await page.click('.qc-turn:last-of-type .qc-found button:has-text("Remind me")');await page.waitForFunction(()=>/Saved\./.test(document.querySelector('.qc-turn:last-of-type .qc-found')?.textContent||''));
-   assert.ok(/Soapbox race/.test(await page.textContent('.qc-turn:last-of-type .qc-found .qc-note'))&&/found online/.test(await page.textContent('.qc-turn:last-of-type .qc-found .qc-note')));assert.equal(await page.$('.qc-turn:last-of-type .qc-found button:has-text("Remind me")'),null);
+   await page.click('div.qc-turn:last-of-type .qc-found button:has-text("Remind me")');await page.waitForFunction(()=>/Saved\./.test(document.querySelector('div.qc-turn:last-of-type .qc-found')?.textContent||''));
+   assert.ok(/Soapbox race/.test(await page.textContent('div.qc-turn:last-of-type .qc-found .qc-note'))&&/found online/.test(await page.textContent('div.qc-turn:last-of-type .qc-found .qc-note')));assert.equal(await page.$('div.qc-turn:last-of-type .qc-found button:has-text("Remind me")'),null);
    assert.ok(await page.evaluate(async()=>(await (await fetch('/api/bear/everything')).text()).includes('Soapbox race')),'the reminder now exists');}
   // Several things in one breath: separated, titled, filed and grouped by traffic light, with one confirmation.
-  await page.fill('#qc-text','pay the electricity bill tomorrow, book a dentist appointment, and clean out the garage sometime');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-turn:last-of-type .qc-group.green .qc-card',{timeout:30000});
-  assert.equal(await page.$$eval('.qc-turn:last-of-type .qc-card',e=>e.length),3);
-  assert.ok(/Pay the electricity bill/.test(await page.textContent('.qc-turn:last-of-type .qc-group.red')),'the bill due tomorrow is urgent');assert.ok(/Money · Due tomorrow/.test(await page.textContent('.qc-turn:last-of-type .qc-group.red')));
-  assert.ok(/Book a dentist appointment/.test(await page.textContent('.qc-turn:last-of-type .qc-group.amber')));assert.ok(/Health · Suggested: /.test(await page.textContent('.qc-turn:last-of-type .qc-group.amber')),'a proposal is labelled as one');
-  assert.ok(/Clean out the garage/.test(await page.textContent('.qc-turn:last-of-type .qc-group.green')));assert.ok((await page.textContent('.qc-turn:last-of-type .qc-confirm')).includes('Want me to get started?'));await shot('61b-bear-sorted');
+  await page.fill('#qc-text','pay the electricity bill tomorrow, book a dentist appointment, and clean out the garage sometime');await page.click('.qc-go[type="submit"]');await page.waitForSelector('div.qc-turn:last-of-type .qc-group.green .qc-card',{timeout:30000});
+  assert.equal(await page.$$eval('div.qc-turn:last-of-type .qc-card',e=>e.length),3);
+  assert.ok(/Pay the electricity bill/.test(await page.textContent('div.qc-turn:last-of-type .qc-group.red')),'the bill due tomorrow is urgent');assert.ok(/Money · Due tomorrow/.test(await page.textContent('div.qc-turn:last-of-type .qc-group.red')));
+  assert.ok(/Book a dentist appointment/.test(await page.textContent('div.qc-turn:last-of-type .qc-group.amber')));assert.ok(/Health · Suggested: /.test(await page.textContent('div.qc-turn:last-of-type .qc-group.amber')),'a proposal is labelled as one');
+  assert.ok(/Clean out the garage/.test(await page.textContent('div.qc-turn:last-of-type .qc-group.green')));assert.ok((await page.textContent('div.qc-turn:last-of-type .qc-confirm')).includes('Want me to get started?'));await shot('61b-bear-sorted');
   // One sentence changes one thing.
-  await page.click('.qc-turn:last-of-type button:has-text("Change something")');await page.fill('#qc-text','Actually, the dentist is urgent');await page.click('.qc-go[type="submit"]');
-  await page.waitForFunction(()=>/dentist/i.test(document.querySelector('.qc-turn:nth-last-of-type(2) .qc-group.red')?.textContent||''));assert.ok(/Clean out the garage/.test(await page.textContent('.qc-turn:nth-last-of-type(2) .qc-group.green')),'the rest is untouched');
-  assert.ok(/^Done\. /.test(await page.textContent('.qc-turn:last-of-type .qc-reply')),'Bear answers the correction in the conversation');await shot('61c-bear-changed');
+  await page.click('div.qc-turn:last-of-type button:has-text("Change something")');await page.fill('#qc-text','Actually, the dentist is urgent');await page.click('.qc-go[type="submit"]');
+  await page.waitForFunction(()=>/^Done\. .*dentist.*urgent/i.test(document.querySelector('div.qc-turn:last-of-type .qc-reply')?.textContent||''));
+  // The earlier list has folded into one faded line; opening it shows the change and that nothing else moved.
+  assert.ok(await page.$('.qc-done:has-text("3 things sorted")'),'dealt-with exchanges fold away');await page.click('.qc-done:has-text("3 things sorted")');
+  await page.waitForFunction(()=>/dentist/i.test(document.querySelector('div.qc-turn:nth-last-of-type(2) .qc-group.red')?.textContent||''));assert.ok(/Clean out the garage/.test(await page.textContent('div.qc-turn:nth-last-of-type(2) .qc-group.green')),'the rest is untouched');
+  assert.ok(/^Done\. /.test(await page.textContent('div.qc-turn:last-of-type .qc-reply')),'Bear answers the correction in the conversation');await shot('61c-bear-changed');
   await page.click('button:has-text("Looks good, Bear")');await page.waitForSelector('.qc-else');
-  await page.fill('#qc-text','buy milk, eggs and bread');await page.click('.qc-go[type="submit"]');await page.waitForFunction(()=>/milk/i.test([...document.querySelectorAll('.qc-said')].pop()?.textContent||''));await page.waitForSelector('.qc-turn:last-of-type .qc-sorted .qc-card');assert.equal(await page.$$eval('.qc-turn:last-of-type .qc-card',e=>e.length),1,'a shopping list stays one thing');
+  await page.fill('#qc-text','buy milk, eggs and bread');await page.click('.qc-go[type="submit"]');await page.waitForFunction(()=>/milk/i.test([...document.querySelectorAll('.qc-said')].pop()?.textContent||''));await page.waitForSelector('div.qc-turn:last-of-type .qc-sorted .qc-card');assert.equal(await page.$$eval('div.qc-turn:last-of-type .qc-card',e=>e.length),1,'a shopping list stays one thing');
   // A photo of a page with several events, given in the chat: each event comes back as its own dated item.
   // (Reading a picture needs the AI service, which is off here, so its answer is stood in for; the chat's handling is real.)
   {await page.route('**/api/bear/captures',r=>r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({page:{events:4,undated:1},sorted:[
@@ -169,28 +172,28 @@ try{
      {taskId:null,title:'Return the permission form for year 3 excursion to the zoo',domain:'family',light:'amber',reason:'',when:'Due Wednesday',nextAction:null,already:false,check:null,error:null},
      {taskId:null,title:'Uniform shop sale',domain:'family',light:'green',reason:'',when:'No date',nextAction:null,already:false,check:null,error:null}]})}),{times:1});
    await page.setInputFiles('#qc-file',{name:'term-calendar.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')});
-   await page.waitForSelector('.qc-turn:last-of-type .qc-sorted');const txt=await page.textContent('.qc-turn:last-of-type');
-   assert.ok(txt.includes('term-calendar.png'),'the file shows in the conversation');assert.ok(txt.includes('I found 4 things on that page'));assert.equal(await page.$$eval('.qc-turn:last-of-type .qc-card',e=>e.length),3);
+   await page.waitForSelector('div.qc-turn:last-of-type .qc-sorted');const txt=await page.textContent('div.qc-turn:last-of-type');
+   assert.ok(txt.includes('term-calendar.png'),'the file shows in the conversation');assert.ok(txt.includes('I found 4 things on that page'));assert.equal(await page.$$eval('div.qc-turn:last-of-type .qc-card',e=>e.length),3);
    assert.ok(/1 already past/.test(txt)&&/no date on the page, so I haven’t guessed one/.test(txt),txt);await shot('61e-bear-page');}
   // A link in the chat: Bear reads the page behind it. A page it cannot open is said plainly, with what to do instead.
   {await page.route('**/api/bear/captures',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({say:'I couldn’t open that page. It may need a login. Save it as a PDF, or add screenshots of it, and I’ll read those.'})}),{times:1});
    await page.fill('#qc-text','https://portal.example.edu.au/parents/term-4');await page.click('.qc-go[type="submit"]');await page.waitForFunction(()=>/couldn’t open that page/.test([...document.querySelectorAll('.qc-turn')].pop()?.textContent||''));
-   assert.equal(await page.$('.qc-turn:last-of-type .qc-sorted'),null,'a link is never filed as a to-do called its address');}
+   assert.equal(await page.$('div.qc-turn:last-of-type .qc-sorted'),null,'a link is never filed as a to-do called its address');}
   // Several screenshots picked at once go up together, as one page.
   {let parts=0;await page.route('**/api/bear/captures',async r=>{parts=(r.request().postData()||'').split('name="file"').length-1;await r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({page:{events:2,undated:0},sorted:[{taskId:null,title:'Swimming carnival',domain:'family',light:'amber',reason:'',when:'Due Thursday',nextAction:null,already:false,check:null,error:null},{taskId:null,title:'Book fair',domain:'family',light:'green',reason:'',when:'Due 1 Dec',nextAction:null,already:false,check:null,error:null}]})});},{times:1});
    const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64');
    await page.setInputFiles('#qc-file',[{name:'a.png',mimeType:'image/png',buffer:png},{name:'b.png',mimeType:'image/png',buffer:png},{name:'c.png',mimeType:'image/png',buffer:png}]);
-   await page.waitForSelector('.qc-turn:last-of-type .qc-sorted');assert.equal(parts,3,'all three pictures went up in one go');assert.ok((await page.textContent('.qc-turn:last-of-type')).includes('3 pictures'));}
+   await page.waitForSelector('div.qc-turn:last-of-type .qc-sorted');assert.equal(parts,3,'all three pictures went up in one go');assert.ok((await page.textContent('div.qc-turn:last-of-type')).includes('3 pictures'));}
   // A picture Bear cannot make sense of: it asks ONE question, and the answer becomes the task (with a date if one is given).
   {const cap=await page.evaluate(async()=>{const r=await fetch('/api/bear/captures',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'text',text:'renew the library card'})});return (await r.json()).capture?.id;});assert.ok(cap,'a capture to stand for the picture');
    await page.route('**/api/bear/captures',r=>r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({ask:{captureId:cap,guess:'Swimming lessons',question:'I think this is about “Swimming lessons”. What do you need to do, and by when?'}})}),{times:1});
    const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64');
-   await page.setInputFiles('#qc-file',{name:'blurry.png',mimeType:'image/png',buffer:png});await page.waitForSelector('.qc-turn:last-of-type .qc-question');
-   assert.ok((await page.textContent('.qc-turn:last-of-type .qc-question')).includes('What do you need to do, and by when?'));assert.equal(await page.$('.qc-else'),null,'Bear waits for the answer');
+   await page.setInputFiles('#qc-file',{name:'blurry.png',mimeType:'image/png',buffer:png});await page.waitForSelector('div.qc-turn:last-of-type .qc-question');
+   assert.ok((await page.textContent('div.qc-turn:last-of-type .qc-question')).includes('What do you need to do, and by when?'));assert.equal(await page.$('.qc-else'),null,'Bear waits for the answer');
    assert.match(await page.getAttribute('#qc-text','placeholder'),/Pay the \$25 by Friday/);await shot('61f-bear-asks');
-   await page.fill('#qc-text','Book swimming lessons for Ava by Friday');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-turn:last-of-type .qc-sorted .qc-card');
-   const card=await page.textContent('.qc-turn:last-of-type .qc-card');assert.ok(/Book swimming lessons for Ava/.test(card)&&/Due /.test(card),card);
-   const n=await page.$$eval('.qc-question',e=>e.length);await page.fill('#qc-text','pick up the dry cleaning');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-turn:last-of-type .qc-sorted');
+   await page.fill('#qc-text','Book swimming lessons for Ava by Friday');await page.click('.qc-go[type="submit"]');await page.waitForSelector('div.qc-turn:last-of-type .qc-sorted .qc-card');
+   const card=await page.textContent('div.qc-turn:last-of-type .qc-card');assert.ok(/Book swimming lessons for Ava/.test(card)&&/Due /.test(card),card);
+   const n=await page.$$eval('.qc-question',e=>e.length);await page.fill('#qc-text','pick up the dry cleaning');await page.click('.qc-go[type="submit"]');await page.waitForSelector('div.qc-turn:last-of-type .qc-sorted');
    assert.equal(await page.$$eval('.qc-question',e=>e.length),n,'only one question: the next message is an ordinary one');}
   // With the AI connected, small talk is answered as small talk: a reply, no task card; and a correction goes along with the
   // conversation. (The AI is stood in for here, in a fresh page, since this test server has no AI.)
@@ -200,8 +203,8 @@ try{
    await p3.goto(base+'/bear/capture');await p3.waitForSelector('#qc-text');
    await p3.fill('#qc-text','hey bear how are you going');await p3.click('.qc-go[type="submit"]');await p3.waitForFunction(()=>/thanks for asking/.test([...document.querySelectorAll('.qc-turn')].pop()?.textContent||''));
    assert.equal(await p3.$('.qc-card'),null,'no task card for a chat');await p3.screenshot({path:resolve(results,'61g-bear-smalltalk.png'),fullPage:true});
-   await p3.fill('#qc-text','book the car service for Tuesday');await p3.click('.qc-go[type="submit"]');await p3.waitForSelector('.qc-turn:last-of-type .qc-card');
-   assert.ok((await p3.textContent('.qc-turn:last-of-type')).includes('Done. Booked in'));assert.equal(sent[1].history.length,2,'the earlier exchange goes with the next message');assert.equal(sent[1].history[1].role,'assistant');
+   await p3.fill('#qc-text','book the car service for Tuesday');await p3.click('.qc-go[type="submit"]');await p3.waitForSelector('div.qc-turn:last-of-type .qc-card');
+   assert.ok((await p3.textContent('div.qc-turn:last-of-type')).includes('Done. Booked in'));assert.equal(sent[1].history.length,2,'the earlier exchange goes with the next message');assert.equal(sent[1].history[1].role,'assistant');
    await c3.close();}
   // Triage of a photo: the picture goes as it is, with today and the family; the answer comes back as ready-to-use cards.
   // (Claude is stood in for, in a fresh page; ?debug=1 shows the AI Reasoning drawer, which parents never see.)
@@ -234,17 +237,17 @@ try{
   // Change something: every card can be renamed, re-dated, recoloured, moved or removed, and anything dated can go in the calendar.
   {const c5=await browser.newContext({viewport:{width:390,height:844},locale:'en-AU',timezoneId:'Australia/Sydney'});const p5=await c5.newPage();
    await p5.goto(base+'/bear/capture');await p5.waitForSelector('#qc-text');
-   await p5.fill('#qc-text','renew the passport by 20 December and tidy the shed');await p5.click('.qc-go[type="submit"]');await p5.waitForSelector('.qc-turn:last-of-type .qc-confirm');
-   assert.equal(await p5.$$eval('.qc-turn:last-of-type a:has-text("Add to calendar")',e=>e.length),1,'the dated one can go in the calendar');
-   assert.match(await p5.getAttribute('.qc-turn:last-of-type a:has-text("Add to calendar")','href'),/^data:text\/calendar.*DTSTART%3BVALUE%3DDATE%3A20261220/);
-   await p5.click('.qc-turn:last-of-type button:has-text("Change something")');await p5.waitForSelector('.ce');assert.equal(await p5.$$eval('.ce',e=>e.length),2,'every card can be changed');
+   await p5.fill('#qc-text','renew the passport by 20 December and tidy the shed');await p5.click('.qc-go[type="submit"]');await p5.waitForSelector('div.qc-turn:last-of-type .qc-confirm');
+   assert.equal(await p5.$$eval('div.qc-turn:last-of-type a:has-text("Add to calendar")',e=>e.length),1,'the dated one can go in the calendar');
+   assert.match(await p5.getAttribute('div.qc-turn:last-of-type a:has-text("Add to calendar")','href'),/^data:text\/calendar.*DTSTART%3BVALUE%3DDATE%3A20261220/);
+   await p5.click('div.qc-turn:last-of-type button:has-text("Change something")');await p5.waitForSelector('.ce');assert.equal(await p5.$$eval('.ce',e=>e.length),2,'every card can be changed');
    const passport=p5.locator('.qc-card',{hasText:'passport'});
    await passport.locator('.ce-field input').first().fill('Renew Ava’s passport');await passport.locator('input[type="date"]').fill('2026-12-18');await passport.locator('button:has-text("Save")').click();
-   await p5.waitForFunction(()=>/Renew Ava’s passport/.test(document.querySelector('.qc-turn:last-of-type')?.textContent||''));
-   await passport.locator('button:has-text("Urgent")').click();await p5.waitForFunction(()=>/Renew Ava/.test(document.querySelector('.qc-turn:last-of-type .qc-group.red')?.textContent||''));
-   const shed=p5.locator('.qc-card',{hasText:'shed'});await shed.locator('select').selectOption('me');await shed.locator('button:has-text("Remove")').click();await p5.waitForSelector('.qc-turn:last-of-type .qc-removed');
+   await p5.waitForFunction(()=>/Renew Ava’s passport/.test(document.querySelector('div.qc-turn:last-of-type')?.textContent||''));
+   await passport.locator('button:has-text("Urgent")').click();await p5.waitForFunction(()=>/Renew Ava/.test(document.querySelector('div.qc-turn:last-of-type .qc-group.red')?.textContent||''));
+   const shed=p5.locator('.qc-card',{hasText:'shed'});await shed.locator('select').selectOption('me');await shed.locator('button:has-text("Remove")').click();await p5.waitForSelector('div.qc-turn:last-of-type .qc-removed');
    const all=await p5.evaluate(async()=>await (await fetch('/api/bear/everything')).text());assert.ok(all.includes('Renew Ava’s passport')&&!all.includes('Tidy the shed'),'the changes are saved, and the removed one is gone');
-   await p5.click('.qc-turn:last-of-type button:has-text("Looks good, Bear")');await p5.waitForSelector('.qc-turn:last-of-type .qc-note');
+   await p5.click('div.qc-turn:last-of-type button:has-text("Looks good, Bear")');await p5.waitForSelector('div.qc-turn:last-of-type .qc-note');
    await p5.screenshot({path:resolve(results,'61j-bear-edit.png'),fullPage:true});await c5.close();}
   // It is a chat: earlier turns are still there, the newest is in view, and the box has not moved off the bottom.
   await page.waitForTimeout(900);
