@@ -192,6 +192,17 @@ try{
    const card=await page.textContent('.qc-turn:last-of-type .qc-card');assert.ok(/Book swimming lessons for Ava/.test(card)&&/Due /.test(card),card);
    const n=await page.$$eval('.qc-question',e=>e.length);await page.fill('#qc-text','pick up the dry cleaning');await page.click('.qc-go[type="submit"]');await page.waitForSelector('.qc-turn:last-of-type .qc-sorted');
    assert.equal(await page.$$eval('.qc-question',e=>e.length),n,'only one question: the next message is an ordinary one');}
+  // With the AI connected, small talk is answered as small talk: a reply, no task card; and a correction goes along with the
+  // conversation. (The AI is stood in for here, in a fresh page, since this test server has no AI.)
+  {const c3=await browser.newContext({viewport:{width:390,height:844},locale:'en-AU'});const p3=await c3.newPage();const sent=[];
+   await p3.route('**/api/bear/chat',async r=>{const b=JSON.parse(r.request().postData()||'{}');sent.push(b);const n=sent.length;
+    await r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(n===1?{reply:'I’m good, thanks for asking! What’s on your plate today?',sorted:[],changed:[]}:{reply:'Done. Booked in as a to-do.',sorted:[{taskId:null,title:'Book the car service',domain:'home',light:'amber',reason:'',when:'Due Tuesday',nextAction:null,already:false,check:null,error:null}],changed:[]})});});
+   await p3.goto(base+'/bear/capture');await p3.waitForSelector('#qc-text');
+   await p3.fill('#qc-text','hey bear how are you going');await p3.click('.qc-go[type="submit"]');await p3.waitForFunction(()=>/thanks for asking/.test([...document.querySelectorAll('.qc-turn')].pop()?.textContent||''));
+   assert.equal(await p3.$('.qc-card'),null,'no task card for a chat');await p3.screenshot({path:resolve(results,'61g-bear-smalltalk.png'),fullPage:true});
+   await p3.fill('#qc-text','book the car service for Tuesday');await p3.click('.qc-go[type="submit"]');await p3.waitForSelector('.qc-turn:last-of-type .qc-card');
+   assert.ok((await p3.textContent('.qc-turn:last-of-type')).includes('Done. Booked in'));assert.equal(sent[1].history.length,2,'the earlier exchange goes with the next message');assert.equal(sent[1].history[1].role,'assistant');
+   await c3.close();}
   // It is a chat: earlier turns are still there, the newest is in view, and the box has not moved off the bottom.
   await page.waitForTimeout(900);
   {const c=await page.evaluate(()=>{const box=document.querySelector('.qc-pill').getBoundingClientRect();const lastTurn=[...document.querySelectorAll('.qc-turn')].pop().getBoundingClientRect();return {turns:document.querySelectorAll('.qc-turn').length,boxBottom:Math.round(innerHeight-box.bottom),boxTop:box.top,lastVisible:lastTurn.bottom<=box.top+2&&lastTurn.bottom>0,pageScroll:document.scrollingElement.scrollHeight-innerHeight};});

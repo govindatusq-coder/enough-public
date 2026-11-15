@@ -23,7 +23,7 @@ const openPicker=()=>{(document.getElementById('qc-file') as HTMLInputElement|nu
 const places=[{href:'/bear/home',label:'My Bear'},{href:'/bear/ideas',label:'Bear Ideas'},{href:'/bear/wins',label:'My Wins'},{href:'/bear/me',label:'Settings'}];
 const MicIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>;
 
-type Turn={id:number;said:string;busy:boolean;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
+type Turn={id:number;said:string;busy:boolean;reply?:string;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
 let turnSeq=0;
 const blank=(said:string):Turn=>({id:++turnSeq,said,busy:true,items:[],found:[],other:null,confirmed:false,note:null});
 
@@ -47,6 +47,13 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
   rec.current=r;setError(null);try{r.start();setListening(true);}catch{setListening(false);}
  }
  const busy=turns.some(t=>t.busy);
+ // The recent conversation, as the AI needs it: what the person said, and what Bear said and did in reply.
+ const history=()=>turns.filter(t=>!t.busy).slice(-10).flatMap(t=>{
+  const bear=[t.reply,...t.items.map(i=>`${i.already?'Already on the list':'Added'}: ${i.title} (${areaLabel[i.domain]}, ${i.when})`),...t.found.map(f=>f.answer),
+   t.other?.kind==='say'?t.other.text:t.other?.kind==='ask'?t.other.question:t.other?.kind==='closing'?'All sorted. I’m here whenever you need me.':''].filter(Boolean).join('\n');
+  return [{role:'user' as const,content:t.file?`(gave Bear a picture: ${t.said})`:t.said.slice(0,3500)},...(bear?[{role:'assistant' as const,content:bear.slice(0,3500)}]:[])];
+ });
+ const [aiChat,setAiChat]=useState<boolean|null>(null);
  const pendingAsk=()=>{const last=turns[turns.length-1];const o=last?.other;return o?.kind==='ask'&&!o.answered?{turnId:last.id,captureId:o.captureId,guess:o.guess}:null;};
  const patch=(id:number,fn:(t:Turn)=>Turn)=>setTurns(list=>list.map(t=>t.id===id?fn(t):t));
  const idsOf=(t:Turn)=>t.items.map(i=>i.taskId).filter((x):x is string=>!!x);
@@ -74,8 +81,19 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
    }catch(e){setTurns(l=>l.filter(t=>t.id!==turn.id));setText(body);setError((e as ApiError).message||'That didn’t save. Try again.');}
    return;
   }
-  setChanging(null);
-  const chat=replyKind(body);const turn=blank(body);setTurns(l=>[...l,turn]);
+  setChanging(null);const turn=blank(body);const past=history();setTurns(l=>[...l,turn]);
+  // Mama Bear's chat: the AI decides whether this is a chat, a question, a link or things to do.
+  if(aiChat!==false){
+   try{const recent=turns.flatMap(t=>t.items.map(i=>i.taskId)).filter((x):x is string=>!!x).slice(-60);
+    const r=await apiSend<{reply?:string;sorted?:Item[];changed?:Item[];fallback?:boolean;reason?:string}>('/api/bear/chat',{text:body,history:past,recent});
+    if(!r.fallback){for(const c of r.changed||[])setTurns(l=>l.map(x=>x.items.some(i=>i.taskId===c.taskId)?{...x,items:x.items.map(i=>i.taskId===c.taskId?{...c,already:i.already}:i)}:x));
+     patch(turn.id,t=>({...t,busy:false,reply:r.reply||'',items:r.sorted||[],confirmed:true}));if(r.changed?.length)onChanged();if(r.sorted?.length)onChanged();setAiChat(true);return;}
+    // Only a missing AI stops the app asking again; a one-off failure or the daily limit is tried afresh next message.
+    if(r.reason==='off')setAiChat(false);
+   }catch{/* the app's own reading takes it below */}
+  }
+  // Without the AI: the app's own reading.
+  const chat=replyKind(body);
   if(chat){patch(turn.id,t=>({...t,busy:false,other:{kind:chat}}));return;}
   try{
    const r=await apiSend<Result>('/api/bear/captures',{method:viaVoice?'voice':'text',text:body});
@@ -107,7 +125,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
  }
  const started=turns.length>0;const last=turns[turns.length-1];
  // Bear asks "Anything else?" once the latest turn needs nothing more from the person.
- const settled=(t:Turn)=>!t.busy&&!(t.other?.kind==='ask'&&!t.other.answered)&&t.other?.kind!=='closing'&&t.other?.kind!=='more'&&(t.confirmed||t.items.length===1||!t.items.some(i=>i.taskId))&&t.found.every(f=>!f.date||f.remindedAs||t.items.length>0);
+ const settled=(t:Turn)=>!t.busy&&!t.reply&&!(t.other?.kind==='ask'&&!t.other.answered)&&t.other?.kind!=='closing'&&t.other?.kind!=='more'&&(t.confirmed||t.items.length===1||!t.items.some(i=>i.taskId))&&t.found.every(f=>!f.date||f.remindedAs||t.items.length>0);
  return <div className={`chat${started?' started':''}`}>
   <div className="chat-scroll">
    {hero?.(started)}
@@ -115,6 +133,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
     {turns.map(turn=>{const placed=turn.items.filter(i=>i.taskId);const isChanging=changing===turn.id;return <div key={turn.id} className="qc-turn">
      <p className="qc-said">{turn.file?<><span aria-hidden="true">📎 </span><span className="sr-only">File: </span></>:null}{turn.said.length>220?turn.said.slice(0,220)+'…':turn.said}</p>
      {turn.busy&&<p className="qc-reply muted">{turn.file||/^https?:\/\//i.test(turn.said.trim())?'Bear’s reading the page…':/\b(search|look up|find out|google|research|when|what|how much)\b/i.test(turn.said)?'Bear’s looking into it…':'Bear’s sorting it…'}</p>}
+     {turn.reply&&<p className="qc-reply qc-bear">{turn.reply}</p>}
      {turn.found.map((f,k)=><div key={k} className="qc-reply qc-found">
       <p className="qc-head">I looked it up.</p>
       <p className="qc-answer">{f.answer}</p>
@@ -124,7 +143,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
       {f.remindedAs&&<p className="qc-note" role="status">Saved. {f.remindedAs.taskId?<Link href={`/bear/tasks/${f.remindedAs.taskId}`} style={{textDecoration:'underline'}}>{f.remindedAs.title}</Link>:f.remindedAs.title} · {f.remindedAs.when}. I’ll remind you as it gets close.</p>}
      </div>)}
      {turn.items.length>0&&<div className="qc-reply qc-sorted">
-      <p className="qc-head">{turn.page?`I found ${turn.page.events} things on that page.`:turn.items.length===1?'I’ve sorted this for you.':'I’ve sorted these for you.'}</p>
+      {!turn.reply&&<p className="qc-head">{turn.page?`I found ${turn.page.events} things on that page.`:turn.items.length===1?'I’ve sorted this for you.':'I’ve sorted these for you.'}</p>}
       {turn.page&&turn.page.events>turn.items.length&&<p className="qc-next">{turn.page.events-turn.items.length} already past, so I left {turn.page.events-turn.items.length===1?'it':'them'} out.</p>}
       {turn.page&&turn.page.undated>0&&<p className="qc-next">{turn.page.undated===1?'One has':`${turn.page.undated} have`} no date on the page, so I haven’t guessed one.</p>}
       {groups.map(g=>{const list=turn.items.filter(i=>i.light===g.light);if(!list.length)return null;
@@ -156,6 +175,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
      </div>}
      {turn.other?.kind==='ask'&&<p className="qc-reply qc-question">{turn.other.question}</p>}
      {turn.other?.kind==='say'&&<p className="qc-reply">{turn.other.text}</p>}
+     {turn.reply&&replyKind(turn.said)==='closing'&&<nav className="qc-places" aria-label="Where to next">{places.map(p=><Link key={p.href} href={p.href} className="chip sm">{p.label}</Link>)}</nav>}
      {turn.other?.kind==='closing'&&<div className="qc-reply qc-closing">
       <p style={{margin:0}}>All sorted. I’m here whenever you need me.</p>
       <nav className="qc-places" aria-label="Where to next">{places.map(p=><Link key={p.href} href={p.href} className="chip sm">{p.label}</Link>)}</nav>
