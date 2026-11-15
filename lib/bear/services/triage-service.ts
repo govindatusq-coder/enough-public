@@ -4,11 +4,22 @@ import type {AIInference,AreaKey} from '../domain/types.ts';
 import {stamp,type BearStore} from '../store/store.ts';
 import {ensureProfile} from './profile.ts';
 import {classify,lightFor,suggestStart,type Light} from './sorter.ts';
-import {placeSorted,type SortedItem} from './sort-service.ts';
+import {lookUp,placeSorted,type SortedItem} from './sort-service.ts';
+import {updateTask} from './task-edit.ts';
+import {formatAU} from '../domain/dates.ts';
+import type {Researcher} from './lookup.ts';
+
+// A question Bear can try to answer from the web: about the world (when, where, how much, contact details), not about the
+// family's own plans or people.
+export function webAnswerable(q:string,names:string[]=[]):boolean{
+ if(names.some(n=>n&&new RegExp(`\\b${n.replace(/[^\w]/g,'')}\\b`,'i').test(q)))return false;
+ if(/\b(you|your|yours|who (?:is|will|should)|which of|how many (?:adults|people|of you|children)|anyone|allerg|medical|sign|consent|permission|prefer|want|would)\b/i.test(q))return false;
+ return /\b(when|what time|what date|which day|where|address|venue|location|how much|cost|price|fee|email|phone|contact|website|link|open|close|start|finish)\b/i.test(q);
+}
 import {anchorsFor,checkTriage,cleanEmailInput,triageJsonSchema,triageSystemPrompt,type CheckedCard,type FamilyMember} from './triage-core.ts';
 
 export interface TriageInput{images:{mime:string;bytes:Uint8Array}[];documents:{mime:string;bytes:Uint8Array}[];text:string|null}
-export interface TriageCardView{linkedFrom?:string|null;card_id:string;family_member:string|null;action_type:string;urgency:Light;hard_deadline:string|null;card_headline:string;ai_work_completed:string;execution_payload:CheckedCard['execution_payload'];confidence_score:number;missing_blocker:string|null;taskId:string|null;area:AreaKey;when:string;already:boolean}
+export interface TriageCardView{lookedUp?:{question:string;answer:string;source:{title:string;url:string}}|null;linkedFrom?:string|null;card_id:string;family_member:string|null;action_type:string;urgency:Light;hard_deadline:string|null;card_headline:string;ai_work_completed:string;execution_payload:CheckedCard['execution_payload'];confidence_score:number;missing_blocker:string|null;taskId:string|null;area:AreaKey;when:string;already:boolean}
 export interface TriageResult{reasoning:string;summary:string;cards:TriageCardView[]}
 export class TriageError extends Error{readonly code:string;readonly status:number;constructor(message:string,code:string,status=502){super(message);this.code=code;this.status=status;}}
 export const DAILY_TRIAGE=40;
@@ -18,7 +29,7 @@ export async function familyOf(store:BearStore):Promise<{family:FamilyMember[];p
  const fam:FamilyMember[]=p.family?.length?p.family:(p.people||[]).filter(x=>x.name&&(x.role==='child'||x.role==='partner')).map(x=>({name:x.name,relation:x.role==='partner'?'partner' as const:'child' as const,age:null,yearLevel:null,school:null,allergies:null,notes:null}));
  return {family:fam,parentName:(p.name||'').split(/\s+/)[0]||'',timeZone:p.lifeRhythm.timezone||'Australia/Sydney'};
 }
-export async function triage(store:BearStore,provider:StructuredModelProvider|null,input:TriageInput,now=new Date()):Promise<TriageResult>{
+export async function triage(store:BearStore,provider:StructuredModelProvider|null,input:TriageInput,now=new Date(),researcher:Researcher|null=null):Promise<TriageResult>{
  if(!provider)throw new TriageError('Bear’s reading service isn’t connected (no AI key is set), so it can’t read photos, PDFs or emails yet.','missing_key',503);
  if(!input.images.length&&!input.documents.length&&!input.text?.trim())throw new TriageError('There was nothing to read.','empty',400);
  const since=now.getTime()-24*3600000;
@@ -35,6 +46,22 @@ export async function triage(store:BearStore,provider:StructuredModelProvider|nu
   if(!checked.ok)throw new TriageError('Bear read it but its answer didn’t hold together. Try again, or send a clearer picture.','invalid_output',502);
   const cards:TriageCardView[]=[];
   for(const c of checked.cards)cards.push(await placeCard(store,c,a.isoDate,family,now));
+  // Before asking the parent, Bear tries to answer its own questions about the world (an event's date, a venue, a contact,
+  // a price) from the web. Questions only the family can answer are left for them. At most three lookups per reading.
+  let looked=0;
+  for(const c of cards){
+   if(!c.missing_blocker||!c.taskId||looked>=3||!webAnswerable(c.missing_blocker,family.map(f=>f.name)))continue;looked++;
+   const q=`${c.missing_blocker} (about: ${c.card_headline}. Context: ${checked.output.source_summary})`;
+   const r=await lookUp(store,researcher,q,a.isoDate,now).catch(()=>({found:null,why:'nothing' as const}));
+   if(!r.found)continue;
+   const src=r.found.sources[0];const task=await store.get('tasks',c.taskId);if(!task)continue;
+   const useDate=!!r.found.date&&!c.hard_deadline&&/\b(when|date|day|time)\b/i.test(c.missing_blocker);
+   const notes=[task.notes||'',`${c.missing_blocker} ${r.found.answer} (found online: ${src.url})`].filter(Boolean).join('\n').slice(0,1000);
+   const next=await updateTask(store,c.taskId,{notes,...(useDate?{dueAt:r.found.date}:{})});
+   if(useDate)await store.update('tasks',c.taskId,{sorted:{...(next.sorted||{originalInput:c.card_headline,via:'text' as const,secondaryDomains:[],urgency:null,window:null,windowBy:null,suggestedStart:null,nextAction:null,reason:''}),deadlineSource:'web'}}).catch(()=>null);
+   c.lookedUp={question:c.missing_blocker,answer:r.found.answer,source:src};c.missing_blocker=null;
+   if(useDate){c.hard_deadline=r.found.date;c.when=`${formatAU(r.found.date!,'short')} · found online`;}
+  }
   return {reasoning:r.thinking||'',summary:checked.output.source_summary,cards};
  }catch(e){
   if(e instanceof TriageError)throw e;

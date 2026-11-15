@@ -234,6 +234,18 @@ try{
     else{await p4.click('.tc-debug >> nth=0');assert.ok((await p4.textContent('.tc-debug')).includes('Club flyer. Presentation night'));await p4.screenshot({path:resolve(results,'61i-bear-triage-debug.png'),fullPage:true});}
    }
    await c4.close();}
+  // Twelve pictures at once: read five at a time, each batch told what is already listed, cards building up as they come.
+  {const c6=await browser.newContext({viewport:{width:390,height:844},locale:'en-AU',timezoneId:'Australia/Sydney'});const p6=await c6.newPage();const reqs=[];
+   await p6.route('**/api/bear/triage',async r=>{const b=JSON.parse(r.request().postData()||'{}');reqs.push(b);const n=reqs.length;await new Promise(x=>setTimeout(x,400));
+    await r.fulfill({status:201,contentType:'application/json',body:JSON.stringify({reasoning:'',summary:'Term calendar.',cards:[{card_id:'k'+n,family_member:null,action_type:'task',urgency:'amber',hard_deadline:null,card_headline:'Thing from batch '+n,ai_work_completed:'',execution_payload:{email:null,sms:null,calendar_hold:null,shopping_list:null,steps:null},confidence_score:0.8,missing_blocker:null,taskId:'d'+n+'d1d1d1-d1d1-4d1d-8d1d-d1d1d1d1d1d1'.slice(0,36-String(n).length-1).padEnd(36,'1'),area:'family',when:'No date',already:false}]})});});
+   await p6.goto(base+'/bear/capture');await p6.waitForSelector('#qc-file',{state:'attached'});
+   const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64');
+   await p6.setInputFiles('#qc-file',Array.from({length:12},(_,i)=>({name:`page${i+1}.png`,mimeType:'image/png',buffer:png})));
+   await p6.waitForSelector('.qc-batch');assert.match(await p6.textContent('.qc-batch'),/Reading pictures \d+–\d+ of 12/);
+   await p6.waitForFunction(()=>document.querySelectorAll('.tc .qc-card').length===3&&!document.querySelector('.qc-batch'),null,{timeout:20000});
+   assert.deepEqual(reqs.map(r=>r.inputs.filter(i=>i.kind==='image').length),[5,5,2],'five at a time');
+   assert.ok(!reqs[0].inputs.some(i=>i.kind==='text'),'the first batch has nothing to be told');assert.match(reqs[1].inputs.find(i=>i.kind==='text').data,/Already listed: Thing from batch 1/);assert.match(reqs[2].inputs.find(i=>i.kind==='text').data,/Thing from batch 1; Thing from batch 2/);
+   assert.ok((await p6.textContent('.tc')).includes('I found 3 things'));await c6.close();}
   // Change something: every card can be renamed, re-dated, recoloured, moved or removed, and anything dated can go in the calendar.
   {const c5=await browser.newContext({viewport:{width:390,height:844},locale:'en-AU',timezoneId:'Australia/Sydney'});const p5=await c5.newPage();
    await p5.goto(base+'/bear/capture');await p5.waitForSelector('#qc-text');

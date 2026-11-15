@@ -22,6 +22,7 @@ type Other={kind:'ask';captureId:string;guess:string;question:string;answered?:b
 const areaLabel:Record<AreaKey,string>={work:'Work',family:'Family',home:'Home',money:'Money',health:'Health',me:'Me'};
 const groups:{light:Light;dot:string;label:string}[]=[{light:'red',dot:'🔴',label:'Urgent'},{light:'amber',dot:'🟠',label:'Coming up'},{light:'green',dot:'🟢',label:'Can wait'}];
 const noSub=()=>()=>{};
+const MAX_PICTURES=20,TRIAGE_BATCH=5;
 // One faded line for an exchange that is dealt with.
 function doneLine(t:{said:string;items:{removed?:boolean}[];triage?:{cards:unknown[]}|null;found:unknown[];reply?:string;other:{kind:string}|null;file?:boolean}){
  const n=t.items.filter(i=>!i.removed).length+(t.triage?.cards.length||0);
@@ -35,7 +36,7 @@ const openPicker=()=>{(document.getElementById('qc-file') as HTMLInputElement|nu
 const places=[{href:'/bear/home',label:'My Bear'},{href:'/bear/ideas',label:'Bear Ideas'},{href:'/bear/wins',label:'My Wins'},{href:'/bear/me',label:'Settings'}];
 const MicIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>;
 
-type Turn={id:number;said:string;busy:boolean;reply?:string;done?:boolean;triage?:TriageView|null;triaging?:boolean;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
+type Turn={id:number;said:string;busy:boolean;batch?:string|null;reply?:string;done?:boolean;triage?:TriageView|null;triaging?:boolean;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
 let turnSeq=0;
 const blank=(said:string):Turn=>({id:++turnSeq,said,busy:true,items:[],found:[],other:null,confirmed:false,note:null});
 
@@ -126,16 +127,36 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
  const family=useRef<FamilyMember[]|null>(null);
  async function familyProfile(){if(family.current)return family.current;try{const r=await apiGet<{profile:{family?:FamilyMember[]}}>('/api/bear/profile');family.current=r.profile.family||[];}catch{family.current=[];}return family.current;}
  // Returns false when triage is not available (no AI key), so the caller uses the app's older reading.
+ // Up to 20 pictures are read 5 at a time (the server takes about 4.5 MB per request, and 5 keeps each picture sharp enough to
+ // read small print). Each batch is told what the earlier ones already found, so a notice that runs over several screenshots
+ // is not listed twice. Cards appear as each batch finishes.
  async function runTriage(turnId:number,input:{files?:File[];text?:string}):Promise<boolean>{
-  patch(turnId,t=>({...t,triaging:true}));
-  try{const req=await buildTriageRequest(input,await familyProfile());const r=await apiSend<TriageView&{code?:string}>('/api/bear/triage',req);
-   if(r.code==='missing_key'){patch(turnId,t=>({...t,triaging:false}));return false;}
-   patch(turnId,t=>({...t,busy:false,triaging:false,triage:r}));if(r.cards.length)onChanged();return true;}
-  catch(e){const err=e as ApiError;if(err.body?.code==='missing_key'){patch(turnId,t=>({...t,triaging:false}));return false;}throw e;}
+  const files=input.files||[];const batches:File[][]=[];for(let i=0;i<files.length;i+=TRIAGE_BATCH)batches.push(files.slice(i,i+TRIAGE_BATCH));if(!batches.length)batches.push([]);
+  const acc:{view:TriageView|null}={view:null};
+  for(let i=0;i<batches.length;i++){
+   const from=i*TRIAGE_BATCH+1,to=Math.min(files.length,(i+1)*TRIAGE_BATCH);
+   patch(turnId,t=>({...t,triaging:true,batch:batches.length>1?`Reading pictures ${from}–${to} of ${files.length}…`:null}));
+   const context=acc.view?.cards.length?`Earlier pictures in this same set have already been read. Already listed: ${acc.view.cards.map(c=>c.card_headline).join('; ')}. List only new things; leave out anything already listed.`:'';
+   try{
+    const req=await buildTriageRequest({files:batches[i],text:[i===0?input.text||'':'',context].filter(Boolean).join('\n\n')||undefined},await familyProfile());
+    const r=await apiSend<TriageView&{code?:string}>('/api/bear/triage',req);
+    if(r.code==='missing_key'){if(i===0){patch(turnId,t=>({...t,triaging:false,batch:null}));return false;}break;}
+    const prev=acc.view;const seen=new Set<string>((prev?.cards||[]).map(c=>c.taskId).filter((x):x is string=>!!x));
+    acc.view=prev?{reasoning:[prev.reasoning,r.reasoning].filter(Boolean).join(`\n\n— pictures ${from}–${to} —\n`),summary:prev.summary||r.summary,cards:[...prev.cards,...r.cards.filter(c=>!c.taskId||!seen.has(c.taskId))]}:{reasoning:r.reasoning,summary:r.summary,cards:r.cards};
+    const view=acc.view;patch(turnId,t=>({...t,triage:view,busy:i<batches.length-1}));if(r.cards.length)onChanged();
+   }catch(e){
+    const err=e as ApiError;if(i===0&&err.body?.code==='missing_key'){patch(turnId,t=>({...t,triaging:false,batch:null}));return false;}
+    if(!acc.view)throw e;
+    const msg=`I read pictures 1–${from-1}. The rest didn’t go through (${err.message||'a problem reading them'}). Send those again.`;
+    patch(turnId,t=>({...t,busy:false,triaging:false,batch:null,other:{kind:'say',text:msg}}));return true;
+   }
+  }
+  patch(turnId,t=>({...t,busy:false,triaging:false,batch:null}));return true;
  }
+
  // A photo, screenshot or PDF given in the chat: Bear reads the page and answers here, the same as for words.
  async function upload(files:File[]){
-  if(busy||!files.length)return;setError(null);setHint(false);setChanging(null);const list=files.slice(0,6);
+  if(busy||!files.length)return;setError(null);setHint(false);setChanging(null);const list=files.slice(0,MAX_PICTURES);if(files.length>MAX_PICTURES)setError(`I’ll read the first ${MAX_PICTURES}. Send the rest after.`);
   const turn={...blank(list.length>1?`${list.length} pictures`:list[0].name||'A photo'),file:true};setTurns(l=>[...l,turn]);
   try{if(await runTriage(turn.id,{files:list}))return;}catch(e){setTurns(l=>l.filter(t=>t.id!==turn.id));setError((e as ApiError).message||'Bear could not read that. Try again.');return;}
   try{
@@ -169,8 +190,8 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
      if(!turn.busy&&!waiting&&!isChanging&&!open.has(turn.id)&&(turn.done||turn.id!==last?.id))return <button key={turn.id} type="button" className="qc-turn qc-done" onClick={()=>setOpen(s=>new Set(s).add(turn.id))} aria-label={`Show: ${doneLine(turn)}`}><span aria-hidden="true">✓</span> {doneLine(turn)}</button>;
      return <div key={turn.id} className="qc-turn">
      <p className="qc-said">{turn.file?<><span aria-hidden="true">📎 </span><span className="sr-only">File: </span></>:null}{turn.said.length>220?turn.said.slice(0,220)+'…':turn.said}</p>
-     {turn.busy&&turn.triaging&&<TriageProgress/>}
-     {turn.triage&&<TriageCards t={turn.triage} onApproved={()=>fold(turn.id)}/>}
+     {turn.triage&&<TriageCards key={turn.triage.cards.length} t={turn.triage} onApproved={()=>fold(turn.id)}/>}
+     {turn.busy&&turn.triaging&&<>{turn.batch&&<p className="qc-next qc-batch" role="status">{turn.batch}</p>}<TriageProgress key={turn.batch||'one'}/></>}
      {turn.busy&&!turn.triaging&&<p className="qc-reply muted">{turn.file||/^https?:\/\//i.test(turn.said.trim())?'Bear’s reading the page…':/\b(search|look up|find out|google|research|when|what|how much)\b/i.test(turn.said)?'Bear’s looking into it…':'Bear’s sorting it…'}</p>}
      {turn.reply&&<p className="qc-reply qc-bear">{turn.reply}</p>}
      {turn.found.map((f,k)=><div key={k} className="qc-reply qc-found">

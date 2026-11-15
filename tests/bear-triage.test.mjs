@@ -91,3 +91,22 @@ test('triage says plainly when it cannot run, and when the answer does not hold 
  await assert.rejects(()=>triage(s,new FakeProvider(()=>new ProviderError('The AI service is busy.','rate_limited')),{images:[],documents:[],text:'hello'},NOW),e=>e instanceof TriageError&&e.code==='upstream'&&/busy/.test(e.message));
  await assert.rejects(()=>triage(s,new FakeProvider(()=>SCHOOL_OUT),{images:[],documents:[],text:'  '},NOW),e=>e.code==='empty');
 });
+
+test('Bear answers its own questions about the world from the web, and leaves the family’s questions to the family',async()=>{
+ const {webAnswerable}=await import('../lib/bear/services/triage-service.ts');
+ for(const q of ['When is presentation night?','What time does the carnival start?','Where is the venue?','What is the club’s email address?','How much is the excursion fee?'])assert.ok(webAnswerable(q,['Ava','Sam']),q);
+ for(const q of ['Who is going with Sam?','Does Ava have any allergies?','Which of your children is this for?','When do you want to go?','How many adults are coming?','Can you sign the consent form?'])assert.equal(webAnswerable(q,['Ava','Sam']),false,q);
+ const s=await person();
+ const out={source_summary:'Eastside Soccer presentation night.',action_cards:[
+  card({card_id:'a',family_member:'Sam',action_type:'calendar_hold',urgency:'amber',hard_deadline:null,card_headline:'Go to Sam’s soccer presentation night',execution_payload:{email:null,sms:null,calendar_hold:null,shopping_list:null,steps:null},missing_blocker:'When is presentation night?'}),
+  card({card_id:'b',family_member:'Sam',action_type:'task',urgency:'green',hard_deadline:null,card_headline:'Sort out who takes Sam',execution_payload:{email:null,sms:null,calendar_hold:null,shopping_list:null,steps:null},missing_blocker:'Who is going with Sam?'})]};
+ const asked=[];const researcher=async q=>{asked.push(q);return {finding:{answer:'Presentation night is Saturday 28 November at 5pm at the clubhouse.',subject:'Presentation night',date:'2026-11-28',sources:[{title:'Eastside Soccer',url:'https://eastsidesoccer.example/news'}]},usage:{inputTokens:1,outputTokens:1},searches:1,model:'fake'};};
+ const r=await triage(s,new FakeProvider(()=>out),{images:[],documents:[],text:'Presentation night soon, details to come.'},NOW,researcher);
+ assert.equal(asked.length,1,'only the question about the world is searched');assert.match(asked[0],/When is presentation night/);
+ const a=r.cards.find(c=>c.card_id==='a'),b=r.cards.find(c=>c.card_id==='b');
+ assert.equal(a.missing_blocker,null,'answered, so not asked');assert.equal(a.lookedUp.source.url,'https://eastsidesoccer.example/news');assert.equal(a.hard_deadline,'2026-11-28');assert.match(a.when,/found online/);
+ const task=await s.get('tasks',a.taskId);assert.equal(task.dueAt,'2026-11-28');assert.equal(task.sorted.deadlineSource,'web','marked as found online, not as something the parent said');assert.match(task.notes,/eastsidesoccer\.example/);
+ assert.equal(b.missing_blocker,'Who is going with Sam?','the family’s question still comes to the parent');
+ const none=await triage(s,new FakeProvider(()=>out),{images:[],documents:[],text:'Presentation night, again.'},NOW,async()=>({finding:null,usage:null,searches:1,model:'fake'}));
+ assert.ok(none.cards.some(c=>c.missing_blocker==='When is presentation night?'),'nothing reliable found: Bear asks after all');
+});

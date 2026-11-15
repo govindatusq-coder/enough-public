@@ -638,3 +638,6 @@
 @keyframes qc-fold{from{opacity:1;transform:translateY(4px);}to{opacity:.6;transform:none;}}
 @media (prefers-reduced-motion:reduce){.bear .qc-done{animation:none;}}
 .bear .qc-thread .qc-done.qc-turn{margin:-8px 0;padding:4px;}
+.bear .tc-looked{font-size:13.5px;color:var(--ink-2);margin-top:4px;}
+.bear .tc-looked a{color:var(--navy);text-decoration:underline;margin-left:4px;}
+.bear .qc-batch{font-weight:600;color:var(--ink-2);margin:0 4px;}

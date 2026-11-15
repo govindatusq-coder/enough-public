@@ -34,7 +34,7 @@ export interface TriageRequest{inputs:TriageItem[];currentDateTime:string;timeZo
 // Bundle what the person gave with their local date, time zone and family. (The server uses its own copy of the date and
 // family as the anchors; these travel along so a request is complete on its own.)
 export async function buildTriageRequest(input:{files?:File[];text?:string|null},familyProfile:FamilyMember[]=[],now=new Date()):Promise<TriageRequest>{
- const files=(input.files||[]).slice(0,6);const inputs:TriageItem[]=[];
+ const files=(input.files||[]).slice(0,6);const inputs:TriageItem[]=[];   // one request carries at most 6 (callers send 5 at a time)
  const pdfs=files.filter(f=>f.type==='application/pdf');const pics=files.filter(f=>f.type.startsWith('image/'));
  for(const f of pdfs)inputs.push({kind:'pdf',mime:'application/pdf',data:await preparePdfForVision(f),name:f.name});
  const left=Math.max(200*1024,TRIAGE_BUDGET-inputs.reduce((n,i)=>n+base64Bytes(i.data),0));

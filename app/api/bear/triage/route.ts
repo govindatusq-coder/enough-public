@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {json,readJson,withBear} from '@/lib/bear/server/context';
 import {trustedWrite} from '@/lib/public-auth';
 import {triage,TriageError} from '@/lib/bear/services/triage-service';
+import {researcherFromEnv} from '@/lib/bear/ai/web-lookup';
 export const dynamic='force-dynamic';
 export const maxDuration=120;
 // Triage: photos, PDFs and pasted or forwarded emails, read by Claude's vision in one pass (no text extraction first), with
@@ -30,7 +31,7 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
   else if(i.kind==='pdf'&&i.mime==='application/pdf'&&bytes[0]===0x25)documents.push({mime:'application/pdf',bytes});
   else return json({error:'Bear can read photos (JPEG, PNG, WebP) and PDFs.',code:'unsupported'},415);
  }
- try{return json(await triage(store,provider,{images,documents,text:texts.join('\n\n')||null}),201);}
+ try{return json(await triage(store,provider,{images,documents,text:texts.join('\n\n')||null},new Date(),researcherFromEnv()),201);}
  // No AI key is an expected state, not a failure: said plainly with 200 so the app can use its older reading quietly.
  catch(e){if(e instanceof TriageError)return json({error:e.message,code:e.code},e.code==='missing_key'?200:e.status);throw e;}
 },{write:true});
