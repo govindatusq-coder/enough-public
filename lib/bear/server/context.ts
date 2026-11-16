@@ -26,7 +26,7 @@ export async function withBear(req:Request,handler:(ctx:BearContext)=>Promise<Re
   const response=await handler({store:session.store,provider,user:session.user,aiAvailable:!!provider});
   // After the person changes something (or opens the main screen), refresh what the reminder job will send for them.
   const path=new URL(req.url).pathname;
-  if(response.status<400&&(req.method!=='GET'||path==='/api/bear/home')&&!path.startsWith('/api/bear/me/data')){
+  if(response.status<400&&(req.method!=='GET'||path==='/api/bear/home'||path==='/api/bear/board')&&!path.startsWith('/api/bear/me/data')){
    try{after(()=>syncOutbox(session.store));}catch{/* outside a request: nothing to schedule */}
   }
   return response;

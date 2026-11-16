@@ -8,6 +8,7 @@ import {greetingFor} from '@/lib/bear/board/logic';
 import type {BoardView} from '@/lib/bear/board/service';
 import {Art} from '@/components/bear/art';
 import {ErrorCard,Skeleton,useOnline} from '@/components/bear/ui';
+import {showLocalReminder} from '@/components/bear/runtime';
 import {AddRow,BrainDumpInput,MomentPicker,TaskRow,useBoardActions,type Say} from '@/components/bear/board';
 
 export default function Home(){
@@ -16,13 +17,18 @@ export default function Home(){
  const [notices,setNotices]=useState<{id:string;text:string}[]>([]);const [hour,setHour]=useState(12);
  const [toast,setToast]=useState<{text:string;undo?:()=>void;key:number}|null>(null);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const [open,setOpen]=useState<Record<string,boolean>>({});const [fresh,setFresh]=useState<Set<string>>(new Set());
- const load=useCallback(()=>apiGet<{onboarding?:boolean;board?:BoardView;notices?:{id:string;text:string}[]}>('/api/bear/board').then(r=>{if(r.onboarding){router.replace('/bear/onboarding');return;}setBoard(r.board!);setNotices(r.notices||[]);setError(null);})
+ const [due,setDue]=useState<{reminderId:string;taskId:string;billId:string|null;message:string}[]>([]);const delivered=useRef(new Set<string>());
+ const load=useCallback(()=>Promise.race([apiGet<{onboarding?:boolean;board?:BoardView;notices?:{id:string;text:string}[];due?:{reminderId:string;taskId:string;billId:string|null;message:string}[]}>('/api/bear/board'),new Promise<never>((_,no)=>setTimeout(()=>no(new Error('Bear is taking too long to answer. Check your connection and try again.')),20000))]).then(r=>{if(r.onboarding){router.replace('/bear/onboarding');return;}setBoard(r.board!);setNotices(r.notices||[]);setDue(r.due||[]);setError(null);
+  // A due reminder is marked as seen in the app, and also shown as a phone notification where allowed (as the old home did).
+  for(const d of r.due||[]){if(delivered.current.has(d.reminderId))continue;delivered.current.add(d.reminderId);const href=d.billId?`/bear/bills/${d.billId}?reminder=${d.reminderId}`:`/bear/help/${d.taskId}`;
+   apiSend('/api/bear/reminders/delivered',{reminderId:d.reminderId,via:'in_app'}).catch(()=>{});showLocalReminder(d.reminderId,d.message,href).then(ok=>{if(ok)apiSend('/api/bear/reminders/delivered',{reminderId:d.reminderId,via:'local'}).catch(()=>{});}).catch(()=>{});}
+ })
   .catch(e=>{const err=e as {status?:number;message:string};if(err.status===401)router.replace('/bear/signin');else setError(err.message);}),[router]);
  useEffect(()=>{queueMicrotask(()=>{setHour(new Date().getHours());try{setOpen(JSON.parse(localStorage.getItem('bear-lists-open')||'{}'));}catch{/* no storage */}});load();const onVis=()=>{if(document.visibilityState==='visible')load();};document.addEventListener('visibilitychange',onVis);return()=>document.removeEventListener('visibilitychange',onVis);},[load]);
  const say:Say=useCallback((text,undo)=>{if(timer.current)clearTimeout(timer.current);setToast({text,undo,key:Date.now()});timer.current=setTimeout(()=>setToast(null),undo?6000:3500);},[]);
  const {actions,dragging}=useBoardActions(board,setBoard,load,say);
  function toggle(id:string){setOpen(o=>{const n={...o,[id]:!(o[id]??false)};try{localStorage.setItem('bear-lists-open',JSON.stringify(n));}catch{/* no storage */}return n;});}
- if(error&&!board)return <main id="main" className="bear-screen"><ErrorCard message={error} retry={load}/></main>;
+ if(error&&!board)return <main id="main" className="bear-screen"><ErrorCard message={error} retry={load}/><p className="small" style={{marginTop:14}}>Meanwhile: <Link href="/bear/overview" className="link-btn">Your areas</Link> · <Link href="/bear/calendar" className="link-btn">Calendar</Link> · <Link href="/bear/capture" className="link-btn">Talk to Bear</Link></p></main>;
  if(!board)return <main id="main" className="bear-screen"><div className="skeleton" style={{minHeight:40,maxWidth:220,marginBottom:16}}/><Skeleton/></main>;
  const count=(id:string)=>board.byList[id]?.length||0;
  return <main id="main" className="bear-screen board-screen">
@@ -36,6 +42,7 @@ export default function Home(){
   {!online&&<p className="note" style={{marginTop:12}} role="status">You’re offline. Showing what Bear last knew.</p>}
   <BrainDumpInput say={say} onUnloaded={r=>{setFresh(new Set(r.added.map(a=>a.id)));load();say(r.added.length?`Got ${r.added.length===1?'it':`all ${r.added.length}`}. ${r.already.length?`${r.already.length} ${r.already.length===1?'was':'were'} already here.`:'They’re safe in My Brain Dump.'}`:r.already.length?'That’s already on your list.':'Bear couldn’t find a task in that. Your words are kept.');}}/>
   <Link href="/bear/capture" className="dump-more small link-btn">Add a photo, PDF or email instead</Link>
+  {due.map(d=><Link key={d.reminderId} href={d.billId?`/bear/bills/${d.billId}?reminder=${d.reminderId}`:`/bear/help/${d.taskId}`} className="note teal" role="status" style={{display:'block',marginTop:12}}>🔔 {d.message}</Link>)}
   {notices.map(n=><p key={n.id} className="note teal" role="status" style={{marginTop:12}}>{n.text} <Link href="/bear/shared" className="link-btn" onClick={()=>apiSend('/api/bear/shares/seen',{}).catch(()=>{})}>See</Link></p>)}
   {board.resume&&<Link href={`/bear/help/${board.resume.taskId}`} className="resume glass"><span className="eyebrow teal">Pick up where you left off</span><strong>{board.resume.title}</strong>{board.resume.next&&<span className="small muted">Next: {board.resume.next}</span>}</Link>}
   <MomentPicker onDone={(id,title)=>actions.complete({id,title} as never)}/>

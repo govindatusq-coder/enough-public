@@ -270,6 +270,13 @@ try{
  await step('voice option is present',async()=>{await page.goto(base+'/bear/capture/more');await page.click('button:has-text("Say it")');await page.waitForSelector('#voicetext');await shot('28-voice');});
  await step('me screen',async()=>{await page.goto(base+'/bear/me');await page.waitForSelector('text=Reminders');await shot('24-me');});
  await step('Settings has a clear log out that asks first',async()=>{await page.goto(base+'/bear/me');await page.click('button:has-text("Log out")');await page.waitForSelector('button:has-text("Yes, log out")');await shot('25-logout');await page.click('button:has-text("Stay logged in")');await page.waitForSelector('button:has-text("Log out")');});
+ await step('after all of that, the Home board still loads every open thing (an account with lots of history)',async()=>{
+  const t0=Date.now();const r=await page.evaluate(async()=>{const x=await fetch('/api/bear/board');return {status:x.status,body:await x.json()};});
+  assert.equal(r.status,200,'board API: '+JSON.stringify(r.body).slice(0,300));
+  const n=r.body.board.inbox.length+Object.values(r.body.board.byList).reduce((a,l)=>a+l.length,0);
+  await page.goto(base+'/bear/home');await page.waitForSelector('#dump-text',{timeout:15000});await page.waitForSelector('[data-drop="inbox"] .b-row');
+  console.log('   board: '+n+' open things, '+(Date.now()-t0)+' ms');await shot('99-home-after-everything');
+ });
  await step('no console errors',async()=>{const real=errors.filter(e=>!/favicon|manifest|404|hydrat|Download the React DevTools/i.test(e));assert.deepEqual(real,[]);});
 }finally{await browser?.close();server.kill('SIGTERM');}
 if(failures.length){console.error('\nFailures:\n'+failures.join('\n'));process.exit(1);}

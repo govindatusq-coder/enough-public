@@ -26,12 +26,13 @@ export async function openTasks(store:BearStore):Promise<Task[]>{
  return open.filter(t=>!t.isDemo&&!t.wishlist&&!t.part&&!steps.has(t.id));
 }
 function view(t:Task,billIds:Set<string>,suggestFor:(title:string)=>{listId:string;by:'bear'|'learned'}|null):BoardTask{
- return {id:t.id,title:t.title,listId:t.listId??null,rank:t.rank??Number.MAX_SAFE_INTEGER,dueAt:t.dueAt,dueTime:t.dueTime??null,light:t.light?.level||t.sorted?.urgency||null,minutes:minutesFor(t),readiness:readinessOf(t),
+ const sug=t.suggestion&&typeof t.suggestion==='object'&&typeof t.suggestion.listId==='string'?t.suggestion:t.suggestion===undefined?undefined:null;
+ return {id:t.id,title:String(t.title||'Untitled'),listId:typeof t.listId==='string'?t.listId:null,rank:t.rank??Number.MAX_SAFE_INTEGER,dueAt:t.dueAt,dueTime:t.dueTime??null,light:(t.light&&typeof t.light==='object'?t.light.level:null)||t.sorted?.urgency||null,minutes:minutesFor(t),readiness:readinessOf(t),
   // Tasks from before lists existed have no suggestion stored (undefined): Bear works one out when it shows them.
-  suggestion:t.listId?null:t.suggestion===undefined?suggestFor(t.title):!t.suggestion||t.suggestion.ignored?null:{listId:t.suggestion.listId,by:t.suggestion.by},notes:t.notes??null,hasWork:!!(t.progress?.draft?.body||t.progress?.notes||t.progress?.steps?.length||t.prepared),
-  shared:t.sharedOut?{mode:t.sharedOut.mode,who:t.sharedOut.to,direction:'out'}:t.sharedIn?{mode:t.sharedIn.mode,who:t.sharedIn.from,direction:'in'}:null,isBill:billIds.has(t.id),createdAt:t.createdAt};
+  suggestion:t.listId?null:sug===undefined?suggestFor(String(t.title||'')):!sug||sug.ignored?null:{listId:sug.listId,by:sug.by==='learned'?'learned':'bear'},notes:t.notes??null,hasWork:!!(t.progress?.draft?.body||t.progress?.notes||t.progress?.steps?.length||t.prepared),
+  shared:t.sharedOut?{mode:t.sharedOut.mode,who:t.sharedOut.to,direction:'out'}:t.sharedIn?{mode:t.sharedIn.mode,who:t.sharedIn.from,direction:'in'}:null,isBill:billIds.has(t.id),createdAt:String(t.createdAt||'')};
 }
-const byRank=(a:BoardTask,b:BoardTask)=>(a.rank-b.rank)||a.createdAt.localeCompare(b.createdAt);
+const byRank=(a:BoardTask,b:BoardTask)=>(a.rank-b.rank)||String(a.createdAt).localeCompare(String(b.createdAt));
 
 export async function boardView(store:BearStore,now=new Date()):Promise<BoardView>{
  const profile=await ensureProfile(store);const lists=listsOf(profile);const ids=new Set(lists.map(l=>l.id));
@@ -41,13 +42,17 @@ export async function boardView(store:BearStore,now=new Date()):Promise<BoardVie
  for(const t of tasks){
   // Handed over for good and accepted: it lives on the Shared screen now, not on her lists.
   if(t.sharedOut?.mode==='transfer'&&t.readiness==='waiting')continue;
-  const v=view(t,bills,title=>suggestList(title,lists,profile.listLearning));if(v.listId&&ids.has(v.listId))byList[v.listId].push(v);else inbox.push({...v,listId:null});
+  // One odd record can never stop the whole board: it is shown plainly instead.
+  let v:BoardTask;
+  try{v=view(t,bills,title=>suggestList(title,lists,profile.listLearning));}
+  catch{v={id:t.id,title:String(t.title||'Untitled'),listId:typeof t.listId==='string'?t.listId:null,rank:Number.MAX_SAFE_INTEGER,dueAt:typeof t.dueAt==='string'?t.dueAt:null,dueTime:null,light:null,minutes:15,readiness:'ready',suggestion:null,notes:null,hasWork:false,shared:null,isBill:bills.has(t.id),createdAt:String(t.createdAt||'')};}if(v.listId&&ids.has(v.listId))byList[v.listId].push(v);else inbox.push({...v,listId:null});
  }
  inbox.sort(byRank);for(const k of Object.keys(byList))byList[k].sort(byRank);
- const started=tasks.filter(t=>t.progress&&readinessOf(t)==='in_progress').sort((a,b)=>(b.progress!.savedAt).localeCompare(a.progress!.savedAt))[0];
+ const started=tasks.filter(t=>t.progress&&typeof t.progress.savedAt==='string'&&readinessOf(t)==='in_progress').sort((a,b)=>(b.progress!.savedAt).localeCompare(a.progress!.savedAt))[0];
  const since=new Date(now.getTime()-18*3600000).toISOString();
- const doneToday=(await store.list('completions',{where:[{column:'completed_at',op:'gte',value:since}]})).slice(-8);
- const done=(await Promise.all(doneToday.map(c=>store.get('tasks',c.taskId)))).filter((t):t is Task=>!!t&&t.status==='done').map(t=>({id:t.id,title:t.title}));
+ let done:{id:string;title:string}[]=[];
+ try{const doneToday=(await store.list('completions',{where:[{column:'completed_at',op:'gte',value:since}]})).slice(-8);
+  done=(await Promise.all(doneToday.map(c=>store.get('tasks',c.taskId)))).filter((t):t is Task=>!!t&&t.status==='done').map(t=>({id:t.id,title:t.title}));}catch{/* the faded "done lately" list is optional */}
  return {name:profile.name||'',lists,inbox,byList,resume:started?{taskId:started.id,title:started.title,next:started.progress?.nextAction||null,savedAt:started.progress!.savedAt}:null,doneToday:done,timeZone:profile.lifeRhythm.timezone||'Australia/Sydney'};
 }
 

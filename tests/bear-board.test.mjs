@@ -283,3 +283,11 @@ test('share rules hold whatever the storage: only the sender takes it back, only
  assert.equal([x,y].filter(Boolean).length,1,'exactly one claim wins');
  assert.throws(()=>checkChange({...cur,status:'revoked'},{...cur,status:'accepted'},b.userId),/taken back/);
 });
+
+test('one odd old record never stops the board loading',async()=>{
+ const s=await person();const good=await addOne(s,{title:'Pay the water bill',listId:null},NOW);
+ const odd=await addOne(s,{title:'Odd one',listId:null},NOW);
+ await s.update('tasks',odd.id,{title:null,createdAt:undefined,progress:{draft:null},suggestion:'night',light:'red'});
+ const b=await boardView(s,NOW);
+ assert.ok(b.inbox.some(t=>t.id===good.id));const row=b.inbox.find(t=>t.id===odd.id);assert.ok(row,'still shown');assert.equal(typeof row.title,'string');
+});
