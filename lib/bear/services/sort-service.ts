@@ -47,7 +47,7 @@ async function settle(store:BearStore,task:Task):Promise<Task>{
  const load=withoutClarifying(task);return load===task.load?task:store.update('tasks',task.id,{load});
 }
 // Anything with a date gets a reminder plan. Most tasks already have one from being set up; this covers the ones that did not.
-async function ensureReminder(store:BearStore,task:Task,now:Date){
+export async function ensureReminder(store:BearStore,task:Task,now:Date){
  if(!task.dueAt||task.status!=='open')return;
  const live=(await store.list('reminders',{where:[{column:'task_id',value:task.id},{column:'status',op:'in',value:['scheduled','snoozed']}]})).length;
  if(live)return;

@@ -9,11 +9,13 @@ export function SignInForm(){
  const params=useSearchParams();const router=useRouter();const [create,setCreate]=useState(params.get('mode')==='create');
  const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[name,setName]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
  const configured=!!process.env.NEXT_PUBLIC_SUPABASE_URL;
- const callback=()=>window.location.origin+'/auth/callback?next=%2Fbear';
+ // Where to go after signing in (a Share Bear link, for example). Only paths inside Load Bear are followed.
+ const raw=params.get('next')||'';const next=/^\/bear\/[A-Za-z0-9/_-]*$/.test(raw)?raw:'/bear';
+ const callback=()=>window.location.origin+'/auth/callback?next='+encodeURIComponent(next);
  async function submit(e:React.FormEvent){e.preventDefault();if(!configured){setMessage('Sign-in is not connected in this environment yet.');return;}setBusy(true);setMessage('');
   try{const db=browserClient();
-   if(create){const {data,error}=await db.auth.signUp({email,password,options:{emailRedirectTo:callback(),data:{name}}});if(error)throw error;if(data.session){router.push('/bear');router.refresh();}else setMessage('Check your email to confirm your account, then come back to Bear.');}
-   else{const {error}=await db.auth.signInWithPassword({email,password});if(error)throw error;router.push('/bear');router.refresh();}
+   if(create){const {data,error}=await db.auth.signUp({email,password,options:{emailRedirectTo:callback(),data:{name}}});if(error)throw error;if(data.session){router.push(next);router.refresh();}else setMessage('Check your email to confirm your account, then come back to Bear.');}
+   else{const {error}=await db.auth.signInWithPassword({email,password});if(error)throw error;router.push(next);router.refresh();}
   }catch(error){const detail=error instanceof Error&&error.message?` (${error.message})`:'';setMessage((create?'Your Bear could not be created.':'Sign-in failed.')+detail);}finally{setBusy(false);}}
  return (
   <main id="main" className="bear-screen flow">

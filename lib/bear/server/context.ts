@@ -1,4 +1,5 @@
 import 'server-only';
+import {ShareError} from '@/lib/bear/board/shares';
 import {ZodError} from 'zod';
 import {after} from 'next/server';
 import {syncOutbox} from '@/lib/bear/server/outbox-sync';
@@ -32,7 +33,7 @@ export async function withBear(req:Request,handler:(ctx:BearContext)=>Promise<Re
  }catch(error){return errorResponse(error);}
 }
 export function errorResponse(error:unknown){
- if(error instanceof HttpError)return json({error:error.message},error.status);
+ if(error instanceof HttpError||error instanceof ShareError)return json({error:error.message},error.status);
  if(error instanceof ZodError)return json({error:'Check the details and try again.',issues:error.issues.slice(0,5).map(i=>i.path.join('.'))},400);
  if(error instanceof CaptureError)return json({error:error.message,capture:error.capture},error.status);
  if(error instanceof ConfirmError)return json({error:error.message,code:error.code},error.status);

@@ -46,6 +46,14 @@ export default function Me(){
   <main id="main" className="bear-screen">
    <p className="eyebrow">Settings</p>
    <div style={{display:'flex',gap:14,alignItems:'center'}}><Avatar size={84}/><div><h1>{p.name||'You'}</h1><p className="muted small">{data.user.email}</p></div></div>
+   <section className="section"><p className="eyebrow">Lists and places</p><div className="card" style={{display:'grid',gap:2}}>
+    <Link href="/bear/me/lists" className="row">My Lists: rename, add, reorder, change icons</Link>
+    <Link href="/bear/shared" className="row">Shared: what you’ve handed over, and what’s been handed to you</Link>
+    <Link href="/bear/calendar" className="row">Bear’s calendar</Link>
+    <Link href="/bear/overview" className="row">Your areas (Family, Home, Money, Work…)</Link>
+    <Link href="/bear/ideas" className="row">Bear Ideas</Link>
+    <Link href="/bear/wins" className="row">What’s been handled</Link>
+   </div></section>
    <section className="section"><p className="eyebrow">Your Bear</p><div className="card">
     <div className="row"><span className="grow"><span className="title">Your name</span><br/>{nameDraft===null?<span className="faint">{p.name||'Not set yet'}</span>:<span style={{display:'flex',gap:8,marginTop:6}}><input aria-label="Your first name" value={nameDraft} maxLength={40} onChange={e=>setNameDraft(e.target.value)} style={{minWidth:0,flex:1}}/><Button className="sm" variant="primary" disabled={!nameDraft.trim()} onClick={async()=>{await apiSend('/api/bear/profile',{name:nameDraft.trim()},'PUT');setNameDraft(null);await load();}}>Save</Button></span>}</span>{nameDraft===null&&<Button className="sm" variant="ghost" onClick={()=>setNameDraft(p.name)}>{p.name?'Change':'Add'}</Button>}</div>
     <div className="row"><span className="grow"><span className="title">What&rsquo;s in your life</span><br/><span className="faint">{p.areas.map(a=>areaLabels[a]).join(' · ')||'Nothing picked yet'}</span></span></div>

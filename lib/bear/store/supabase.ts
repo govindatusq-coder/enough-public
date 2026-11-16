@@ -13,7 +13,7 @@ export const ERASE_ORDER=['responsibility_events','connected_accounts','study_re
  'inbound_messages','inbound_routes','profiles'];
 const NO_FUNCTION=new Set(['PGRST202','42883']),NO_TABLE=new Set(['42P01','PGRST205']);
 export class SupabaseStore implements BearStore{
- readonly userId:string;private db:SupabaseClient;
+ readonly userId:string;readonly db:SupabaseClient;
  constructor(userId:string,db:SupabaseClient){this.userId=userId;this.db=db;}
  private toRow<K extends TableName>(table:K,row:Tables[K]){
   const columns:Record<string,unknown>={id:row.id,user_id:this.userId,created_at:row.createdAt,updated_at:row.updatedAt,body:row};

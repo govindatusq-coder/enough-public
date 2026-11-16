@@ -8,5 +8,6 @@ async function run(input:string,init?:RequestInit){try{return await fetch(input,
 export async function apiGet<T=Record<string,unknown>>(path:string):Promise<T>{return parse(await run(path,{headers:{Accept:'application/json'}})) as Promise<T>;}
 // Anything that changes Bear's data tells the rest of the screen (e.g. the Bear Ideas badge) to refresh.
 const changed=()=>{try{window.dispatchEvent(new Event('bear-changed'));}catch{/* not in a browser */}};
-export async function apiSend<T=Record<string,unknown>>(path:string,body:unknown,method='POST'):Promise<T>{const r=await parse(await run(path,{method,headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)})) as T;changed();return r;}
+// Small changes are sent with keepalive, so a tick, a move or a rename still reaches Bear if the app is closed straight after.
+export async function apiSend<T=Record<string,unknown>>(path:string,body:unknown,method='POST'):Promise<T>{const json=JSON.stringify(body);const r=await parse(await run(path,{method,headers:{'Content-Type':'application/json',Accept:'application/json'},body:json,keepalive:json.length<16000})) as T;changed();return r;}
 export async function apiForm<T=Record<string,unknown>>(path:string,form:FormData):Promise<T>{const r=await parse(await run(path,{method:'POST',body:form,headers:{Accept:'application/json'}})) as T;changed();return r;}

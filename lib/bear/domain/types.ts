@@ -77,6 +77,10 @@ export interface Profile extends Owned{
  revision:number;
  // The person and household Bear is carrying for (built up progressively; never required).
  loadMap?:LoadMap;
+ // Brain Dump Board: the person's own lists (absent = the six starter lists), and what Bear has seen them do when sorting
+ // (word -> list, with how many times). Only choices the person actually made are recorded here.
+ lists?:{id:string;title:string;icon:string;order:number}[];
+ listLearning?:{word:string;listId:string;n:number;at:ISODateTime}[];
  // Set when the person opened a sign-in link sent to their email: proof they own the address.
  emailVerifiedAt?:ISODateTime|null;
  // What matters to this person: values, goals, responsibilities, non-negotiables (editable).
@@ -198,6 +202,15 @@ export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;stat
  // The person's own call on the traffic light. It stands until the deadline itself arrives.
  light?:{level:'red'|'amber'|'green';at:ISODateTime}|null;
  // What Bear prepared when it read a document for this: drafts and steps for the person to use. Nothing in it has been sent.
+ // Brain Dump Board (interrupted-lives redesign). All optional, so older tasks read as "in the Brain Dump, unsorted".
+ // listId: the person's own list (null = Brain Dump inbox). rank: their order within that list. suggestion: Bear's quiet idea of a list.
+ listId?:string|null;rank?:number;suggestion?:{listId:string;by:'bear'|'learned';ignored?:boolean}|null;dumpId?:Id|null;
+ // Readiness the person (or a share) set: waiting on someone, or needs something first. Everything else is worked out.
+ readiness?:'needs_info'|'waiting'|null;minutesBy?:'you'|null;
+ // Work in progress, saved as it is typed so an interruption loses nothing.
+ progress?:{draft?:{to:string;subject:string;body:string}|null;notes?:string|null;steps?:{text:string;done:boolean}[]|null;nextAction?:string|null;savedAt:ISODateTime}|null;
+ // Share Bear: this task was handed to someone (out) or came from someone (in).
+ sharedOut?:{shareId:Id;mode:'info'|'action'|'transfer';to:string}|null;sharedIn?:{shareId:Id;mode:'info'|'action'|'transfer';from:string}|null;
  prepared?:{actionType:string;member:string|null;work:string;blocker:string|null;confidence:number;payload:{email:{to:string|null;subject:string;body:string}|null;sms:{to:string|null;body:string}|null;calendar_hold:{title:string;start:string;end:string|null;all_day:boolean;location:string|null}|null;shopping_list:string[]|null;steps:string[]|null}}|null}
 export interface TaskDependency extends Owned{taskId:Id;dependsOnTaskId:Id}
 

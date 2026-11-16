@@ -34,7 +34,7 @@ function doneLine(t:{said:string;items:{removed?:boolean}[];triage?:{cards:unkno
 }
 const openPicker=()=>{(document.getElementById('qc-file') as HTMLInputElement|null)?.click();};
 // Where the person can go once they have finished telling Bear things.
-const places=[{href:'/bear/home',label:'My Bear'},{href:'/bear/ideas',label:'Bear Ideas'},{href:'/bear/wins',label:'My Wins'},{href:'/bear/me',label:'Settings'}];
+const places=[{href:'/bear/home',label:'Home'},{href:'/bear/shared',label:'Shared'},{href:'/bear/helps',label:'Bear Helps'},{href:'/bear/me',label:'Settings'}];
 const MicIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>;
 
 type Turn={id:number;said:string;busy:boolean;batch?:string|null;reply?:string;done?:boolean;triage?:TriageView|null;triaging?:boolean;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
