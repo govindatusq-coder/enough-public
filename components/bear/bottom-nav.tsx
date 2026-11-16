@@ -12,5 +12,5 @@ const tabs=[
 export function BottomNav(){
  const path=usePathname();
  const active=(href:string)=>path.startsWith(href)||(href==='/bear/home'&&/^\/bear\/(help\/|overview|areas|tasks|calendar|ideas|wins|bills|wishlist)/.test(path))||(href==='/bear/shared'&&path.startsWith('/bear/shared'));
- return <nav className="bear-nav" aria-label="Main"><div className="bar glass-strong four">{tabs.map(t=><Link key={t.href} href={t.href} aria-current={active(t.href)?'page':undefined}>{t.icon}<span>{t.label}</span></Link>)}</div></nav>;
+ return <nav className="bear-nav" aria-label="Main"><div className="bar glass-strong four"><Link href="/bear/home" className="nav-brand" aria-label="Load Bear home"><span className="display">Load Bear</span><span className="hand">Less on your mind.</span></Link>{tabs.map(t=><Link key={t.href} href={t.href} aria-current={active(t.href)?'page':undefined}>{t.icon}<span>{t.label}</span></Link>)}</div></nav>;
 }

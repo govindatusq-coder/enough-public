@@ -187,3 +187,74 @@ test('existing tasks from before the redesign show in My Brain Dump with a quiet
  let row=(await boardView(s,NOW)).inbox.find(x=>x.id===t.id);assert.deepEqual(row.suggestion,{listId:'calls',by:'bear'});
  await ignoreSuggestion(s,t.id);row=(await boardView(s,NOW)).inbox.find(x=>x.id===t.id);assert.equal(row.suggestion,null);
 });
+
+// ---------- Household, AI drafts, quiet hours, time estimates ----------
+import {saveHousehold} from '../lib/bear/board/household.ts';
+import {writeDraft,checkDraft,DAILY_DRAFTS} from '../lib/bear/board/draft.ts';
+import {inQuietHours} from '../lib/bear/board/logic.ts';
+import {setDetails} from '../lib/bear/board/service.ts';
+
+test('household: sharing remembers the person; details are optional and validated; a ✓ appears once they accept',async()=>{
+ const a=await person('Sarah');const b=await person('James');
+ const t=await addOne(a,{title:'Book the car service',listId:null},NOW);
+ const {share,link}=await shareTask(a,new MemoryShares(a.userId),'Sarah',t.id,{mode:'action',toName:'James',note:null});
+ let hh=(await ensureProfile(a)).household;assert.deepEqual(hh.map(h=>h.name),['James']);assert.equal(hh[0].email,null);
+ // Sharing with him again doesn't add him twice.
+ const t2=await addOne(a,{title:'Sort the recycling',listId:null},NOW);await shareTask(a,new MemoryShares(a.userId),'Sarah',t2.id,{mode:'info',toName:'james',note:null});
+ assert.equal((await ensureProfile(a)).household.length,1);
+ const saved=await saveHousehold(a,{people:[{id:hh[0].id,name:'James',email:'james@example.com',phone:'0412 345 678'},{id:'new',name:'Mum',email:'',phone:''},{id:'new',name:'mum',email:'',phone:''}]});
+ assert.deepEqual(saved.map(h=>h.name),['James','Mum'],'no duplicate names');assert.equal(saved[0].email,'james@example.com');assert.equal(saved[1].email,null);
+ const {householdSchema}=await import('../lib/bear/board/household.ts');
+ assert.throws(()=>householdSchema.parse({people:[{id:'new',name:'X',email:'not-an-email',phone:''}]}));
+ await openInvite(new MemoryShares(b.userId),link.split('/').pop());
+ await respond(b,new MemoryShares(b.userId),share.id,{answer:'accept',message:null},title=>addOne(b,{title,listId:null},NOW));
+ await syncMine(a,new MemoryShares(a.userId),async()=>{});
+ hh=(await ensureProfile(a)).household;assert.equal(hh.find(h=>h.name==='James').joined,true);
+ // Saving the list again keeps the ✓.
+ assert.equal((await saveHousehold(a,{people:hh.map(({id,name,email,phone})=>({id,name,email,phone}))})).find(h=>h.name==='James').joined,true);
+});
+
+test('the sender is told when the other person finishes it (the push hook fires once, with the finished share)',async()=>{
+ const a=await person('Sarah');const b=await person('James');
+ const t=await addOne(a,{title:'Pick up the dry cleaning',listId:null},NOW);
+ const {share,link}=await shareTask(a,new MemoryShares(a.userId),'Sarah',t.id,{mode:'action',toName:'James',note:null});
+ await openInvite(new MemoryShares(b.userId),link.split('/').pop());
+ const r=await respond(b,new MemoryShares(b.userId),share.id,{answer:'accept',message:null},title=>addOne(b,{title,listId:null},NOW));
+ await completeTask(b,{taskId:r.recipientTaskId,method:null},NOW);
+ const told=[];await syncMine(b,new MemoryShares(b.userId),async()=>{},async s=>{told.push(s.status);});
+ await syncMine(b,new MemoryShares(b.userId),async()=>{},async s=>{told.push(s.status);});
+ assert.deepEqual(told,['done'],'once');
+});
+
+test('quiet hours: overnight and same-day ranges, in her own time zone',()=>{
+ const night={quietStartMinute:21*60,quietEndMinute:7*60};
+ assert.equal(inQuietHours(night,new Date('2026-11-16T22:30:00+11:00'),'Australia/Sydney'),true);
+ assert.equal(inQuietHours(night,new Date('2026-11-16T06:59:00+11:00'),'Australia/Sydney'),true);
+ assert.equal(inQuietHours(night,new Date('2026-11-16T12:00:00+11:00'),'Australia/Sydney'),false);
+ assert.equal(inQuietHours({quietStartMinute:13*60,quietEndMinute:15*60},new Date('2026-11-16T14:00:00+11:00'),'Australia/Sydney'),true);
+ assert.equal(inQuietHours(night,new Date('2026-11-16T12:00:00Z'),'Australia/Sydney'),true,'12:00 UTC is 11pm in Sydney');
+});
+
+test('AI drafts: uses only what she gave; invented addresses are dropped; limits and failures leave her draft alone',async()=>{
+ const given='Task: Follow up with the builder\n\nNotes: Dave, dave@builds.com.au, quote for the deck';
+ assert.deepEqual(checkDraft({to:'dave@builds.com.au',subject:'Deck quote',body:'Hi Dave'},given,'followup'),{to:'dave@builds.com.au',subject:'Deck quote',body:'Hi Dave'});
+ assert.equal(checkDraft({to:'someone@else.com',subject:'x',body:'Hi'},given,'email').to,'','an address she never gave is dropped');
+ assert.equal(checkDraft({to:'',subject:'Should go',body:'Running late'},given,'message').subject,'','texts have no subject');
+ assert.equal(checkDraft({to:'',subject:'x'},given,'email'),null);
+ const s=await person('Sarah');const t=await addOne(s,{title:'Follow up with the builder',listId:null},NOW);await s.update('tasks',t.id,{notes:'Dave, dave@builds.com.au'});
+ let seen=null;const fake={name:'fake',model:'fake-1',supportsVision:false,extract:async i=>{seen=i;return {output:{to:'dave@builds.com.au',subject:'Following up on the deck quote',body:'Hi Dave,\n\nJust checking in on the quote for the deck. Could you let me know when it might be ready?\n\nSarah'},raw:{},provider:'fake',model:'fake-1',latencyMs:5};}};
+ const d=await writeDraft(s,fake,await s.get('tasks',t.id),'Sarah',{ask:'mention the deck',current:null,kind:'followup'},NOW);
+ assert.equal(d.to,'dave@builds.com.au');assert.match(d.body,/deck/);assert.match(seen.system,/Never invent/);assert.match(seen.text,/mention the deck/);assert.match(seen.system,/Australian English/);
+ await assert.rejects(writeDraft(s,null,t,'Sarah',{ask:null,current:null,kind:'email'},NOW),/isn’t connected/);
+ await assert.rejects(writeDraft(s,{...fake,extract:async()=>{throw new Error('overloaded');}},t,'Sarah',{ask:null,current:null,kind:'email'},NOW),/couldn’t write that just now/);
+ for(let i=0;i<DAILY_DRAFTS;i++)await s.insert('ai_inferences',{id:crypto.randomUUID(),userId:s.userId,createdAt:NOW.toISOString(),updatedAt:NOW.toISOString(),captureId:null,service:'Draft',provider:'fake',model:'f',promptHash:'d',rawOutput:null,latencyMs:1,ok:true,error:null});
+ await assert.rejects(writeDraft(s,fake,t,'Sarah',{ask:null,current:null,kind:'email'},NOW),/a lot of drafting/);
+});
+
+test('her own time estimate wins, and can be handed back to Bear',async()=>{
+ const s=await person();const t=await addOne(s,{title:'Call the dentist',listId:null},NOW);
+ assert.equal(minutesFor(await s.get('tasks',t.id)),10);
+ await setDetails(s,t.id,{minutes:25});assert.equal(minutesFor(await s.get('tasks',t.id)),25);
+ assert.equal(pickMoments([await s.get('tasks',t.id)],20,NOW,'Australia/Sydney','2026-11-16').picks.length,0,'no longer fits 20 minutes');
+ await setDetails(s,t.id,{minutes:null});assert.equal(minutesFor(await s.get('tasks',t.id)),10);
+});

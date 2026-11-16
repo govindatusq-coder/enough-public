@@ -2,11 +2,12 @@
 // The Brain Dump Board: unload, see, sort, share, do. Any step can be the last; nothing is lost between them.
 import {useCallback,useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
-import {apiSend} from '@/lib/bear/client';
+import {apiGet,apiSend} from '@/lib/bear/client';
 import {formatAU} from '@/lib/bear/domain/dates';
 import type {BoardTask,BoardView} from '@/lib/bear/board/service';
 import type {BearList} from '@/lib/bear/board/logic';
 import {Sheet} from '@/components/bear/ui';
+import {mailtoFor,smsFor} from '@/lib/bear/board/help';
 
 export type Say=(text:string,undo?:()=>void)=>void;
 
@@ -53,7 +54,9 @@ export function BrainDumpInput({onUnloaded,say}:{onUnloaded:(r:{added:{id:string
 
 // ---------- A checklist row ----------
 const lightDot=(l:BoardTask['light'])=>l==='red'?'var(--coral)':l==='amber'?'var(--mustard)':null;
-export function TaskRow({task,lists,index,actions,dragging,fresh}:{task:BoardTask;lists:BearList[];index:number;actions:RowActions;dragging:boolean;fresh?:boolean}){
+export function TaskRow({task,lists,index,count,actions,dragging,fresh}:{task:BoardTask;lists:BearList[];index:number;count:number;actions:RowActions;dragging:boolean;fresh?:boolean}){
+ // Reorder from the keyboard: arrow keys on the handle. Focus follows the row to its new place.
+ const nudge=(d:-1|1)=>{const to=index+d;if(to<0||to>=count)return;actions.move(task,task.listId,to);actions.say(`Moved ${d<0?'up':'down'}: ${task.title}`);requestAnimationFrame(()=>requestAnimationFrame(()=>(document.querySelector(`[data-row="${task.id}"] .b-handle`) as HTMLElement|null)?.focus()));};
  const [editing,setEditing]=useState(false);const [title,setTitle]=useState(task.title);const [menu,setMenu]=useState(false);
  const sug=task.suggestion?lists.find(l=>l.id===task.suggestion!.listId):null;
  function save(){setEditing(false);const t=title.trim();if(t&&t!==task.title)actions.rename(task,t);else setTitle(task.title);}
@@ -74,13 +77,15 @@ export function TaskRow({task,lists,index,actions,dragging,fresh}:{task:BoardTas
   </div>
   <button type="button" className="b-more" aria-label={`More for ${task.title}`} aria-haspopup="dialog" onClick={()=>setMenu(true)}>
    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
-  <span className="b-handle" aria-hidden="true" onPointerDown={e=>actions.dragStart(e,task)}>
-   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
-  {menu&&<RowMenu task={task} lists={lists} actions={actions} onClose={()=>setMenu(false)} onEdit={()=>{setMenu(false);setTitle(task.title);setEditing(true);}}/>}
+  <button type="button" className="b-handle" aria-label={`Reorder ${task.title}. Use the up and down arrow keys`} onPointerDown={e=>actions.dragStart(e,task)} onKeyDown={e=>{if(e.key==='ArrowUp'){e.preventDefault();nudge(-1);}else if(e.key==='ArrowDown'){e.preventDefault();nudge(1);}}}>
+   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>
+  {menu&&<RowMenu task={task} lists={lists} actions={actions} canUp={index>0} canDown={index<count-1} onNudge={d=>{setMenu(false);nudge(d);}} onClose={()=>setMenu(false)} onEdit={()=>{setMenu(false);setTitle(task.title);setEditing(true);}}/>}
  </li>;
 }
 
-function RowMenu({task,lists,actions,onClose,onEdit}:{task:BoardTask;lists:BearList[];actions:RowActions;onClose:()=>void;onEdit:()=>void}){
+type Person={id:string;name:string;email:string|null;phone:string|null;joined?:boolean};
+function RowMenu({task,lists,actions,onClose,onEdit,canUp,canDown,onNudge}:{task:BoardTask;lists:BearList[];actions:RowActions;onClose:()=>void;onEdit:()=>void;canUp:boolean;canDown:boolean;onNudge:(d:-1|1)=>void}){
+ const [people,setPeople]=useState<Person[]>([]);
  const [view,setView]=useState<'main'|'move'|'remind'|'share'>('main');
  const [when,setWhen]=useState('');const [who,setWho]=useState('');const [mode,setMode]=useState<'info'|'action'|'transfer'>('action');const [note,setNote]=useState('');
  const [link,setLink]=useState<string|null>(null);const [busy,setBusy]=useState(false);const [err,setErr]=useState<string|null>(null);
@@ -93,8 +98,10 @@ function RowMenu({task,lists,actions,onClose,onEdit}:{task:BoardTask;lists:BearL
   {view==='main'&&<div className="menu-list">
    <button type="button" onClick={onEdit}>Edit</button>
    <button type="button" onClick={()=>setView('move')}>Move to list</button>
+   {canUp&&<button type="button" onClick={()=>onNudge(-1)}>Move up</button>}
+   {canDown&&<button type="button" onClick={()=>onNudge(1)}>Move down</button>}
    <Link href={`/bear/help/${task.id}`}>Bear, help me with this</Link>
-   {!task.shared||task.shared.direction==='out'?<button type="button" onClick={()=>setView('share')}>Share Bear</button>:null}
+   {!task.shared||task.shared.direction==='out'?<button type="button" onClick={()=>{setView('share');apiGet<{people:Person[]}>('/api/bear/board/household').then(r=>setPeople(r.people)).catch(()=>{});}}>Share Bear</button>:null}
    <button type="button" onClick={()=>setView('remind')}>Remind me</button>
    <Link href={`/bear/tasks/${task.id}`}>Details</Link>
    <button type="button" className="danger" onClick={()=>{onClose();actions.remove(task);}}>Delete</button>
@@ -110,16 +117,23 @@ function RowMenu({task,lists,actions,onClose,onEdit}:{task:BoardTask;lists:BearL
   </div>}
   {view==='share'&&(link?<div style={{display:'grid',gap:12}}>
    <p className="small">Send this link to {who}. When they open it and say yes, {mode==='transfer'?'it becomes theirs and leaves your lists':mode==='action'?'Bear shows you when they’ve done it':'they can see it'}.</p>
-   <button type="button" className="btn coral sm" onClick={sendLink}>Send the link</button>
+   {(()=>{const p=people.find(x=>x.name.toLowerCase()===who.trim().toLowerCase());const text=`${mode==='transfer'?`Could you take over “${task.title}”?`:mode==='action'?`Could you do this: “${task.title}”?`:`For your info: “${task.title}”`} ${link}`;
+    return <div className="btn-row" style={{marginTop:0}}>
+     {p?.email&&<a className="btn coral sm" href={mailtoFor({to:p.email,subject:`Load Bear: ${task.title}`,body:text})}>Email it to {p.name}</a>}
+     {p?.phone&&<a className={`btn ${p.email?'ghost':'coral'} sm`} href={smsFor({to:p.phone,body:text})}>Text it to {p.name}</a>}
+     <button type="button" className={`btn ${p?.email||p?.phone?'ghost':'coral'} sm`} onClick={sendLink}>{p?.email||p?.phone?'Other ways':'Send the link'}</button>
+    </div>;})()}
    <p className="tiny muted" style={{wordBreak:'break-all'}}>{link}</p>
   </div>:<div style={{display:'grid',gap:12}}>
-   <label className="ce-field">Who<input value={who} onChange={e=>setWho(e.target.value)} placeholder="James" maxLength={60}/></label>
+   {people.length>0&&<div className="chips" role="group" aria-label="Your household" style={{gap:6}}>{people.map(p=><button type="button" key={p.id} className="chip" aria-pressed={who.trim().toLowerCase()===p.name.toLowerCase()} onClick={()=>setWho(p.name)}>{p.name}{p.joined?' ✓':''}</button>)}</div>}
+   <label className="ce-field">{people.length?'Or someone else':'Who'}<input value={who} onChange={e=>setWho(e.target.value)} placeholder="James" maxLength={60}/></label>
    <div className="menu-list" role="radiogroup" aria-label="How">
     {([['info','Share information','They can see it. It stays yours.'],['action','Ask them to do it','They do this part. You keep the bigger picture.'],['transfer','Hand it over','It becomes theirs once they accept.']] as const).map(([k,l,d])=>
      <button type="button" key={k} role="radio" aria-checked={mode===k} className={mode===k?'on':''} onClick={()=>setMode(k)}><strong>{l}</strong><span className="tiny muted" style={{display:'block'}}>{d}</span></button>)}
    </div>
    <label className="ce-field">Note (optional)<input value={note} onChange={e=>setNote(e.target.value)} maxLength={500}/></label>
    <button type="button" className="btn coral sm" disabled={!who.trim()||busy} onClick={share}>{busy?'Making the link…':'Make a link to send'}</button>
+   <Link href="/bear/me/household" className="tiny link-btn">Edit your household</Link>
   </div>)}
   {err&&<p className="note coral" role="alert" style={{marginTop:10}}>{err}</p>}
  </Sheet>;

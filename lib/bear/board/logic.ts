@@ -1,6 +1,7 @@
 // Brain Dump Board: the pure rules behind the redesign. Nothing here touches storage, so it is all testable.
 // Principle: design for interrupted lives, not perfectly planned days. Bear suggests; the person decides.
 import type {Profile,Task} from '../domain/types.ts';
+import {localParts} from '../domain/dates.ts';
 
 export interface BearList{id:string;title:string;icon:string;order:number}
 
@@ -109,3 +110,9 @@ export function pickMoments(tasks:Task[],minutes:number,now:Date,timeZone:string
 
 // ---------- Home ----------
 export const greetingFor=(hour:number,name:string)=>`${hour<12?'Good morning':hour<17?'Good afternoon':'Good evening'}${name?`, ${name}`:''}.`;
+
+// Her quiet hours (from Settings), in her own time zone. Used so share news never buzzes her phone at night.
+export function inQuietHours(n:{quietStartMinute:number;quietEndMinute:number},now:Date,timeZone:string){
+ const m=localParts(now,timeZone).minuteOfDay;
+ return n.quietStartMinute>n.quietEndMinute?m>=n.quietStartMinute||m<n.quietEndMinute:m>=n.quietStartMinute&&m<n.quietEndMinute;
+}

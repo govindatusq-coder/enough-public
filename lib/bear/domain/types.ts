@@ -81,6 +81,9 @@ export interface Profile extends Owned{
  // (word -> list, with how many times). Only choices the person actually made are recorded here.
  lists?:{id:string;title:string;icon:string;order:number}[];
  listLearning?:{word:string;listId:string;n:number;at:ISODateTime}[];
+ // The people she shares with (Share Bear). Email and phone are optional and only used to open her own Mail or Messages
+ // with the link filled in. joined: they have accepted a share, so they have Load Bear.
+ household?:{id:string;name:string;email:string|null;phone:string|null;joined?:boolean}[];
  // Set when the person opened a sign-in link sent to their email: proof they own the address.
  emailVerifiedAt?:ISODateTime|null;
  // What matters to this person: values, goals, responsibilities, non-negotiables (editable).

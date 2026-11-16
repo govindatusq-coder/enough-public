@@ -14,8 +14,10 @@ export default function Join({params}:{params:Promise<{token:string}>}){
  if(err)return <main id="main" className="bear-screen"><ErrorCard message={err}/><Link href="/bear/home" className="btn ghost sm" style={{marginTop:12}}>Go to Load Bear</Link></main>;
  if(!s)return <main id="main" className="bear-screen"><Skeleton/></main>;
  const ask=s.mode==='transfer'?`${s.from} would like you to take responsibility for ${s.title.charAt(0).toLowerCase()+s.title.slice(1)}.`:s.mode==='action'?`${s.from} has asked you to do this:`:`${s.from} shared this with you, for your information.`;
- async function answer(a:'accept'|'decline'|'discuss'){setBusy(true);try{const r=await apiSend<{status:string;taskId:string|null}>(`/api/bear/shares/${s!.id}/respond`,{answer:a,message:msg.trim()||null});
-  setDoneText(a==='accept'?(r.taskId?'It’s on your list now, in My Brain Dump.':'Got it. You’ll find it under Shared.'):a==='decline'?`Bear has let ${s!.from} know.`:`Bear has passed your message to ${s!.from}.`);}catch(e){setErr((e as Error).message);}finally{setBusy(false);}}
+ async function answer(a:'accept'|'decline'|'discuss'){setBusy(true);try{const r=await apiSend<{status:string;taskId:string|null;pushed:string}>(`/api/bear/shares/${s!.id}/respond`,{answer:a,message:msg.trim()||null});
+  // Only say they were notified if the notification actually went.
+  const told=r.pushed==='sent'?`${s!.from} has been notified.`:`${s!.from} will see it next time they open Load Bear.`;
+  setDoneText(a==='accept'?`${r.taskId?'It’s on your list now, in My Brain Dump.':'Got it. You’ll find it under Shared.'} ${told}`:a==='decline'?`Done. ${told}`:`Your message is with ${s!.from}. ${told}`);}catch(e){setErr((e as Error).message);}finally{setBusy(false);}}
  return <main id="main" className="bear-screen">
   <p className="eyebrow teal">Share Bear</p>
   {s.mine?<p className="note" style={{marginTop:10}}>This is your own link. Send it to the person you want to share with.</p>:<>

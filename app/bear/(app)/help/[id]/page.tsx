@@ -11,11 +11,12 @@ import {ErrorCard,Skeleton,TopBar} from '@/components/bear/ui';
 
 type Draft={to:string;subject:string;body:string};
 type Progress={draft?:Draft|null;notes?:string|null;steps?:{text:string;done:boolean}[]|null;nextAction?:string|null;savedAt:string}|null;
-interface Data{task:{id:string;title:string;status:string;dueAt:string|null;notes:string|null;minutes:number;minutesBy:string|null;readiness:string;sharedOut:{to:string;mode:string}|null;sharedIn:{from:string}|null};help:Help|null;progress:Progress}
+interface Data{task:{id:string;title:string;status:string;dueAt:string|null;notes:string|null;minutes:number;minutesBy:string|null;readiness:string;sharedOut:{to:string;mode:string}|null;sharedIn:{from:string}|null};help:Help|null;progress:Progress;aiAvailable?:boolean}
 export default function HelpPage({params}:{params:Promise<{id:string}>}){
  const {id}=use(params);const router=useRouter();
  const [d,setD]=useState<Data|null>(null);const [err,setErr]=useState<string|null>(null);
  const [draft,setDraft]=useState<Draft|null>(null);const [notes,setNotes]=useState('');const [steps,setSteps]=useState<{text:string;done:boolean}[]>([]);const [next,setNext]=useState('');
+ const [ask,setAsk]=useState('');const [writing,setWriting]=useState(false);const [prevDraft,setPrevDraft]=useState<Draft|null|undefined>(undefined);const [timeOpen,setTimeOpen]=useState(false);
  const [saved,setSaved]=useState<'idle'|'saving'|'saved'|'offline'>('idle');const timer=useRef<ReturnType<typeof setTimeout>|null>(null);const initial=useRef<string|null>(null);const key=`bear-work-${id}`;
  const load=useCallback(()=>apiGet<Data>(`/api/bear/board/help/${id}`).then(r=>{
   setD(r);const p=r.progress;let local:Partial<{draft:Draft;notes:string;steps:{text:string;done:boolean}[];next:string;at:string}>={};
@@ -39,11 +40,18 @@ export default function HelpPage({params}:{params:Promise<{id:string}>}){
  if(err)return <main id="main" className="bear-screen"><TopBar back={{href:'/bear/home',label:'Home'}}/><ErrorCard message={err} retry={load}/></main>;
  if(!d)return <main id="main" className="bear-screen"><Skeleton/></main>;
  const h=d.help;const t=d.task;
+ const kind:'email'|'message'|'followup'=h?.kind==='message'?'message':h?.kind==='followup'?'followup':'email';
+ const canWrite=!!d.aiAvailable&&t.status!=='done'&&h?.kind!=='bill'&&h?.kind!=='form';
+ // Bear writes it with AI; the old version can be brought back. Saving happens through the normal autosave.
+ async function write(){setWriting(true);setErr(null);try{const r=await apiSend<{draft:Draft}>(`/api/bear/board/help/${id}/draft`,{ask:ask.trim()||null,current:draft?.body?draft:null,kind});setPrevDraft(draft);setDraft(r.draft);setAsk('');}catch(e){setErr((e as Error).message);}finally{setWriting(false);}}
+ // Her own time estimate always wins over Bear's guess. null hands it back to Bear.
+ async function setMinutes(m:number|null){setTimeOpen(false);try{await apiSend(`/api/bear/board/tasks/${id}/details`,{minutes:m},'PATCH');await load();}catch(e){setErr((e as Error).message);}}
  async function done(){await apiSend(`/api/bear/tasks/${id}/complete`,{method:null}).catch(e=>setErr((e as Error).message));router.push('/bear/home');}
  return <main id="main" className="bear-screen">
   <TopBar back={{href:'/bear/home',label:'Home'}}/>
   <h1 style={{fontSize:24,marginTop:6}}>{t.title}</h1>
-  <p className="small muted" style={{marginTop:4}}>About {t.minutes} min{t.dueAt?` · by ${formatAU(t.dueAt,'short')}`:''}{t.sharedIn?` · from ${t.sharedIn.from}`:''}{t.sharedOut?` · shared with ${t.sharedOut.to}`:''}</p>
+  <p className="small muted" style={{marginTop:4}}><button type="button" className="link-btn" aria-expanded={timeOpen} onClick={()=>setTimeOpen(o=>!o)} aria-label={`About ${t.minutes} minutes${t.minutesBy==='you'?' (your estimate)':' (Bear’s guess)'}. Change`}>About {t.minutes} min{t.minutesBy==='you'?'':' (a guess)'}</button>{t.dueAt?` · by ${formatAU(t.dueAt,'short')}`:''}{t.sharedIn?` · from ${t.sharedIn.from}`:''}{t.sharedOut?` · shared with ${t.sharedOut.to}`:''}</p>
+  {timeOpen&&<div className="chips" role="group" aria-label="How long does it take?" style={{gap:6,marginTop:8}}>{[2,5,10,15,30,60,120].map(m=><button type="button" key={m} className="chip" aria-pressed={t.minutesBy==='you'&&t.minutes===m} onClick={()=>setMinutes(m)}>{m<60?`${m} min`:m===60?'1 hour':'2 hours'}</button>)}{t.minutesBy==='you'&&<button type="button" className="chip" onClick={()=>setMinutes(null)}>Let Bear guess</button>}</div>}
   <p className="tiny" role="status" aria-live="polite" style={{marginTop:6,color:saved==='offline'?'var(--coral)':'var(--ink-3)'}}>{saved==='saving'?'Saving…':saved==='saved'?'Saved. You can stop any time.':saved==='offline'?'Kept on this phone. Bear will save it when you’re back online.':'Anything you type here is saved as you go.'}</p>
   {t.status==='done'&&<p className="note teal" style={{marginTop:12}}>This one’s done.</p>}
   {h&&<p className="eyebrow teal" style={{marginTop:18}}>{h.label}</p>}
@@ -55,6 +63,11 @@ export default function HelpPage({params}:{params:Promise<{id:string}>}){
    <label className="ce-field">Message<textarea value={draft.body} rows={8} onChange={e=>setDraft({...draft,body:e.target.value})} maxLength={6000}/></label>
    <div className="btn-row"><a className="btn coral sm" href={h?.kind==='message'?smsFor(draft):mailtoFor(draft)}>{h?.kind==='message'?'Open in Messages':'Open in Mail'}</a><button type="button" className="btn ghost sm" onClick={()=>navigator.clipboard?.writeText(draft.body).catch(()=>{})}>Copy</button></div>
    <p className="tiny muted">You send it from your own app. Bear never sends anything for you.</p>
+  </div>}
+  {canWrite&&(draft||!h||h.kind==='call'||h.kind==='steps')&&<div className="glass" style={{padding:14,marginTop:10,display:'grid',gap:8}}>
+   <label className="ce-field">{draft?'Want Bear to rewrite it? Say what to change (optional)':'Need to send a message about this? Say what it should say (optional)'}<input value={ask} onChange={e=>setAsk(e.target.value)} placeholder={draft?'e.g. shorter, more firm, mention Friday':'e.g. ask if Thursday at 4 works'} maxLength={500}/></label>
+   <div className="btn-row" style={{marginTop:0}}><button type="button" className="btn ghost sm" disabled={writing} onClick={write}>{writing?'Bear is writing…':draft?'Ask Bear to rewrite it':'Ask Bear to write it'}</button>{prevDraft!==undefined&&!writing&&<button type="button" className="link-btn small" onClick={()=>{setDraft(prevDraft);setPrevDraft(undefined);}}>Undo</button>}</div>
+   <p className="tiny muted">Bear only uses what you’ve told it. Anything it doesn’t know is left in [brackets] for you to fill in.</p>
   </div>}
   {h?.searchFor&&<a className="btn ghost sm" style={{marginTop:10}} href={`https://www.google.com/search?q=${encodeURIComponent(h.searchFor)}`} target="_blank" rel="noopener noreferrer">Find their number</a>}
   {steps.length>0&&<ul className="b-list glass" style={{marginTop:10,padding:'4px 8px'}}>{steps.map((s,i)=><li key={i} className="b-row"><button type="button" className={`b-check${s.done?' on':''}`} role="checkbox" aria-checked={s.done} aria-label={s.text} onClick={()=>setSteps(a=>a.map((x,j)=>j===i?{...x,done:!x.done}:x))}><span/></button><div className="b-main"><span className="b-title" style={s.done?{textDecoration:'line-through',color:'var(--ink-3)'}:undefined}>{s.text}</span></div></li>)}</ul>}

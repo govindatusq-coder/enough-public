@@ -104,7 +104,7 @@ try{
   await page.waitForSelector('button:has-text("Join the study")');
  });
  await step('navigation is Home, Shared, Bear Helps, Settings; Bear Ideas is still reachable from Settings',async()=>{
-  await page.goto(base+'/bear/overview');await page.waitForSelector('.bear-nav');assert.deepEqual(await page.$$eval('.bear-nav a span',e=>e.map(x=>x.textContent)),['Home','Shared','Bear Helps','Settings']);
+  await page.goto(base+'/bear/overview');await page.waitForSelector('.bear-nav');assert.deepEqual(await page.$$eval('.bear-nav a:not(.nav-brand) span',e=>e.map(x=>x.textContent)),['Home','Shared','Bear Helps','Settings']);
   await page.goto(base+'/bear/me');await page.click('a:has-text("Bear Ideas")');await page.waitForURL(/\/bear\/ideas/);
  });
  await step('Settings has What matters to you, with goals Bear can use',async()=>{await page.goto(base+'/bear/me');await page.waitForSelector('#matters');await page.click('[aria-label="Values"] button.chip:has-text("Parenting")');await page.waitForSelector('[aria-label="Values"] button.chip[aria-pressed="true"]:has-text("Parenting")');await page.fill('#goal-text','Maintain my professional registration');await page.click('#matters + .card button.chip:has-text("Must not slip")');await page.click('#matters + .card button:has-text("Add")');await page.waitForSelector('text=Maintain my professional registration');await page.locator('#matters').scrollIntoViewIfNeeded();await shot('53-matters');});

@@ -9,6 +9,7 @@ import {z} from 'zod';
 import type {SupabaseClient} from '@supabase/supabase-js';
 import type {Task} from '../domain/types.ts';
 import {newId,type BearStore} from '../store/store.ts';
+import {ensureProfile} from '../services/profile.ts';
 
 export type ShareMode='info'|'action'|'transfer';
 export type ShareStatus='invited'|'accepted'|'discussing'|'declined'|'done'|'revoked';
@@ -88,6 +89,9 @@ export async function shareTask(store:BearStore,backend:ShareBackend,senderName:
   senderName:senderName||'Someone',toName:input.toName,senderTaskId:task.id,recipientTaskId:null,messages:[],senderSeen:true,createdAt:at,updatedAt:at};
  await backend.create(share,await hashToken(token));
  await store.update('tasks',task.id,{sharedOut:{shareId:share.id,mode:input.mode,to:input.toName}});
+ // The person is remembered in her household list, so next time it is one tap. She can edit or remove them in Settings.
+ const profile=await ensureProfile(store);const hh=profile.household||[];
+ if(!hh.some(h=>h.name.toLowerCase()===input.toName.toLowerCase()))await store.update('profiles',profile.id,{household:[...hh,{id:newId(),name:input.toName,email:null,phone:null}].slice(0,30)});
  return {share,link:`/bear/shared/join/${token}`};
 }
 export async function openInvite(backend:ShareBackend,token:string){
@@ -124,8 +128,11 @@ export async function revoke(store:BearStore,backend:ShareBackend,shareId:string
 // Bring her side up to date with what the other person did. Called whenever her board or Shared screen loads.
 // Accepted: she is now waiting on them (a transfer leaves her lists). Done: a transfer is finished for her too.
 // Declined: it is hers again, unchanged.
-export async function syncMine(store:BearStore,backend:ShareBackend,complete:(taskId:string)=>Promise<unknown>){
+export async function syncMine(store:BearStore,backend:ShareBackend,complete:(taskId:string)=>Promise<unknown>,onFinished:(s:Share)=>Promise<unknown>=async()=>{}){
  const {sent,received}=await backend.mine();
+ // Someone who has accepted a share has Load Bear: her household list shows it.
+ const joined=new Set(sent.filter(s=>['accepted','done'].includes(s.status)).map(s=>s.toName.trim().toLowerCase()));
+ if(joined.size){const profile=await ensureProfile(store);const hh=profile.household||[];if(hh.some(h=>joined.has(h.name.toLowerCase())&&!h.joined))await store.update('profiles',profile.id,{household:hh.map(h=>joined.has(h.name.toLowerCase())?{...h,joined:true}:h)});}
  for(const s of sent){
   const task=await store.get('tasks',s.senderTaskId);if(!task||task.sharedOut?.shareId!==s.id)continue;
   if(s.status==='accepted'&&s.mode!=='info'&&task.readiness!=='waiting'&&task.status==='open'){
@@ -137,7 +144,7 @@ export async function syncMine(store:BearStore,backend:ShareBackend,complete:(ta
  }
  for(const s of received){
   if(!s.recipientTaskId)continue;const t=await store.get('tasks',s.recipientTaskId);if(!t)continue;
-  if(t.status==='done'&&s.status==='accepted')await backend.save({...s,status:'done',senderSeen:false});
+  if(t.status==='done'&&s.status==='accepted'){const saved=await backend.save({...s,status:'done',senderSeen:false});await onFinished(saved).catch(()=>null);}
   if(s.status==='revoked'&&t.status==='open')await store.update('tasks',t.id,{status:'dropped'});
  }
  return {sent,received};

@@ -63,8 +63,8 @@ This report covers what was built for the "interrupted lives, not perfectly plan
 
 ## Testing
 
-- `npm run verify` (typecheck, lint, all unit tests, the two stress scripts) passed: 723 tests. That includes the 16 new board tests, which cover the eight scenarios in the brief plus lists, ordering, repeats, older tasks and Bear Helps.
-- `scripts/test-bear-board.mjs`: a 17-step browser walkthrough at phone width (390 px, touch) plus one desktop step (1280 px), with no AI key. All 17 passed. Screenshots go to `.bear-board-results`.
+- `npm run verify` (typecheck, lint, all unit tests, the two stress scripts) passed: 728 tests. That includes 21 board tests, which cover the eight scenarios in the brief plus lists, ordering, repeats, older tasks and Bear Helps.
+- `scripts/test-bear-board.mjs`: a browser walkthrough (17 steps at first, now 20) at phone width (390 px, touch) plus one desktop step (1280 px), with no AI key. All 17 passed. Screenshots go to `.bear-board-results`.
 - `scripts/test-bear-browser.mjs` (the existing 46-step walkthrough of onboarding, bills, triage, chat, calendar, areas and so on) was updated for the new home and navigation. It passed 46 of 46 on a production build (`BEAR_TEST_MODE=start`), with no console errors. The board walkthrough also passed 17 of 17 on the same build.
 - Not tested in a browser: a second real account opening a share link. The browser can only sign in as one local user, so the two-person flow is covered by the unit tests instead. Not tested at all: the Supabase policies, trigger and claim function against a real database (see risks below).
 
@@ -72,12 +72,20 @@ This report covers what was built for the "interrupted lives, not perfectly plan
 
 1. **Apply the migration** `20261116120000_bear_shares.sql` in Supabase (SQL editor). Until then Share Bear says "Sharing needs a database update first", and everything else works.
 2. Voice uses the browser's speech recognition (Safari on iPhone and Chrome support it). Where it isn't available the Speak button is hidden, and the keyboard's own microphone still works.
-3. Share links are passed on by the person: copied, or sent through the phone's share sheet. Bear doesn't send them by email or SMS, and there is no household member list yet; each share is one link to one person.
-4. When the recipient accepts, the sender sees it in the app (home notice and Shared screen), not as a push notification.
-5. Drafts for emails and follow-ups are Bear's own templates, plus drafts the triage reader prepared from documents. There is no AI drafting from scratch on this screen yet.
-6. Time estimates are rules of thumb. She can set her own number, but only through the API so far; there is no field on screen yet.
-7. Drag and drop works by pointer, on touch and mouse. Keyboard users move items with the ••• menu (Move to list); there is no keyboard reordering within a list yet.
-8. On desktop the navigation is the existing floating bar, not a sidebar.
+3. Share links are still sent by her, from her own Mail, Messages or share sheet. Bear doesn't send emails or texts itself, and there is no direct in-app delivery to a household member yet; each share is one link.
+4. Push notifications about shares need the existing reminder delivery set up (VAPID keys and the delivery secret) and the sender to have allowed notifications on a device. Without those, news shows in the app only. During her quiet hours nothing is pushed and nothing is queued for later; she sees it in the app.
+5. AI drafts need the existing AI key and count against a daily cap of 40 drafts. Without a key the "Ask Bear to write it" button is hidden and the templates stay.
+
+## Added after the first report
+
+| Item | What exists now | How it was verified |
+|---|---|---|
+| Push notifications for shares | When someone accepts, declines, wants to talk or finishes a shared task, the sender gets a push straight away, through the same delivery account reminders use (no master key). Nothing is pushed during her quiet hours, if notifications are off, or if push isn't set up; she sees it in the app instead. The person accepting is told honestly either "Sarah has been notified" or "Sarah will see it next time she opens Load Bear". | Unit tests: quiet hours, and the "finished" hook firing exactly once. The real push send was **not** tested; there are no push keys or devices here. |
+| Household list | Settings → Your household: name plus optional email and mobile, checked when saved. Anyone she shares with is added automatically, without duplicates. A ✓ appears once they've accepted something. In Share Bear she taps a name, and when they have an email or mobile the link opens in her own Mail ("Email it to James") or Messages with everything filled in. | Unit and browser |
+| AI drafts | On the work page, "Ask Bear to write it" (or "rewrite it", with an optional "say what to change"). Undo brings back the previous version. It uses only what she gave: missing details are left as [placeholders], and any email address or number she didn't supply is removed. It writes in Australian English and signs with her first name. Nothing is sent. | Unit tests with a stand-in AI: the instructions, the invented-address guard, the daily cap, and failures leaving her draft alone. Not run against the real AI here. |
+| Her own time estimate | On the work page, tap "About 10 min (a guess)" and pick 2, 5, 10, 15 or 30 minutes, 1 hour or 2 hours, or "Let Bear guess". Her number wins everywhere, including "Got a moment?". | Unit and browser |
+| Keyboard reordering | The drag handle is a real button. Up and down arrows move the item within its list, focus follows it, and a spoken status says "Moved up: …". The ••• menu also has Move up and Move down. | Browser: order saved after reload, focus kept |
+| Desktop sidebar | At 1024 px and wider the navigation becomes a quiet left sidebar with the Load Bear name; content sits clear of it. Phones and tablets keep the floating bar. | Browser at 1280 px: sidebar position, content clear of it, no sideways scroll |
 
 ## Risks
 

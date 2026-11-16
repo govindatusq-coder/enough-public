@@ -43,7 +43,7 @@ export default function Home(){
    <section className="board-col" aria-labelledby="bd-h" data-drop="inbox">
     <h2 id="bd-h" className="board-h">🧠 My Brain Dump{board.inbox.length>0&&<span className="faint"> {board.inbox.length}</span>}</h2>
     <ul className="b-list">
-     {board.inbox.map((t,i)=><TaskRow key={t.id} task={t} index={i} lists={board.lists} actions={actions} dragging={dragging===t.id} fresh={fresh.has(t.id)}/>)}
+     {board.inbox.map((t,i)=><TaskRow key={t.id} task={t} index={i} count={board.inbox.length} lists={board.lists} actions={actions} dragging={dragging===t.id} fresh={fresh.has(t.id)}/>)}
      <AddRow listId={null} onAdded={load} say={say}/>
     </ul>
     {board.inbox.length===0&&<p className="faint" style={{padding:'4px 4px 0'}}>Anything you unload lands here first. Leave it here as long as you like.</p>}
@@ -52,7 +52,7 @@ export default function Home(){
     <div className="board-h-row"><h2 id="ml-h" className="board-h">My Lists</h2><Link href="/bear/me/lists" className="link-btn small">Edit lists</Link></div>
     {board.lists.map(l=>{const isOpen=open[l.id]??false;return <div key={l.id} className="list-block glass" data-drop={l.id}>
      <button type="button" className="list-head" aria-expanded={isOpen} onClick={()=>toggle(l.id)}><span className="list-icon" aria-hidden="true">{l.icon}</span><span className="list-title">{l.title}</span><span className="faint">{count(l.id)||''}</span><span className={`chev${isOpen?' up':''}`} aria-hidden="true">›</span></button>
-     {isOpen&&<ul className="b-list">{board.byList[l.id].map((t,i)=><TaskRow key={t.id} task={t} index={i} lists={board.lists} actions={actions} dragging={dragging===t.id}/>)}<AddRow listId={l.id} onAdded={load} say={say}/></ul>}
+     {isOpen&&<ul className="b-list">{board.byList[l.id].map((t,i)=><TaskRow key={t.id} task={t} index={i} count={board.byList[l.id].length} lists={board.lists} actions={actions} dragging={dragging===t.id}/>)}<AddRow listId={l.id} onAdded={load} say={say}/></ul>}
     </div>;})}
     {board.doneToday.length>0&&<details className="done-today"><summary className="faint">Done lately · {board.doneToday.length}</summary><ul>{board.doneToday.map(d=><li key={d.id} className="faint"><s>{d.title}</s></li>)}</ul></details>}
     <p className="board-links small"><Link href="/bear/calendar">Calendar</Link> · <Link href="/bear/overview">Your areas</Link> · <Link href="/bear/ideas">Bear Ideas</Link></p>

@@ -49,6 +49,7 @@ export default function Me(){
    <section className="section"><p className="eyebrow">Lists and places</p><div className="card" style={{display:'grid',gap:2}}>
     <Link href="/bear/me/lists" className="row">My Lists: rename, add, reorder, change icons</Link>
     <Link href="/bear/shared" className="row">Shared: what you’ve handed over, and what’s been handed to you</Link>
+    <Link href="/bear/me/household" className="row">Your household: who you share with</Link>
     <Link href="/bear/calendar" className="row">Bear’s calendar</Link>
     <Link href="/bear/overview" className="row">Your areas (Family, Home, Money, Work…)</Link>
     <Link href="/bear/ideas" className="row">Bear Ideas</Link>
