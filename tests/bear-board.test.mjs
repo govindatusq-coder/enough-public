@@ -14,8 +14,9 @@ const backend=new MemoryBackend();let n=0;
 async function person(name='Sarah'){const id=`b0b0b0b0-0000-4000-8000-${String(++n).padStart(12,'0')}`;const s=backend.for(id);await ensureProfile(s);await saveProfile(s,{name,areas:['family'],onboardingComplete:true});return s;}
 const DUMP='I need to pay the electricity bill, order school lunches, call the possum man, book the podiatrist, follow up with the builder, organise Christmas presents, fix the bathroom mould and eventually build a new chicken pen.';
 
-test('the six starter lists, in order, with the exact names',()=>{
- assert.deepEqual(STARTER_LISTS.map(l=>`${l.icon} ${l.title}`),['🌙 Nighttime Tasks','📞 Phone Calls','🌱 Aspirational','🔄 Organise – Follow-up','✨ Organise – Time Permitting','📅 This Week/Weekend']);
+test('the six starter lists (v2 names), in order, with the exact names',()=>{
+ assert.deepEqual(STARTER_LISTS.map(l=>`${l.icon} ${l.title}`),['🌙 Night Time','📞 Phone Calls','🔄 Organise Follow-Up','✨ Organise Time-Permitting','📅 This Week & Weekend','🌱 Aspirations']);
+ assert.deepEqual(listsOf({lists:[{id:'night',title:'Nighttime Tasks',icon:'🌙',order:0},{id:'x',title:'Garden',icon:'🌱',order:1}]}).map(l=>l.title),['Night Time','Garden'],'old default names update; her own names stay');
 });
 
 test('a brain dump becomes separate checklist items, all in the Brain Dump, none moved into lists',async()=>{

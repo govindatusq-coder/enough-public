@@ -14,7 +14,8 @@ export type Say=(text:string,undo?:()=>void)=>void;
 // ---------- Unload: one box for typing and talking ----------
 type Rec={start():void;stop():void;abort():void;onresult:((e:{resultIndex:number;results:ArrayLike<{isFinal:boolean;0:{transcript:string}}>})=>void)|null;onend:(()=>void)|null;onerror:((e:{error:string})=>void)|null;continuous:boolean;interimResults:boolean;lang:string};
 const DRAFT_KEY='bear-dump-draft';
-export function BrainDumpInput({onUnloaded,say}:{onUnloaded:(r:{added:{id:string;title:string}[];already:{id:string;title:string}[]})=>void;say:Say}){
+export function BrainDumpInput({onUnloaded,say,placeholder='Brain dump it here…',card=false,onFiles,filesBusy=false}:{onUnloaded:(r:{added:{id:string;title:string}[];already:{id:string;title:string}[];tip?:{taskId:string;text:string}|null})=>void;say:Say;placeholder?:string;card?:boolean;onFiles?:(files:File[])=>void;filesBusy?:boolean}){
+ const fileRef=useRef<HTMLInputElement>(null);
  const [text,setText]=useState('');const [busy,setBusy]=useState(false);const [failed,setFailed]=useState<string|null>(null);
  const [listening,setListening]=useState(false);const [canTalk,setCanTalk]=useState(false);const rec=useRef<Rec|null>(null);const base=useRef('');const via=useRef<'text'|'voice'>('text');
  const box=useRef<HTMLTextAreaElement>(null);
@@ -34,15 +35,19 @@ export function BrainDumpInput({onUnloaded,say}:{onUnloaded:(r:{added:{id:string
  async function unload(){
   const t=text.trim();if(!t||busy)return;if(listening)rec.current?.stop();
   setBusy(true);setFailed(null);
-  try{const r=await apiSend<{added:{id:string;title:string}[];already:{id:string;title:string}[]}>('/api/bear/board/dump',{text:t,via:via.current});setText('');via.current='text';onUnloaded(r);}
+  try{const r=await apiSend<{added:{id:string;title:string}[];already:{id:string;title:string}[];tip?:{taskId:string;text:string}|null}>('/api/bear/board/dump',{text:t,via:via.current});setText('');via.current='text';onUnloaded(r);}
   catch(e){setFailed((e as Error).message||'Bear couldn’t take that just now.');}
   finally{setBusy(false);}
  }
  // One box, like the design: type or talk, then the arrow. It grows as she writes more than a line.
- return <section className={`dump-box${text.includes('\n')||text.length>34?' tall':''}`} aria-label="Brain dump">
+ return <section className={card?'drop-card':`dump-box${text.includes('\n')||text.length>34?' tall':''}`} aria-label="Drop it here">
   <label htmlFor="dump-text" className="sr-only">What’s on your mind?</label>
   <textarea id="dump-text" ref={box} value={text} rows={1} onChange={e=>{setText(e.target.value);if(!listening)via.current='text';}} onKeyDown={e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();unload();}}}
-   placeholder={listening?'Listening…':'Brain dump it here…'} disabled={busy} maxLength={12000}/>
+   placeholder={listening?'Listening…':placeholder} disabled={busy} maxLength={12000}/>
+  {card&&<span className="drop-spacer" aria-hidden="true"/>}
+  {onFiles&&<><input ref={fileRef} type="file" accept="image/*,application/pdf" multiple hidden onChange={e=>{const f=[...(e.target.files||[])];e.target.value='';if(f.length)onFiles(f);}}/>
+   <button type="button" className="dump-mic drop-attach" onClick={()=>fileRef.current?.click()} aria-label="Add a photo or PDF" disabled={busy||filesBusy}>
+    {filesBusy?<span className="dots" aria-hidden="true"><i/><i/><i/></span>:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 8"/></svg>}</button></>}
   {canTalk&&<button type="button" className={`dump-mic${listening?' on':''}`} onClick={talk} aria-pressed={listening} aria-label={listening?'Stop listening':'Speak instead'} disabled={busy}>
    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>}
   <button type="button" className="dump-go" onClick={unload} disabled={busy||!text.trim()} aria-label={busy?'Sorting it out':'Unload'}>
@@ -54,7 +59,7 @@ export function BrainDumpInput({onUnloaded,say}:{onUnloaded:(r:{added:{id:string
 
 // ---------- A checklist row ----------
 const lightDot=(l:BoardTask['light'])=>l==='red'?'var(--coral)':l==='amber'?'var(--mustard)':null;
-export function TaskRow({task,lists,index,count,actions,dragging,fresh}:{task:BoardTask;lists:BearList[];index:number;count:number;actions:RowActions;dragging:boolean;fresh?:boolean}){
+export function TaskRow({task,lists,index,count,actions,dragging,fresh,detailHref,meta}:{task:BoardTask;lists:BearList[];index:number;count:number;actions:RowActions;dragging:boolean;fresh?:boolean;detailHref?:string;meta?:string|null}){
  // Reorder from the keyboard: arrow keys on the handle. Focus follows the row to its new place.
  const nudge=(d:-1|1)=>{const to=index+d;if(to<0||to>=count)return;actions.move(task,task.listId,to);actions.say(`Moved ${d<0?'up':'down'}: ${task.title}`);requestAnimationFrame(()=>requestAnimationFrame(()=>(document.querySelector(`[data-row="${task.id}"] .b-handle`) as HTMLElement|null)?.focus()));};
  const [editing,setEditing]=useState(false);const [title,setTitle]=useState(task.title);const [menu,setMenu]=useState(false);
@@ -67,12 +72,14 @@ export function TaskRow({task,lists,index,count,actions,dragging,fresh}:{task:Bo
    <div className="b-meta">
     {lightDot(task.light)&&<i className="b-dot" style={{background:lightDot(task.light)!}} aria-label={task.light==='red'?'Urgent':'Soon'}/>}
     {task.dueAt&&<span>{formatAU(task.dueAt,'short')}{task.dueTime?` · ${task.dueTime}`:''}</span>}
+    {meta&&<span>{meta}</span>}
     {task.readiness==='in_progress'&&<Link href={`/bear/help/${task.id}`} className="b-tag">Started · pick up</Link>}
     {task.readiness==='waiting'&&<span className="b-tag">{task.shared?`With ${task.shared.who}`:'Waiting'}</span>}
     {task.shared?.direction==='in'&&<span className="b-tag">From {task.shared.who}</span>}
     {task.shared?.direction==='out'&&task.readiness!=='waiting'&&<span className="b-tag">Shared with {task.shared.who}</span>}
    </div>
   </div>
+  {detailHref&&<Link href={detailHref} className="b-more b-detail" aria-label={`Open ${task.title}`}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></Link>}
   <button type="button" className="b-more" aria-label={`More for ${task.title}`} aria-haspopup="dialog" onClick={()=>setMenu(true)}>
    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
   <button type="button" className="b-handle" aria-label={`Reorder ${task.title}. Use the up and down arrow keys`} onPointerDown={e=>actions.dragStart(e,task)} onKeyDown={e=>{if(e.key==='ArrowUp'){e.preventDefault();nudge(-1);}else if(e.key==='ArrowDown'){e.preventDefault();nudge(1);}}}>
@@ -101,7 +108,7 @@ function RowMenu({task,lists,actions,onClose,onEdit,canUp,canDown,onNudge}:{task
    <Link href={`/bear/help/${task.id}`}>Bear, help me with this</Link>
    {!task.shared||task.shared.direction==='out'?<button type="button" onClick={()=>{setView('share');apiGet<{people:Person[]}>('/api/bear/board/household').then(r=>setPeople(r.people)).catch(()=>{});}}>Share Bear</button>:null}
    <button type="button" onClick={()=>setView('remind')}>Remind me</button>
-   <Link href={`/bear/tasks/${task.id}`}>Details</Link>
+   <Link href={`/bear/brain/${task.id}`}>Details</Link>
    <button type="button" className="danger" onClick={()=>{onClose();actions.remove(task);}}>Delete</button>
   </div>}
   {view==='move'&&<div className="menu-list">

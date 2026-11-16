@@ -103,8 +103,8 @@ try{
   await page.goto(base+'/bear/me');await page.waitForSelector('text=Nothing to answer right now');await page.click('button:has-text("Leave the study")');await page.click('[role="dialog"] button:has-text("Leave and delete my answers")');
   await page.waitForSelector('button:has-text("Join the study")');
  });
- await step('navigation is Home, Shared, Bear Helps, Settings; Bear Ideas is still reachable from Settings',async()=>{
-  await page.goto(base+'/bear/overview');await page.waitForSelector('.bear-nav');assert.deepEqual(await page.$$eval('.bear-nav a:not(.nav-brand) span',e=>e.map(x=>x.textContent)),['Home','Shared','Bear Helps','Settings']);
+ await step('navigation is Drop Bear, Got a Moment?, Bear Brain; Bear Ideas is still reachable from Settings',async()=>{
+  await page.goto(base+'/bear/overview');await page.waitForSelector('.bear-nav');assert.deepEqual(await page.$$eval('.bear-nav a:not(.nav-brand) span',e=>e.map(x=>x.textContent)),['Drop Bear','Got a Moment?','Bear Brain']);
   await page.goto(base+'/bear/me');await page.click('a:has-text("Bear Ideas")');await page.waitForURL(/\/bear\/ideas/);
  });
  await step('Settings has What matters to you, with goals Bear can use',async()=>{await page.goto(base+'/bear/me');await page.waitForSelector('#matters');await page.click('[aria-label="Values"] button.chip:has-text("Parenting")');await page.waitForSelector('[aria-label="Values"] button.chip[aria-pressed="true"]:has-text("Parenting")');await page.fill('#goal-text','Maintain my professional registration');await page.click('#matters + .card button.chip:has-text("Must not slip")');await page.click('#matters + .card button:has-text("Add")');await page.waitForSelector('text=Maintain my professional registration');await page.locator('#matters').scrollIntoViewIfNeeded();await shot('53-matters');});
@@ -270,11 +270,11 @@ try{
  await step('voice option is present',async()=>{await page.goto(base+'/bear/capture/more');await page.click('button:has-text("Say it")');await page.waitForSelector('#voicetext');await shot('28-voice');});
  await step('me screen',async()=>{await page.goto(base+'/bear/me');await page.waitForSelector('text=Reminders');await shot('24-me');});
  await step('Settings has a clear log out that asks first',async()=>{await page.goto(base+'/bear/me');await page.click('button:has-text("Log out")');await page.waitForSelector('button:has-text("Yes, log out")');await shot('25-logout');await page.click('button:has-text("Stay logged in")');await page.waitForSelector('button:has-text("Log out")');});
- await step('after all of that, the Home board still loads every open thing (an account with lots of history)',async()=>{
+ await step('after all of that, Bear Brain still loads every open thing (an account with lots of history)',async()=>{
   const t0=Date.now();const r=await page.evaluate(async()=>{const x=await fetch('/api/bear/board');return {status:x.status,body:await x.json()};});
   assert.equal(r.status,200,'board API: '+JSON.stringify(r.body).slice(0,300));
   const n=r.body.board.inbox.length+Object.values(r.body.board.byList).reduce((a,l)=>a+l.length,0);
-  await page.goto(base+'/bear/home');await page.waitForSelector('#dump-text',{timeout:15000});await page.waitForSelector('[data-drop="inbox"] .b-row');
+  await page.goto(base+'/bear/brain');await page.waitForSelector('.v2-cat',{timeout:15000});const shownTotal=Number((await page.$eval('.v2-select select option',o=>o.textContent)).match(/\((\d+)\)/)[1]);assert.ok(shownTotal>=n-2&&shownTotal<=n,`Bear Brain shows ${shownTotal} of ${n}`);
   console.log('   board: '+n+' open things, '+(Date.now()-t0)+' ms');await shot('99-home-after-everything');
  });
  await step('no console errors',async()=>{const real=errors.filter(e=>!/favicon|manifest|404|hydrat|Download the React DevTools/i.test(e));assert.deepEqual(real,[]);});

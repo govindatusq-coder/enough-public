@@ -46,8 +46,10 @@ export default function Me(){
   <main id="main" className="bear-screen">
    <p className="eyebrow">Settings</p>
    <div style={{display:'flex',gap:14,alignItems:'center'}}><Avatar size={84}/><div><h1>{p.name||'You'}</h1><p className="muted small">{data.user.email}</p></div></div>
-   <section className="section"><p className="eyebrow">Lists and places</p><div className="card" style={{display:'grid',gap:2}}>
-    <Link href="/bear/me/lists" className="row">My Lists: rename, add, reorder, change icons</Link>
+   <section className="section"><p className="eyebrow">Bear Brain and places</p><div className="card" style={{display:'grid',gap:2}}>
+    <Link href="/bear/brain" className="row">Bear Brain: everything Bear is holding</Link>
+    <Link href="/bear/me/lists" className="row">Categories: rename, add, reorder, change icons</Link>
+    <Link href="/bear/me/learned" className="row">What Bear has learned about how you like to do things</Link>
     <Link href="/bear/shared" className="row">Shared: what you’ve handed over, and what’s been handed to you</Link>
     <Link href="/bear/me/household" className="row">Your household: who you share with</Link>
     <Link href="/bear/calendar" className="row">Bear’s calendar</Link>

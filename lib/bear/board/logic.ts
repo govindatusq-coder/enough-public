@@ -7,15 +7,17 @@ export interface BearList{id:string;title:string;icon:string;order:number}
 
 // The six starter lists, with stable ids so suggestions keep working after a rename.
 export const STARTER_LISTS:BearList[]=[
- {id:'night',title:'Nighttime Tasks',icon:'🌙',order:0},
+ {id:'night',title:'Night Time',icon:'🌙',order:0},
  {id:'calls',title:'Phone Calls',icon:'📞',order:1},
- {id:'aspire',title:'Aspirational',icon:'🌱',order:2},
- {id:'followup',title:'Organise – Follow-up',icon:'🔄',order:3},
- {id:'spare',title:'Organise – Time Permitting',icon:'✨',order:4},
- {id:'week',title:'This Week/Weekend',icon:'📅',order:5},
+ {id:'followup',title:'Organise Follow-Up',icon:'🔄',order:2},
+ {id:'spare',title:'Organise Time-Permitting',icon:'✨',order:3},
+ {id:'week',title:'This Week & Weekend',icon:'📅',order:4},
+ {id:'aspire',title:'Aspirations',icon:'🌱',order:5},
 ];
+// Lists saved before the v2 names keep their place but take the new names, unless she renamed them herself.
+const OLD_NAMES:Record<string,string>={'Nighttime Tasks':'Night Time','Aspirational':'Aspirations','Organise – Follow-up':'Organise Follow-Up','Organise – Time Permitting':'Organise Time-Permitting','This Week/Weekend':'This Week & Weekend'};
 export const LIST_ICONS=['🌙','📞','🌱','🔄','✨','📅','🏠','🛒','💼','🎒','❤️','🚗','💰','🎁','🩺','🐔','📝','⭐'];
-export const listsOf=(p:Pick<Profile,'lists'>|null|undefined):BearList[]=>[...(p?.lists??STARTER_LISTS)].sort((a,b)=>a.order-b.order);
+export const listsOf=(p:Pick<Profile,'lists'>|null|undefined):BearList[]=>[...(p?.lists??STARTER_LISTS)].map(l=>OLD_NAMES[l.title]?{...l,title:OLD_NAMES[l.title]}:l).sort((a,b)=>a.order-b.order);
 
 // ---------- Suggestions ----------
 const RULES:{id:string;re:RegExp}[]=[
