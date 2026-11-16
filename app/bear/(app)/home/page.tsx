@@ -9,7 +9,7 @@ import type {BoardView} from '@/lib/bear/board/service';
 import {Art} from '@/components/bear/art';
 import {ErrorCard,Skeleton,useOnline} from '@/components/bear/ui';
 import {showLocalReminder} from '@/components/bear/runtime';
-import {AddRow,BrainDumpInput,MomentPicker,TaskRow,useBoardActions,type Say} from '@/components/bear/board';
+import {AddRow,BearSortSheet,BrainDumpInput,MomentPicker,TaskRow,useBoardActions,type Say} from '@/components/bear/board';
 
 export default function Home(){
  const router=useRouter();const online=useOnline();
@@ -17,6 +17,7 @@ export default function Home(){
  const [notices,setNotices]=useState<{id:string;text:string}[]>([]);const [hour,setHour]=useState(12);
  const [toast,setToast]=useState<{text:string;undo?:()=>void;key:number}|null>(null);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const [open,setOpen]=useState<Record<string,boolean>>({});const [cards,setCards]=useState<{dump:boolean;moment:boolean}>({dump:false,moment:false});const [fresh,setFresh]=useState<Set<string>>(new Set());
+ const [sorting,setSorting]=useState(false);
  const [due,setDue]=useState<{reminderId:string;taskId:string;billId:string|null;message:string}[]>([]);const delivered=useRef(new Set<string>());
  const load=useCallback(()=>Promise.race([apiGet<{onboarding?:boolean;board?:BoardView;notices?:{id:string;text:string}[];due?:{reminderId:string;taskId:string;billId:string|null;message:string}[]}>('/api/bear/board'),new Promise<never>((_,no)=>setTimeout(()=>no(new Error('Bear is taking too long to answer. Check your connection and try again.')),20000))]).then(r=>{if(r.onboarding){router.replace('/bear/onboarding');return;}setBoard(r.board!);setNotices(r.notices||[]);setDue(r.due||[]);setError(null);
   // A due reminder is marked as seen in the app, and also shown as a phone notification where allowed (as the old home did).
@@ -32,7 +33,7 @@ export default function Home(){
  if(error&&!board)return <main id="main" className="bear-screen"><ErrorCard message={error} retry={load}/><p className="small" style={{marginTop:14}}>Meanwhile: <Link href="/bear/overview" className="link-btn">Your areas</Link> · <Link href="/bear/calendar" className="link-btn">Calendar</Link> · <Link href="/bear/capture" className="link-btn">Talk to Bear</Link></p></main>;
  if(!board)return <main id="main" className="bear-screen"><div className="skeleton" style={{minHeight:40,maxWidth:220,marginBottom:16}}/><Skeleton/></main>;
  const count=(id:string)=>board.byList[id]?.length||0;
- const items=board.inbox.length;
+ const items=board.inbox.length;const sortable=board.inbox.filter(t=>t.suggestion).length;
  return <main id="main" className="bear-screen board-screen">
   <div className="board-top"><span className="board-word">LOAD BEAR</span><Link href="/bear/me" className="board-me" aria-label="Settings"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.4"/><path d="M5.8 18.6c1.5-2.2 3.6-3.2 6.2-3.2s4.7 1 6.2 3.2"/></svg></Link></div>
   <header className="board-hero2">
@@ -57,6 +58,7 @@ export default function Home(){
       <span className="home-card-text"><strong id="bd-h">My Brain Dump</strong><span>{items===0?'Nothing yet':items===1?'1 item':`${items} items`}</span></span>
       <span className={`home-chev${cards.dump?' up':''}`} aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
      </button>
+     {sortable>0&&<button type="button" className="sort-btn" onClick={()=>setSorting(true)}><span aria-hidden="true">✨</span> Let Bear sort these</button>}
      {cards.dump&&<ul className="b-list">
       {board.inbox.map((t,i)=><TaskRow key={t.id} task={t} index={i} count={board.inbox.length} lists={board.lists} actions={actions} dragging={dragging===t.id} fresh={fresh.has(t.id)}/>)}
       <AddRow listId={null} onAdded={load} say={say}/>
@@ -75,6 +77,9 @@ export default function Home(){
     <p className="board-links small"><Link href="/bear/calendar">Calendar</Link> · <Link href="/bear/overview">Your areas</Link> · <Link href="/bear/ideas">Bear Ideas</Link></p>
    </section>
   </div>
+  {sorting&&<BearSortSheet board={board} onClose={()=>setSorting(false)} onSorted={r=>{setSorting(false);load();
+   const back=[...r.moved.map(m=>({taskId:m.taskId,suggestion:m.suggestion})),...r.skipped];
+   say(r.moved.length?`Sorted ${r.moved.length} into your lists.${r.skipped.length?` ${r.skipped.length} left in My Brain Dump.`:''}`:'Left them all in My Brain Dump.',back.length?()=>{apiSend('/api/bear/board/sort/undo',{items:back}).then(()=>load()).catch(e=>say((e as Error).message));}:undefined);}}/>}
   {toast&&<div key={toast.key} className="undo-toast glass-strong" role="status"><span>{toast.text}</span>{toast.undo&&<button type="button" onClick={()=>{toast.undo!();setToast(null);}}>Undo</button>}</div>}
  </main>;
 }

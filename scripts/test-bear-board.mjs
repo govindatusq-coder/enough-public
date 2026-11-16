@@ -40,19 +40,26 @@ try{
   await page.click('button:has-text("Unload")');await page.waitForSelector('.undo-toast:has-text("Got all")');
   const r=await rows();assert.equal(r.length,8,r.join(' | '));
   assert.equal(await page.$$eval('.list-title + .faint',e=>e.filter(x=>x.textContent.trim()).length),0,'no list has anything');
-  assert.ok(await page.$('.b-sug:has-text("Nighttime Tasks")'));assert.ok(await page.$('.b-sug:has-text("Phone Calls")'));assert.ok(await page.$('.b-sug:has-text("Aspirational")'));
+  assert.equal(await page.$('.b-sug'),null,'no suggestion pills on the rows any more');
+  await page.click('.sort-btn:has-text("Let Bear sort these")');await page.waitForSelector('h2:has-text("Bear sorted 8 of 8")');
+  for(const [list,word] of [['Nighttime Tasks','electricity'],['Phone Calls','possum'],['Aspirational','chicken'],['Organise – Follow-up','builder'],['This Week/Weekend','Christmas']])assert.ok(await page.$(`.sort-group:has(.sort-list:has-text("${list}")) .sort-row:has-text("${word}")`),`${word} under ${list}`);
+  await shot('b02b-bear-sorts');await page.click('button:has-text("Not now")');
   assert.equal(await page.inputValue('#dump-text'),'','box cleared');
   await shot('b02-unloaded');
  });
  await step('Scenario 1: close the app before sorting; everything is still there',async()=>{const before=await rows();await page.close();const p2=await ctx.newPage();await p2.goto(base+'/bear/home');await p2.waitForSelector('[data-drop="inbox"] .b-row:not(.add)');const after=await p2.$$eval('[data-drop="inbox"] .b-row:not(.add) .b-title',e=>e.map(x=>x.textContent));assert.deepEqual(after,before);globalThis.p=p2;});
  const pg=()=>globalThis.p;
  await step('typed-but-not-unloaded words survive a reload',async()=>{const p=pg();await p.fill('#dump-text','half a thought about the dentist');await p.waitForTimeout(200);await p.reload();await p.waitForSelector('#dump-text');assert.equal(await p.inputValue('#dump-text'),'half a thought about the dentist');await p.fill('#dump-text','');});
- await step('accept a suggestion: it moves into the list; ignore one: it stays, without the suggestion',async()=>{
-  const p=pg();await p.click('.b-sug button:has-text("Phone Calls")');await p.waitForSelector('.undo-toast:has-text("Moved to")');
-  await p.click('.list-head:has-text("Phone Calls")');await p.waitForSelector('[data-drop="calls"] .b-row:not(.add)');
-  assert.ok((await p.textContent('[data-drop="calls"]')).match(/possum/i));
-  const n=await p.$$eval('[data-drop="inbox"] .b-sug',e=>e.length);await Promise.all([p.waitForResponse(r=>r.url().includes('/ignore')),p.click('[data-drop="inbox"] .b-sug-x >> nth=0')]);await p.waitForFunction(k=>document.querySelectorAll('[data-drop="inbox"] .b-sug').length===k-1,n);
-  await p.reload();await p.waitForSelector('[data-drop="inbox"] .b-row:not(.add)');assert.equal(await p.$$eval('[data-drop="inbox"] .b-sug',e=>e.length),n-1,'ignore is saved');
+ await step('Bear sorts, you check: Looks right files them all, Undo puts them back; unticked ones stay and are not suggested again',async()=>{
+  const p=pg();const inbox=()=>p.$$eval('[data-drop="inbox"] .b-row:not(.add)',e=>e.length);
+  await p.click('.sort-btn');await p.waitForSelector('.sort-row');await p.click('button:has-text("Looks right")');await p.waitForSelector('.undo-toast:has-text("Sorted 8 into your lists")');
+  assert.equal(await inbox(),0,'all sorted');await p.click('.undo-toast button:has-text("Undo")');await p.waitForFunction(()=>document.querySelectorAll('[data-drop="inbox"] .b-row:not(.add)').length===8);
+  await p.click('.sort-btn');await p.waitForSelector('.sort-row');
+  for(const row of await p.$$('.sort-row')){if(!/possum/i.test(await row.textContent()))await (await row.$('.b-check')).click();}
+  await p.click('button:has-text("Sort these 1")');await p.waitForSelector('.undo-toast:has-text("Sorted 1 into your lists. 7 left in My Brain Dump.")');
+  await p.click('.list-head:has-text("Phone Calls")');await p.waitForSelector('[data-drop="calls"] .b-row:has-text("possum")');
+  assert.equal(await inbox(),7);await p.reload();await p.waitForSelector('[data-drop="inbox"] .b-row:not(.add)');
+  assert.equal(await p.$('.sort-btn'),null,'the ones she left are not suggested again');
  });
  await step('Scenario 2 and 6: move by menu into Nighttime and Aspirational, no dates asked for',async()=>{
   const p=pg();const row=p.locator('[data-drop="inbox"] .b-row:has-text("chicken")');await row.locator('.b-more').click();await p.click('.menu-list button:has-text("Move to list")');await p.click('.menu-list button:has-text("Aspirational")');
@@ -103,9 +110,11 @@ try{
   await p.goto(base+'/bear/shared');await p.waitForSelector('text=You shared');assert.match(await p.textContent('main'),/Handed over[\s\S]*Christmas[\s\S]*Waiting for them to open the link/);
  });
  await step('Scenario 7: moving a school form against Bear’s suggestion teaches it',async()=>{
-  const p=pg();await p.goto(base+'/bear/home');await p.fill('#dump-text','School excursion permission form for the weekend');await p.click('button:has-text("Unload")');await p.waitForSelector('.b-row:has-text("permission") .b-sug:has-text("This Week")');
+  const p=pg();await p.goto(base+'/bear/home');await p.fill('#dump-text','School excursion permission form for the weekend');await p.click('button:has-text("Unload")');await p.waitForSelector('[data-drop="inbox"] .b-row:has-text("permission")');
+  await p.click('.sort-btn');await p.waitForSelector('.sort-group:has(.sort-list:has-text("This Week")) .sort-row:has-text("permission")');await p.click('button:has-text("Not now")');
   await p.locator('.b-row:has-text("permission") .b-more').click();await p.click('.menu-list button:has-text("Move to list")');await p.click('.menu-list button:has-text("Nighttime")');await p.waitForSelector('.undo-toast:has-text("Nighttime")');
-  await p.fill('#dump-text','Sign the school permission slip');await p.click('button:has-text("Unload")');await p.waitForSelector('.b-row:has-text("permission slip") .b-sug button[aria-label^="You usually put this in Nighttime Tasks"]');
+  await p.fill('#dump-text','Sign the school permission slip');await p.click('button:has-text("Unload")');await p.waitForSelector('[data-drop="inbox"] .b-row:has-text("permission slip")');
+  await p.click('.sort-btn');await p.waitForSelector('.sort-group:has(.sort-list:has-text("Nighttime Tasks")) .sort-row:has-text("permission slip"):has-text("Where you usually put these")');await shot2(p,'b13-learned');await p.click('button:has-text("Not now")');
  });
  await step('lists: rename, add, delete a list without losing its tasks',async()=>{
   const p=pg();await p.goto(base+'/bear/me/lists');await p.waitForSelector('input[aria-label="List name"]');

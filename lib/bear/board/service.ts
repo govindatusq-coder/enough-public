@@ -139,6 +139,35 @@ export async function moveTask(store:BearStore,taskId:string,input:z.infer<typeo
  if(listId==='aspire')for(const r of await store.list('reminders',{where:[{column:'task_id',value:taskId},{column:'status',op:'in',value:['scheduled','snoozed']}]}))await store.update('reminders',r.id,{status:'cancelled'});
  return moved;
 }
+// "Bear sorts, you check": Bear's guesses go into the lists in one go, after she has looked them over. Ones she unticked stay
+// in My Brain Dump and Bear stops suggesting them. Bear's own guesses are not recorded as her preferences (only her own
+// choices teach it), so its rules can't reinforce themselves. Undo puts everything back as it was.
+const id=z.string().uuid();
+const sugSchema=z.object({listId:z.string().max(60),by:z.enum(['bear','learned']),ignored:z.boolean().optional()}).strict().nullable();
+export const bulkSortSchema=z.object({moves:z.array(z.object({taskId:id,listId:z.string().min(1).max(60)}).strict()).max(200),skip:z.array(id).max(200).default([])}).strict();
+export async function bulkSort(store:BearStore,input:z.infer<typeof bulkSortSchema>){
+ const profile=await ensureProfile(store);const ids=new Set(listsOf(profile).map(l=>l.id));
+ const open=await openTasks(store);const byId=new Map(open.map(t=>[t.id,t]));
+ const next=new Map<string,number>();for(const t of open)if(t.listId)next.set(t.listId,Math.max(next.get(t.listId)??0,(t.rank??0)+1));
+ const moved:{taskId:string;listId:string;suggestion:Task['suggestion']}[]=[];const skipped:{taskId:string;suggestion:Task['suggestion']}[]=[];
+ for(const m of input.moves){
+  const t=byId.get(m.taskId);if(!t||t.listId||!ids.has(m.listId))continue;
+  const rank=next.get(m.listId)??0;next.set(m.listId,rank+1);
+  await store.update('tasks',t.id,{listId:m.listId,rank,suggestion:null});moved.push({taskId:t.id,listId:m.listId,suggestion:t.suggestion??null});
+  if(m.listId==='aspire')for(const r of await store.list('reminders',{where:[{column:'task_id',value:t.id},{column:'status',op:'in',value:['scheduled','snoozed']}]}))await store.update('reminders',r.id,{status:'cancelled'});
+ }
+ for(const tid of input.skip){const t=byId.get(tid);if(!t||t.listId)continue;const prev=t.suggestion??null;
+  await store.update('tasks',t.id,{suggestion:prev?{...prev,ignored:true}:null});skipped.push({taskId:t.id,suggestion:prev});}
+ return {moved,skipped};
+}
+export const unsortSchema=z.object({items:z.array(z.object({taskId:id,suggestion:sugSchema}).strict()).max(400)}).strict();
+export async function unsort(store:BearStore,input:z.infer<typeof unsortSchema>,now=new Date()){
+ let n=0;
+ for(const it of input.items){const t=await store.get('tasks',it.taskId);if(!t||t.status!=='open')continue;
+  const back=await store.update('tasks',t.id,{listId:null,suggestion:it.suggestion});n++;
+  if(t.listId==='aspire')await ensureReminder(store,back,now);}
+ return {restored:n};
+}
 export async function ignoreSuggestion(store:BearStore,taskId:string){
  const task=await store.get('tasks',taskId);if(!task)throw new Error('not_found');
  return store.update('tasks',taskId,{suggestion:task.suggestion?{...task.suggestion,ignored:true}:null});

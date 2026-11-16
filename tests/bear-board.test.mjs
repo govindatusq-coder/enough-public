@@ -291,3 +291,18 @@ test('one odd old record never stops the board loading',async()=>{
  const b=await boardView(s,NOW);
  assert.ok(b.inbox.some(t=>t.id===good.id));const row=b.inbox.find(t=>t.id===odd.id);assert.ok(row,'still shown');assert.equal(typeof row.title,'string');
 });
+
+test('Bear sorts, she checks: ticked ones go in, unticked stay and are not suggested again, Bear guesses do not teach it, Undo restores',async()=>{
+ const {bulkSort,unsort}=await import('../lib/bear/board/service.ts');
+ const s=await person();await unload(s,null,{text:'Pay the electricity bill\nCall the possum man\nBuild a new chicken pen\nBuy milk',via:'text'},NOW);
+ let b=await boardView(s,NOW);const by=w=>b.inbox.find(t=>t.title.toLowerCase().includes(w));
+ const before=(await ensureProfile(s)).listLearning||[];
+ const r=await bulkSort(s,{moves:[{taskId:by('electricity').id,listId:'night'},{taskId:by('chicken').id,listId:'aspire'}],skip:[by('possum').id]});
+ assert.equal(r.moved.length,2);assert.equal(r.skipped.length,1);
+ b=await boardView(s,NOW);assert.deepEqual(b.byList.night.map(t=>t.title),['Pay the electricity bill']);assert.equal(b.byList.aspire.length,1);
+ assert.equal(b.inbox.find(t=>/possum/.test(t.title)).suggestion,null,'unticked: no longer suggested');
+ assert.deepEqual((await ensureProfile(s)).listLearning||[],before,'Bear guesses are not recorded as her preferences');
+ await unsort(s,{items:[...r.moved.map(m=>({taskId:m.taskId,suggestion:m.suggestion})),...r.skipped]});
+ b=await boardView(s,NOW);assert.equal(b.inbox.length,4);assert.equal(b.inbox.find(t=>/possum/.test(t.title)).suggestion.listId,'calls','Undo brings the suggestion back');
+ const again=await bulkSort(s,{moves:[{taskId:crypto.randomUUID(),listId:'night'},{taskId:b.inbox.find(t=>/milk/.test(t.title)).id,listId:'not-a-list'}],skip:[]});assert.equal(again.moved.length,0);
+});

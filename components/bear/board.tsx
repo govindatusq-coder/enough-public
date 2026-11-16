@@ -58,7 +58,6 @@ export function TaskRow({task,lists,index,count,actions,dragging,fresh}:{task:Bo
  // Reorder from the keyboard: arrow keys on the handle. Focus follows the row to its new place.
  const nudge=(d:-1|1)=>{const to=index+d;if(to<0||to>=count)return;actions.move(task,task.listId,to);actions.say(`Moved ${d<0?'up':'down'}: ${task.title}`);requestAnimationFrame(()=>requestAnimationFrame(()=>(document.querySelector(`[data-row="${task.id}"] .b-handle`) as HTMLElement|null)?.focus()));};
  const [editing,setEditing]=useState(false);const [title,setTitle]=useState(task.title);const [menu,setMenu]=useState(false);
- const sug=task.suggestion?lists.find(l=>l.id===task.suggestion!.listId):null;
  function save(){setEditing(false);const t=title.trim();if(t&&t!==task.title)actions.rename(task,t);else setTitle(task.title);}
  return <li className={`b-row${dragging?' dragging':''}${fresh?' fresh':''}`} data-row={task.id} data-list={task.listId||'inbox'} data-index={index}>
   <button type="button" className="b-check" role="checkbox" aria-checked={false} aria-label={`Done: ${task.title}`} onClick={()=>actions.complete(task)}><span/></button>
@@ -72,7 +71,6 @@ export function TaskRow({task,lists,index,count,actions,dragging,fresh}:{task:Bo
     {task.readiness==='waiting'&&<span className="b-tag">{task.shared?`With ${task.shared.who}`:'Waiting'}</span>}
     {task.shared?.direction==='in'&&<span className="b-tag">From {task.shared.who}</span>}
     {task.shared?.direction==='out'&&task.readiness!=='waiting'&&<span className="b-tag">Shared with {task.shared.who}</span>}
-    {sug&&<span className="b-sug"><button type="button" onClick={()=>actions.move(task,sug.id)} aria-label={`${task.suggestion!.by==='learned'?'You usually put this in':'Bear suggests'} ${sug.title}. Move it there`}>{sug.icon} <span className="sug-word">{task.suggestion!.by==='learned'?'Usually':'Suggested'}: </span>{sug.title}</button><button type="button" className="b-sug-x" onClick={()=>actions.ignore(task)} aria-label="Leave it here">×</button></span>}
    </div>
   </div>
   <button type="button" className="b-more" aria-label={`More for ${task.title}`} aria-haspopup="dialog" onClick={()=>setMenu(true)}>
@@ -208,4 +206,33 @@ export function MomentPicker({onDone,open,onToggle}:{onDone:(id:string,title:str
    {res.heldBack&&<p className="tiny muted" style={{marginTop:6}}>{res.heldBack}</p>}
   </div>}
  </section>;
+}
+
+// ---------- "Bear sorts, you check" ----------
+// Bear puts its guesses into lists in one go, grouped so she can glance over them. Untick anything wrong: it stays in
+// My Brain Dump and Bear stops suggesting it. Nothing moves until she says "Looks right", and Undo puts it all back.
+export function BearSortSheet({board,onClose,onSorted}:{board:BoardView;onClose:()=>void;onSorted:(r:{moved:{taskId:string;listId:string;suggestion:BoardTask['suggestion']}[];skipped:{taskId:string;suggestion:BoardTask['suggestion']}[]})=>void}){
+ const guessed=board.inbox.filter(t=>t.suggestion&&board.lists.some(l=>l.id===t.suggestion!.listId));const unsure=board.inbox.filter(t=>!guessed.includes(t));
+ const [keep,setKeep]=useState<Record<string,boolean>>(()=>Object.fromEntries(guessed.map(t=>[t.id,true])));
+ const [busy,setBusy]=useState(false);const [err,setErr]=useState<string|null>(null);
+ const yes=guessed.filter(t=>keep[t.id]).length;
+ async function go(){setBusy(true);setErr(null);
+  try{const r=await apiSend<{moved:{taskId:string;listId:string;suggestion:BoardTask['suggestion']}[];skipped:{taskId:string;suggestion:BoardTask['suggestion']}[]}>('/api/bear/board/sort',{moves:guessed.filter(t=>keep[t.id]).map(t=>({taskId:t.id,listId:t.suggestion!.listId})),skip:guessed.filter(t=>!keep[t.id]).map(t=>t.id)});onSorted(r);}
+  catch(e){setErr((e as Error).message);setBusy(false);}}
+ return <Sheet label="Bear sorted these" onClose={onClose}>
+  <h2 style={{fontSize:20}}>{guessed.length?`Bear sorted ${guessed.length} of ${board.inbox.length}`:'Bear isn’t sure about these'}</h2>
+  {guessed.length>0&&<p className="small muted" style={{marginTop:4}}>Untick anything that’s wrong. It stays in My Brain Dump.</p>}
+  <div className="sort-groups">
+   {board.lists.map(l=>{const items=guessed.filter(t=>t.suggestion!.listId===l.id);if(!items.length)return null;
+    return <div key={l.id} className="sort-group"><p className="sort-list"><span aria-hidden="true">{l.icon}</span> {l.title}</p>
+     <ul className="b-list">{items.map(t=><li key={t.id} className="b-row sort-row"><button type="button" className={`b-check${keep[t.id]?' on':''}`} role="checkbox" aria-checked={!!keep[t.id]} aria-label={`${t.title}: put in ${l.title}`} onClick={()=>setKeep(k=>({...k,[t.id]:!k[t.id]}))}><span/></button>
+      <div className="b-main"><span className="b-title" style={keep[t.id]?undefined:{color:'var(--ink-3)'}}>{t.title}</span>{t.suggestion!.by==='learned'&&<span className="tiny muted">Where you usually put these</span>}</div></li>)}</ul></div>;})}
+  </div>
+  {unsure.length>0&&<p className="small muted sort-unsure">Not sure: {unsure.map(t=>t.title).join(', ')}. {unsure.length===1?'It stays':'They stay'} in My Brain Dump.</p>}
+  {err&&<p className="note coral" role="alert" style={{marginTop:10}}>{err}</p>}
+  <div className="btn-row" style={{marginTop:16}}>
+   {guessed.length>0&&<button type="button" className="btn coral" disabled={busy} onClick={go}>{busy?'Sorting…':yes===guessed.length?'Looks right':yes?`Sort these ${yes}`:'Leave them all'}</button>}
+   <button type="button" className="btn ghost" onClick={onClose} disabled={busy}>Not now</button>
+  </div>
+ </Sheet>;
 }
