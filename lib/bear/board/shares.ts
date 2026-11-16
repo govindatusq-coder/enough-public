@@ -29,33 +29,77 @@ export interface ShareBackend{
 export async function hashToken(token:string){const d=await globalThis.crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));return [...new Uint8Array(d)].map(b=>b.toString(16).padStart(2,'0')).join('');}
 const newToken=()=>{const b=new Uint8Array(24);globalThis.crypto.getRandomValues(b);return Buffer.from(b).toString('base64url');};
 
-// ---------- In-memory (tests and local harness) ----------
-const g=globalThis as unknown as {__bearShares?:Map<string,{share:Share;hash:string}>};
-export class MemoryShares implements ShareBackend{
- private userId:string;
- constructor(userId:string){this.userId=userId;g.__bearShares??=new Map();}
- private get rows(){return g.__bearShares!;}
- private sees(s:Share){return s.senderId===this.userId||s.recipientId===this.userId;}
- async create(share:Share,hash:string){if(share.senderId!==this.userId)throw new ShareError('Not yours',403);this.rows.set(share.id,{share:structuredClone(share),hash});return structuredClone(share);}
- async claim(hash:string){
-  const row=[...this.rows.values()].find(r=>r.hash===hash);if(!row)return null;
-  const s=row.share;if(s.senderId===this.userId)return structuredClone(s);
-  if(s.recipientId&&s.recipientId!==this.userId)return null;
-  if(!s.recipientId){if(s.status!=='invited')return null;s.recipientId=this.userId;}
-  return structuredClone(s);
- }
- async mine(){const all=[...this.rows.values()].map(r=>r.share);return {sent:structuredClone(all.filter(s=>s.senderId===this.userId)),received:structuredClone(all.filter(s=>s.recipientId===this.userId))};}
- async get(id:string){const r=this.rows.get(id);return r&&this.sees(r.share)?structuredClone(r.share):null;}
- async save(share:Share){
-  const r=this.rows.get(share.id);if(!r||!this.sees(r.share))throw new ShareError('Not found',404);
-  // Who it is between, and how it was shared, never change after it is made.
-  if(share.senderId!==r.share.senderId||share.recipientId!==r.share.recipientId||share.mode!==r.share.mode)throw new ShareError('Not allowed',403);
-  r.share=structuredClone({...share,updatedAt:new Date().toISOString()});return structuredClone(r.share);
- }
- async eraseMine(){for(const [id,r] of [...this.rows])if(r.share.senderId===this.userId)this.rows.delete(id);else if(r.share.recipientId===this.userId)r.share.recipientId=null,r.share.status='declined';}
+// ---------- The rules every backend follows ----------
+// Who a share is between and how it was shared never change. Only the sender can take it back; only the recipient can
+// accept, decline, ask to talk or finish it; the sender can answer "let's talk" (it goes back to waiting).
+export function checkChange(before:Share,after:Share,userId:string){
+ if(after.senderId!==before.senderId||after.recipientId!==before.recipientId||after.mode!==before.mode||after.id!==before.id)throw new ShareError('Not allowed',403);
+ if(after.status===before.status)return;
+ if(before.status==='revoked')throw new ShareError('That share was taken back.',409);
+ const bySender=userId===before.senderId,byRecipient=!!before.recipientId&&userId===before.recipientId;
+ if(after.status==='revoked'&&!bySender)throw new ShareError('Only the person who shared it can take it back.',403);
+ if(['accepted','declined','discussing','done'].includes(after.status)&&!byRecipient)throw new ShareError('Only the person it was shared with can answer.',403);
+ if(after.status==='invited'&&!(bySender&&before.status==='discussing'))throw new ShareError('Not allowed',403);
 }
 
-// ---------- Supabase (production) ----------
+// ---------- Share storage: rows the server keeps for both people ----------
+// One row per share. Only the server can read these rows; it shows a share only to its sender or its claimed recipient.
+export interface ShareRow{share:Share;tokenHash:string}
+export interface ShareRows{
+ one(id:string):Promise<ShareRow|null>;
+ byToken(hash:string):Promise<ShareRow|null>;
+ forUser(userId:string):Promise<ShareRow[]>;
+ insert(row:ShareRow):Promise<void>;
+ // Writes the row. With onlyIfUnclaimed, it is written only if nobody has claimed it yet; returns whether it was written.
+ write(row:ShareRow,onlyIfUnclaimed?:boolean):Promise<boolean>;
+ remove(id:string):Promise<void>;
+}
+export class KvShares implements ShareBackend{
+ private userId:string;private rows:ShareRows;
+ constructor(userId:string,rows:ShareRows){this.userId=userId;this.rows=rows;}
+ private sees(s:Share){return s.senderId===this.userId||s.recipientId===this.userId;}
+ async create(share:Share,hash:string){
+  if(share.senderId!==this.userId||share.recipientId!==null||share.status!=='invited')throw new ShareError('Not allowed',403);
+  await this.rows.insert({share,tokenHash:hash});return share;
+ }
+ // The first signed-in person (other than the sender) to open the link becomes its recipient. Nobody else can use it after.
+ async claim(hash:string){
+  for(let attempt=0;attempt<2;attempt++){
+   const row=await this.rows.byToken(hash);if(!row)return null;const s=row.share;
+   if(s.senderId===this.userId||s.recipientId===this.userId)return s;
+   if(s.recipientId||s.status!=='invited')return null;
+   const claimed={...s,recipientId:this.userId,updatedAt:new Date().toISOString()};
+   if(await this.rows.write({...row,share:claimed},true))return claimed;
+  }
+  return null;
+ }
+ async mine(){const all=(await this.rows.forUser(this.userId)).map(r=>r.share).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));return {sent:all.filter(s=>s.senderId===this.userId),received:all.filter(s=>s.recipientId===this.userId)};}
+ async get(id:string){const r=await this.rows.one(id);return r&&this.sees(r.share)?r.share:null;}
+ async save(share:Share){
+  const r=await this.rows.one(share.id);if(!r||!this.sees(r.share))throw new ShareError('Not found',404);
+  checkChange(r.share,share,this.userId);
+  const next={...share,updatedAt:new Date().toISOString()};await this.rows.write({...r,share:next});return next;
+ }
+ // Delete my data: shares she sent go; shares sent to her are let go (the sender sees them as declined).
+ async eraseMine(){for(const r of await this.rows.forUser(this.userId)){if(r.share.senderId===this.userId)await this.rows.remove(r.share.id);else await this.rows.write({...r,share:{...r.share,recipientId:null,status:'declined',updatedAt:new Date().toISOString()}});}}
+}
+
+// ---------- In-memory rows (tests and the local harness) ----------
+const g=globalThis as unknown as {__bearShareRows?:Map<string,ShareRow>};
+export function memoryShareRows():ShareRows{
+ const m=(g.__bearShareRows??=new Map());const copy=<T,>(v:T)=>structuredClone(v);
+ return {
+  async one(id){const r=m.get(id);return r?copy(r):null;},
+  async byToken(hash){const r=[...m.values()].find(x=>x.tokenHash===hash);return r?copy(r):null;},
+  async forUser(u){return [...m.values()].filter(r=>r.share.senderId===u||r.share.recipientId===u).map(copy);},
+  async insert(row){if(m.has(row.share.id)||[...m.values()].some(r=>r.tokenHash===row.tokenHash))throw new ShareError('Duplicate',409);m.set(row.share.id,copy(row));},
+  async write(row,onlyIfUnclaimed){const cur=m.get(row.share.id);if(!cur)return false;if(onlyIfUnclaimed&&cur.share.recipientId)return false;m.set(row.share.id,copy(row));return true;},
+  async remove(id){m.delete(id);},
+ };
+}
+export class MemoryShares extends KvShares{constructor(userId:string){super(userId,memoryShareRows());}}
+
+// ---------- Supabase table (only if the bear_shares migration is ever applied) ----------
 // Row-level security lets each person see only shares they sent or received. Claiming a link goes through a database
 // function, because before claiming, the recipient cannot see the row at all (migration 20261116120000_bear_shares).
 export class SupabaseShares implements ShareBackend{
@@ -73,10 +117,6 @@ export class SupabaseShares implements ShareBackend{
  async get(id:string){const {data,error}=await this.db.from('bear_shares').select('body,recipient_id,status,mode,sender_id').eq('id',id).maybeSingle();this.fail(error);return data?this.from(data as never):null;}
  async save(share:Share){const {error}=await this.db.from('bear_shares').update({status:share.status,body:share,updated_at:new Date().toISOString()}).eq('id',share.id);this.fail(error);return share;}
  async eraseMine(){const a=await this.db.from('bear_shares').delete().eq('sender_id',this.userId);this.fail(a.error);const b=await this.db.from('bear_shares').update({recipient_id:null,status:'declined'}).eq('recipient_id',this.userId);this.fail(b.error);}
-}
-export function sharesFor(store:BearStore):ShareBackend{
- const db=(store as unknown as {db?:SupabaseClient}).db;
- return db?new SupabaseShares(db,store.userId):new MemoryShares(store.userId);
 }
 
 // ---------- The flow ----------

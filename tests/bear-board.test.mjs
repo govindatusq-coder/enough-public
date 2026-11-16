@@ -258,3 +258,28 @@ test('her own time estimate wins, and can be handed back to Bear',async()=>{
  assert.equal(pickMoments([await s.get('tasks',t.id)],20,NOW,'Australia/Sydney','2026-11-16').picks.length,0,'no longer fits 20 minutes');
  await setDetails(s,t.id,{minutes:null});assert.equal(minutesFor(await s.get('tasks',t.id)),10);
 });
+
+test('share rules hold whatever the storage: only the sender takes it back, only the recipient answers, strangers see nothing, one claim per link',async()=>{
+ const {KvShares,memoryShareRows,checkChange}=await import('../lib/bear/board/shares.ts');
+ const a=await person('Sarah');const b=await person('James');const c=await person('Mallory');
+ const t=await addOne(a,{title:'Renew the rego',listId:null},NOW);
+ const {share,link}=await shareTask(a,new MemoryShares(a.userId),'Sarah',t.id,{mode:'transfer',toName:'James',note:null});
+ const token=link.split('/').pop();
+ assert.equal(await new MemoryShares(c.userId).get(share.id),null,'a stranger can’t see it');
+ await openInvite(new MemoryShares(b.userId),token);
+ const asB=new MemoryShares(b.userId),asA=new MemoryShares(a.userId);
+ const cur=await asB.get(share.id);
+ await assert.rejects(asB.save({...cur,status:'revoked'}),/Only the person who shared it/);
+ await assert.rejects(asA.save({...cur,status:'accepted'}),/Only the person it was shared with/);
+ await assert.rejects(asA.save({...cur,recipientId:c.userId}),/Not allowed/);
+ await assert.rejects(asB.save({...cur,mode:'info'}),/Not allowed/);
+ await assert.rejects(new MemoryShares(c.userId).save({...cur,status:'accepted'}),/Not found/);
+ const ok=await asB.save({...cur,status:'accepted'});assert.equal(ok.status,'accepted');
+ // Two people opening the same link at the same moment: only one becomes the recipient.
+ const rows=memoryShareRows();const t2=await addOne(a,{title:'Book the vet',listId:null},NOW);
+ const s2=await shareTask(a,new KvShares(a.userId,rows),'Sarah',t2.id,{mode:'action',toName:'James',note:null});
+ const {hashToken}=await import('../lib/bear/board/shares.ts');const h=await hashToken(s2.link.split('/').pop());
+ const [x,y]=await Promise.all([new KvShares(b.userId,rows).claim(h),new KvShares(c.userId,rows).claim(h)]);
+ assert.equal([x,y].filter(Boolean).length,1,'exactly one claim wins');
+ assert.throws(()=>checkChange({...cur,status:'revoked'},{...cur,status:'accepted'},b.userId),/taken back/);
+});

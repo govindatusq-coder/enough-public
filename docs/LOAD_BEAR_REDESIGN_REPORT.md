@@ -70,7 +70,7 @@ This report covers what was built for the "interrupted lives, not perfectly plan
 
 ## Outstanding work, and what needs setting up
 
-1. **Apply the migration** `20261116120000_bear_shares.sql` in Supabase (SQL editor). Until then Share Bear says "Sharing needs a database update first", and everything else works.
+1. **Sharing needs no database change.** Shares are stored as rows of the server's own delivery account, the one reminders already use, in the existing `bear_push_subscriptions` table. Row-level security means only that account can read them, and the server shows a share only to its sender or its claimed recipient. The `bear_shares` migration stays in the repository as an optional alternative; it is used only if the delivery account is unavailable.
 2. Voice uses the browser's speech recognition (Safari on iPhone and Chrome support it). Where it isn't available the Speak button is hidden, and the keyboard's own microphone still works.
 3. Share links are still sent by her, from her own Mail, Messages or share sheet. Bear doesn't send emails or texts itself, and there is no direct in-app delivery to a household member yet; each share is one link.
 4. Push notifications about shares need the existing reminder delivery set up (VAPID keys and the delivery secret) and the sender to have allowed notifications on a device. Without those, news shows in the app only. During her quiet hours nothing is pushed and nothing is queued for later; she sees it in the app.
@@ -89,7 +89,7 @@ This report covers what was built for the "interrupted lives, not perfectly plan
 
 ## Risks
 
-- **Sharing security has not been tested against a real Supabase database.** The policies, trigger and claim function are written defensively but were not run here. They should be checked with two test accounts after the migration is applied.
+- **Sharing:** who may see and change a share is enforced in the server code, not by database policies (the rows sit under the delivery account). Unit tests cover strangers, wrong-person changes and two people claiming one link at once. A production check with two test accounts is described in the hand-over.
 - The recipient can edit the share's descriptive body (title, notes). This never touches the sender's own task, which is matched only by her own record of the share.
 - Learning is word-based and can be wrong. It only proposes; it never moves anything.
 - Old tasks all appear in My Brain Dump at once. For someone with many open items this can be a long first list (nothing is lost, and lists can absorb it gradually).

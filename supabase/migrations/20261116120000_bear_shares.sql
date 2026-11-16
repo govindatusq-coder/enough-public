@@ -1,3 +1,5 @@
+-- OPTIONAL. Load Bear does not need this: shares are stored as rows of the server's delivery account (see
+-- lib/bear/server/robot-shares.ts). This table is used only if that account is unavailable.
 -- Share Bear: responsibilities shared between two people (information, an action, or the whole responsibility).
 -- Additive. A share is visible only to the person who sent it and the one person who claimed its link.
 -- The link carries a random token; only its SHA-256 hash is stored. Claiming goes through bear_claim_share, because

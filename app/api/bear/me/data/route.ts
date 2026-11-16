@@ -2,7 +2,7 @@ import {createClient} from '@supabase/supabase-js';
 import {HttpError,json,readJson,withBear} from '@/lib/bear/server/context';
 import {serverClient} from '@/lib/supabase/server';
 import {removeOutbox} from '@/lib/bear/server/outbox-robot';
-import {sharesFor} from '@/lib/bear/board/shares';
+import {sharesForRequest} from '@/lib/bear/server/robot-shares';
 export const dynamic='force-dynamic';
 export const maxDuration=60;
 // Delete everything this person has in Load Bear: records, stored files, forms, reminders, settings. Irreversible, and only after
@@ -13,7 +13,7 @@ export const DELETE=(req:Request)=>withBear(req,async({store,user})=>{
  if(body.confirm!=='DELETE')throw new HttpError('Type DELETE to confirm.',400);
  await removeOutbox(user.id).catch(()=>{});   // the reminder job's copy goes first
  // Shares she sent are deleted; shares sent to her are let go (the sender sees them as declined). Missing table = nothing to remove.
- let sharesLeft=false;try{await sharesFor(store).eraseMine();}catch(e){sharesLeft=!/database update/.test(String((e as Error)?.message));}
+ let sharesLeft=false;try{await (await sharesForRequest(store)).eraseMine();}catch(e){sharesLeft=!/database update/.test(String((e as Error)?.message));}
  const {leftover}=await store.eraseAll();if(sharesLeft)leftover.push('bear_shares');
  let loginRemoved=false;const key=process.env.SUPABASE_SERVICE_ROLE_KEY,url=process.env.NEXT_PUBLIC_SUPABASE_URL;
  if(key&&url){try{const admin=createClient(url,key,{auth:{persistSession:false}});const {error}=await admin.auth.admin.deleteUser(user.id);loginRemoved=!error;}catch{loginRemoved=false;}}
