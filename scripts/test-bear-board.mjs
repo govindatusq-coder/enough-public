@@ -16,6 +16,7 @@ try{
  for(let i=0;i<120;i++){try{const r=await fetch(base+'/bear/welcome');if(r.ok)break;}catch{}await delay(1000);}
  const browser=await chromium.launch({executablePath:process.env.BEAR_TEST_CHROMIUM||'/opt/pw-browsers/chromium-1243/chrome-linux64/chrome'});
  const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+ await ctx.addInitScript(()=>{try{if(!sessionStorage.getItem('bear-test-init')){sessionStorage.setItem('bear-test-init','1');localStorage.setItem('bear-home-open',JSON.stringify({dump:true}));}}catch{}});
  const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
  const shot=n=>page.screenshot({path:resolve(results,n+'.png'),fullPage:true});
  const step=async(name,fn)=>{try{await fn();console.log('ok -',name);}catch(e){failures.push(name+': '+e.message);console.log('FAIL -',name,e.message);await (globalThis.p||page).screenshot({path:resolve(results,'fail-'+name.replace(/\W+/g,'-').slice(0,40)+'.png'),fullPage:false}).catch(()=>{});}};
@@ -26,8 +27,9 @@ try{
 
  await step('home is the Brain Dump Board: greeting, Mama Bear, one input, My Brain Dump, My Lists with the six starters',async()=>{
   await page.goto(base+'/bear/home');await page.waitForSelector('#dump-text');
-  const g=await page.textContent('.hero-greeting');assert.match(g,/Good (morning|afternoon|evening), Sarah\.What’s on your mind\?/);
-  assert.ok(await page.isVisible('.hero-art img, .hero-art [role="img"], .hero-art picture, .hero-art'),'Mama Bear');
+  const g=await page.textContent('.board-hello');assert.match(g,/Good (morning|afternoon|evening), Sarah\./);assert.equal((await page.textContent('.board-ask')).trim(),'What’s on your mind?');
+  assert.ok(await page.isVisible('.board-hero-img'),'Mama Bear');assert.equal(await page.getAttribute('#dump-text','placeholder'),'Brain dump it here…');
+  assert.match(await page.textContent('.dump-card .home-card-text'),/My Brain DumpNothing yet/);assert.match(await page.textContent('.moment .home-card-text'),/Got a moment\?Find something you can tackle now/);
   const lists=await page.$$eval('.list-title',e=>e.map(x=>x.textContent));
   assert.deepEqual(lists,['Nighttime Tasks','Phone Calls','Aspirational','Organise – Follow-up','Organise – Time Permitting','This Week/Weekend']);
   const nav=await page.$$eval('.bear-nav a:not(.nav-brand) span',e=>e.map(x=>x.textContent));assert.deepEqual(nav,['Home','Shared','Bear Helps','Settings']);
@@ -76,7 +78,7 @@ try{
   await p.waitForSelector('[data-drop="inbox"] .b-row:has-text("mould")');await p.waitForTimeout(6500);await p.reload();await p.waitForSelector('[data-drop="inbox"] .b-row:has-text("mould")');
  });
  await step('Scenario 3: “Got a moment? 10 min” offers at most three things that fit, not the whole list',async()=>{
-  const p=pg();await p.click('.moment .chip:has-text("10 min")');await p.waitForSelector('.moment-out');
+  const p=pg();if(!(await p.isVisible('.moment .chip')))await p.click('.moment .home-card-head');await p.click('.moment .chip:has-text("10 min")');await p.waitForSelector('.moment-out');
   const picks=await p.$$eval('.moment-out .b-row',e=>e.length);assert.ok(picks>=1&&picks<=3,`picks ${picks}`);
   assert.ok(!(await p.textContent('.moment-out')).match(/chicken/i));await shot2(p,'b04-moment');
  });

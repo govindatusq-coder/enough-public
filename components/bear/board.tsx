@@ -38,17 +38,17 @@ export function BrainDumpInput({onUnloaded,say}:{onUnloaded:(r:{added:{id:string
   catch(e){setFailed((e as Error).message||'Bear couldn’t take that just now.');}
   finally{setBusy(false);}
  }
- return <section className="dump-box glass-strong" aria-label="Brain dump">
+ // One box, like the design: type or talk, then the arrow. It grows as she writes more than a line.
+ return <section className={`dump-box${text.includes('\n')||text.length>34?' tall':''}`} aria-label="Brain dump">
   <label htmlFor="dump-text" className="sr-only">What’s on your mind?</label>
-  <textarea id="dump-text" ref={box} value={text} rows={3} onChange={e=>{setText(e.target.value);if(!listening)via.current='text';}} onKeyDown={e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();unload();}}}
-   placeholder="Pay the electricity bill, call the possum man, book the podiatrist…" disabled={busy} maxLength={12000}/>
-  <div className="dump-actions">
-   {canTalk&&<button type="button" className={`dump-mic${listening?' on':''}`} onClick={talk} aria-pressed={listening} aria-label={listening?'Stop listening':'Speak instead'} disabled={busy}>
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
-    <span>{listening?'Listening… tap to stop':'Speak'}</span></button>}
-   <button type="button" className="btn coral sm dump-go" onClick={unload} disabled={busy||!text.trim()}>{busy?'Sorting it out…':'Unload'}</button>
-  </div>
-  {failed&&<p className="note coral" role="alert" style={{marginTop:10}}>{failed} Your words are still here. <button type="button" className="link-btn" onClick={unload}>Try again</button></p>}
+  <textarea id="dump-text" ref={box} value={text} rows={1} onChange={e=>{setText(e.target.value);if(!listening)via.current='text';}} onKeyDown={e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();unload();}}}
+   placeholder={listening?'Listening…':'Brain dump it here…'} disabled={busy} maxLength={12000}/>
+  {canTalk&&<button type="button" className={`dump-mic${listening?' on':''}`} onClick={talk} aria-pressed={listening} aria-label={listening?'Stop listening':'Speak instead'} disabled={busy}>
+   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>}
+  <button type="button" className="dump-go" onClick={unload} disabled={busy||!text.trim()} aria-label={busy?'Sorting it out':'Unload'}>
+   {busy?<span className="dots" aria-hidden="true"><i/><i/><i/></span>:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
+   <span className="sr-only">{busy?'Sorting it out…':'Unload'}</span></button>
+  {failed&&<p className="note coral dump-fail" role="alert">{failed} Your words are still here. <button type="button" className="link-btn" onClick={unload}>Try again</button></p>}
  </section>;
 }
 
@@ -189,13 +189,18 @@ export function AddRow({listId,onAdded,say}:{listId:string|null;onAdded:()=>void
 
 // ---------- "I've got a moment" ----------
 interface Pick{taskId:string;title:string;minutes:number;why:string|null}
-export function MomentPicker({onDone}:{onDone:(id:string,title:string)=>void}){
+export function MomentPicker({onDone,open,onToggle}:{onDone:(id:string,title:string)=>void;open:boolean;onToggle:()=>void}){
  const [res,setRes]=useState<{minutes:number;picks:Pick[];heldBack:string|null}|null>(null);const [busy,setBusy]=useState<number|null>(null);
  async function ask(m:number){setBusy(m);try{setRes(await apiSend('/api/bear/board/moment',{minutes:m}));}catch{setRes({minutes:m,picks:[],heldBack:null});}finally{setBusy(null);}}
- return <section className="moment glass" aria-label="When I have a moment">
-  <div className="moment-row"><span className="small" style={{fontWeight:600}}>Got a moment?</span>
-   <div className="chips" style={{gap:6}}>{[[5,'5 min'],[10,'10 min'],[20,'20 min'],[60,'Some time']].map(([m,l])=><button key={m} type="button" className="chip" aria-pressed={res?.minutes===m} disabled={busy!==null} onClick={()=>ask(m as number)}>{l}</button>)}</div></div>
-  {res&&<div className="moment-out" aria-live="polite">
+ return <section className="moment home-card" aria-label="When I have a moment">
+  <button type="button" className="home-card-head" aria-expanded={open} onClick={onToggle}>
+   <span className="home-card-icon moment-icon" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M10 2.5h4M12 2.5V6M18.5 6.5l1.5-1.5"/></svg></span>
+   <span className="home-card-text"><strong>Got a moment?</strong><span>Find something you can tackle now</span></span>
+   <span className={`home-chev${open?' up':''}`} aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
+  </button>
+  {open&&<div className="moment-row">
+   <div className="chips" style={{gap:6}}>{[[5,'5 min'],[10,'10 min'],[20,'20 min'],[60,'Some time']].map(([m,l])=><button key={m} type="button" className="chip" aria-pressed={res?.minutes===m} disabled={busy!==null} onClick={()=>ask(m as number)}>{l}</button>)}</div></div>}
+  {open&&res&&<div className="moment-out" aria-live="polite">
    {res.picks.length?<><p className="small">{res.minutes>=60?'Here’s what you could tackle':`You’ve got ${res.minutes} minutes. Here ${res.picks.length===1?'is one thing':`are ${res.picks.length===2?'two':'three'} things`} you could tackle`}. Only if you feel like it.</p>
     <ul className="b-list">{res.picks.map(p=><li key={p.taskId} className="b-row"><button type="button" className="b-check" role="checkbox" aria-checked={false} aria-label={`Done: ${p.title}`} onClick={()=>{onDone(p.taskId,p.title);setRes(r=>r?{...r,picks:r.picks.filter(x=>x.taskId!==p.taskId)}:r);}}><span/></button><div className="b-main"><Link href={`/bear/help/${p.taskId}`} className="b-title">{p.title}</Link><div className="b-meta"><span>about {p.minutes} min</span>{p.why&&<span className="b-tag">{p.why}</span>}</div></div></li>)}</ul>
     <Link href={`/bear/help/${res.picks[0].taskId}`} className="btn ghost sm" style={{marginTop:8}}>Help me with the first one</Link></>

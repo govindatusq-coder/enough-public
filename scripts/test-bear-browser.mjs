@@ -25,7 +25,7 @@ try{
  const context=await browser.newContext({viewport:{width:Number(process.env.BEAR_TEST_WIDTH||390),height:Number(process.env.BEAR_TEST_HEIGHT||844)},deviceScaleFactor:2,isMobile:!process.env.BEAR_TEST_WIDTH,hasTouch:!process.env.BEAR_TEST_WIDTH,locale:'en-AU',timezoneId:'Australia/Sydney'});
  context.setDefaultTimeout(10000);
  // The other-ways fold is closed by default; the walk-through opens it once, as a person would.
- await context.addInitScript(()=>{try{localStorage.setItem('bear-fold:capture','1');}catch{}});
+ await context.addInitScript(()=>{try{localStorage.setItem('bear-fold:capture','1');if(!localStorage.getItem('bear-home-open'))localStorage.setItem('bear-home-open',JSON.stringify({dump:true}));}catch{}});
  const page=await context.newPage();
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('response',r=>{if(r.status()>=400&&!/favicon|manifest/.test(r.url()))console.log('HTTP',r.status(),r.request().method(),r.url(),r.request().headers()['origin']);});let expect503=0;page.on('console',m=>{if(m.type()!=='error')return;if(expect503>0&&/503/.test(m.text())){expect503--;return;}errors.push(m.text());});
  const shot=async(name)=>{await page.screenshot({path:resolve(results,name+'.png'),fullPage:true});};
