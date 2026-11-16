@@ -180,3 +180,10 @@ test('Bear Helps prepares, never sends: drafts open in her own apps',()=>{
  assert.equal(minutesFor({title:'Confirm birthday RSVP',estimatedMinutes:15}),2);
  assert.equal(minutesFor({title:'Confirm birthday RSVP',estimatedMinutes:7,minutesBy:'you'}),7);
 });
+
+test('existing tasks from before the redesign show in My Brain Dump with a quiet suggestion, and can be ignored',async()=>{
+ const s=await person();const t=await addOne(s,{title:'Call the plumber',listId:null},NOW);
+ await s.update('tasks',t.id,{suggestion:undefined,listId:undefined,rank:undefined});// as an older task would be stored
+ let row=(await boardView(s,NOW)).inbox.find(x=>x.id===t.id);assert.deepEqual(row.suggestion,{listId:'calls',by:'bear'});
+ await ignoreSuggestion(s,t.id);row=(await boardView(s,NOW)).inbox.find(x=>x.id===t.id);assert.equal(row.suggestion,null);
+});

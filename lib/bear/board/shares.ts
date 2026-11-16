@@ -71,7 +71,7 @@ export class SupabaseShares implements ShareBackend{
  }
  async get(id:string){const {data,error}=await this.db.from('bear_shares').select('body,recipient_id,status,mode,sender_id').eq('id',id).maybeSingle();this.fail(error);return data?this.from(data as never):null;}
  async save(share:Share){const {error}=await this.db.from('bear_shares').update({status:share.status,body:share,updated_at:new Date().toISOString()}).eq('id',share.id);this.fail(error);return share;}
- async eraseMine(){await this.db.from('bear_shares').delete().eq('sender_id',this.userId);await this.db.from('bear_shares').update({recipient_id:null,status:'declined'}).eq('recipient_id',this.userId);}
+ async eraseMine(){const a=await this.db.from('bear_shares').delete().eq('sender_id',this.userId);this.fail(a.error);const b=await this.db.from('bear_shares').update({recipient_id:null,status:'declined'}).eq('recipient_id',this.userId);this.fail(b.error);}
 }
 export function sharesFor(store:BearStore):ShareBackend{
  const db=(store as unknown as {db?:SupabaseClient}).db;

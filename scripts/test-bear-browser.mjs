@@ -109,7 +109,8 @@ try{
  });
  await step('Settings has What matters to you, with goals Bear can use',async()=>{await page.goto(base+'/bear/me');await page.waitForSelector('#matters');await page.click('[aria-label="Values"] button.chip:has-text("Parenting")');await page.waitForSelector('[aria-label="Values"] button.chip[aria-pressed="true"]:has-text("Parenting")');await page.fill('#goal-text','Maintain my professional registration');await page.click('#matters + .card button.chip:has-text("Must not slip")');await page.click('#matters + .card button:has-text("Add")');await page.waitForSelector('text=Maintain my professional registration');await page.locator('#matters').scrollIntoViewIfNeeded();await shot('53-matters');});
  await step('+ Bear opens first: the bear, a welcome, one box; Bear answers, asks "Anything else?", and links to My Bear',async()=>{
-  await page.goto(base+'/bear');await page.waitForURL(/\/bear\/capture$/);await page.waitForSelector('#qc-text');
+  await page.goto(base+'/bear');await page.waitForURL(/\/bear\/home$/);await page.waitForSelector('#dump-text');// the Brain Dump Board is where Load Bear opens
+  await page.goto(base+'/bear/capture');await page.waitForSelector('#qc-text');
   await page.waitForFunction(()=>/Welcome, \w+!/.test(document.querySelector('.hh-welcome')?.textContent||''));
   assert.equal(await page.$('.needs-min'),null,'nothing is asked of the person here');assert.equal(await page.$('.bear-nav'),null,'no navigation bar on this screen');
   const fit=await page.evaluate(()=>({scroll:document.scrollingElement.scrollHeight,view:innerHeight}));assert.ok(fit.scroll<=fit.view+1,'fits one screen: '+JSON.stringify(fit));

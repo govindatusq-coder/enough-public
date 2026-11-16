@@ -25,9 +25,10 @@ export async function openTasks(store:BearStore):Promise<Task[]>{
  const deps=await store.list('task_dependencies');const steps=new Set(deps.map(d=>d.dependsOnTaskId));
  return open.filter(t=>!t.isDemo&&!t.wishlist&&!t.part&&!steps.has(t.id));
 }
-function view(t:Task,billIds:Set<string>):BoardTask{
+function view(t:Task,billIds:Set<string>,suggestFor:(title:string)=>{listId:string;by:'bear'|'learned'}|null):BoardTask{
  return {id:t.id,title:t.title,listId:t.listId??null,rank:t.rank??Number.MAX_SAFE_INTEGER,dueAt:t.dueAt,dueTime:t.dueTime??null,light:t.light?.level||t.sorted?.urgency||null,minutes:minutesFor(t),readiness:readinessOf(t),
-  suggestion:t.listId||!t.suggestion||t.suggestion.ignored?null:{listId:t.suggestion.listId,by:t.suggestion.by},notes:t.notes??null,hasWork:!!(t.progress?.draft?.body||t.progress?.notes||t.progress?.steps?.length||t.prepared),
+  // Tasks from before lists existed have no suggestion stored (undefined): Bear works one out when it shows them.
+  suggestion:t.listId?null:t.suggestion===undefined?suggestFor(t.title):!t.suggestion||t.suggestion.ignored?null:{listId:t.suggestion.listId,by:t.suggestion.by},notes:t.notes??null,hasWork:!!(t.progress?.draft?.body||t.progress?.notes||t.progress?.steps?.length||t.prepared),
   shared:t.sharedOut?{mode:t.sharedOut.mode,who:t.sharedOut.to,direction:'out'}:t.sharedIn?{mode:t.sharedIn.mode,who:t.sharedIn.from,direction:'in'}:null,isBill:billIds.has(t.id),createdAt:t.createdAt};
 }
 const byRank=(a:BoardTask,b:BoardTask)=>(a.rank-b.rank)||a.createdAt.localeCompare(b.createdAt);
@@ -40,7 +41,7 @@ export async function boardView(store:BearStore,now=new Date()):Promise<BoardVie
  for(const t of tasks){
   // Handed over for good and accepted: it lives on the Shared screen now, not on her lists.
   if(t.sharedOut?.mode==='transfer'&&t.readiness==='waiting')continue;
-  const v=view(t,bills);if(v.listId&&ids.has(v.listId))byList[v.listId].push(v);else inbox.push({...v,listId:null});
+  const v=view(t,bills,title=>suggestList(title,lists,profile.listLearning));if(v.listId&&ids.has(v.listId))byList[v.listId].push(v);else inbox.push({...v,listId:null});
  }
  inbox.sort(byRank);for(const k of Object.keys(byList))byList[k].sort(byRank);
  const started=tasks.filter(t=>t.progress&&readinessOf(t)==='in_progress').sort((a,b)=>(b.progress!.savedAt).localeCompare(a.progress!.savedAt))[0];
