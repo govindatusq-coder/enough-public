@@ -162,3 +162,23 @@ test('safety: nobody can act on someone else’s responsibility; Bear never clai
  const d=await giveToBear(a,null,t.id,MON);assert.doesNotMatch(JSON.stringify(d.log),/ordered|purchased|sent|booked|submitted/i);
  assert.equal((await a.get('tasks',t.id)).status,'open');
 });
+
+test('task names keep to her own words: no added reasons, no dates, nothing she didn’t say',async()=>{
+ const {cleanModelTitle,sortParts}=await import('../lib/bear/services/sort-service.ts');
+ const c=(t,said)=>cleanModelTitle(t,said,said);
+ assert.equal(c('Organise Christmas presents for the family so everyone’s covered','I need to organise Christmas presents for the family'),'Organise Christmas presents for the family');
+ assert.equal(c('Pay the electricity bill so power stays on','pay the electricity bill'),'Pay the electricity bill');
+ assert.equal(c('Get a red scrunchie for Sarah by 24 November','Sarah needs a red scrunchie by 24 November'),'Get a red scrunchie for Sarah');
+ assert.equal(c('Buy a birthday cake from Woolworths','buy a birthday cake for Leo'),null,'a shop she never named');
+ assert.equal(c('Call the possum removal service','call the possum man'),null,'“removal service” isn’t what she said');
+ assert.equal(c('Pay school fees so the kids can stay enrolled','pay the school fees so the kids can stay enrolled'),'Pay school fees so the kids can stay enrolled','a reason she gave herself stays');
+ // Through the real path: the AI's embellished names are trimmed, or replaced by Bear's plain reading of her words.
+ const said='Pay the electricity bill, organise Christmas presents for the family and call the possum man';
+ const fake={name:'fake',model:'f',supportsVision:false,extract:async()=>({output:{tasks:[
+  {original:'Pay the electricity bill',title:'Pay the electricity bill so power stays on',domain:'money'},
+  {original:'organise Christmas presents for the family',title:'Organise Christmas presents for the family so everyone’s covered',domain:'family'},
+  {original:'call the possum man',title:'Call the possum removal service',domain:'home'}]},raw:{},provider:'fake',model:'f',latencyMs:1})};
+ const parts=await sortParts(said,fake,'2026-11-17',[]);
+ assert.deepEqual(parts.map(p=>p.title),['Pay the electricity bill','Organise Christmas presents for the family','Call the possum man']);
+ assert.equal(parts[0].domain,'money','the AI’s area is still used');
+});

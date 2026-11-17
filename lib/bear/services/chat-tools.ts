@@ -4,7 +4,7 @@ import {z} from 'zod';
 import {areaKeys,type AreaKey} from '../domain/types.ts';
 import type {BearStore} from '../store/store.ts';
 import {lightFor,saidDate,soonByNature,sortOne,suggestStart} from './sorter.ts';
-import {changeSorted,placeSorted,type SortedItem} from './sort-service.ts';
+import {changeSorted,cleanModelTitle,placeSorted,type SortedItem} from './sort-service.ts';
 
 export const addTasksTool={
  name:'add_tasks',
@@ -12,7 +12,7 @@ export const addTasksTool={
  strict:true,
  input_schema:{type:'object',additionalProperties:false,required:['tasks'],properties:{tasks:{type:'array',items:{type:'object',additionalProperties:false,required:['original','title','area'],properties:{
   original:{type:'string',description:'Their own words for this one thing, copied, including any date or time words they used (for a reminder you offered, the event and its date as you found it, e.g. "NZ v India ODI on 15 November 2026").'},
-  title:{type:'string',description:'Action verb + the specific thing, under 12 words, only details they gave. No date in the title.'},
+  title:{type:'string',description:'A plain name: action verb + the specific thing, under 10 words, in their own words. No reasons or outcomes (never "so ..."), no date, nothing they did not say.'},
   area:{type:'string',enum:[...areaKeys],description:'What it is mainly for: work, family (children, school, partner, relatives), home (house, car, pets), money (bills, banking, insurance), health (anyone’s medical or dental care), me (own friends, hobbies, self-care).'},
  }}}}},
 } as const;
@@ -25,7 +25,8 @@ export async function runAddTasks(store:BearStore,raw:unknown,said:string,today:
  for(const t of p.data.tasks){
   const base=sortOne(t.original,today,children);
   const names=(t.title.match(/\b[A-Z][a-z]{2,}\b/g)||[]).slice(1).map(n=>n.toLowerCase());
-  const title=(names.every(n=>known.has(n))?t.title:base.title).replace(/[\s.]+$/,'').slice(0,90);
+  // Same rule as Drop Bear: the name keeps to what was said (no added reasons or dates, no new details).
+  const title=(names.every(n=>known.has(n))?cleanModelTitle(t.title,t.original,said)??base.title:base.title).replace(/[\s.]+$/,'').slice(0,90);
   const area=t.area as AreaKey;const light=lightFor({deadline:base.deadline,windowBy:base.windowBy,urgency:base.urgency,soonByNature:soonByNature(title)},today);
   items.push(await placeSorted(store,{...base,title,domain:area,secondary:[base.domain,...base.secondary].filter((d,i,a)=>d!==area&&a.indexOf(d)===i),suggestedStart:suggestStart(title,base.deadline,light.light,today),...light},'text',today,now));
  }

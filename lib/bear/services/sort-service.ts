@@ -60,11 +60,28 @@ const modelSchema=z.object({tasks:z.array(z.object({original:z.string().min(2).m
 export const sortJsonSchema={type:'object',additionalProperties:false,required:['tasks'],properties:{tasks:{type:'array',items:{type:'object',additionalProperties:false,required:['original','title','domain'],properties:{original:{type:'string'},title:{type:'string'},domain:{type:'string',enum:[...areaKeys]}}}}}};
 export const sortSystemPrompt=`You sort what a busy parent just said into separate responsibilities. Return one entry per distinct thing they need to do.
 - original: the exact words from their message for that one thing (copy them; do not paraphrase), including any date or urgency words they used for it.
-- title: action verb + the specific thing + the outcome, under 12 words. Use only details they gave. Never add names, dates, amounts or places they did not say.
+- title: a short, plain name for the task: an action verb + the specific thing, under 10 words, in their own words. No reasons, purposes or outcomes (never "so ...", "to make sure ...", "so that ..."), and leave dates and times out of the title. Never add names, dates, amounts, places or details they did not say.
 - domain: exactly one of work, family, home, money, health, me, by what the thing is mainly FOR (paying a bill is money; a child's school form is family; anyone's medical or dental care is health; the house, car or pets is home; the person's own friends, hobbies and self-care is me).
 A shopping list is one thing. Do not split one thing into steps. Do not add things they did not mention.`;
 const words=(s:string)=>new Set(norm(s).split(' ').filter(w=>w.length>3));
 const properNouns=(s:string)=>(s.match(/\b[A-Z][a-z]{2,}\b/g)||[]).slice(1);   // skip the first word (sentence case)
+// A task name from the AI keeps only what she said. Purpose clauses she didn't say ("so power stays on", "so everyone's
+// covered") and dates (shown separately) are trimmed off. If a word she never used is still left, the AI's name isn't used:
+// Bear's own plain reading of her words is used instead. Joining words and the usual leading verbs are fine to add.
+const ADDABLE=new Set('a an the for to of and with about on in at up out my her his their our your get buy book call ring phone pay order organise organize follow email reply send sign return renew fix check confirm pick make plan sort arrange schedule find write prepare collect drop take do submit fill complete chase contact text message ask tell remind see visit clean tidy research compare start finish attend go grab'.split(' '));
+const DATEISH=/\s+(?:by|on|before|for|this|next|due|until|from)\s+(?:(?:mon|tues|wednes|thurs|fri|satur|sun)day|today|tomorrow|tonight|the\s+\d|\d|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*|end of|week|weekend|month).*$/i;
+const PURPOSE=/\s*(?:,\s*)?\b(?:so that|so|to make sure|to ensure|in order to|to keep|to avoid|to stop|to prevent|before it|ahead of)\b.*$/i;
+const stem=(w:string)=>w.replace(/[’']s$/,'').replace(/(?:ies)$/,'y').replace(/(?:es|s)$/,'');
+export function cleanModelTitle(title:string,original:string,said:string):string|null{
+ let t=title.replace(/[\s.]+$/,'').trim();
+ const heard=` ${said.toLowerCase()} `;
+ const p=t.match(PURPOSE);if(p&&!heard.includes(p[0].trim().toLowerCase().split(/\s+/).slice(0,3).join(' ')))t=t.slice(0,p.index).trim();
+ const d=t.match(DATEISH);if(d)t=t.slice(0,d.index).trim();
+ const her=new Set(said.toLowerCase().replace(/[’']/g,"'").split(/[^a-z0-9']+/).filter(Boolean).flatMap(w=>[w,stem(w)]));
+ const extra=t.toLowerCase().replace(/[’']/g,"'").split(/[^a-z0-9']+/).filter(Boolean).filter(w=>!ADDABLE.has(w)&&!her.has(w)&&!her.has(stem(w)));
+ if(extra.length||t.split(/\s+/).length<2)return null;
+ void original;return t.charAt(0).toUpperCase()+t.slice(1);
+}
 async function modelParts(provider:StructuredModelProvider,text:string):Promise<{original:string;title:string;domain:AreaKey}[]|null>{
  try{
   const r=await provider.extract({schema:sortJsonSchema as unknown as Record<string,unknown>,system:sortSystemPrompt,text,images:[],documents:[],maxOutputTokens:2000});
@@ -84,7 +101,7 @@ export async function sortParts(text:string,provider:StructuredModelProvider|nul
  // Short single things are sorted by the rules alone; the model is only asked when there is something to tell apart.
  if(!provider||text.trim().length<40)return rules;
  const m=await modelParts(provider,text);if(!m)return rules;
- return m.map(t=>{const s=sortOne(t.original,today,children);const title=t.title.replace(/[\s.]+$/,'');return {...s,title,domain:t.domain,secondary:[s.domain,...s.secondary].filter((d,i,a)=>d!==t.domain&&a.indexOf(d)===i),suggestedStart:suggestStart(title,s.deadline,s.light,today),...lightFor({deadline:s.deadline,windowBy:s.windowBy,urgency:s.urgency,soonByNature:soonByNature(title)},today)};});
+ return m.map(t=>{const s=sortOne(t.original,today,children);const title=cleanModelTitle(t.title,t.original,text)??s.title;return {...s,title,domain:t.domain,secondary:[s.domain,...s.secondary].filter((d,i,a)=>d!==t.domain&&a.indexOf(d)===i),suggestedStart:suggestStart(title,s.deadline,s.light,today),...lightFor({deadline:s.deadline,windowBy:s.windowBy,urgency:s.urgency,soonByNature:soonByNature(title)},today)};});
 }
 
 // Make (or recognise) the task for one sorted thing.
