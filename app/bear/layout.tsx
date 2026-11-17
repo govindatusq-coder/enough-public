@@ -13,7 +13,7 @@ export const metadata:Metadata={
  manifest:'/bear/manifest.webmanifest',
  appleWebApp:{capable:true,statusBarStyle:'default',title:'Load Bear'},
  // ?v= busts the browser's stubborn cached tab icon whenever the artwork changes.
- icons:{icon:[{url:'/bear/favicon.ico?v=4',sizes:'48x48'},{url:'/bear/icon-32.png?v=4',type:'image/png',sizes:'32x32'},{url:'/bear/icon-192.png?v=4',type:'image/png',sizes:'192x192'}],shortcut:'/bear/favicon.ico?v=4',apple:[{url:'/bear/apple-touch-icon.png?v=4',sizes:'180x180'}]},
+ icons:{icon:[{url:'/bear/favicon.ico?v=5',sizes:'48x48'},{url:'/bear/icon-32.png?v=5',type:'image/png',sizes:'32x32'},{url:'/bear/icon-192.png?v=5',type:'image/png',sizes:'192x192'}],shortcut:'/bear/favicon.ico?v=5',apple:[{url:'/bear/apple-touch-icon.png?v=5',sizes:'180x180'}]},
 };
 export const viewport:Viewport={themeColor:'#FFF7E8',viewportFit:'cover',width:'device-width',initialScale:1,maximumScale:1};
 
