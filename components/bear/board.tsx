@@ -17,20 +17,36 @@ const DRAFT_KEY='bear-dump-draft';
 export function BrainDumpInput({onUnloaded,say,placeholder='Brain dump it here…',card=false,onFiles,filesBusy=false}:{onUnloaded:(r:{added:{id:string;title:string}[];already:{id:string;title:string}[];tip?:{taskId:string;text:string}|null})=>void;say:Say;placeholder?:string;card?:boolean;onFiles?:(files:File[])=>void;filesBusy?:boolean}){
  const fileRef=useRef<HTMLInputElement>(null);
  const [text,setText]=useState('');const [busy,setBusy]=useState(false);const [failed,setFailed]=useState<string|null>(null);
- const [listening,setListening]=useState(false);const [canTalk,setCanTalk]=useState(false);const rec=useRef<Rec|null>(null);const base=useRef('');const via=useRef<'text'|'voice'>('text');
+ const [listening,setListening]=useState(false);const [canTalk,setCanTalk]=useState(false);const [hint,setHint]=useState<string|null>(null);const rec=useRef<Rec|null>(null);const via=useRef<'text'|'voice'>('text');
  const box=useRef<HTMLTextAreaElement>(null);
  // What she was typing survives the app closing mid-thought.
  const restored=useRef(false);
  useEffect(()=>{queueMicrotask(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d)setText(d);}catch{/* no storage */}restored.current=true;const w=window as unknown as {SpeechRecognition?:new()=>Rec;webkitSpeechRecognition?:new()=>Rec};setCanTalk(!!(w.SpeechRecognition||w.webkitSpeechRecognition));});},[]);
  useEffect(()=>{try{if(text)localStorage.setItem(DRAFT_KEY,text);else if(restored.current)localStorage.removeItem(DRAFT_KEY);}catch{/* no storage */}const el=box.current;if(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,320)+'px';}},[text]);
+ // Talking to Bear. Where the phone lets the page listen, Bear listens. Where it doesn't (some iPhone home-screen apps,
+ // Siri and Dictation turned off, permission refused), the box opens with the keyboard, whose own microphone always works,
+ // and Bear says so plainly. Nothing fails silently.
+ const KEYBOARD='Tap the microphone on your keyboard and speak. Bear will take it from there.';
+ function keyboard(why?:string){setListening(false);setHint(why?`${why} ${KEYBOARD}`:KEYBOARD);box.current?.focus();}
  function talk(){
-  if(listening){rec.current?.stop();return;}
-  const w=window as unknown as {SpeechRecognition?:new()=>Rec;webkitSpeechRecognition?:new()=>Rec};const R=w.SpeechRecognition||w.webkitSpeechRecognition;if(!R)return;
-  const r=new R();r.continuous=true;r.interimResults=true;r.lang='en-AU';base.current=text?text.replace(/\s*$/,'\n'):'';let finals='';
-  r.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const res=e.results[i];if(res.isFinal)finals+=res[0].transcript.trim()+' ';else interim+=res[0].transcript;}setText((base.current+finals+interim).replace(/\s+$/,interim?'':' '));};
-  r.onend=()=>{setListening(false);setText(t=>t.trim()?t.trim():'');};
-  r.onerror=e=>{setListening(false);if(e.error==='not-allowed')say('Bear needs microphone permission to listen. You can still type, or use the keyboard’s microphone.');};
-  rec.current=r;via.current='voice';setListening(true);r.start();
+  if(listening){try{rec.current?.stop();}catch{/* already stopped */}return;}
+  const w=window as unknown as {SpeechRecognition?:new()=>Rec;webkitSpeechRecognition?:new()=>Rec};const R=w.SpeechRecognition||w.webkitSpeechRecognition;
+  let useKeyboard=false;try{useKeyboard=localStorage.getItem('bear-speech')==='keyboard';}catch{/* no storage */}
+  if(!R||useKeyboard){keyboard();return;}
+  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  let r:Rec;try{r=new R();}catch{keyboard('Bear can’t listen on this device.');return;}
+  // iPhones handle one phrase at a time best: tap again to add more. Each update rebuilds the whole phrase, so no words double up.
+  r.continuous=!ios;r.interimResults=true;r.lang='en-AU';
+  const before=text.trim()?text.replace(/\s*$/,' '):'';let heard=false,failed=false;const began=Date.now();
+  r.onresult=e=>{let said='';for(let i=0;i<e.results.length;i++)said+=e.results[i][0].transcript;if(said.trim())heard=true;setText(before+said.replace(/^\s+/,''));};
+  r.onerror=e=>{failed=true;setListening(false);
+   if(e.error==='not-allowed')keyboard('Load Bear isn’t allowed to use the microphone (on iPhone: Settings › Safari › Microphone).');
+   else if(e.error==='service-not-allowed'){try{localStorage.setItem('bear-speech','keyboard');}catch{/* no storage */}keyboard('Your phone doesn’t let Load Bear listen directly here.');}
+   else if(e.error==='no-speech')setHint('Bear didn’t hear anything. Tap the microphone and try again.');
+   else if(e.error!=='aborted')keyboard('Bear couldn’t listen just then.');};
+  r.onend=()=>{setListening(false);setText(t=>t.trim()?t.trimEnd():'');if(!heard&&!failed&&Date.now()-began<1500)keyboard('Bear couldn’t start listening.');};
+  try{r.start();}catch{keyboard('Bear couldn’t start listening.');return;}
+  rec.current=r;via.current='voice';setHint(null);setListening(true);
  }
  async function unload(){
   const t=text.trim();if(!t||busy)return;if(listening)rec.current?.stop();
@@ -48,11 +64,12 @@ export function BrainDumpInput({onUnloaded,say,placeholder='Brain dump it here�
   {onFiles&&<><input ref={fileRef} type="file" accept="image/*,application/pdf" multiple hidden onChange={e=>{const f=[...(e.target.files||[])];e.target.value='';if(f.length)onFiles(f);}}/>
    <button type="button" className="dump-mic drop-attach" onClick={()=>fileRef.current?.click()} aria-label="Add a photo or PDF" disabled={busy||filesBusy}>
     {filesBusy?<span className="dots" aria-hidden="true"><i/><i/><i/></span>:<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 8"/></svg>}</button></>}
-  {canTalk&&<button type="button" className={`dump-mic${listening?' on':''}`} onClick={talk} aria-pressed={listening} aria-label={listening?'Stop listening':'Speak instead'} disabled={busy}>
-   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>}
+  <button type="button" className={`dump-mic${listening?' on':''}`} onClick={talk} aria-pressed={canTalk?listening:undefined} aria-label={listening?'Stop listening':canTalk?'Speak instead':'Speak (uses your keyboard’s microphone)'} disabled={busy}>
+   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
   <button type="button" className="dump-go" onClick={unload} disabled={busy||!text.trim()} aria-label={busy?'Sorting it out':'Unload'}>
    {busy?<span className="dots" aria-hidden="true"><i/><i/><i/></span>:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
    <span className="sr-only">{busy?'Sorting it out…':'Unload'}</span></button>
+  {(hint||listening)&&<p className="dump-hint small" role="status" aria-live="polite">{listening?'Listening… tap the microphone again when you’re done.':hint}</p>}
   {failed&&<p className="note coral dump-fail" role="alert">{failed} Your words are still here. <button type="button" className="link-btn" onClick={unload}>Try again</button></p>}
  </section>;
 }

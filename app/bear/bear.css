@@ -914,3 +914,12 @@
 .bear .v2-alts li{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
 .bear .v2-alts li>div{flex:1 1 200px;}
 @media (min-width:1024px){.bear .v2-top .v2-logo{visibility:hidden;}}
+.bear .dump-hint{flex:1 0 100%;order:6;margin:2px 2px 0;color:var(--ink-2);}
+.bear .dump-box .dump-hint{position:absolute;left:12px;right:12px;top:calc(100% + 6px);}
+/* Bear Brain: All Tasks and Priority Actions open only when tapped */
+.bear .v2-fold{padding:2px 14px;}
+.bear .v2-fold-head{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:56px;text-align:left;font-weight:700;font-size:17px;color:var(--navy);}
+.bear .v2-filters{display:flex;flex-wrap:wrap;gap:6px;padding:0 0 10px;}
+.bear .v2-filters .chip{min-height:36px;padding:0 12px;font-size:14px;}
+.bear .v2-filters .chip.on{background:var(--coral);border-color:var(--coral);color:#fff;}
+.bear .v2-fold .v2-plist{border-top:1px solid var(--line);margin-bottom:6px;}

@@ -274,7 +274,7 @@ try{
   const t0=Date.now();const r=await page.evaluate(async()=>{const x=await fetch('/api/bear/board');return {status:x.status,body:await x.json()};});
   assert.equal(r.status,200,'board API: '+JSON.stringify(r.body).slice(0,300));
   const n=r.body.board.inbox.length+Object.values(r.body.board.byList).reduce((a,l)=>a+l.length,0);
-  await page.goto(base+'/bear/brain');await page.waitForSelector('.v2-cat',{timeout:15000});const shownTotal=Number((await page.$eval('.v2-select select option',o=>o.textContent)).match(/\((\d+)\)/)[1]);assert.ok(shownTotal>=n-2&&shownTotal<=n,`Bear Brain shows ${shownTotal} of ${n}`);
+  await page.goto(base+'/bear/brain');await page.waitForSelector('.v2-cat',{timeout:15000});const shownTotal=Number((await page.textContent('.v2-fold-head:has-text("All Tasks") span')).match(/\((\d+)\)/)[1]);assert.ok(shownTotal>=n-2&&shownTotal<=n,`Bear Brain shows ${shownTotal} of ${n}`);
   console.log('   board: '+n+' open things, '+(Date.now()-t0)+' ms');await shot('99-home-after-everything');
  });
  await step('no console errors',async()=>{const real=errors.filter(e=>!/favicon|manifest|404|hydrat|Download the React DevTools/i.test(e));assert.deepEqual(real,[]);});

@@ -19,7 +19,9 @@ type Filter='all'|'attention'|'waiting'|'check';
 export default function BearBrain(){
  const router=useRouter();
  const [brain,setBrain]=useState<Brain|null>(null);const [board,setBoard]=useState<BoardView|null>(null);const [err,setErr]=useState<string|null>(null);
- const [open,setOpen]=useState<Record<string,boolean>>({});const [showAll,setShowAll]=useState(false);const [filter,setFilter]=useState<Filter>('all');
+ const [open,setOpen]=useState<Record<string,boolean>>({});const [filter,setFilter]=useState<Filter>('all');
+ // Both fold away until tapped: the full list of everything, and Priority Actions.
+ const [allOpen,setAllOpen]=useState(false);const [prioOpen,setPrioOpen]=useState(false);
  const [searching,setSearching]=useState(false);const [q,setQ]=useState('');
  const [toast,setToast]=useState<{text:string;undo?:()=>void;key:number}|null>(null);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const load=useCallback(()=>Promise.all([apiGet<Brain>('/api/bear/rre/brain'),apiGet<{onboarding?:boolean;board?:BoardView}>('/api/bear/board')]).then(([b,bd])=>{if(bd.onboarding){router.replace('/bear/onboarding');return;}setBrain(b);setBoard(bd.board||null);setErr(null);})
@@ -33,9 +35,11 @@ export default function BearBrain(){
  const all=brain.categories.flatMap(c=>c.items).filter(i=>byId.has(i.id));
  const counts={all:all.length,attention:brain.priority.filter(i=>byId.has(i.id)).length,waiting:all.filter(i=>i.status==='waiting').length,check:all.filter(i=>i.status==='awaiting_approval').length};
  const term=q.trim().toLowerCase();
- const flat=term?all.filter(i=>i.title.toLowerCase().includes(term)):filter==='attention'?brain.priority.filter(i=>byId.has(i.id)):filter==='waiting'?all.filter(i=>i.status==='waiting'):filter==='check'?all.filter(i=>i.status==='awaiting_approval'):null;
- const prio=brain.priority.filter(i=>byId.has(i.id));const shown=showAll?prio:prio.slice(0,4);
- const row=(i:BrainItem)=><li key={i.id}><Link href={`/bear/brain/${i.id}`} className="v2-prow"><i className="v2-dot" style={{background:dotColour[i.dot]}} aria-hidden="true"/><span className="v2-prow-main"><strong>{i.title}</strong><span>{whenText(i)}</span></span><span className="v2-chev" aria-hidden="true">{Icon.chevron()}</span></Link></li>;
+ const listed=filter==='attention'?brain.priority.filter(i=>byId.has(i.id)):filter==='waiting'?all.filter(i=>i.status==='waiting'):filter==='check'?all.filter(i=>i.status==='awaiting_approval'):all;
+ const found=term?all.filter(i=>i.title.toLowerCase().includes(term)):null;
+ const prio=brain.priority.filter(i=>byId.has(i.id));
+ const catOf=new Map(brain.categories.flatMap(c=>c.items.map(i=>[i.id,c] as const)));
+ const row=(i:BrainItem,withCat=false)=><li key={i.id}><Link href={`/bear/brain/${i.id}`} className="v2-prow"><i className="v2-dot" style={{background:dotColour[i.dot]}} aria-hidden="true"/><span className="v2-prow-main"><strong>{i.title}</strong><span>{withCat&&catOf.get(i.id)?`${catOf.get(i.id)!.icon} ${catOf.get(i.id)!.title} · `:''}{whenText(i)}</span></span><span className="v2-chev" aria-hidden="true">{Icon.chevron()}</span></Link></li>;
  return <main id="main" className="bear-screen v2-screen brain-screen">
   <header className="v2-brain-head">
    <span className="v2-brain-icon" aria-hidden="true">{Icon.brain(28)}</span>
@@ -44,17 +48,17 @@ export default function BearBrain(){
    <Link href="/bear/me" className="v2-icon-btn" aria-label="Settings and categories">{Icon.sliders()}</Link>
   </header>
   {searching&&<input className="v2-search" autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Search everything Bear is holding" aria-label="Search"/>}
-  <label className="v2-select"><span className="sr-only">Show</span>
-   <select value={filter} onChange={e=>{const v=e.target.value;if(v.startsWith('/')){router.push(v);return;}setFilter(v as Filter);}}>
-    <option value="all">All Tasks ({counts.all})</option><option value="attention">Needs attention ({counts.attention})</option><option value="check">Ready for you to check ({counts.check})</option><option value="waiting">Waiting on others ({counts.waiting})</option>
-    <option disabled>──────────</option><option value="/bear/calendar">Calendar</option><option value="/bear/shared">Shared with others</option><option value="/bear/helps">Bear Helps</option><option value="/bear/me/lists">Edit categories</option>
-   </select><span className="v2-select-chev" aria-hidden="true">{Icon.down()}</span>
-  </label>
-  {flat?<section className="v2-card" aria-label="Results">{flat.length?<ul className="v2-plist">{flat.map(row)}</ul>:<p className="faint" style={{padding:'14px 4px'}}>{term?'Nothing matches that.':'Nothing here right now.'}</p>}</section>:<>
-   <section className="v2-card" aria-labelledby="pa-h">
-    <h2 id="pa-h" className="v2-h2">Priority Actions</h2>
-    {prio.length?<ul className="v2-plist">{shown.map(row)}</ul>:<p className="faint" style={{padding:'4px 4px 12px'}}>Nothing needs your attention right now.</p>}
-    {prio.length>4&&<button type="button" className="link-btn small v2-more" onClick={()=>setShowAll(s=>!s)}>{showAll?'Show fewer':`Show all ${prio.length}`}</button>}
+  {found?<section className="v2-card" aria-label="Search results">{found.length?<ul className="v2-plist">{found.map(i=>row(i,true))}</ul>:<p className="faint" style={{padding:'14px 4px'}}>Nothing matches that.</p>}</section>:<>
+   <section className="v2-card v2-fold">
+    <button type="button" className="v2-fold-head" aria-expanded={allOpen} onClick={()=>setAllOpen(o=>!o)}><span>All Tasks ({counts.all})</span><span className={`v2-chev${allOpen?' down':''}`} aria-hidden="true">{Icon.chevron()}</span></button>
+    {allOpen&&<>
+     <div className="v2-filters" role="radiogroup" aria-label="Show">{([['all',`All (${counts.all})`],['attention',`Needs attention (${counts.attention})`],['check',`Ready to check (${counts.check})`],['waiting',`Waiting (${counts.waiting})`]] as [Filter,string][]).map(([k,l])=><button key={k} type="button" role="radio" aria-checked={filter===k} className={`chip${filter===k?' on':''}`} onClick={()=>setFilter(k)}>{l}</button>)}</div>
+     {listed.length?<ul className="v2-plist">{listed.map(i=>row(i,true))}</ul>:<p className="faint" style={{padding:'8px 4px 12px'}}>Nothing here right now.</p>}
+    </>}
+   </section>
+   <section className="v2-card v2-fold" aria-labelledby="pa-h">
+    <button type="button" className="v2-fold-head" aria-expanded={prioOpen} onClick={()=>setPrioOpen(o=>!o)}><span id="pa-h">Priority Actions{prio.length?` (${prio.length})`:''}</span><span className={`v2-chev${prioOpen?' down':''}`} aria-hidden="true">{Icon.chevron()}</span></button>
+    {prioOpen&&(prio.length?<ul className="v2-plist">{prio.map(i=>row(i))}</ul>:<p className="faint" style={{padding:'4px 4px 12px'}}>Nothing needs your attention right now.</p>)}
    </section>
    <h2 className="v2-h2 v2-h2-out">By Category</h2>
    {brain.categories.map(c=>{const items=c.items.filter(i=>byId.has(i.id));const isOpen=!!open[c.id];return <section key={c.id} className="v2-cat" data-drop={c.id} style={{['--cat' as string]:tint[c.id]||'#EEF1F5'}}>
@@ -64,6 +68,7 @@ export default function BearBrain(){
     {isOpen&&<ul className="b-list v2-cat-list">{items.length?items.map((i,ix)=><TaskRow key={i.id} task={{...byId.get(i.id)!,listId:c.id}} index={ix} count={items.length} lists={board.lists} actions={actions} dragging={dragging===i.id} detailHref={`/bear/brain/${i.id}`} meta={i.status==='completed'?null:i.statusLabel+(i.categoryBy==='bear'?' · filed by Bear':'')}/>):<li className="faint" style={{padding:'10px 4px'}}>Nothing here.</li>}</ul>}
    </section>;})}
   </>}
+  <p className="board-links small"><Link href="/bear/calendar">Calendar</Link> · <Link href="/bear/shared">Shared</Link> · <Link href="/bear/helps">Bear Helps</Link> · <Link href="/bear/me/lists">Edit categories</Link></p>
   {toast&&<div key={toast.key} className="undo-toast glass-strong" role="status"><span>{toast.text}</span>{toast.undo&&<button type="button" onClick={()=>{toast.undo!();setToast(null);}}>Undo</button>}</div>}
  </main>;
 }

@@ -32,10 +32,24 @@ try{
   assert.match(await p.textContent('.v2-hello'),/^(Morning|Afternoon|Evening), Sarah\.$/);assert.equal((await p.textContent('.v2-ask')).trim(),'What’s on your mind?');
   assert.equal(await p.getAttribute('#dump-text','placeholder'),'Drop it here. I’ll sort it, plan it and get it moving.');
   assert.ok(await p.$('button[aria-label="Add a photo or PDF"]'));assert.ok(await p.$('.drop-card .dump-go'));
+  assert.ok(await p.$('.drop-card .dump-mic:not(.drop-attach)'),'the microphone is always there');
   assert.deepEqual(await p.$$eval('.bear-nav a:not(.nav-brand) span',e=>e.map(x=>x.textContent)),['Drop Bear','Got a Moment?','Bear Brain']);
   assert.equal(await p.getAttribute('.bear-nav a:not(.nav-brand)[href="/bear/home"]','aria-current'),'page');
   assert.equal(await p.$('.list-block, .dump-card, .sort-btn'),null,'no task-management controls on Drop Bear');
   await shot('v01-drop-bear');
+ });
+ await step('microphone: it listens and the words appear; if the phone refuses, Bear says why and opens the keyboard microphone',async()=>{
+  const fake=(mode)=>`(()=>{class R{start(){setTimeout(()=>{if('${mode}'==='ok'){this.onresult&&this.onresult({resultIndex:0,results:[Object.assign([{transcript:'Call the plumber'}],{isFinal:true})]});this.onend&&this.onend();}else{this.onerror&&this.onerror({error:'${mode}'});this.onend&&this.onend();}},200);}stop(){this.onend&&this.onend();}abort(){}}window.webkitSpeechRecognition=R;window.SpeechRecognition=R;})()`;
+  for(const [mode,expect] of [['ok',null],['service-not-allowed','Your phone doesn’t let Load Bear listen directly here.'],['none','Tap the microphone on your keyboard']]){
+   const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+   await c.addInitScript(mode==='none'?'delete window.webkitSpeechRecognition;delete window.SpeechRecognition;try{localStorage.removeItem("bear-speech")}catch{}':fake(mode));
+   const q=await c.newPage();await q.goto(base+'/bear/home');await q.waitForSelector('#dump-text');await q.fill('#dump-text','');
+   await q.click('.drop-card .dump-mic:not(.drop-attach)');
+   if(mode==='ok'){await q.waitForFunction(()=>document.querySelector('#dump-text').value==='Call the plumber');}
+   else{await q.waitForSelector(`.dump-hint:has-text("${expect}")`);assert.equal(await q.evaluate(()=>document.activeElement?.id),'dump-text','the box is ready for the keyboard microphone');
+    if(mode==='service-not-allowed')assert.equal(await q.evaluate(()=>localStorage.getItem('bear-speech')),'keyboard','next time it goes straight to the keyboard');}
+   await c.close();
+  }
  });
  await step('Drop four things at once: four responsibilities, a short acknowledgement',async()=>{
   await p.fill('#dump-text','I need to get Sarah’s scrunchie, organise Christmas presents, book the dentist and follow up with the school.');
@@ -69,10 +83,14 @@ try{
  await step('Bear Brain: title, All Tasks count, Priority Actions, the six categories in order with counts',async()=>{
   await p.click('.bear-nav a[href="/bear/brain"]');await p.waitForSelector('.v2-brain-head');
   assert.equal((await p.textContent('.v2-brain-titles h1')).trim(),'Bear Brain');assert.equal((await p.textContent('.v2-brain-titles p')).trim(),'All your tasks, plans and progress.');
-  const allOpt=await p.$eval('.v2-select select option',o=>o.textContent);const total=Number(allOpt.match(/^All Tasks \((\d+)\)$/)[1]);
+  const allOpt=await p.textContent('.v2-fold-head:has-text("All Tasks") span');const total=Number(allOpt.match(/^All Tasks \((\d+)\)$/)[1]);
   const counts=await p.$$eval('.v2-cat-count',e=>e.map(x=>Number(x.textContent)));assert.equal(counts.reduce((a,b)=>a+b,0),total,'the count is real');
   assert.deepEqual(await p.$$eval('.v2-cat-title',e=>e.map(x=>x.textContent)),['Night Time','Phone Calls','Organise Follow-Up','Organise Time-Permitting','This Week & Weekend','Aspirations']);
-  assert.ok(await p.$('#pa-h:has-text("Priority Actions")'));await shot('v05-brain');
+  assert.ok(await p.$('#pa-h:has-text("Priority Actions")'));
+  // Both fold away until tapped.
+  assert.equal(await p.$$eval('.v2-fold .v2-plist',e=>e.length),0,'All Tasks and Priority Actions start closed');await shot('v05-brain');
+  await p.click('.v2-fold-head:has-text("All Tasks")');await p.waitForSelector('.v2-fold .v2-plist');assert.equal(await p.$$eval('.v2-fold .v2-plist .v2-prow',e=>e.length),total,'All Tasks shows every task');
+  await p.click('.v2-fold-head:has-text("All Tasks")');await p.click('.v2-fold-head:has-text("Priority Actions")');await p.waitForSelector('.v2-fold .v2-plist .v2-prow:has-text("Christmas")');await p.click('.v2-fold-head:has-text("Priority Actions")');
  });
  await step('Bear Brain: open a category, open a task, correct its category, and it stays corrected',async()=>{
   await p.click('.v2-cat-head:has-text("Phone Calls")');await p.waitForSelector('[data-drop="calls"] .b-row:has-text("dentist")');
@@ -83,7 +101,8 @@ try{
  });
  await step('Bear Brain: search and filter',async()=>{
   await p.click('button[aria-label="Search"]');await p.fill('.v2-search','school');await p.waitForSelector('.v2-prow:has-text("school")');await p.click('button[aria-label="Search"]');
-  await p.selectOption('.v2-select select','check');await p.waitForSelector('.v2-prow:has-text("Christmas")');await p.selectOption('.v2-select select','all');await p.waitForSelector('.v2-cat');
+  await p.click('.v2-fold-head:has-text("All Tasks")');await p.click('.v2-filters .chip:has-text("Ready to check")');await p.waitForSelector('.v2-fold .v2-prow:has-text("Christmas")');
+  assert.ok(!(await p.textContent('.v2-fold .v2-plist')).includes('dentist'),'filtered');await p.click('.v2-filters .chip:has-text("All (")');await p.click('.v2-fold-head:has-text("All Tasks")');await p.waitForSelector('.v2-cat');
  });
  await step('Kept from before: Share Bear from a task’s menu, categories you can rename, what Bear has learned',async()=>{
   await p.click('.v2-cat-head:has-text("Organise Follow-Up")');await p.waitForSelector('[data-drop="followup"] .b-row:has-text("school")');
