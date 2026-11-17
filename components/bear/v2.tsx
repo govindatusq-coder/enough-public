@@ -21,8 +21,8 @@ export function AppHeader(){
   <Link href="/bear/me" className="v2-gear" aria-label="Settings">{Icon.gear(26)}</Link>
  </div>;
 }
-// Mama Bear, as on the app icon: a rounded tile so she matches what's on the home screen.
-export function MamaBear({className='v2-bear'}:{className?:string}){return <div className={className} aria-hidden="true"><Art file="mama-bear" className="v2-bear-img v2-bear-tile"/></div>;}
+// Mama Bear: the flexing bear in her blue shirt, cut out so she sits on the page.
+export function MamaBear({className='v2-bear'}:{className?:string}){return <div className={className} aria-hidden="true"><Art file="hero-bear-cut" className="v2-bear-img"/></div>;}
 const labelTone:Record<string,string>={'Deadline approaching':'urgent','Opportunity closing':'amber','Ready for approval':'teal','Saves time later':'amber','Worth doing now':'amber','Quick win':'teal','Fits your time':'teal'};
 export function LabelChip({label}:{label:string}){return <span className={`v2-label ${labelTone[label]||'teal'}`}>{label}</span>;}
 export const greetingV2=(hour:number,name:string)=>`${hour<12?'Morning':hour<17?'Afternoon':'Evening'}${name?`, ${name}`:''}.`;

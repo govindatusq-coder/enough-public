@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import {HeroVertical} from '@/components/bear/art';
+import {Art} from '@/components/bear/art';
 import {Horizon} from '@/components/bear/horizon';
 export default function Welcome(){
  return (
   <main id="main" className="bear-screen flow" style={{display:'flex',flexDirection:'column',minHeight:'100dvh',position:'relative',overflow:'hidden'}}>
    <Horizon height={220}/>
    <div style={{position:'relative',zIndex:1,display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',flex:1,justifyContent:'center',gap:18,paddingTop:12}}>
-    <h1 style={{position:"absolute",width:1,height:1,overflow:"hidden",clip:"rect(0 0 0 0)",whiteSpace:"nowrap"}}>Load Bear</h1><HeroVertical/>
+    <h1 style={{position:"absolute",width:1,height:1,overflow:"hidden",clip:"rect(0 0 0 0)",whiteSpace:"nowrap"}}>Load Bear</h1><Art file="poster" alt="Load Bear. Your mental load is ours to bear." width={1080} height={720} className="welcome-poster" style={{width:'100%',maxWidth:440,height:'auto',display:'block'}}/>
     <p className="muted" style={{fontSize:16}}>Give it to Bear. We&rsquo;ll take care of the thinking, planning and follow-up.</p>
    </div>
    <div style={{position:'relative',zIndex:1,display:'grid',gap:12,paddingBottom:8}}>
