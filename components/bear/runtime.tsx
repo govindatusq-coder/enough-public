@@ -49,5 +49,5 @@ export function BearRuntime(){
 // Show a local notification for a reminder that is due while the app is open, once.
 export async function showLocalReminder(reminderId:string,message:string,url:string){
  if(typeof Notification==='undefined'||Notification.permission!=='granted')return false;
- try{const reg=await navigator.serviceWorker?.getRegistration('/bear/');if(reg){await reg.showNotification('Load Bear',{body:message,tag:reminderId,data:{url},icon:'/bear/icon-192.png',badge:'/bear/badge.png'});return true;}new Notification('Load Bear',{body:message,tag:reminderId});return true;}catch{return false;}
+ try{const reg=await navigator.serviceWorker?.getRegistration('/bear/');if(reg){await reg.showNotification('Load Bear',{body:message,tag:reminderId,data:{url},icon:'/bear/load-bear-icon-192.png?v=6',badge:'/bear/badge.png'});return true;}new Notification('Load Bear',{body:message,tag:reminderId});return true;}catch{return false;}
 }

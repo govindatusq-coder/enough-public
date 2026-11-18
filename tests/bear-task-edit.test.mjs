@@ -203,10 +203,10 @@ test('app icons are full-bleed squares of the supplied artwork, the manifest poi
  const manifest=JSON.parse(readFileSync('public/bear/manifest.webmanifest','utf8'));
  for(const i of manifest.icons){const file='public'+i.src.split('?')[0];assert.ok(existsSync(file),file+' exists');assert.ok(!file.endsWith('.svg'),'no old SVG drawing in the manifest');}
  assert.equal(existsSync('public/bear/icon.svg'),false);
- const layout=readFileSync('app/bear/layout.tsx','utf8');assert.match(layout,/icon-32\.png\?v=\d+/);assert.match(layout,/apple-touch-icon\.png\?v=\d+/);
+ const layout=readFileSync('app/bear/layout.tsx','utf8');assert.match(layout,/load-bear-icon-32\.png\?v=\d+/);assert.match(layout,/load-bear-icon-180\.png\?v=\d+/);
  // Corners must be artwork, not the black left over from a rounded-corner export.
  const py="from PIL import Image\nimport sys\nfor f in sys.argv[1:]:\n im=Image.open(f).convert('RGB');w,h=im.size\n for p in [(0,0),(w-1,0),(0,h-1),(w-1,h-1)]:\n  r,g,b=im.getpixel(p)\n  print(f,p,'BLACK' if max(r,g,b)<12 else 'ok')\n";
- const out=execFileSync('python3',['-c',py,'public/bear/apple-touch-icon.png','public/bear/icon-192.png','public/bear/icon-512.png','public/bear/art/icon-master-square.png']).toString();
+ const out=execFileSync('python3',['-c',py,'public/bear/load-bear-icon-180.png','public/bear/load-bear-icon-192.png','public/bear/load-bear-icon-512.png','public/bear/art/icon-master-square.png']).toString();
  assert.ok(!out.includes('BLACK'),'icon corners are clean:\n'+out);
 });
 
