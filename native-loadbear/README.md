@@ -8,7 +8,33 @@ Known limit: Apple's App Review can reject apps that are only a website in a wra
 (guideline 4.2). TestFlight internal testing does not go through that review, so this is
 fine for testing with your own group. A fuller native build is a later step.
 
-## Build and upload (on a Mac with Xcode 16+)
+## Automatic TestFlight uploads
+
+`.github/workflows/loadbear-ios.yml` builds the app on GitHub's Mac build machines (Xcode 26) and uploads
+it to TestFlight whenever the app itself changes on `main` (anything under `native-loadbear/`). It can also
+be started by hand: GitHub, **Actions → Load Bear iPhone app → Run workflow** on `main`. The new build shows
+in the TestFlight app once Apple has processed it (usually 10–30 minutes). Website changes never need a new
+build, because the app opens the live site. On other branches the workflow only checks that the app builds.
+
+One-off set-up, needed before the first upload:
+
+1. App Store Connect → **Users and Access → Integrations → App Store Connect API → Team Keys → +**.
+   Name it "GitHub uploads" and give it **Admin** access (Xcode needs Admin to create the signing
+   certificate and profiles itself). If App Store Connect asks for API access to be requested first, the
+   Account Holder does that once on the same page.
+2. Download the key (a `.p8` file; Apple lets you download it only once). Note the **Key ID** in the list
+   and the **Issuer ID** above it.
+3. Your **Team ID** is under developer.apple.com → Account → Membership details.
+4. GitHub → this repository → **Settings → Secrets and variables → Actions → New repository secret**, four
+   times: `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `APPLE_TEAM_ID`, and
+   `APP_STORE_CONNECT_PRIVATE_KEY` (open the `.p8` file in a text editor and paste all of it, including the
+   BEGIN and END lines).
+
+Signing is automatic: Xcode registers the app and the share add-on with Apple, creates the profiles and
+signs with an Apple-managed distribution certificate. Each build gets a number from the date and time
+(for example `2026.1118.2306`), so it is always higher than the build before.
+
+## Build and upload by hand (on a Mac with Xcode 26)
 
 1. Install Node 22+, then in this folder:
    ```
@@ -42,4 +68,4 @@ The Xcode AppIcon (`ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2
 
 ## Share to Load Bear
 
-The iPhone Share Extension lives in `ShareExtension/`. See `docs/load-bear/08-share-extension.md` for how it works, the Xcode set-up and the test checklist. It is not built or tested yet.
+The iPhone Share Extension lives in `ShareExtension/` and is part of the Xcode project as the `ShareExtension` target (bundle `au.loadbear.app.ShareExtension`), embedded in the app. The app and the extension share the App Group `group.au.loadbear.app` (`ios/App/App/App.entitlements`, `ShareExtension/ShareExtension.entitlements`). See `docs/load-bear/08-share-extension.md` for how it works and the test checklist.

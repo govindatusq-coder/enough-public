@@ -1,7 +1,7 @@
 # Share to Load Bear (iPhone Share Extension)
 
-Status: code written, NOT yet built or tested on a device. The container this was written in has no Mac or
-Xcode, so the Swift could not be compiled. Treat the first Xcode build as the first test.
+Status: built and tested on a real iPhone (iOS 26) from a hand-made Xcode target on 26 October. The target is
+now part of the committed project and is built by the automatic TestFlight workflow.
 
 ## What it does
 
@@ -40,12 +40,13 @@ extension.
 * A Share Extension counts as app functionality for App Review. Fine for TestFlight; privacy answers must say
   shared content is sent to Load Bear's servers and the AI provider only when you share it.
 
-## Xcode set-up (one-off)
+## Xcode set-up
 
-See the numbered steps in the chat; in short: create a Share Extension target named `ShareExtension`, run
-`bash native-loadbear/install-share-extension.sh`, add the **App Groups** capability with
-`group.au.loadbear.app` to both the **App** and **ShareExtension** targets, set the extension's iOS Deployment
-Target to 15.0, then build to a phone.
+The `ShareExtension` target is now in the committed Xcode project (`native-loadbear/ios/App/App.xcodeproj`): it
+builds `ShareExtension/ShareViewController.swift` with `ShareExtension/Info.plist`, targets iOS 15.0, has the
+bundle `au.loadbear.app.ShareExtension`, and is embedded in the app. Both targets carry the App Group
+`group.au.loadbear.app`. Nothing needs adding by hand in Xcode any more, and the automatic TestFlight
+uploads (`native-loadbear/README.md`) include it.
 
 ## Test checklist (on a real iPhone)
 
