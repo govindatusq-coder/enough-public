@@ -39,9 +39,9 @@ export default function DropBear(){
  async function give(taskId:string){setGiving(true);try{await apiSend(`/api/bear/rre/${taskId}/give`,{});router.push(`/bear/brain/${taskId}`);}catch(e){say((e as Error).message);setGiving(false);}}
  if(error&&name===null)return <main id="main" className="bear-screen"><ErrorCard message={error} retry={load}/><p className="small" style={{marginTop:14}}>Meanwhile: <Link href="/bear/brain" className="link-btn">Bear Brain</Link> · <Link href="/bear/calendar" className="link-btn">Calendar</Link></p></main>;
  if(name===null)return <main id="main" className="bear-screen"><Skeleton/></main>;
- return <main id="main" className="bear-screen v2-screen">
+ return <main id="main" className="bear-screen v2-screen v2-fill">
   <AppHeader/>
-  <header className="v2-hero">
+  <header className="v2-hero stacked">
    <MamaBear/>
    <div className="v2-hero-text"><h1 className="v2-hello">{greetingV2(hour,name)}</h1><p className="v2-ask hand"><span>What’s on your mind?</span></p></div>
   </header>

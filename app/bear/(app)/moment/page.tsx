@@ -18,9 +18,9 @@ export default function GotAMoment(){
  async function give(r:Rec){setGiving(true);try{if(r.needsBear)await apiSend(`/api/bear/rre/${r.taskId}/give`,{});router.push(`/bear/brain/${r.taskId}`);}catch(e){setErr((e as Error).message);setGiving(false);}}
  async function notNow(r:Rec){try{await apiSend(`/api/bear/rre/${r.taskId}/skip`,{});}catch{/* still moves on */}ask(minutes!,exclude);}
  const r=res?.recommendation||null;
- return <main id="main" className="bear-screen v2-screen">
+ return <main id="main" className="bear-screen v2-screen v2-fill v2-moment">
   <AppHeader/>
-  <header className="v2-hero small-hero"><MamaBear/><div className="v2-hero-text"><h1 className="v2-hello">Got a moment?</h1><p className="v2-sub">How much time do you have right now?</p></div></header>
+  <header className="v2-hero stacked small"><MamaBear/><div className="v2-hero-text"><h1 className="v2-hello">Got a moment?</h1><p className="v2-sub">How much time do you have right now?</p></div></header>
   <div className="v2-pills" role="radiogroup" aria-label="How much time do you have?">
    {OPTIONS.map(([m,l])=><button key={m} type="button" role="radio" aria-checked={minutes===m} className={`v2-pill${minutes===m?' on':''}`} disabled={busy} onClick={()=>ask(m)}>{l}</button>)}
   </div>
