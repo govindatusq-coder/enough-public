@@ -38,7 +38,7 @@ bundle identifier before uploading, or Xcode will offer to create it.
 
 ## App icon
 
-Use `public/bear/art/icon-master-square.png` (1024×1024, full square, no rounded corners) for the Xcode AppIcon. iOS rounds the corners itself. `public/bear/art/icon-master.png` has rounded corners baked in, so it would show black slivers.
+The Xcode AppIcon (`ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`) is a copy of `public/bear/art/icon-master-square.png` (1024×1024, full square, no rounded corners). When the artwork changes, copy it there too, then archive and upload a new build: TestFlight only shows a new icon in a new build. iOS rounds the corners itself. `public/bear/art/icon-master.png` has rounded corners baked in, so it would show black slivers.
 
 ## Share to Load Bear
 
