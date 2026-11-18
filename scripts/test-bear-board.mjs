@@ -28,7 +28,7 @@ try{
 
  await step('Drop Bear: Load Bear, Mama Bear, settings, greeting, one big input with photo and send, three tabs',async()=>{
   await p.goto(base+'/bear/home');await p.waitForSelector('#dump-text');
-  assert.equal((await p.textContent('.v2-logo')).trim(),'LOAD BEAR');assert.ok(await p.isVisible('.v2-bear-img'),'Mama Bear');assert.ok(await p.$('.v2-gear[href="/bear/me"]'),'settings in the header');
+  assert.equal(await p.getAttribute('.v2-logo img','alt'),'Load Bear');assert.ok(await p.isVisible('.v2-logo-img'),'the Load Bear logo is in the header');assert.ok(await p.isVisible('.v2-bear-img'),'Mama Bear');assert.ok(await p.$('.v2-gear[href="/bear/me"]'),'settings in the header');
   assert.match(await p.textContent('.v2-hello'),/^(Morning|Afternoon|Evening), Sarah\.$/);assert.equal((await p.textContent('.v2-ask')).trim(),'What’s on your mind?');
   assert.equal(await p.getAttribute('#dump-text','placeholder'),'Drop it here. I’ll sort it, plan it and get it moving.');
   assert.ok(await p.$('button[aria-label="Add a photo or PDF"]'));assert.ok(await p.$('.drop-card .dump-go'));

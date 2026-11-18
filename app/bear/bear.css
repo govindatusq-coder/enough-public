@@ -924,3 +924,6 @@
 .bear .v2-filters .chip.on{background:var(--coral);border-color:var(--coral);color:#fff;}
 .bear .v2-fold .v2-plist{border-top:1px solid var(--line);margin-bottom:6px;}
 .bear .v2-bear-tile{inset:6% !important;width:88% !important;height:88% !important;object-fit:cover !important;border-radius:24%;box-shadow:0 14px 30px -16px rgba(16,42,67,.55),inset 0 0 0 1px rgba(255,255,255,.4);}
+/* The Load Bear logo at the top of Drop Bear and Got a Moment? */
+.bear .v2-logo{display:block;line-height:0;}
+.bear .v2-logo-img{display:block;height:54px;width:auto;}

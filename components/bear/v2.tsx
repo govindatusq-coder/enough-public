@@ -17,7 +17,7 @@ export const Icon={
 // Header on Drop Bear and Got a Moment?: the Load Bear name, Mama Bear, and Settings (the only way to Settings).
 export function AppHeader(){
  return <div className="v2-top">
-  <Link href="/bear/home" className="v2-logo" aria-label="Load Bear"><span>LOAD BEAR</span></Link>
+  <Link href="/bear/home" className="v2-logo" aria-label="Load Bear"><Art file="logo-header" alt="Load Bear" className="v2-logo-img"/></Link>
   <Link href="/bear/me" className="v2-gear" aria-label="Settings">{Icon.gear(26)}</Link>
  </div>;
 }
