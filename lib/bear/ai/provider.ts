@@ -4,7 +4,9 @@ export interface ExtractInput{schema:Record<string,unknown>;system:string;text:s
  // Ask the service for its own summary of the model's thinking (the supported way to see how it read something).
  thinkingSummary?:boolean;
  // How hard the model works on it. Documents with tables and calendars need more than a short message.
- effort?:'low'|'medium'|'high'}
+ effort?:'low'|'medium'|'high';
+ // A long reading (a 40-line list) needs longer than the default wait; retries count against the same time limit.
+ timeoutMs?:number;maxRetries?:number}
 export interface ExtractResult{output:unknown;raw:unknown;provider:string;model:string;latencyMs:number;thinking?:string|null}
 export interface StructuredModelProvider{readonly name:string;readonly model:string;readonly supportsVision:boolean;extract(input:ExtractInput):Promise<ExtractResult>}
 export type ProviderErrorKind='unavailable'|'refused'|'invalid_output'|'rate_limited'|'network'|'unsupported';

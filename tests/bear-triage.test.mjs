@@ -119,3 +119,57 @@ test('an event’s day from the document is its date, and Bear does not ask when
  const p=triageSystemPrompt(anchorsFor(NOW,'Australia/Sydney',[]));assert.match(p,/each dated line there is its own card/);assert.match(p,/Do not ask the parent anything the document already answers/);
  assert.match(JSON.stringify(triageJsonSchema),/for an event, the day it happens/);
 });
+
+// ---------- lists: every line Bear can see becomes a task ----------
+import {restoreNullables} from '../lib/bear/ai/schema-subset.ts';
+const LIST_OUT={source_summary:'A handwritten to-do list.',items_seen:[
+ {n:1,text:'To do',status:'info',who:null,date:null},
+ {n:2,text:'Ring dentist re Ava’s check-up',status:'todo',who:'Ava',date:null},
+ {n:3,text:'Book dentist for Sam',status:'todo',who:'sam',date:null},
+ {n:4,text:'Pay rego',status:'todo',who:null,date:'2026-11-28'},
+ {n:5,text:'Buy birthday card for Nan',status:'done',who:null,date:null},
+ {n:6,text:'Woolies: milk, bread, nappies',status:'todo',who:null,date:null},
+ {n:7,text:'Fix gat? latch',status:'unclear',who:null,date:null},
+ {n:8,text:'Clean gutters',status:'todo',who:null,date:'not a date'},
+],action_cards:[card({card_id:'s1',covers:[6],family_member:null,action_type:'shopping_list',urgency:'green',hard_deadline:null,card_headline:'Do the Woolies shop',ai_work_completed:'Wrote the shopping list.',execution_payload:{email:null,sms:null,calendar_hold:null,shopping_list:['milk','bread','nappies'],steps:null}})]};
+test('a list: every todo or hard-to-read line without a card becomes its own task card; done lines and headings do not',()=>{
+ const r=checkTriage(LIST_OUT,TODAY,['Ava','Sam']);assert.ok(r.ok,r.error);
+ const heads=r.cards.map(c=>c.card_headline);
+ assert.deepEqual(heads,['Do the Woolies shop','Ring dentist re Ava’s check-up','Book dentist for Sam','Pay rego','Fix gat? latch','Clean gutters']);
+ assert.ok(!heads.some(h=>/birthday card|To do/.test(h)),'crossed out lines and headings are not tasks');
+ const by=h=>r.cards.find(c=>c.card_headline===h);
+ assert.equal(by('Ring dentist re Ava’s check-up').family_member,'Ava');assert.equal(by('Book dentist for Sam').family_member,'Sam');
+ assert.equal(by('Pay rego').hard_deadline,'2026-11-28');assert.equal(by('Clean gutters').hard_deadline,null,'a bad date is dropped, not believed');
+ assert.match(by('Fix gat? latch').missing_blocker,/couldn’t read this line clearly/);assert.equal(by('Fix gat? latch').fromItem,'unclear');
+ assert.equal(r.cards.filter(c=>c.covers.includes(6)).length,1,'a line a card already covers is not added twice');
+ assert.equal(new Set(r.cards.map(c=>c.card_id)).size,r.cards.length,'ids stay unique');
+});
+test('the list schema survives the trip through the service format: blank who and date come back as null',()=>{
+ const wire=structuredOutputSchema(triageJsonSchema);assert.ok(wire.properties.items_seen,'items_seen is sent');
+ const back=restoreNullables(triageJsonSchema,{source_summary:'x',items_seen:[{n:1,text:'Pay rego',status:'todo',who:'',date:''}],action_cards:[]});
+ assert.deepEqual(back.items_seen[0],{n:1,text:'Pay rego',status:'todo',who:null,date:null});
+ assert.ok(checkTriage(back,TODAY,[]).ok);
+});
+test('the prompt asks for every line first, messy ones included, and says a card is only needed where something can be prepared',()=>{
+ const p=triageSystemPrompt(anchorsFor(NOW,'Australia/Sydney',[]));
+ assert.match(p,/First write down every item in items_seen/);assert.match(p,/half-legible/);assert.match(p,/status unclear/);
+ assert.match(p,/one with no card becomes a plain task automatically/);assert.ok(!/Leave out anything that needs nothing/.test(p));
+});
+test('triage end to end with a list: one task per line, lines of the same list are never folded into each other, and the counts come back',async()=>{
+ const s=await person();
+ const r=await triage(s,new FakeProvider(()=>LIST_OUT),{images:[{mime:'image/png',bytes:new Uint8Array([137,80,78,71])}],documents:[],text:null},NOW);
+ assert.equal(r.cards.length,6);assert.deepEqual(r.items,{seen:8,todo:5,done:1,unclear:1});assert.deepEqual(r.unplaced,[]);
+ assert.ok(r.cards.every(c=>c.taskId&&!c.already&&!c.linkedFrom),JSON.stringify(r.cards.map(c=>[c.card_headline,c.already,c.linkedFrom])));
+ const ids=new Set(r.cards.map(c=>c.taskId));assert.equal(ids.size,6,'six separate tasks: the two dentist lines stay apart');
+ assert.ok(typeof r.timing.readMs==='number'&&r.timing.totalMs>=r.timing.readMs);
+ // Something already on the list still gathers a matching line, as before.
+ const again=await triage(s,new FakeProvider(()=>({source_summary:'x',items_seen:[{n:1,text:'Clean gutters',status:'todo',who:null,date:null}],action_cards:[]})),{images:[],documents:[],text:'Clean gutters'},NOW);
+ assert.equal(again.cards[0].already,true);
+});
+test('a card that forgot to say what it covers still counts for the line it clearly handles (no double task); a line it only half carries is still filed',()=>{
+ const out={source_summary:'Excursion note.',items_seen:[
+  {n:1,text:'Return the permission note',status:'todo',who:'Ava',date:null},{n:2,text:'Pack a hat',status:'todo',who:'Ava',date:null},{n:3,text:'Ring the dentist',status:'todo',who:null,date:null}],
+  action_cards:[card({covers:[],card_headline:'Return Ava’s permission note and $25',execution_payload:{email:null,sms:null,calendar_hold:null,shopping_list:['Hat','Packed lunch'],steps:['Sign the permission note']}})]};
+ const r=checkTriage(out,TODAY,['Ava']);assert.ok(r.ok,r.error);
+ assert.deepEqual(r.cards.map(c=>c.card_headline),['Return Ava’s permission note and $25','Pack a hat','Ring the dentist']);
+});

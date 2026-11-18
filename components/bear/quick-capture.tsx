@@ -133,7 +133,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
  // is not listed twice. Cards appear as each batch finishes.
  async function runTriage(turnId:number,input:{files?:File[];text?:string}):Promise<boolean>{
   const files=input.files||[];const batches:File[][]=[];for(let i=0;i<files.length;i+=TRIAGE_BATCH)batches.push(files.slice(i,i+TRIAGE_BATCH));if(!batches.length)batches.push([]);
-  const acc:{view:TriageView|null}={view:null};
+  const acc:{view:TriageView|null}={view:null};const leftovers:string[]=[];
   for(let i=0;i<batches.length;i++){
    const from=i*TRIAGE_BATCH+1,to=Math.min(files.length,(i+1)*TRIAGE_BATCH);
    patch(turnId,t=>({...t,triaging:true,batch:batches.length>1?`Reading pictures ${from}–${to} of ${files.length}…`:null}));
@@ -150,6 +150,7 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
       patch(turnId,t=>({...t,batch:batches.length>1?`Reading pictures ${from}–${to} of ${files.length}…`:null}));}
     }
     if(!r)throw new Error('Bear could not read those pictures.');
+    leftovers.push(...((r as {unplaced?:string[]}).unplaced||[]));
     if(r.code==='missing_key'){if(i===0){patch(turnId,t=>({...t,triaging:false,batch:null}));return false;}break;}
     const prev=acc.view;const seen=new Set<string>((prev?.cards||[]).map(c=>c.taskId).filter((x):x is string=>!!x));
     acc.view=prev?{reasoning:[prev.reasoning,r.reasoning].filter(Boolean).join(`\n\n— pictures ${from}–${to} —\n`),summary:prev.summary||r.summary,cards:[...prev.cards,...r.cards.filter(c=>!c.taskId||!seen.has(c.taskId))]}:{reasoning:r.reasoning,summary:r.summary,cards:r.cards};
@@ -160,6 +161,12 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
     const msg=`I read pictures 1–${from-1}. The rest didn’t go through (${err.message||'a problem reading them'}). Send those again.`;
     patch(turnId,t=>({...t,busy:false,triaging:false,batch:null,other:{kind:'say',text:msg}}));return true;
    }
+  }
+  // Lines Bear read but had no time left to file go through the ordinary typed route, and are named here.
+  if(leftovers.length){
+   try{const d=await apiSend<{added:{title:string}[];already:{title:string}[]}>('/api/bear/board/dump',{text:leftovers.join('\n'),via:'text'});const all=[...d.added,...d.already].map(x=>x.title);
+    patch(turnId,t=>({...t,other:{kind:'say',text:`I also filed ${all.length===1?'one more thing':`${all.length} more things`} from that page: ${all.join('; ')}.`}}));onChanged();}
+   catch{patch(turnId,t=>({...t,other:{kind:'say',text:`I read these but couldn’t file them yet. Type or paste them in: ${leftovers.join('; ')}.`}}));}
   }
   patch(turnId,t=>({...t,busy:false,triaging:false,batch:null}));return true;
  }

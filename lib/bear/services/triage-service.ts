@@ -20,7 +20,11 @@ import {anchorsFor,checkTriage,cleanEmailInput,triageJsonSchema,triageSystemProm
 
 export interface TriageInput{images:{mime:string;bytes:Uint8Array}[];documents:{mime:string;bytes:Uint8Array}[];text:string|null}
 export interface TriageCardView{lookedUp?:{question:string;answer:string;source:{title:string;url:string}}|null;linkedFrom?:string|null;card_id:string;family_member:string|null;action_type:string;urgency:Light;hard_deadline:string|null;card_headline:string;ai_work_completed:string;execution_payload:CheckedCard['execution_payload'];confidence_score:number;missing_blocker:string|null;taskId:string|null;area:AreaKey;when:string;already:boolean}
-export interface TriageResult{reasoning:string;summary:string;cards:TriageCardView[]}
+// items: what Bear wrote down from the source (so the person can see nothing was missed). unplaced: lines read but not yet filed
+// because the reading ran out of time; the app files them through the ordinary typed route straight away.
+export interface TriageResult{reasoning:string;summary:string;cards:TriageCardView[];items:{seen:number;todo:number;done:number;unclear:number};unplaced:string[];timing:{readMs:number;totalMs:number}}
+// The route may run for 300 s. Filing stops in time to answer; web lookups are skipped once the reading has taken a while.
+const FILE_BY_MS=230_000,LOOKUP_UNTIL_MS=140_000;
 export class TriageError extends Error{readonly code:string;readonly status:number;constructor(message:string,code:string,status=502){super(message);this.code=code;this.status=status;}}
 export const DAILY_TRIAGE=100;
 
@@ -39,17 +43,23 @@ export async function triage(store:BearStore,provider:StructuredModelProvider|nu
  const text=input.text?cleanEmailInput(input.text):null;const started=Date.now();
  let raw:unknown;
  try{
-  const r=await provider.extract({schema:triageJsonSchema as unknown as Record<string,unknown>,system:triageSystemPrompt(a),text,images:input.images,documents:input.documents,maxOutputTokens:16000,thinkingSummary:true,effort:'high'});
+  const r=await provider.extract({schema:triageJsonSchema as unknown as Record<string,unknown>,system:triageSystemPrompt(a),text,images:input.images,documents:input.documents,maxOutputTokens:32000,thinkingSummary:true,effort:'high',timeoutMs:150_000,maxRetries:1});
+  const readMs=Date.now()-started;
   raw=r.output;
   const checked=checkTriage(raw,a.isoDate,family.map(f=>f.name));
   await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'Triage',provider:r.provider,model:r.model,promptHash:'triage-1',rawOutput:checked.ok?{cards:checked.cards.length,problems:checked.cards.flatMap(c=>c.problems).length}:null,latencyMs:r.latencyMs,ok:checked.ok,error:checked.ok?null:checked.error.slice(0,400),usage:usageFrom(r.raw)}));
   if(!checked.ok)throw new TriageError('Bear read it but its answer didn’t hold together. Try again, or send a clearer picture.','invalid_output',502);
-  const cards:TriageCardView[]=[];
-  for(const c of checked.cards)cards.push(await placeCard(store,c,a.isoDate,family,now));
+  // One line, one task: the lines of one list are never folded into each other (only into something already on the list).
+  const cards:TriageCardView[]=[];const unplaced:string[]=[];const avoid=new Set<string>();
+  for(const c of checked.cards){
+   if(Date.now()-started>FILE_BY_MS){unplaced.push(c.card_headline);continue;}
+   const v=await placeCard(store,c,a.isoDate,family,now,avoid);if(v.taskId&&!v.already)avoid.add(v.taskId);cards.push(v);
+  }
   // Before asking the parent, Bear tries to answer its own questions about the world (an event's date, a venue, a contact,
   // a price) from the web. Questions only the family can answer are left for them. At most three lookups per reading.
   let looked=0;
   for(const c of cards){
+   if(Date.now()-started>LOOKUP_UNTIL_MS)break;
    if(!c.missing_blocker||!c.taskId||looked>=2||!webAnswerable(c.missing_blocker,family.map(f=>f.name)))continue;looked++;
    const q=`${c.missing_blocker} (about: ${c.card_headline}. Context: ${checked.output.source_summary})`;
    const r=await Promise.race([lookUp(store,researcher,q,a.isoDate,now),new Promise<{found:null;why:'nothing'}>(res=>setTimeout(()=>res({found:null,why:'nothing'}),25000))]).catch(()=>({found:null,why:'nothing' as const}));
@@ -62,7 +72,8 @@ export async function triage(store:BearStore,provider:StructuredModelProvider|nu
    c.lookedUp={question:c.missing_blocker,answer:r.found.answer,source:src};c.missing_blocker=null;
    if(useDate){c.hard_deadline=r.found.date;c.when=`${formatAU(r.found.date!,'short')} · found online`;}
   }
-  return {reasoning:r.thinking||'',summary:checked.output.source_summary,cards};
+  const seen=checked.output.items_seen,count=(st:string)=>seen.filter(i=>i.status===st).length;
+  return {reasoning:r.thinking||'',summary:checked.output.source_summary,cards,items:{seen:seen.length,todo:count('todo'),done:count('done'),unclear:count('unclear')},unplaced,timing:{readMs,totalMs:Date.now()-started}};
  }catch(e){
   if(e instanceof TriageError)throw e;
   const message=e instanceof Error?e.message:'The reading service had a problem.';
@@ -73,7 +84,7 @@ export async function triage(store:BearStore,provider:StructuredModelProvider|nu
 const usageFrom=(raw:unknown)=>{const u=(raw as {usage?:{input_tokens?:unknown;output_tokens?:unknown}}|null)?.usage;return u&&typeof u.input_tokens==='number'&&typeof u.output_tokens==='number'?{inputTokens:u.input_tokens,outputTokens:u.output_tokens}:null;};
 // One card -> one task. The area comes from what the card is about and who it is for; the urgency the model gave is kept as
 // the person-independent "urgency" signal, and the deadline (checked) drives the traffic light as it does everywhere.
-async function placeCard(store:BearStore,c:CheckedCard,today:string,family:FamilyMember[],now:Date):Promise<TriageCardView>{
+async function placeCard(store:BearStore,c:CheckedCard,today:string,family:FamilyMember[],now:Date,avoid?:Set<string>):Promise<TriageCardView>{
  const member=family.find(f=>f.name===c.family_member);
  const about=[c.card_headline,c.action_type==='payment'?'pay':'',member?.relation==='child'?'school child':''].join(' ');
  const {domain,secondary}=classify(about,family.filter(f=>f.relation==='child').map(f=>f.name));
@@ -81,7 +92,7 @@ async function placeCard(store:BearStore,c:CheckedCard,today:string,family:Famil
  const area:AreaKey=member&&member.relation!=='other'?(domain==='health'||domain==='money'?domain:'family'):domain;
  const light=lightFor({deadline:c.hard_deadline,urgency:c.urgency,soonByNature:false},today);
  const original=[c.card_headline,c.hard_deadline?`by ${c.hard_deadline}`:''].filter(Boolean).join(' ');
- const item:SortedItem=await placeSorted(store,{title:c.card_headline.slice(0,90),original,domain:area,secondary,deadline:c.hard_deadline,deadlineSource:c.hard_deadline?'stated':null,window:null,windowBy:null,suggestedStart:suggestStart(c.card_headline,c.hard_deadline,light.light,today),urgency:c.urgency,nextAction:null,...light},'text',today,now);
+ const item:SortedItem=await placeSorted(store,{title:c.card_headline.slice(0,90),original,domain:area,secondary,deadline:c.hard_deadline,deadlineSource:c.hard_deadline?'stated':null,window:null,windowBy:null,suggestedStart:suggestStart(c.card_headline,c.hard_deadline,light.light,today),urgency:c.urgency,nextAction:null,...light},'text',today,now,{avoid});
  // Drafts go with the task, including one this card was added to, unless that task already has its own.
  if(item.taskId&&(!item.already||!(await store.get('tasks',item.taskId))?.prepared)){
   const h=c.execution_payload.calendar_hold;const tm=h&&/T(\d{2}:\d{2})/.exec(h.start)?.[1];

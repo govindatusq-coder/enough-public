@@ -13,12 +13,16 @@ import {AppHeader,MamaBear,greetingV2} from '@/components/bear/v2';
 
 const WORDS=['','that','those two things','those three things','those four things','those five things','those six things','those seven things','those eight things','those nine things','those ten things'];
 type Due={reminderId:string;taskId:string;billId:string|null;message:string};
-interface Ack{text:string;tip:{taskId:string;text:string}|null}
+interface Got{title:string;note:string|null}
+interface Ack{text:string;tip:{taskId:string;text:string}|null;items?:Got[]}
+type TriageCard={card_headline:string;already:boolean;linkedFrom?:string|null};
+type TriageReply={cards:TriageCard[];items?:{unclear:number};unplaced?:string[]};
+const SHOW=8;
 export default function DropBear(){
  const router=useRouter();const online=useOnline();
  const [name,setName]=useState<string|null>(null);const [hour,setHour]=useState(9);const [error,setError]=useState<string|null>(null);
  const [notices,setNotices]=useState<{id:string;text:string}[]>([]);const [due,setDue]=useState<Due[]>([]);const delivered=useRef(new Set<string>());
- const [ack,setAck]=useState<Ack|null>(null);const [filesBusy,setFilesBusy]=useState(false);const [giving,setGiving]=useState(false);
+ const [ack,setAck]=useState<Ack|null>(null);const [allShown,setAllShown]=useState(false);const [filesBusy,setFilesBusy]=useState(false);const [giving,setGiving]=useState(false);
  const [toast,setToast]=useState<string|null>(null);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const load=useCallback(()=>Promise.race([apiGet<{onboarding?:boolean;board?:{name:string};notices?:{id:string;text:string}[];due?:Due[]}>('/api/bear/board'),new Promise<never>((_,no)=>setTimeout(()=>no(new Error('Bear is taking too long to answer. Check your connection and try again.')),20000))]).then(r=>{
   if(r.onboarding){router.replace('/bear/onboarding');return;}setName(r.board?.name||'');setNotices(r.notices||[]);setDue(r.due||[]);setError(null);
@@ -27,13 +31,30 @@ export default function DropBear(){
  }).catch(e=>{const err=e as {status?:number;message:string};if(err.status===401)router.replace('/bear/signin');else setError(err.message);}),[router]);
  useEffect(()=>{queueMicrotask(()=>setHour(new Date().getHours()));load();},[load]);
  const say:Say=useCallback(text=>{if(timer.current)clearTimeout(timer.current);setToast(text);timer.current=setTimeout(()=>setToast(null),4000);},[]);
- // Photos and PDFs go to Bear's reader (five at a time), which turns them into responsibilities the same way.
+ // Photos and PDFs go to Bear's reader (five at a time), which turns them into responsibilities the same way. Everything Bear
+ // filed is listed back, so the person can see at a glance that nothing on the page was missed.
  async function files(list:File[]){
-  setFilesBusy(true);setAck(null);
+  setFilesBusy(true);setAck(null);setAllShown(false);
+  const got:Got[]=[];let unclear=0;
+  const one=list.length===1?'that':'those';
   try{let fam:FamilyMember[]=[];try{fam=(await apiGet<{profile:{family?:FamilyMember[]}}>('/api/bear/profile')).profile.family||[];}catch{/* read without family names */}
-   let found=0;for(let i=0;i<list.length;i+=5){const req=await buildTriageRequest({files:list.slice(i,i+5)},fam);const r=await apiSend<{cards:unknown[]}>('/api/bear/triage',req);found+=r.cards?.length||0;}
-   setAck({text:found?`I’ve read ${list.length===1?'that':'those'} and found ${found===1?'one thing':`${found} things`}. I’ll work out what needs attention and what I can help with.`:'I read it, but didn’t find anything that needs doing.',tip:null});
-  }catch(e){setAck({text:(e as Error).message||'Bear couldn’t read that just now. Nothing was lost.',tip:null});}
+   for(let i=0;i<list.length;i+=5){
+    const req=await buildTriageRequest({files:list.slice(i,i+5)},fam);const r=await apiSend<TriageReply>('/api/bear/triage',req);
+    for(const c of r.cards||[])got.push(c.linkedFrom?{title:c.linkedFrom,note:`added to “${c.card_headline}”`}:{title:c.card_headline,note:c.already?'already with Bear':null});
+    unclear+=r.items?.unclear||0;
+    // Lines read but not filed in time go through the ordinary typed route now.
+    if(r.unplaced?.length){const d=await apiSend<{added:{title:string}[];already:{title:string}[]}>('/api/bear/board/dump',{text:r.unplaced.join('\n'),via:'text'});
+     for(const x of d.added)got.push({title:x.title,note:null});for(const x of d.already)got.push({title:x.title,note:'already with Bear'});}
+   }
+   const n=got.length;
+   setAck({text:n?`I’ve read ${one} and found ${n===1?'one thing':`${n} things`} to do${unclear?`. ${unclear===1?'One line was':`${unclear} lines were`} hard to read, so I’ve asked you to check ${unclear===1?'it':'them'}`:''}. Here’s everything I caught:`:'I read it, but didn’t find anything that needs doing.',tip:null,items:got});
+  }catch(e){
+   const why=(e as Error).message||'Bear couldn’t read that just now.';
+   // Bear's own refusals happen before anything is filed. A timeout or a lost connection might not have: say so.
+   const status=(e as {status?:number}).status||0;const unsure=!status||status>=500&&!(e as {body?:{code?:string}}).body?.code;
+   setAck(got.length?{text:`${why} Before that, I filed ${got.length===1?'one thing':`${got.length} things`}:`,tip:null,items:got}
+    :{text:unsure?`${why} Some of it may have been saved: check Bear Brain before you send it again.`:`${why} Nothing from ${one} was saved, so it’s safe to try again.`,tip:null});
+  }
   finally{setFilesBusy(false);}
  }
  async function give(taskId:string){setGiving(true);try{await apiSend(`/api/bear/rre/${taskId}/give`,{});router.push(`/bear/brain/${taskId}`);}catch(e){say((e as Error).message);setGiving(false);}}
@@ -50,6 +71,8 @@ export default function DropBear(){
    onUnloaded={r=>{const n=r.added.length;setAck({text:n?`I’ve got ${WORDS[n]||`those ${n} things`}. I’ll work out what needs attention and what I can help with.`:r.already.length?'That’s already with Bear.':'Bear couldn’t find anything to do in that. Your words are kept.',tip:r.tip||null});}}/>
   {ack&&<section className="v2-ack" role="status" aria-live="polite">
    <p>{ack.text}</p>
+   {!!ack.items?.length&&<ul className="v2-ack-list">{(allShown?ack.items:ack.items.slice(0,SHOW)).map((g,i)=><li key={i}>{g.title}{g.note&&<span className="faint"> · {g.note}</span>}</li>)}</ul>}
+   {(ack.items?.length||0)>SHOW&&!allShown&&<button type="button" className="link-btn small" onClick={()=>setAllShown(true)}>Show all {ack.items!.length}</button>}
    {ack.tip&&<><p className="v2-tip">{ack.tip.text}</p><button type="button" className="btn coral sm" disabled={giving} onClick={()=>give(ack.tip!.taskId)}>{giving?'One moment…':'Give it to Bear'}</button></>}
    <Link href="/bear/brain" className="v2-link small">See it all in Bear Brain →</Link>
   </section>}

@@ -4,7 +4,8 @@ import {trustedWrite} from '@/lib/public-auth';
 import {triage,TriageError} from '@/lib/bear/services/triage-service';
 import {researcherFromEnv} from '@/lib/bear/ai/web-lookup';
 export const dynamic='force-dynamic';
-export const maxDuration=120;
+// A long handwritten list can take a few minutes to read and file; the reading service watches its own time inside this.
+export const maxDuration=300;
 // Triage: photos, PDFs and pasted or forwarded emails, read by Claude's vision in one pass (no text extraction first), with
 // the person's local date and family as anchors, returning ready-to-use action cards. The family profile and date are taken
 // from the server's own records; anything the page sends for them is only a hint and is not trusted.

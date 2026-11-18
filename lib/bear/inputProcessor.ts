@@ -6,9 +6,9 @@ export {cleanEmailInput};
 
 // The server accepts about 4.5 MB per request; base64 adds a third. Everything in one request shares this budget.
 export const TRIAGE_BUDGET=3.2*1024*1024;
-const MAX_WIDTH=1600;
+const MAX_WIDTH=2048;
 function loadImage(file:File):Promise<HTMLImageElement>{return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>{URL.revokeObjectURL(url);res(img);};img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('That picture could not be opened.'));};img.src=url;});}
-// Resize to at most 1600 px wide as a JPEG at 0.85, returned as a data URL. A tall phone screenshot keeps its full height in
+// Resize to at most 2048 px wide (small handwriting stays legible) as a JPEG at 0.85, returned as a data URL. A tall phone screenshot keeps its full height in
 // proportion, so its text stays readable. If `maxBytes` is given, quality (then size) steps down until it fits.
 export async function prepareImageForVision(file:File,maxBytes=TRIAGE_BUDGET):Promise<string>{
  const img=await loadImage(file);const w=img.naturalWidth,h=img.naturalHeight;if(!w||!h)throw new Error('That picture could not be opened.');

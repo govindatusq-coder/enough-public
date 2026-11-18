@@ -44,12 +44,13 @@ export class AnthropicProvider implements StructuredModelProvider{
    // A safety filter can decline an ordinary school note by mistake. The service first re-runs a declined request on its own
    // backup model; if that also declines (or the option is not accepted), Bear tries once more on a second model itself.
    let response:Anthropic.Message|Anthropic.Beta.BetaMessage;const declined:string[]=[];
-   try{response=await this.client.beta.messages.create({...base,model:this.model,betas:['server-side-fallback-2026-07-01'],fallbacks:'default'} as Anthropic.Beta.MessageCreateParamsNonStreaming);}
-   catch(e){if(!(e instanceof Anthropic.BadRequestError))throw e;response=await this.client.messages.create({...base,model:this.model});}
+   const opts={...(input.timeoutMs?{timeout:input.timeoutMs}:{}),...(input.maxRetries!==undefined?{maxRetries:input.maxRetries}:{})};
+   try{response=await this.client.beta.messages.create({...base,model:this.model,betas:['server-side-fallback-2026-07-01'],fallbacks:'default'} as Anthropic.Beta.MessageCreateParamsNonStreaming,opts);}
+   catch(e){if(!(e instanceof Anthropic.BadRequestError))throw e;response=await this.client.messages.create({...base,model:this.model},opts);}
    if(response.stop_reason==='refusal'){
     declined.push(`${response.model}:${(response as {stop_details?:{category?:string|null}}).stop_details?.category??'?'}`);
     const second=this.model===BACKUP_MODEL?OTHER_BACKUP:BACKUP_MODEL;
-    response=await this.client.messages.create({...base,model:second});
+    response=await this.client.messages.create({...base,model:second},opts);
     if(response.stop_reason==='refusal')declined.push(`${response.model}:${(response as {stop_details?:{category?:string|null}}).stop_details?.category??'?'}`);
    }
    if(response.stop_reason==='refusal')throw new ProviderError(`The AI service’s safety filter declined to read this (${declined.join(', ')}).`,'refused');
