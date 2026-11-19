@@ -80,7 +80,7 @@ export default function DropBear(){
  if(name===null)return <main id="main" className="bear-screen"><Skeleton/></main>;
  return <main id="main" className="bear-screen v2-screen v2-fill">
   <AppHeader/>
-  <header className={`v2-hero stacked${working||ack?' small':''}${working?' busy':''}`}>
+  <header className={`v2-hero stacked${working||ack?' small':''}`}>
    <MamaBear/>
    <div className="v2-hero-text"><h1 className="v2-hello">{greetingV2(hour,name)}</h1>{!working&&!ack&&<p className="v2-ask hand"><span>What’s on your mind?</span></p>}</div>
   </header>
