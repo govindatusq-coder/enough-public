@@ -1011,3 +1011,9 @@
 @media (prefers-reduced-motion:reduce){.bear .v2-hero.busy .v2-bear,.bear .v2-steps li.now .v2-step-mark{animation:none;}}
 .bear .v2-drop-wrap{display:flex;flex-direction:column;flex:1 1 auto;}
 .bear .v2-drop-wrap[hidden]{display:none;}
+
+/* Got a Moment?: Calendar and Share Bear as chips above See All Tasks */
+.bear .v2-more-chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:auto;padding-top:22px;}
+.bear .v2-more-chip{display:inline-flex;align-items:center;gap:8px;min-height:52px;padding:0 20px;border-radius:999px;background:rgba(255,255,255,.85);border:1px solid rgba(16,42,67,.1);color:var(--navy);font-size:17px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(16,42,67,.06);}
+.bear .v2-more-chip:active{transform:scale(.97);}
+.bear .v2-more-chips+.v2-see-all{margin-top:0;padding-top:14px;}

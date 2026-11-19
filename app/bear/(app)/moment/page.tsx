@@ -39,6 +39,10 @@ export default function GotAMoment(){
    {exclude.length>0&&<button type="button" className="link-btn small" style={{display:'block',marginTop:10}} onClick={()=>ask(minutes!)}>Back to the first suggestion</button>}
   </section>}
   {!res&&!busy&&<p className="v2-hint small">Pick how long you’ve got, and Bear finds one useful thing that fits.</p>}
+  <nav className="v2-more-chips" aria-label="More">
+   <Link href="/bear/calendar" className="v2-more-chip"><span aria-hidden="true">📅</span> Calendar</Link>
+   <Link href="/bear/shared" className="v2-more-chip"><span aria-hidden="true">🤝</span> Share Bear</Link>
+  </nav>
   <Link href="/bear/brain" className="v2-see-all">See All Tasks <span aria-hidden="true">→</span></Link>
  </main>;
 }
