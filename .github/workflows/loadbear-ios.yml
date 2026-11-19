@@ -29,6 +29,8 @@ jobs:
     env:
       ON_MAIN: ${{ github.ref == 'refs/heads/main' }}
       HAS_KEY: ${{ secrets.APP_STORE_CONNECT_KEY_ID != '' && secrets.APP_STORE_CONNECT_ISSUER_ID != '' && secrets.APP_STORE_CONNECT_PRIVATE_KEY != '' && secrets.APPLE_TEAM_ID != '' }}
+      # The names (never the values) of any signing secret this run cannot see, so a missing or misnamed one is obvious.
+      MISSING: ${{ format('{0}{1}{2}{3}', secrets.APP_STORE_CONNECT_KEY_ID == '' && 'APP_STORE_CONNECT_KEY_ID ' || '', secrets.APP_STORE_CONNECT_ISSUER_ID == '' && 'APP_STORE_CONNECT_ISSUER_ID ' || '', secrets.APP_STORE_CONNECT_PRIVATE_KEY == '' && 'APP_STORE_CONNECT_PRIVATE_KEY ' || '', secrets.APPLE_TEAM_ID == '' && 'APPLE_TEAM_ID' || '') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,7 +46,7 @@ jobs:
       - name: Check the app builds (no signing)
         if: env.ON_MAIN != 'true' || env.HAS_KEY != 'true'
         run: |
-          if [ "$ON_MAIN" = "true" ]; then echo "::warning::TestFlight upload is off: add the App Store Connect key to this repository's Actions secrets (see the top of this workflow)."; fi
+          if [ -n "$MISSING" ]; then echo "::warning::TestFlight upload is off. Actions secrets this run cannot see: $MISSING"; echo "Signing secrets not found: $MISSING" >> "$GITHUB_STEP_SUMMARY"; else echo "All four signing secrets are present." | tee -a "$GITHUB_STEP_SUMMARY"; fi
           xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO -quiet build
           echo "The app and its share add-on build." >> "$GITHUB_STEP_SUMMARY"
@@ -58,6 +60,7 @@ jobs:
           TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
+          case "$ASC_PRIVATE_KEY" in *"BEGIN PRIVATE KEY"*"END PRIVATE KEY"*) ;; *) echo "::error::APP_STORE_CONNECT_PRIVATE_KEY is not the whole .p8 file: paste everything from -----BEGIN PRIVATE KEY----- to -----END PRIVATE KEY-----."; exit 1;; esac
           KEY="$RUNNER_TEMP/AuthKey_$ASC_KEY_ID.p8"
           (umask 077; printf '%s\n' "$ASC_PRIVATE_KEY" > "$KEY")
           # Year.monthday.time (UTC): always higher than the build before, whoever uploaded it.
