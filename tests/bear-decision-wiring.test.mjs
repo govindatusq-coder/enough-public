@@ -19,7 +19,8 @@ test('feedback keeps only labels: never the email, never anything else the calle
  await recordDecisionFeedback(s,{predicted:'ACT',correct:false,expected:'IGNORE',rule:'explicit-request',subject:'Secret subject',text:'Pay $999 to Jo Blogg',from:'a@b.com'});
  const ev=(await s.list('behaviour_events')).filter(e=>e.detail.signal==='decision_feedback');assert.equal(ev.length,1);
  assert.deepEqual(ev[0].detail,{signal:'decision_feedback',predicted:'ACT',expected:'IGNORE',correct:false,rule:'explicit-request'});
- const blob=JSON.stringify(ev);for(const leak of ['Secret','999','Blogg','a@b.com'])assert.ok(!blob.includes(leak),leak);
+ // Random ids and timestamps can contain "999" by chance; everything else the event holds is checked.
+ const blob=JSON.stringify(ev.map(({id,userId,createdAt,updatedAt,at,...rest})=>rest));for(const leak of ['Secret','999','Blogg','a@b.com'])assert.ok(!blob.includes(leak),leak);
 });
 test('feedback is validated: unknown labels, a wrong answer with no correction, and junk are refused',()=>{
  assert.throws(()=>parseFeedback({predicted:'MAYBE',correct:true}),/invalid_feedback/);
