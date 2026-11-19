@@ -76,12 +76,33 @@ export function BrainDumpInput({onUnloaded,say,placeholder='Brain dump it hereâ€
 
 // ---------- A checklist row ----------
 const lightDot=(l:BoardTask['light'])=>l==='red'?'var(--coral)':l==='amber'?'var(--mustard)':null;
+// Swipe a row to the left to show a bin; tap the bin to delete (the usual undo follows). A short swipe springs back, a tap
+// on an open row closes it, and up-and-down scrolling is left alone.
+const BIN_W=84;
+export function Swipe({onDelete,label,children,className,...rest}:{onDelete:()=>void;label:string;children:React.ReactNode;className?:string}&Omit<React.LiHTMLAttributes<HTMLLIElement>,'children'|'className'>){
+ const [x,setX]=useState(0);const [live,setLive]=useState(false);
+ const start=useRef<{x:number;y:number;base:number;mode:null|'h'|'v'}|null>(null);const moved=useRef(false);
+ const end=()=>{const s=start.current;start.current=null;setLive(false);if(s?.mode==='h')setX(v=>v<-BIN_W/2?-BIN_W:0);};
+ return <li {...rest} className={`b-swipe${className?' '+className:''}`}
+  onPointerDown={e=>{if(e.pointerType==='mouse'&&e.button!==0)return;if((e.target as HTMLElement).closest('.b-handle,input,textarea,.b-bin'))return;start.current={x:e.clientX,y:e.clientY,base:x,mode:null};moved.current=false;}}
+  onPointerMove={e=>{const s=start.current;if(!s)return;const dx=e.clientX-s.x,dy=e.clientY-s.y;
+   if(!s.mode){if(Math.abs(dx)<8&&Math.abs(dy)<8)return;s.mode=Math.abs(dx)>Math.abs(dy)*1.2?'h':'v';if(s.mode==='h'){setLive(true);(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);}}
+   if(s.mode!=='h')return;moved.current=true;setX(Math.max(-BIN_W*1.4,Math.min(0,s.base+dx)));}}
+  onPointerUp={end} onPointerCancel={end} onDragStart={e=>{if(start.current)e.preventDefault();}}
+  onClickCapture={e=>{if(moved.current){e.preventDefault();e.stopPropagation();moved.current=false;return;}
+   if(x!==0&&!(e.target as HTMLElement).closest('.b-bin')){e.preventDefault();e.stopPropagation();setX(0);}}}>
+  {x<0&&<button type="button" className="b-bin" style={{width:-x}} aria-label={`Delete ${label}`} onClick={()=>{setX(0);onDelete();}}>
+   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>{-x>=BIN_W*0.8&&<span>Delete</span>}</button>}
+  <div className="b-swipe-in" style={{transform:x?`translateX(${x}px)`:undefined,transition:live?'none':undefined}}>{children}</div>
+ </li>;
+}
+
 export function TaskRow({task,lists,index,count,actions,dragging,fresh,detailHref,meta}:{task:BoardTask;lists:BearList[];index:number;count:number;actions:RowActions;dragging:boolean;fresh?:boolean;detailHref?:string;meta?:string|null}){
  // Reorder from the keyboard: arrow keys on the handle. Focus follows the row to its new place.
  const nudge=(d:-1|1)=>{const to=index+d;if(to<0||to>=count)return;actions.move(task,task.listId,to);actions.say(`Moved ${d<0?'up':'down'}: ${task.title}`);requestAnimationFrame(()=>requestAnimationFrame(()=>(document.querySelector(`[data-row="${task.id}"] .b-handle`) as HTMLElement|null)?.focus()));};
  const [editing,setEditing]=useState(false);const [title,setTitle]=useState(task.title);const [menu,setMenu]=useState(false);
  function save(){setEditing(false);const t=title.trim();if(t&&t!==task.title)actions.rename(task,t);else setTitle(task.title);}
- return <li className={`b-row${dragging?' dragging':''}${fresh?' fresh':''}`} data-row={task.id} data-list={task.listId||'inbox'} data-index={index}>
+ return <Swipe className="b-swipe-row" data-row={task.id} data-list={task.listId||'inbox'} data-index={index} label={task.title} onDelete={()=>actions.remove(task)}><div className={`b-row${dragging?' dragging':''}${fresh?' fresh':''}`}>
   <button type="button" className="b-check" role="checkbox" aria-checked={false} aria-label={`Done: ${task.title}`} onClick={()=>actions.complete(task)}><span/></button>
   <div className="b-main">
    {editing?<input className="b-edit" value={title} autoFocus maxLength={120} onChange={e=>setTitle(e.target.value)} onBlur={save} onKeyDown={e=>{if(e.key==='Enter')save();if(e.key==='Escape'){setTitle(task.title);setEditing(false);}}} aria-label="Edit"/>
@@ -102,7 +123,7 @@ export function TaskRow({task,lists,index,count,actions,dragging,fresh,detailHre
   <button type="button" className="b-handle" aria-label={`Reorder ${task.title}. Use the up and down arrow keys`} onPointerDown={e=>actions.dragStart(e,task)} onKeyDown={e=>{if(e.key==='ArrowUp'){e.preventDefault();nudge(-1);}else if(e.key==='ArrowDown'){e.preventDefault();nudge(1);}}}>
    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></button>
   {menu&&<RowMenu task={task} lists={lists} actions={actions} canUp={index>0} canDown={index<count-1} onNudge={d=>{setMenu(false);nudge(d);}} onClose={()=>setMenu(false)} onEdit={()=>{setMenu(false);setTitle(task.title);setEditing(true);}}/>}
- </li>;
+ </div></Swipe>;
 }
 
 type Person={id:string;name:string;email:string|null;phone:string|null;joined?:boolean};

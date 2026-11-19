@@ -981,3 +981,10 @@
 
 .bear .v2-ack-list{margin:0;padding-left:20px;list-style:disc;display:grid;gap:4px;font-size:16px;line-height:1.35;color:var(--navy);}
 .bear .v2-ack-list .faint{font-size:14px;}
+.bear .b-swipe{position:relative;list-style:none;touch-action:pan-y;overflow-x:clip;}
+.bear .b-swipe-in{position:relative;z-index:1;transition:transform .2s var(--ease);}
+.bear .b-bin{position:absolute;top:2px;right:0;bottom:2px;z-index:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:hidden;border:0;border-radius:14px;background:var(--coral);color:#fff;font-size:12px;font-weight:600;cursor:pointer;}
+.bear .b-swipe-row{border-bottom:1px solid var(--line);}
+.bear .b-swipe-row:last-child{border-bottom:0;}
+.bear .b-swipe-row>.b-swipe-in>.b-row{border-bottom:0;}
+.bear .b-swipe.drop-on{box-shadow:inset 0 2px 0 var(--teal);}

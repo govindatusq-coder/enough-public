@@ -8,7 +8,7 @@ import {formatAU} from '@/lib/bear/domain/dates';
 import type {BoardTask,BoardView} from '@/lib/bear/board/service';
 import type {BrainItem} from '@/lib/bear/rre/service';
 import {ErrorCard,Skeleton} from '@/components/bear/ui';
-import {TaskRow,useBoardActions,type Say} from '@/components/bear/board';
+import {Swipe,TaskRow,useBoardActions,type Say} from '@/components/bear/board';
 import {Icon} from '@/components/bear/v2';
 
 interface Brain{total:number;waiting:number;priority:BrainItem[];categories:{id:string;title:string;icon:string;items:BrainItem[]}[]}
@@ -39,7 +39,7 @@ export default function BearBrain(){
  const found=term?all.filter(i=>i.title.toLowerCase().includes(term)):null;
  const prio=brain.priority.filter(i=>byId.has(i.id));
  const catOf=new Map(brain.categories.flatMap(c=>c.items.map(i=>[i.id,c] as const)));
- const row=(i:BrainItem,withCat=false)=><li key={i.id}><Link href={`/bear/brain/${i.id}`} className="v2-prow"><i className="v2-dot" style={{background:dotColour[i.dot]}} aria-hidden="true"/><span className="v2-prow-main"><strong>{i.title}</strong><span>{withCat&&catOf.get(i.id)?`${catOf.get(i.id)!.icon} ${catOf.get(i.id)!.title} · `:''}{whenText(i)}</span></span><span className="v2-chev" aria-hidden="true">{Icon.chevron()}</span></Link></li>;
+ const row=(i:BrainItem,withCat=false)=><Swipe key={i.id} label={i.title} onDelete={()=>{const t=byId.get(i.id);if(t)actions.remove(t);}}><Link href={`/bear/brain/${i.id}`} className="v2-prow"><i className="v2-dot" style={{background:dotColour[i.dot]}} aria-hidden="true"/><span className="v2-prow-main"><strong>{i.title}</strong><span>{withCat&&catOf.get(i.id)?`${catOf.get(i.id)!.icon} ${catOf.get(i.id)!.title} · `:''}{whenText(i)}</span></span><span className="v2-chev" aria-hidden="true">{Icon.chevron()}</span></Link></Swipe>;
  return <main id="main" className="bear-screen v2-screen brain-screen">
   <header className="v2-brain-head">
    <span className="v2-brain-icon" aria-hidden="true">{Icon.brain(28)}</span>
