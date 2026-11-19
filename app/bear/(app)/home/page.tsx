@@ -18,11 +18,27 @@ interface Ack{text:string;tip:{taskId:string;text:string}|null;items?:Got[]}
 type TriageCard={card_headline:string;already:boolean;linkedFrom?:string|null;execution_payload?:{shopping_list?:string[]|null}};
 type TriageReply={cards:TriageCard[];items?:{unclear:number};unplaced?:string[]};
 const SHOW=8;
+// What Bear is doing while it works. The steps move on with time (a photo takes longer than typing); the last one stays until
+// Bear has really finished.
+const STEPS={photo:[['Reading every line on the page',0],['Working out what needs doing',12],['Filing each thing in Bear Brain',35]],text:[['Reading what you wrote',0],['Sorting it into tasks',2],['Filing it in Bear Brain',5]]} as const;
+function Working({kind,count}:{kind:'photo'|'text';count:number}){
+ const [secs,setSecs]=useState(0);
+ useEffect(()=>{const t0=Date.now();const id=setInterval(()=>setSecs(Math.floor((Date.now()-t0)/1000)),1000);return()=>clearInterval(id);},[]);
+ const steps=STEPS[kind];const at=steps.reduce((n,[,from],i)=>secs>=from?i:n,0);
+ const what=kind==='photo'?(count>1?`your ${count} pictures`:'your picture'):'that';
+ return <section className="v2-working" role="status" aria-live="polite" aria-busy="true">
+  <h2 className="v2-working-title">Bear is working on {what}<span className="dots" aria-hidden="true"><i/><i/><i/></span></h2>
+  <ol className="v2-steps">{steps.map(([label],i)=><li key={label} className={i<at?'done':i===at?'now':''}><span className="v2-step-mark" aria-hidden="true">{i<at?'✓':''}</span>{label}{i===at?'…':''}</li>)}</ol>
+  <p className="v2-working-note">{kind==='photo'?`${secs}s · a long list can take a minute or two. Keep the app open until Bear’s done.`:`${secs}s`}</p>
+ </section>;
+}
 export default function DropBear(){
  const router=useRouter();const online=useOnline();
  const [name,setName]=useState<string|null>(null);const [hour,setHour]=useState(9);const [error,setError]=useState<string|null>(null);
  const [notices,setNotices]=useState<{id:string;text:string}[]>([]);const [due,setDue]=useState<Due[]>([]);const delivered=useRef(new Set<string>());
- const [ack,setAck]=useState<Ack|null>(null);const [allShown,setAllShown]=useState(false);const [filesBusy,setFilesBusy]=useState(false);const [giving,setGiving]=useState(false);
+ const [ack,setAck]=useState<Ack|null>(null);const [allShown,setAllShown]=useState(false);const [typing,setTyping]=useState(false);const [count,setCount]=useState(1);
+ const fresh=()=>{setAck(null);setAllShown(false);window.scrollTo({top:0,behavior:'smooth'});};const [filesBusy,setFilesBusy]=useState(false);const [giving,setGiving]=useState(false);
+ const working=filesBusy?'photo':typing?'text':null;
  const [toast,setToast]=useState<string|null>(null);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const load=useCallback(()=>Promise.race([apiGet<{onboarding?:boolean;board?:{name:string};notices?:{id:string;text:string}[];due?:Due[]}>('/api/bear/board'),new Promise<never>((_,no)=>setTimeout(()=>no(new Error('Bear is taking too long to answer. Check your connection and try again.')),20000))]).then(r=>{
   if(r.onboarding){router.replace('/bear/onboarding');return;}setName(r.board?.name||'');setNotices(r.notices||[]);setDue(r.due||[]);setError(null);
@@ -34,7 +50,7 @@ export default function DropBear(){
  // Photos and PDFs go to Bear's reader (five at a time), which turns them into responsibilities the same way. Everything Bear
  // filed is listed back, so the person can see at a glance that nothing on the page was missed.
  async function files(list:File[]){
-  setFilesBusy(true);setAck(null);setAllShown(false);
+  setFilesBusy(true);setAck(null);setAllShown(false);setCount(list.length);
   const got:Got[]=[];let unclear=0;
   const one=list.length===1?'that':'those';
   try{let fam:FamilyMember[]=[];try{fam=(await apiGet<{profile:{family?:FamilyMember[]}}>('/api/bear/profile')).profile.family||[];}catch{/* read without family names */}
@@ -64,19 +80,26 @@ export default function DropBear(){
  if(name===null)return <main id="main" className="bear-screen"><Skeleton/></main>;
  return <main id="main" className="bear-screen v2-screen v2-fill">
   <AppHeader/>
-  <header className="v2-hero stacked">
+  <header className={`v2-hero stacked${working||ack?' small':''}${working?' busy':''}`}>
    <MamaBear/>
-   <div className="v2-hero-text"><h1 className="v2-hello">{greetingV2(hour,name)}</h1><p className="v2-ask hand"><span>What’s on your mind?</span></p></div>
+   <div className="v2-hero-text"><h1 className="v2-hello">{greetingV2(hour,name)}</h1>{!working&&!ack&&<p className="v2-ask hand"><span>What’s on your mind?</span></p>}</div>
   </header>
   {!online&&<p className="note" style={{marginTop:12}} role="status">You’re offline. Bear will take it when you’re back.</p>}
-  <BrainDumpInput card say={say} placeholder="Drop it here. I’ll sort it, plan it and get it moving." onFiles={files} filesBusy={filesBusy}
-   onUnloaded={r=>{const n=r.added.length;setAck({text:n?`I’ve got ${WORDS[n]||`those ${n} things`}. I’ll work out what needs attention and what I can help with.`:r.already.length?'That’s already with Bear.':'Bear couldn’t find anything to do in that. Your words are kept.',tip:r.tip||null});}}/>
-  {ack&&<section className="v2-ack" role="status" aria-live="polite">
+  {working&&<Working kind={working} count={count}/>}
+  <div className="v2-drop-wrap" hidden={!!working||!!ack}>
+  <BrainDumpInput card say={say} onBusy={setTyping} placeholder="Drop it here. I’ll sort it, plan it and get it moving." onFiles={files} filesBusy={filesBusy}
+   onUnloaded={r=>{const n=r.added.length;setAllShown(false);setAck({text:n?`I’ve got ${WORDS[n]||`those ${n} things`}. I’ll work out what needs attention and what I can help with.`:r.already.length?'That’s already with Bear.':'Bear couldn’t find anything to do in that. Your words are kept.',tip:r.tip||null,items:n>1||r.already.length?[...r.added.map(x=>({title:x.title,note:null})),...r.already.map(x=>({title:x.title,note:'already with Bear'}))]:undefined});}}/>
+  </div>
+  {ack&&<section className="v2-ack v2-result" role="status" aria-live="polite">
+   <h2 className="v2-result-title">Done</h2>
    <p>{ack.text}</p>
    {!!ack.items?.length&&<ul className="v2-ack-list">{(allShown?ack.items:ack.items.slice(0,SHOW)).map((g,i)=><li key={i}>{g.title}{g.note&&<span className="faint"> · {g.note}</span>}</li>)}</ul>}
    {(ack.items?.length||0)>SHOW&&!allShown&&<button type="button" className="link-btn small" onClick={()=>setAllShown(true)}>Show all {ack.items!.length}</button>}
    {ack.tip&&<><p className="v2-tip">{ack.tip.text}</p><button type="button" className="btn coral sm" disabled={giving} onClick={()=>give(ack.tip!.taskId)}>{giving?'One moment…':'Give it to Bear'}</button></>}
-   <Link href="/bear/brain" className="v2-link small">See it all in Bear Brain →</Link>
+   <div className="v2-result-actions">
+    <button type="button" className="btn coral wide" onClick={fresh}>Back to Drop Bear</button>
+    <Link href="/bear/brain" className="btn ghost wide">See it in Bear Brain</Link>
+   </div>
   </section>}
   {due.map(d=><Link key={d.reminderId} href={d.billId?`/bear/bills/${d.billId}?reminder=${d.reminderId}`:`/bear/brain/${d.taskId}`} className="note teal" role="status" style={{display:'block',marginTop:12}}>🔔 {d.message}</Link>)}
   {notices.map(n=><p key={n.id} className="note teal" role="status" style={{marginTop:12}}>{n.text} <Link href="/bear/shared" className="link-btn" onClick={()=>apiSend('/api/bear/shares/seen',{}).catch(()=>{})}>See</Link></p>)}

@@ -14,11 +14,12 @@ export type Say=(text:string,undo?:()=>void)=>void;
 // ---------- Unload: one box for typing and talking ----------
 type Rec={start():void;stop():void;abort():void;onresult:((e:{resultIndex:number;results:ArrayLike<{isFinal:boolean;0:{transcript:string}}>})=>void)|null;onend:(()=>void)|null;onerror:((e:{error:string})=>void)|null;continuous:boolean;interimResults:boolean;lang:string};
 const DRAFT_KEY='bear-dump-draft';
-export function BrainDumpInput({onUnloaded,say,placeholder='Brain dump it here…',card=false,onFiles,filesBusy=false}:{onUnloaded:(r:{added:{id:string;title:string}[];already:{id:string;title:string}[];tip?:{taskId:string;text:string}|null})=>void;say:Say;placeholder?:string;card?:boolean;onFiles?:(files:File[])=>void;filesBusy?:boolean}){
+export function BrainDumpInput({onUnloaded,say,placeholder='Brain dump it here…',card=false,onFiles,filesBusy=false,onBusy}:{onBusy?:(busy:boolean)=>void;onUnloaded:(r:{added:{id:string;title:string}[];already:{id:string;title:string}[];tip?:{taskId:string;text:string}|null})=>void;say:Say;placeholder?:string;card?:boolean;onFiles?:(files:File[])=>void;filesBusy?:boolean}){
  const fileRef=useRef<HTMLInputElement>(null);
  const [text,setText]=useState('');const [busy,setBusy]=useState(false);const [failed,setFailed]=useState<string|null>(null);
  const [listening,setListening]=useState(false);const [canTalk,setCanTalk]=useState(false);const [hint,setHint]=useState<string|null>(null);const rec=useRef<Rec|null>(null);const via=useRef<'text'|'voice'>('text');
  const box=useRef<HTMLTextAreaElement>(null);
+ useEffect(()=>{onBusy?.(busy);},[busy,onBusy]);
  // What she was typing survives the app closing mid-thought.
  const restored=useRef(false);
  useEffect(()=>{queueMicrotask(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d)setText(d);}catch{/* no storage */}restored.current=true;const w=window as unknown as {SpeechRecognition?:new()=>Rec;webkitSpeechRecognition?:new()=>Rec};setCanTalk(!!(w.SpeechRecognition||w.webkitSpeechRecognition));});},[]);

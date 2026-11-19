@@ -55,6 +55,9 @@ try{
   await p.fill('#dump-text','I need to get Sarah’s scrunchie, organise Christmas presents, book the dentist and follow up with the school.');
   await p.click('.drop-card .dump-go');await p.waitForSelector('.v2-ack');assert.match(await p.textContent('.v2-ack'),/I’ve got those four things\. I’ll work out what needs attention and what I can help with\./);
   assert.equal(await p.$('.v2-tip'),null,'nothing here is time-sensitive enough to mention straight away');
+  // The result takes the box's place; one tap goes back to a clean Drop Bear.
+  assert.ok(!(await p.isVisible('.drop-card')),'the box steps aside for the result');
+  await p.click('.v2-result button:has-text("Back to Drop Bear")');await p.waitForSelector('#dump-text');assert.equal(await p.$('.v2-result'),null);
  });
  await step('Scrunchie: a tip worth knowing, Give it to Bear, Bear prepares, she orders, Bear waits, it arrives',async()=>{
   await p.fill('#dump-text',`Sarah needs a red scrunchie ${byDate}`);await p.click('.drop-card .dump-go');
