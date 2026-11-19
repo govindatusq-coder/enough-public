@@ -153,7 +153,7 @@ test('the list schema survives the trip through the service format: blank who an
 test('the prompt asks for every line first, messy ones included, and says a card is only needed where something can be prepared',()=>{
  const p=triageSystemPrompt(anchorsFor(NOW,'Australia/Sydney',[]));
  assert.match(p,/First write down every item in items_seen/);assert.match(p,/half-legible/);assert.match(p,/status unclear/);
- assert.match(p,/one with no card becomes a plain task automatically/);assert.ok(!/Leave out anything that needs nothing/.test(p));
+ assert.match(p,/one with no card becomes a plain task automatically/);assert.match(p,/never gather separate lines into one card/);assert.ok(!/Leave out anything that needs nothing/.test(p));
 });
 test('triage end to end with a list: one task per line, lines of the same list are never folded into each other, and the counts come back',async()=>{
  const s=await person();

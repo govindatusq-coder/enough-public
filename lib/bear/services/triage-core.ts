@@ -123,7 +123,7 @@ First write down every item in items_seen, in order, before any card. On a list 
 
 Before you write any card, work out from the source: its kind and sender; every date with its YYYY-MM-DD; which family member each item is for (by name, year level, class or school from the profile; never invent a person); and the implicit tasks (money or a gold coin to send, uniform or food to pack, a form to sign, a reply expected, something to buy).
 
-Then the action cards. Every todo item becomes a task in the app: one with no card becomes a plain task automatically, so on a list you only need a card where you can prepare something useful. For a notice, letter or email, write one card per separate thing the parent must do. Every card lists in covers the items it takes care of. Make each card ready to act on, not a reminder:
+Then the action cards. Every todo item becomes a task in the app: one with no card becomes a plain task automatically, so on a list you only need a card where you can prepare something useful. On a list, a card takes care of one line only: never gather separate lines into one card (a line that is itself a shopping list becomes one shopping_list card). For a notice, letter or email, write one card per separate thing the parent must do. Every card lists in covers the items it takes care of. Make each card ready to act on, not a reminder:
 - a reply or confirmation: email_reply or sms with the message written in full, in the parent's voice, plain and polite;
 - an event: calendar_hold with the exact time if given;
 - things to buy or pack: shopping_list;

@@ -15,7 +15,7 @@ const WORDS=['','that','those two things','those three things','those four thing
 type Due={reminderId:string;taskId:string;billId:string|null;message:string};
 interface Got{title:string;note:string|null}
 interface Ack{text:string;tip:{taskId:string;text:string}|null;items?:Got[]}
-type TriageCard={card_headline:string;already:boolean;linkedFrom?:string|null};
+type TriageCard={card_headline:string;already:boolean;linkedFrom?:string|null;execution_payload?:{shopping_list?:string[]|null}};
 type TriageReply={cards:TriageCard[];items?:{unclear:number};unplaced?:string[]};
 const SHOW=8;
 export default function DropBear(){
@@ -40,7 +40,9 @@ export default function DropBear(){
   try{let fam:FamilyMember[]=[];try{fam=(await apiGet<{profile:{family?:FamilyMember[]}}>('/api/bear/profile')).profile.family||[];}catch{/* read without family names */}
    for(let i=0;i<list.length;i+=5){
     const req=await buildTriageRequest({files:list.slice(i,i+5)},fam);const r=await apiSend<TriageReply>('/api/bear/triage',req);
-    for(const c of r.cards||[])got.push(c.linkedFrom?{title:c.linkedFrom,note:`added to “${c.card_headline}”`}:{title:c.card_headline,note:c.already?'already with Bear':null});
+    // A shopping list shows what is on it, so no line is hidden inside a task.
+    for(const c of r.cards||[]){const buy=c.execution_payload?.shopping_list?.filter(Boolean)||[];const inside=buy.length?`includes ${buy.join(', ')}`:null;
+     got.push(c.linkedFrom?{title:c.linkedFrom,note:`added to “${c.card_headline}”`}:{title:c.card_headline,note:[c.already?'already with Bear':null,inside].filter(Boolean).join(' · ')||null});}
     unclear+=r.items?.unclear||0;
     // Lines read but not filed in time go through the ordinary typed route now.
     if(r.unplaced?.length){const d=await apiSend<{added:{title:string}[];already:{title:string}[]}>('/api/bear/board/dump',{text:r.unplaced.join('\n'),via:'text'});
