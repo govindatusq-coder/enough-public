@@ -14,9 +14,10 @@ import {brainView,giveToBear,recommend} from '../rre/service.ts';
 // An action's life: proposed -> preparing -> ready_for_review -> approved -> executing -> verified_success, or failed or
 // cancelled. Nothing here sends, books, buys or shares: a draft is ready_for_review until the person sends it herself.
 export type ActionState='proposed'|'preparing'|'ready_for_review'|'approved'|'executing'|'verified_success'|'failed'|'cancelled';
-export type ActionKind='suggestion'|'responsibility'|'prepared'|'draft'|'added';
+export type ActionKind='suggestion'|'responsibility'|'prepared'|'draft'|'added'|'proposed_tasks';
+export interface ProposedTask{title:string;area:import('../domain/types.ts').AreaKey;original:string}
 export interface MomentAction{id:string;kind:ActionKind;state:ActionState;taskId:string|null;title:string;detail:string|null;
- label?:string|null;minutes?:number|null;lines?:string[];draft?:{channel:'email'|'sms';to:string|null;subject:string;body:string}|null;items?:string[]}
+ label?:string|null;minutes?:number|null;lines?:string[];draft?:{channel:'email'|'sms';to:string|null;subject:string;body:string}|null;items?:string[];proposal?:ProposedTask[]}
 export interface MomentMessage{id:string;role:'user'|'bear';at:string;text:string;actions?:MomentAction[]}
 export const KEEP_MESSAGES=80;          // the kept conversation (oldest go first)
 export const CONTEXT_MESSAGES=16;       // what Bear reads back each turn: bounded, and only from the current sitting
@@ -39,6 +40,7 @@ How to talk:
 - Do not validate on repeat, do not interrogate, do not over-cheer, and do not end every message with a question.
 - You are not a therapist. Never diagnose, never say you know how she feels, never claim to replace people in her life. If something sounds heavy, acknowledge it simply and leave room.
 - If she wants to vent, rest or unwind, stay with that. Do not suggest tasks, plans or productivity.
+- Once she turns to how she is feeling, leave the tasks behind completely: no lists, no cards, no tools, no recap of what was planned, no "when you're ready we can…". Do not bring tasks back until she does.
 - Follow what she asks for over what you guess. If it is unclear what would help, you may offer, in one sentence, to talk it through, help with something, or just unwind; then go with her answer.
 - Ask before moving from talking to doing. Use a tool only when she has asked for practical help or said yes to your offer.
 - Never guess at anyone else's motives (a partner, a teacher) from an unfinished task. Talk about the task, not the person.
@@ -49,7 +51,7 @@ What you can do (only through the tools; never claim anything else happened):
 - suggest_for_time: when she says how much time she has, find one useful thing that fits.
 - prepare_help: do Bear's part of a task's next step (a shopping list, a draft, steps, a shortlist). This only prepares; nothing is sent, booked or bought.
 - draft_message: write a message for her to review (to a school, a partner, a business). Bear cannot send email or texts: she sends it herself. A message to her partner contains only the practical request, never anything private she has told you.
-- add_tasks: save something new to remember, only when she asks or agrees.
+- propose_tasks: when she wants things written down or a to-do list made, propose the list. Nothing is saved until she approves it in the app (she can untick items). Never say a list is saved until a note shows she approved it.
 The app shows what a tool returns as a card under your message, so do not repeat its details. Say in one short line what you did. Never say something was sent, booked, paid, shared or arranged unless a tool result says it was confirmed.
 A note in square brackets after one of your earlier messages records what the app really showed under it; trust it and never write such notes yourself.`;
 
@@ -60,8 +62,20 @@ export const momentTools=[
  t('suggest_for_time','Find one useful thing that fits the time she says she has.',{minutes:{type:'integer',description:'Minutes she has: 5, 10, 20, or 60 for "some time".'}},['minutes']),
  t('prepare_help','Do Bear’s part of the next step of one task she has agreed you should help with. Use a task_id from find_responsibilities or suggest_for_time.',{task_id:{type:'string'}},['task_id']),
  t('draft_message','Write a message for her to review and send herself.',{task_id:{anyOf:[{type:'string'},{type:'null'}]},channel:{type:'string',enum:['email','sms']},to:{anyOf:[{type:'string'},{type:'null'}],description:'Who it is to, as she named them, or null.'},subject:{type:'string',description:'Short subject (email), or empty for a text.'},body:{type:'string',description:'The message, in her voice, plain and polite.'}},['task_id','channel','to','subject','body']),
+ t('propose_tasks','Propose a to-do list for her to approve. One entry per separate thing, in her words. Nothing is saved until she approves it.',{tasks:{type:'array',items:{type:'object',additionalProperties:false,required:['title','area','original'],properties:{title:{type:'string',description:'Action verb + the specific thing, under 10 words, her words, no date.'},area:{type:'string',enum:['work','family','home','money','health','me']},original:{type:'string',description:'Her own words for it, including any date or time words.'}}}}},['tasks']),
 ];
 const uuid=z.string().uuid();
+const proposeInput=z.object({tasks:z.array(z.object({title:z.string().trim().min(2).max(120),area:z.enum(['work','family','home','money','health','me']),original:z.string().trim().min(2).max(500)}).strict()).min(1).max(15)}).strict();
+// A to-do list Bear proposes waits for her approval; nothing is saved here.
+export function proposeTasks(raw:unknown):ToolOutcome{
+ const p=proposeInput.safeParse(raw);if(!p.success)return {result:'Not proposed: the request did not have the right shape.',actions:[]};
+ return {result:'The list is shown to her to approve. Nothing is saved until she approves it. Say in one short line that it is there for her to check.',
+  actions:[{id:actionId('t'),kind:'proposed_tasks',state:'ready_for_review',taskId:null,title:p.data.tasks.length===1?p.data.tasks[0].title:`${p.data.tasks.length} things to save`,detail:null,items:p.data.tasks.map(x=>x.title),proposal:p.data.tasks}]};
+}
+// Talking about how she feels, with nothing practical asked: Bear answers without tools, so no list or card comes back.
+const FEELING=/\b(feel|feeling|felt|overwhelm\w*|sad|anxious|anxiety|stress\w*|cry\w*|tears|lonely|alone|upset|exhausted|burnt? out|hurt|angry|frustrated|scared|worried|guilty|hopeless|not okay|not ok|struggling|depress\w*|grief|miss (?:him|her|them)|resent\w*|unappreciated|invisible)\b/i;
+const ASKING=/\b(can you|could you|would you|please|help me (?:with|to|get|sort|write|draft|plan)|remind|add|save|list|draft|write|book|order|what(?:'s| is) next|what should i do|show me|find|look (?:at|up)|minutes?|time to)\b/i;
+export const feelingsOnly=(text:string)=>FEELING.test(text)&&!ASKING.test(text);
 const draftInput=z.object({task_id:uuid.nullable(),channel:z.enum(['email','sms']),to:z.string().trim().max(120).nullable(),subject:z.string().trim().max(200),body:z.string().trim().min(2).max(3000)}).strict();
 let seq=0;const actionId=(k:string)=>`${k}-${Date.now().toString(36)}-${(seq++).toString(36)}`;
 const words=(s:string)=>s.toLowerCase().replace(/[^a-z0-9 ]+/g,' ').split(/\s+/).filter(w=>w.length>2);
@@ -132,6 +146,7 @@ export function describeAction(a:MomentAction):string{
  if(a.kind==='draft')return `a ${a.draft?.channel==='sms'?'text':'email'} draft${a.draft?.to?` to ${a.draft.to}`:''} for her to check and send herself (not sent)`;
  if(a.kind==='suggestion')return `a suggestion: "${a.title}"${id}`;
  if(a.kind==='prepared')return `prepared "${a.detail||a.title}" for "${a.title}"${id}, ready for her to check`;
+ if(a.kind==='proposed_tasks')return a.state==='verified_success'?`a to-do list she approved and saved: ${(a.items||[]).map(x=>`"${x}"`).join(', ')}`:a.state==='cancelled'?'a to-do list she chose not to save':`a to-do list waiting for her approval (not saved): ${(a.items||[]).map(x=>`"${x}"`).join(', ')}`;
  if(a.kind==='added')return `saved to Bear Brain: ${(a.items||[a.title]).map(x=>`"${x}"`).join(', ')}`;
  return `her task "${a.title}"${id}`;
 }

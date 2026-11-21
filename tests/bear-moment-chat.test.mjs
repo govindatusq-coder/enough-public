@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {MemoryBackend} from '../lib/bear/store/memory.ts';
 import {ensureProfile,saveProfile} from '../lib/bear/services/profile.ts';
 import {unload,openTasks} from '../lib/bear/board/service.ts';
-import {describeAction,momentSystemPrompt,momentTools,needsSafety,withSafety,SAFETY_LINE,minutesIn,offlineReply,findResponsibilities,suggestForTime,prepareHelp,draftMessage,loadConversation,saveConversation,contextTurns,sendSchema,KEEP_MESSAGES,CONTEXT_MESSAGES} from '../lib/bear/services/moment-chat.ts';
+import {proposeTasks,feelingsOnly,describeAction,momentSystemPrompt,momentTools,needsSafety,withSafety,SAFETY_LINE,minutesIn,offlineReply,findResponsibilities,suggestForTime,prepareHelp,draftMessage,loadConversation,saveConversation,contextTurns,sendSchema,KEEP_MESSAGES,CONTEXT_MESSAGES} from '../lib/bear/services/moment-chat.ts';
 import {structuredOutputSchema} from '../lib/bear/ai/schema-subset.ts';
 
 const MON=new Date('2026-11-16T10:00:00+11:00');
@@ -67,4 +67,25 @@ test('Bear remembers what its cards were, so it never doubts a draft it really m
  const msgs=[{id:'m-aaaaaaa1',role:'user',at:'2026-11-16T09:00:00Z',text:'Can you draft a text to James?'},{id:'b-aaaaaaa1',role:'bear',at:'2026-11-16T09:00:05Z',text:'Done, it’s below.',actions:[{id:'d-1',kind:'draft',state:'ready_for_review',taskId:'11111111-1111-4111-8111-111111111111',title:'Return the form',detail:null,draft:{channel:'sms',to:'James',subject:'',body:'Hi'}}]}];
  const t=contextTurns(msgs);assert.match(t[1].content,/\[Shown under this message: a text draft to James for her to check and send herself \(not sent\)\.\]/);
  assert.match(describeAction({id:'s',kind:'suggestion',state:'proposed',taskId:'22222222-2222-4222-8222-222222222222',title:'Review gifts',detail:null}),/task_id 2222/);
+});
+import {pickVoice} from '../components/bear/speech.ts';
+test('a to-do list is only proposed: nothing saved until she approves, and Bear knows which state it is in',()=>{
+ const o=proposeTasks({tasks:[{title:'Book the dentist',area:'health',original:'book the dentist'},{title:'Buy milk',area:'home',original:'milk'}]});
+ assert.equal(o.actions[0].kind,'proposed_tasks');assert.equal(o.actions[0].state,'ready_for_review');assert.deepEqual(o.actions[0].items,['Book the dentist','Buy milk']);assert.match(o.result,/Nothing is saved until she approves/);
+ assert.match(describeAction(o.actions[0]),/waiting for her approval \(not saved\)/);
+ assert.match(describeAction({...o.actions[0],state:'verified_success'}),/approved and saved/);assert.match(describeAction({...o.actions[0],state:'cancelled'}),/chose not to save/);
+ assert.match(proposeTasks({tasks:[]}).result,/right shape/);
+ const p=momentSystemPrompt({today:'2026-11-16',weekday:'Monday',name:'',children:[]});assert.match(p,/Nothing is saved until she approves it in the app/);assert.ok(!/add_tasks/.test(p));
+ assert.match(p,/leave the tasks behind completely: no lists, no cards, no tools/);
+});
+test('talking about feelings (asking for nothing practical) gets an answer without tools; a practical ask still gets help',()=>{
+ for(const t of ['I just feel so overwhelmed and invisible','Honestly I feel like nobody helps me','feeling sad today'])assert.ok(feelingsOnly(t),t);
+ for(const t of ['Can you help me write a list? I feel stressed','I have 10 minutes','Thanks, that list helps','Book the dentist'])assert.ok(!feelingsOnly(t),t);
+});
+test('Bear’s voice: an Australian woman’s voice first, never a known man’s when a woman’s is there',()=>{
+ const v=(name,lang)=>({name,lang});
+ assert.equal(pickVoice([v('Lee','en-AU'),v('Gordon','en-AU'),v('Karen','en-AU')]).name,'Karen');
+ assert.equal(pickVoice([v('Karen','en-AU'),v('Catherine (Enhanced)','en-AU')]).name,'Catherine (Enhanced)');
+ assert.equal(pickVoice([v('Lee','en-AU'),v('Google UK English Female','en-GB')]).name,'Google UK English Female');
+ assert.equal(pickVoice([v('Samantha','en-US')]),null,'no American fallback');
 });

@@ -1091,3 +1091,6 @@
 @media (prefers-reduced-motion:reduce){.bear .mc-mic.on{animation:none;}}
 @media (max-height:720px){.bear .mc-hero .v2-bear{width:min(44vw,190px,24dvh);}.bear .mc-title{font-size:clamp(28px,8.4vw,36px);}.bear .mc-composer.idle{margin-top:14px;}.bear .mc-composer.idle textarea{min-height:40px;}}
 .bear .mc-row.mc-b{align-items:flex-start;}
+.bear .mc-checks{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;}
+.bear .mc-checks label{display:flex;align-items:center;gap:12px;min-height:44px;font-size:16px;color:var(--navy);cursor:pointer;}
+.bear .mc-checks input{width:22px;height:22px;accent-color:var(--coral);flex:none;}

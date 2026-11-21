@@ -141,6 +141,7 @@ function ActionCard({a}:{a:MomentAction}){
   {msg&&state!=='cancelled'&&<p className="mc-card-sub" role="alert">{msg}</p>}
  </div>;
  if(a.kind==='responsibility')return <div className="mc-card"><div className="mc-card-head"><span className="mc-card-title">{a.title}</span>{open}</div>{a.detail&&<p className="mc-card-sub">{a.detail}</p>}{a.taskId&&<AddToOutlook taskId={a.taskId}/>}</div>;
+ if(a.kind==='proposed_tasks')return <ProposedList a={a}/>;
  if(a.kind==='added')return <div className="mc-card"><p className="mc-card-eyebrow">Saved in Bear Brain</p><ul className="mc-card-list">{(a.items||[a.title]).map((x,i)=><li key={i}>{x}</li>)}</ul>{a.items?.length===1&&open}</div>;
  if(a.kind==='prepared')return <div className="mc-card"><p className="mc-card-eyebrow">Bear prepared this · ready for you to check</p>
   <div className="mc-card-head"><span className="mc-card-title">{a.detail||a.title}</span>{open}</div><p className="mc-card-sub">For: {a.title}</p>
@@ -160,5 +161,18 @@ function Draft({d}:{d:NonNullable<MomentAction['draft']>}){
   <p className="mc-draft-body">{d.body}</p>
   <div className="mc-card-actions"><a className="btn ghost sm" href={href} onClick={()=>setDone(d.channel==='email'?'Opened in your Mail app. Bear can’t see whether it was sent.':'Opened in Messages. Bear can’t see whether it was sent.')}>{d.channel==='email'?'Open in Mail':'Open in Messages'}</a><button type="button" className="btn quiet sm" onClick={copy}>Copy</button></div>
   <p className="mc-card-note">{done||'Bear can’t send this for you. You check it and send it.'}</p>
+ </div>;
+}
+
+// A to-do list Bear proposed: nothing is saved until she approves it. She can untick anything first.
+function ProposedList({a}:{a:MomentAction}){
+ const items=a.items||[];const [keep,setKeep]=useState<boolean[]>(items.map(()=>true));const [cur,setCur]=useState(a);const [busy,setBusy]=useState(false);const [err,setErr]=useState<string|null>(null);
+ async function answer(cancel:boolean){setBusy(true);setErr(null);try{const r=await apiSend<{action:MomentAction}>('/api/bear/moment/approve',{actionId:a.id,keep:keep.map((k,i)=>k?i:-1).filter(i=>i>=0),...(cancel?{cancel:true}:{})});setCur(r.action);}catch(e){setErr((e as Error).message);}finally{setBusy(false);}}
+ if(cur.state==='verified_success')return <div className="mc-card"><p className="mc-card-eyebrow">Saved in Bear Brain</p><ul className="mc-card-list">{(cur.items||[]).map((x,i)=><li key={i}>{x}</li>)}</ul><Link href="/bear/brain" className="mc-open">See it in Bear Brain <span aria-hidden="true">›</span></Link></div>;
+ if(cur.state==='cancelled')return <div className="mc-card"><p className="mc-card-sub">Not saved. That’s fine.</p></div>;
+ return <div className="mc-card"><p className="mc-card-eyebrow">Your list · check it before Bear saves it</p>
+  <ul className="mc-checks">{items.map((x,i)=><li key={i}><label><input type="checkbox" checked={keep[i]} onChange={e=>setKeep(k=>k.map((v,j)=>j===i?e.target.checked:v))}/><span>{x}</span></label></li>)}</ul>
+  <div className="mc-card-actions"><button type="button" className="btn coral sm" disabled={busy||!keep.some(Boolean)} onClick={()=>answer(false)}>{busy?'Saving…':`Save ${keep.filter(Boolean).length===items.length?'these':keep.filter(Boolean).length}`}</button><button type="button" className="btn quiet sm" disabled={busy} onClick={()=>answer(true)}>Not now</button></div>
+  {err&&<p className="mc-card-note" role="alert">{err}</p>}
  </div>;
 }

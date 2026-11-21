@@ -40,6 +40,13 @@ export function useSpeechInput({text,setText,focus}:{text:string;setText:(t:stri
  return {listening,canTalk,hint,toggle,cancel,clearHint:()=>setHint(null)};
 }
 
+// Bear's voice: a woman's voice with an Australian accent. Best first: the phone's better-quality Australian women's voices,
+// then any Australian woman's voice, then any Australian voice that isn't a known man's, then a British woman's voice.
+const AU_WOMEN=/karen|catherine|natasha|freya|elsie|matilda|annette|isla|female|woman/i,MEN=/\b(lee|gordon|william|james|daniel|oliver|male|man)\b/i,BETTER=/premium|enhanced|natural|neural|siri/i;
+export function pickVoice(voices:SpeechSynthesisVoice[]):SpeechSynthesisVoice|null{
+ const au=voices.filter(x=>/^en[-_]AU$/i.test(x.lang));const gb=voices.filter(x=>/^en[-_]GB$/i.test(x.lang));
+ return au.find(x=>AU_WOMEN.test(x.name)&&BETTER.test(x.name))||au.find(x=>AU_WOMEN.test(x.name))||au.find(x=>!MEN.test(x.name))||gb.find(x=>/female|serena|kate|stephanie|martha/i.test(x.name))||au[0]||null;
+}
 export function useSpeechOutput(){
  const [can,setCan]=useState(false);const [playing,setPlaying]=useState<string|null>(null);const [failed,setFailed]=useState<string|null>(null);
  useEffect(()=>{queueMicrotask(()=>setCan(typeof window!=='undefined'&&'speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined'));
@@ -51,9 +58,13 @@ export function useSpeechOutput(){
  const play=useCallback((id:string,text:string)=>{
   if(!can)return;try{window.speechSynthesis.cancel();}catch{/* none */}setFailed(null);
   const u=new SpeechSynthesisUtterance(text);u.lang='en-AU';u.rate=0.98;
-  const voices=window.speechSynthesis.getVoices();const v=voices.find(x=>x.lang==='en-AU'&&/karen|catherine|natural|premium|enhanced/i.test(x.name))||voices.find(x=>x.lang==='en-AU')||voices.find(x=>x.lang?.startsWith('en-GB'))||null;if(v)u.voice=v;
+  u.pitch=1.06;
   u.onend=()=>setPlaying(p=>p===id?null:p);u.onerror=e=>{setPlaying(p=>p===id?null:p);if((e as SpeechSynthesisErrorEvent).error!=='canceled'&&(e as SpeechSynthesisErrorEvent).error!=='interrupted')setFailed(id);};
-  setPlaying(id);window.speechSynthesis.speak(u);
+  setPlaying(id);
+  // Phones load their voices a moment after the page; wait briefly for them so the right voice is used from the first reply.
+  const go=()=>{const v=pickVoice(window.speechSynthesis.getVoices());if(v)u.voice=v;window.speechSynthesis.speak(u);};
+  if(window.speechSynthesis.getVoices().length)go();
+  else{let done=false;const once=()=>{if(done)return;done=true;go();};window.speechSynthesis.addEventListener('voiceschanged',once,{once:true});setTimeout(once,800);}
  },[can]);
  return {can,playing,failed,play,stop};
 }

@@ -1,12 +1,11 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import {json,readJson,withBear} from '@/lib/bear/server/context';
 import {ChatError,chatFromEnv,describeError} from '@/lib/bear/ai/chat';
-import {addTasksTool,runAddTasks} from '@/lib/bear/services/chat-tools';
 import {todayFor} from '@/lib/bear/services/sort-service';
 import {ensureProfile} from '@/lib/bear/services/profile';
 import {stamp} from '@/lib/bear/store/store';
 import type {AIInference} from '@/lib/bear/domain/types';
-import {DAILY_MOMENT_CHAT,SITTING_GAP_MS,contextTurns,draftMessage,findResponsibilities,loadConversation,momentSystemPrompt,momentTools,offlineReply,prepareHelp,saveConversation,sendSchema,suggestForTime,withSafety,type MomentAction,type MomentMessage} from '@/lib/bear/services/moment-chat';
+import {DAILY_MOMENT_CHAT,SITTING_GAP_MS,contextTurns,draftMessage,feelingsOnly,findResponsibilities,proposeTasks,loadConversation,momentSystemPrompt,momentTools,offlineReply,prepareHelp,saveConversation,sendSchema,suggestForTime,withSafety,type MomentAction,type MomentMessage} from '@/lib/bear/services/moment-chat';
 export const dynamic='force-dynamic';
 export const maxDuration=120;
 // Got a Moment?: the one entry point for talking to Bear. The conversation is private to the person (kept on her own
@@ -40,11 +39,13 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
  const {today,children}=await todayFor(store);const profile=await ensureProfile(store);
  const weekday=new Date(`${today}T12:00:00`).toLocaleDateString('en-AU',{weekday:'long'});
  const ctx={today,weekday,name:(profile.name||'').split(/\s+/)[0]||'',children};
- const chat=chatFromEnv([...momentTools,addTasksTool] as unknown as Anthropic.Beta.BetaToolUnion[],{system:momentSystemPrompt(ctx),web:false});
+ // When she is talking about how she feels (and asking for nothing practical), Bear has no tools: no list or card comes back.
+ const quiet=feelingsOnly(text);
+ const chat=chatFromEnv((quiet?[]:momentTools) as unknown as Anthropic.Beta.BetaToolUnion[],{system:momentSystemPrompt(ctx)+(quiet?'\nRight now she is talking about how she feels. Respond to that only, briefly and kindly. No tasks, lists, plans or offers of help with tasks.':''),web:false});
  const since=Date.now()-24*3600000;
  const used=chat?(await store.list('ai_inferences',{where:[{column:'service',value:'MomentChat'}]})).filter(i=>Date.parse(i.createdAt)>=since).length:0;
  if(!chat||used>=DAILY_MOMENT_CHAT){const o=await offlineReply(store,text,now);return reply(o.text,o.actions);}
- const actions:MomentAction[]=[];const started=Date.now();const said=convo.map(m=>m.text).join('\n');
+ const actions:MomentAction[]=[];const started=Date.now();
  try{
   const r=await chat(contextTurns(convo),ctx,async(name,input)=>{
    const i=(input||{}) as Record<string,unknown>;
@@ -52,7 +53,7 @@ export const POST=(req:Request)=>withBear(req,async({store,provider})=>{
    if(name==='suggest_for_time'){const o=await suggestForTime(store,Number(i.minutes),now);actions.push(...o.actions);return o.result;}
    if(name==='prepare_help'){const o=await prepareHelp(store,provider,i.task_id,now);actions.push(...o.actions);return o.result;}
    if(name==='draft_message'){const o=await draftMessage(store,input);actions.push(...o.actions);return o.result;}
-   if(name==='add_tasks'){const o=await runAddTasks(store,input,said,today,children,now);if(o.items.length)actions.push({id:`a-${id}`,kind:'added',state:'verified_success',taskId:o.items[0].taskId,title:o.items.length===1?o.items[0].title:`${o.items.length} things saved`,detail:'Saved in Bear Brain',items:o.items.map(x=>x.title)});return o.result;}
+   if(name==='propose_tasks'){const o=proposeTasks(input);actions.push(...o.actions);return o.result;}
    return 'Unknown tool.';
   });
   await store.insert('ai_inferences',stamp<AIInference>(store.userId,{captureId:null,service:'MomentChat',provider:'anthropic',model:r.model,promptHash:'moment-1',rawOutput:{tools:r.toolCalls.map(c=>c.name),actions:actions.map(a=>a.kind)},latencyMs:Date.now()-started,ok:true,error:null,usage:r.usage}));
