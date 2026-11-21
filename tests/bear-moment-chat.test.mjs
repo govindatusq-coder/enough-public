@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {MemoryBackend} from '../lib/bear/store/memory.ts';
 import {ensureProfile,saveProfile} from '../lib/bear/services/profile.ts';
 import {unload,openTasks} from '../lib/bear/board/service.ts';
-import {momentSystemPrompt,momentTools,needsSafety,withSafety,SAFETY_LINE,minutesIn,offlineReply,findResponsibilities,suggestForTime,prepareHelp,draftMessage,loadConversation,saveConversation,contextTurns,sendSchema,KEEP_MESSAGES,CONTEXT_MESSAGES} from '../lib/bear/services/moment-chat.ts';
+import {describeAction,momentSystemPrompt,momentTools,needsSafety,withSafety,SAFETY_LINE,minutesIn,offlineReply,findResponsibilities,suggestForTime,prepareHelp,draftMessage,loadConversation,saveConversation,contextTurns,sendSchema,KEEP_MESSAGES,CONTEXT_MESSAGES} from '../lib/bear/services/moment-chat.ts';
 import {structuredOutputSchema} from '../lib/bear/ai/schema-subset.ts';
 
 const MON=new Date('2026-11-16T10:00:00+11:00');
@@ -62,4 +62,9 @@ test('the conversation is kept privately on her own profile, capped, and Bear re
  assert.deepEqual(contextTurns(old).map(t=>t.content),['today'],'a long gap starts a new sitting');
  assert.ok(contextTurns(msgs).length<=CONTEXT_MESSAGES);assert.equal(contextTurns(msgs)[0].role,'user');
  assert.ok(sendSchema.safeParse({id:'m-abc12345',text:'hi'}).success);assert.ok(!sendSchema.safeParse({id:'x',text:'hi'}).success);assert.ok(!sendSchema.safeParse({id:'m-abc12345',text:'  '}).success);
+});
+test('Bear remembers what its cards were, so it never doubts a draft it really made',()=>{
+ const msgs=[{id:'m-aaaaaaa1',role:'user',at:'2026-11-16T09:00:00Z',text:'Can you draft a text to James?'},{id:'b-aaaaaaa1',role:'bear',at:'2026-11-16T09:00:05Z',text:'Done, it’s below.',actions:[{id:'d-1',kind:'draft',state:'ready_for_review',taskId:'11111111-1111-4111-8111-111111111111',title:'Return the form',detail:null,draft:{channel:'sms',to:'James',subject:'',body:'Hi'}}]}];
+ const t=contextTurns(msgs);assert.match(t[1].content,/\[Shown under this message: a text draft to James for her to check and send herself \(not sent\)\.\]/);
+ assert.match(describeAction({id:'s',kind:'suggestion',state:'proposed',taskId:'22222222-2222-4222-8222-222222222222',title:'Review gifts',detail:null}),/task_id 2222/);
 });

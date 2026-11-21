@@ -50,7 +50,8 @@ What you can do (only through the tools; never claim anything else happened):
 - prepare_help: do Bear's part of a task's next step (a shopping list, a draft, steps, a shortlist). This only prepares; nothing is sent, booked or bought.
 - draft_message: write a message for her to review (to a school, a partner, a business). Bear cannot send email or texts: she sends it herself. A message to her partner contains only the practical request, never anything private she has told you.
 - add_tasks: save something new to remember, only when she asks or agrees.
-The app shows what a tool returns as a card under your message, so do not repeat its details. Say in one short line what you did. Never say something was sent, booked, paid, shared or arranged unless a tool result says it was confirmed.`;
+The app shows what a tool returns as a card under your message, so do not repeat its details. Say in one short line what you did. Never say something was sent, booked, paid, shared or arranged unless a tool result says it was confirmed.
+A note in square brackets after one of your earlier messages records what the app really showed under it; trust it and never write such notes yourself.`;
 
 // ---------- tools (the adapter onto the responsibility engine) ----------
 const t=(name:string,description:string,properties:Record<string,unknown>,required:string[])=>({name,description,strict:true,input_schema:{type:'object',additionalProperties:false,required,properties}});
@@ -125,9 +126,19 @@ export async function saveConversation(store:BearStore,messages:MomentMessage[])
  await store.update('profiles',p.id,{momentChat:{messages:messages.slice(-KEEP_MESSAGES),updatedAt:new Date().toISOString()}});
 }
 // The turns Bear reads back: the current sitting only (a long gap starts a new one), at most CONTEXT_MESSAGES.
+// What a card under one of Bear's messages was, in a line, so Bear remembers what it really did (and never doubts it).
+export function describeAction(a:MomentAction):string{
+ const id=a.taskId?` (task_id ${a.taskId})`:'';
+ if(a.kind==='draft')return `a ${a.draft?.channel==='sms'?'text':'email'} draft${a.draft?.to?` to ${a.draft.to}`:''} for her to check and send herself (not sent)`;
+ if(a.kind==='suggestion')return `a suggestion: "${a.title}"${id}`;
+ if(a.kind==='prepared')return `prepared "${a.detail||a.title}" for "${a.title}"${id}, ready for her to check`;
+ if(a.kind==='added')return `saved to Bear Brain: ${(a.items||[a.title]).map(x=>`"${x}"`).join(', ')}`;
+ return `her task "${a.title}"${id}`;
+}
 export function contextTurns(messages:MomentMessage[]):{role:'user'|'assistant';content:string}[]{
  let start=0;for(let i=1;i<messages.length;i++)if(Date.parse(messages[i].at)-Date.parse(messages[i-1].at)>SITTING_GAP_MS)start=i;
- const turns=messages.slice(start).slice(-CONTEXT_MESSAGES).map(m=>({role:m.role==='user'?'user' as const:'assistant' as const,content:(m.text||'').slice(0,2000)}));
+ const turns=messages.slice(start).slice(-CONTEXT_MESSAGES).map(m=>({role:m.role==='user'?'user' as const:'assistant' as const,
+  content:((m.text||'').slice(0,2000)+(m.role==='bear'&&m.actions?.length?`\n\n[Shown under this message: ${m.actions.map(describeAction).join('; ')}.]`:''))}));
  while(turns.length&&turns[0].role!=='user')turns.shift();
  return turns.filter(x=>x.content.trim());
 }
