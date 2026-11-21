@@ -69,18 +69,27 @@ try{
   await p.click('button:has-text("I’ve ordered it")');await p.waitForSelector('.v2-status:has-text("Waiting for delivery")');assert.match(await p.textContent('main'),/Bear will check back then/);
   await p.click('button:has-text("It’s arrived")');await p.waitForSelector('text=Done.');assert.equal((await p.textContent('.v2-status')).trim(),'Completed');
  });
- await step('Got a Moment?: pick 10 min, one recommendation with a real reason, active time, Give it to Bear, See All Tasks',async()=>{
-  await p.click('.bear-nav a[href="/bear/moment"]');await p.waitForSelector('.v2-pill');
-  assert.equal((await p.textContent('.v2-hello')).trim(),'Got a moment?');assert.equal((await p.textContent('.v2-sub')).trim(),'How much time do you have right now?');
-  assert.deepEqual(await p.$$eval('.v2-pill',e=>e.map(x=>x.textContent)),['5 min','10 min','20 min','Some time']);
-  await p.click('.v2-pill:has-text("10 min")');await p.waitForSelector('.v2-reco .v2-reco-title');
-  assert.equal(await p.getAttribute('.v2-pill:has-text("10 min")','aria-checked'),'true');assert.equal(await p.$$eval('.v2-pill[aria-checked="true"]',e=>e.length),1);
-  assert.equal((await p.textContent('.v2-label')).trim(),'Worth doing now');assert.equal((await p.textContent('.v2-reco-title')).trim(),'Review Christmas gift shortlist');
-  assert.match(await p.textContent('.v2-reco-time'),/^Takes about 5 minutes\.$/);assert.match(await p.textContent('.v2-reco-why'),/Choosing a few now could avoid last-minute shopping/);
-  assert.ok(await p.$('a.v2-see-all[href="/bear/brain"]'));await shot('v04-moment');
-  const first=await p.textContent('.v2-reco-title');await p.click('button:has-text("Something else")');await p.waitForFunction(t=>document.querySelector('.v2-reco-title')?.textContent!==t,first);
-  await p.click('.v2-pill:has-text("10 min")');await p.waitForSelector('.v2-reco-title:has-text("Review Christmas gift shortlist")');
-  await p.click('button:has-text("Give it to Bear")');await p.waitForURL(/\/bear\/brain\/[0-9a-f-]{36}$/);await p.waitForSelector('text=Christmas gift shortlist');
+ await step('Got a Moment?: one invitation and one box; the first message becomes a chat in place; a time finds one thing; Give it to Bear',async()=>{
+  await p.click('.bear-nav a[href="/bear/moment"]');await p.waitForSelector('.mc-idle');
+  assert.equal((await p.textContent('.mc-title')).trim(),'Got a moment?');assert.equal((await p.textContent('.mc-prompt')).trim(),'How’s your day going?');
+  assert.equal(await p.getAttribute('#mc-text','placeholder'),'Whatever’s on your mind…');
+  assert.equal(await p.$$eval('textarea',e=>e.length),1,'exactly one box');
+  for(const none of ['.v2-pill','.v2-more-chip','.v2-reco','.chip'])assert.equal(await p.$$eval(none,e=>e.length),0,`no ${none} on the opening screen`);
+  assert.equal(await p.getAttribute('.bear-nav a[href="/bear/moment"]','aria-current'),'page');await shot('v04-moment');
+  // What she's typing survives leaving and coming back.
+  await p.fill('#mc-text','I’ve got 10 minutes');await p.click('.bear-nav a[href="/bear/brain"]');await p.waitForSelector('.v2-brain-head');
+  await p.click('.bear-nav a[href="/bear/moment"]');await p.waitForSelector('.mc-idle');assert.equal(await p.inputValue('#mc-text'),'I’ve got 10 minutes');
+  await p.click('.mc-send');await p.waitForSelector('.mc-chat .mc-bubble.you:has-text("10 minutes")');
+  assert.ok(p.url().endsWith('/bear/moment'),'no route jump');assert.equal(await p.inputValue('#mc-text'),'','the box is ready for the next message');
+  await p.waitForSelector('.mc-bubble.mc-b:has-text("Here’s one thing that fits.")');
+  assert.equal((await p.textContent('.mc-card .v2-label')).trim(),'Worth doing now');assert.equal((await p.textContent('.mc-card .mc-card-title')).trim(),'Review Christmas gift shortlist');
+  assert.match(await p.textContent('.mc-card'),/Takes about 5 minutes\./);assert.match(await p.textContent('.mc-card'),/Choosing a few now could avoid last-minute shopping/);
+  assert.equal((await p.textContent('.mc-who strong')).trim(),'Bear');assert.equal((await p.textContent('.mc-who span')).trim(),'Here with you');await shot('v04b-moment-chat');
+  // Without the AI, Bear says so plainly instead of pretending to chat.
+  await p.fill('#mc-text','Rough day');await p.click('.mc-send');await p.waitForSelector('.mc-bubble.mc-b:has-text("thinking service isn’t connected")');
+  // Away and back: the conversation is still there.
+  await p.click('.bear-nav a[href="/bear/home"]:not(.nav-brand)');await p.waitForSelector('#dump-text');await p.click('.bear-nav a[href="/bear/moment"]');await p.waitForSelector('.mc-chat .mc-bubble.you:has-text("Rough day")');
+  await p.click('.mc-card button:has-text("Give it to Bear")');await p.waitForURL(/\/bear\/brain\/[0-9a-f-]{36}$/);await p.waitForSelector('text=Christmas gift shortlist');
   assert.match(await p.textContent('main'),/Sarah: \(add a few ideas\)/);assert.match(await p.textContent('main'),/Needed by .*Christmas; change it if you celebrate earlier/);
  });
  await step('Bear Brain: title, All Tasks count, Priority Actions, the six categories in order with counts',async()=>{
@@ -116,7 +125,9 @@ try{
  });
  await step('Got a Moment? with nothing that fits says so honestly, no busywork',async()=>{
   const ctx2=await browser.newContext({viewport:{width:390,height:844}});const q=await ctx2.newPage();
-  await q.goto(base+'/bear/moment');await q.click('.v2-pill:has-text("5 min")');await q.waitForSelector('.v2-reco');assert.ok((await q.textContent('.v2-reco')).length>0);await ctx2.close();
+  await q.goto(base+'/bear/moment');await q.waitForSelector('.mc-idle,.mc-chat');const before=await q.$$eval('.mc-bubble.mc-b',e=>e.length);
+  await q.fill('#mc-text','I have 5 minutes');await q.click('.mc-send');await q.waitForFunction(n=>document.querySelectorAll('.mc-bubble.mc-b').length>n,before);
+  const last=await q.$$eval('.mc-bubble.mc-b',e=>e.at(-1).textContent.trim());assert.ok(last.length>0,'Bear answers, even when nothing fits');await ctx2.close();
  });
  await step('desktop: three tabs in a sidebar, Bear Brain readable, no sideways scroll',async()=>{
   await p.setViewportSize({width:1280,height:900});await p.goto(base+'/bear/brain');await p.waitForSelector('.v2-cat');

@@ -86,6 +86,8 @@ export interface Profile extends Owned{
  household?:{id:string;name:string;email:string|null;phone:string|null;joined?:boolean}[];
  // What Bear has learned about how she likes to do things (from her own choices), and the last few suggestions with why.
  preferences?:import('../rre/prefs.ts').UserPreference[];rreLast?:{taskId:string;minutes:number;at:string}|null;rreTrace?:import('../rre/decide.ts').Trace[];
+ // Got a Moment? conversation: private to this person (never on anything shared with the household).
+ momentChat?:{messages:import('../services/moment-chat.ts').MomentMessage[];updatedAt:string}|null;
  // Set when the person opened a sign-in link sent to their email: proof they own the address.
  emailVerifiedAt?:ISODateTime|null;
  // What matters to this person: values, goals, responsibilities, non-negotiables (editable).

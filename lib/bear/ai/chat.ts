@@ -13,9 +13,10 @@ export function describeError(e:unknown):string{
  if(e instanceof Error)return `${e.name}: ${e.message.slice(0,200)}`;return 'unknown error';
 }
 export type ToolRunner=(name:string,input:unknown)=>Promise<string>;
-export function chatFromEnv(tools:Anthropic.Beta.BetaToolUnion[]):((history:ChatTurn[],ctx:ChatContext,run:ToolRunner)=>Promise<ChatResult>)|null{
+// `system` replaces the Drop Bear chat instructions (Got a Moment? brings its own); `web` false leaves out web search.
+export function chatFromEnv(tools:Anthropic.Beta.BetaToolUnion[],opts:{system?:string;web?:boolean}={}):((history:ChatTurn[],ctx:ChatContext,run:ToolRunner)=>Promise<ChatResult>)|null{
  const key=process.env.ANTHROPIC_API_KEY;if(!key)return null;
- const model=process.env.BEAR_MODEL||'claude-opus-5-5';const web=process.env.BEAR_WEB_LOOKUP!=='off';
+ const model=process.env.BEAR_MODEL||'claude-opus-5-5';const web=process.env.BEAR_WEB_LOOKUP!=='off'&&opts.web!==false;
  const all:Anthropic.Beta.BetaToolUnion[]=[...tools,...(web?[{type:'web_search_20260209',name:'web_search',max_uses:3,user_location:{type:'approximate',country:'AU'}},{type:'web_fetch_20260209',name:'web_fetch',max_uses:2,max_content_tokens:40000}] as Anthropic.Beta.BetaToolUnion[]:[])];
  return async(history,ctx,run)=>{
   const client=new Anthropic({apiKey:key,maxRetries:1,timeout:110_000});
@@ -26,7 +27,7 @@ export function chatFromEnv(tools:Anthropic.Beta.BetaToolUnion[]):((history:Chat
   const ask=async(msgs:Anthropic.Beta.BetaMessageParam[]):Promise<Anthropic.Beta.BetaMessage>=>{
    for(;;){
     try{
-     const base={model,max_tokens:4000,system:chatSystemPrompt(ctx),output_config:{effort:'low' as const},tool_choice:{type:'auto' as const},messages:msgs};
+     const base={model,max_tokens:4000,system:opts.system??chatSystemPrompt(ctx),output_config:{effort:'low' as const},tool_choice:{type:'auto' as const},messages:msgs};
      if(level===0)return await client.beta.messages.create({...base,betas:['server-side-fallback-2026-07-01'],fallbacks:'default',tools:all});
      if(level===1)return await client.beta.messages.create({...base,tools:all});
      return await client.beta.messages.create({...base,tools:plain(all)});
