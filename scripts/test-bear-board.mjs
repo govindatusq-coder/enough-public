@@ -125,9 +125,9 @@ try{
  });
  await step('Got a Moment? with nothing that fits says so honestly, no busywork',async()=>{
   const ctx2=await browser.newContext({viewport:{width:390,height:844}});const q=await ctx2.newPage();
-  await q.goto(base+'/bear/moment');await q.waitForSelector('.mc-idle,.mc-chat');const before=await q.$$eval('.mc-bubble.mc-b',e=>e.length);
-  await q.fill('#mc-text','I have 5 minutes');await q.click('.mc-send');await q.waitForFunction(n=>document.querySelectorAll('.mc-bubble.mc-b').length>n,before);
-  const last=await q.$$eval('.mc-bubble.mc-b',e=>e.at(-1).textContent.trim());assert.ok(last.length>0,'Bear answers, even when nothing fits');await ctx2.close();
+  await q.goto(base+'/bear/moment');await q.waitForSelector('.mc-idle,.mc-chat');const before=await q.$$eval('.mc-bubble.mc-b:not(.mc-typing)',e=>e.length);
+  await q.fill('#mc-text','I have 5 minutes');await q.click('.mc-send');await q.waitForFunction(n=>document.querySelectorAll('.mc-bubble.mc-b:not(.mc-typing)').length>n,before);
+  const last=await q.$$eval('.mc-bubble.mc-b:not(.mc-typing)',e=>e.at(-1).textContent.trim());assert.ok(last.length>0,'Bear answers, even when nothing fits');await ctx2.close();
  });
  await step('desktop: three tabs in a sidebar, Bear Brain readable, no sideways scroll',async()=>{
   await p.setViewportSize({width:1280,height:900});await p.goto(base+'/bear/brain');await p.waitForSelector('.v2-cat');
