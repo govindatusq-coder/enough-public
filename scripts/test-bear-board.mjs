@@ -129,6 +129,27 @@ try{
   await q.fill('#mc-text','I have 5 minutes');await q.click('.mc-send');await q.waitForFunction(n=>document.querySelectorAll('.mc-bubble.mc-b:not(.mc-typing)').length>n,before);
   const last=await q.$$eval('.mc-bubble.mc-b:not(.mc-typing)',e=>e.at(-1).textContent.trim());assert.ok(last.length>0,'Bear answers, even when nothing fits');await ctx2.close();
  });
+ await step('Share Bear by text: ask from the task, exact preview, test-mode send, Daniel answers without an account, she hears back, done',async()=>{
+  await api('/api/bear/board/dump',{text:'Pick up Ella’s birthday cake on Friday before 3 pm',via:'text'});
+  const bd=(await api('/api/bear/board',null,'GET')).board;const task=[...bd.inbox,...Object.values(bd.byList).flat()].find(t=>/cake/.test(t.title));
+  await p.goto(base+'/bear/brain/'+task.id);await p.click('.sb-entry');await p.waitForSelector('.sb-h:has-text("Who can help with this?")');
+  await p.click('button:has-text("Enter mobile number")');await p.fill('.sb-field:has-text("Their name") input','Daniel');await p.fill('.sb-field:has-text("Mobile number") input','0412 345');
+  await p.click('.sb-actions button:has-text("Next")');await p.waitForSelector('.sb-sheet .note.coral');assert.match(await p.textContent('.sb-sheet .note.coral'),/Australian mobile|Check the number/);
+  await p.fill('.sb-field:has-text("Mobile number") input','0412 345 678');await p.click('.sb-actions button:has-text("Next")');await p.waitForSelector('.sb-h:has-text("Ask Daniel for help?")');
+  await p.click('.sb-exact summary');const exact=await p.textContent('.sb-exact p');assert.match(exact,/^🐻 Sarah wants your help with this:\nPick up Ella’s birthday cake on Friday before 3 pm\.\nCan you take care of it\?/);
+  assert.ok(await p.isVisible('text=Test mode: no real text will be sent.'));await shot('v07-sharebear-preview');
+  await p.click('button:has-text("Send request")');await p.waitForSelector('.sb-testlink');const link=await p.getAttribute('.sb-testlink','href');
+  await p.click('.sb-actions button:has-text("Done")');await p.waitForSelector('.sb-panel:has-text("Waiting")');assert.equal(await p.$$eval('.sb-entry',e=>e.length),0,'no second request while one is out');
+  const c3=await browser.newContext({viewport:{width:375,height:667},isMobile:true,hasTouch:true});const q=await c3.newPage();
+  await q.goto(link);await q.waitForSelector('.hr-h');assert.equal((await q.textContent('.hr-h')).trim(),'🐻 Sarah needs a hand');
+  assert.ok((await q.$$eval('.hr-btn',e=>e.map(x=>x.getBoundingClientRect().height))).every(h=>h>=44),'big enough to tap');
+  await q.click('button:has-text("Yes, I’ll do it")');await q.waitForSelector('.hr-h:has-text("You’ve got this!")');assert.ok(await q.isVisible('a:has-text("Get Load Bear")'));
+  await p.goto(base+'/bear/home');await p.waitForSelector('.note.teal:has-text("Daniel’s got this!")');
+  await p.goto(base+'/bear/brain');await p.click('.v2-fold-head:has-text("Shared with others")');await p.waitForSelector('.v2-prow:has-text("Daniel")');
+  await q.reload();await q.click('button:has-text("Mark as done")');await q.click('button:has-text("Yes, it’s done")');await q.waitForSelector('.hr-h:has-text("All taken care of!")');
+  await p.goto(base+'/bear/brain/'+task.id);await p.waitForSelector('.sb-panel:has-text("Bear hasn’t checked it")');
+  const q2=await c3.newPage();await q2.goto(base+'/bear/r/'+'A'.repeat(43));await q2.waitForSelector('.hr-h');assert.equal((await q2.textContent('.hr-h')).trim(),'This request is no longer active.');await c3.close();
+ });
  await step('desktop: three tabs in a sidebar, Bear Brain readable, no sideways scroll',async()=>{
   await p.setViewportSize({width:1280,height:900});await p.goto(base+'/bear/brain');await p.waitForSelector('.v2-cat');
   const nav=await p.$eval('.bear-nav .bar',e=>{const r=e.getBoundingClientRect();return {left:r.left,width:r.width,height:r.height};});assert.ok(nav.left<40&&nav.width<260&&nav.height>500,JSON.stringify(nav));

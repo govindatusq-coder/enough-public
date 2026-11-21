@@ -152,7 +152,7 @@ function detailFrom(t:Task,plan:Plan,ctx:Ctx){
   next:n?{text:n.step.text,minutes:n.step.userMinutes,needsBear:n.needsBear}:null,current:currentStep(plan),
   prepared:plan.execution.prepared,log:plan.execution.log,dependencies:plan.dependencies,opportunities:plan.opportunities,
   alternatives:plan.pathways.filter(p=>p.id!==path.id).map(p=>({id:p.id,label:p.label,description:p.description,minutes:p.userMinutes,feasibility:p.feasibility,why:p.why})),
-  executionState:plan.execution.state,taskStatus:t.status};
+  executionState:plan.execution.state,taskStatus:t.status,dueAt:t.dueAt||null,dueTime:t.dueTime||null,delegation:t.delegation||null};
 }
 export async function detailView(store:BearStore,taskId:string,now=new Date()){
  const t=await store.get('tasks',taskId);if(!t)throw new Error('not_found');const ctx=await ctxOf(store,now);

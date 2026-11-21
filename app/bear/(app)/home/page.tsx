@@ -35,12 +35,12 @@ function Working({kind,count}:{kind:'photo'|'text';count:number}){
 export default function DropBear(){
  const router=useRouter();const online=useOnline();
  const [name,setName]=useState<string|null>(null);const [hour,setHour]=useState(9);const [error,setError]=useState<string|null>(null);
- const [notices,setNotices]=useState<{id:string;text:string}[]>([]);const [due,setDue]=useState<Due[]>([]);const delivered=useRef(new Set<string>());
+ const [notices,setNotices]=useState<{id:string;text:string;taskId?:string;delegationId?:string}[]>([]);const [due,setDue]=useState<Due[]>([]);const delivered=useRef(new Set<string>());
  const [ack,setAck]=useState<Ack|null>(null);const [allShown,setAllShown]=useState(false);const [typing,setTyping]=useState(false);const [count,setCount]=useState(1);
  const fresh=()=>{setAck(null);setAllShown(false);window.scrollTo({top:0,behavior:'smooth'});};const [filesBusy,setFilesBusy]=useState(false);const [giving,setGiving]=useState(false);
  const working=filesBusy?'photo':typing?'text':null;
  const [toast,setToast]=useState<string|null>(null);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);
- const load=useCallback(()=>Promise.race([apiGet<{onboarding?:boolean;board?:{name:string};notices?:{id:string;text:string}[];due?:Due[]}>('/api/bear/board'),new Promise<never>((_,no)=>setTimeout(()=>no(new Error('Bear is taking too long to answer. Check your connection and try again.')),20000))]).then(r=>{
+ const load=useCallback(()=>Promise.race([apiGet<{onboarding?:boolean;board?:{name:string};notices?:{id:string;text:string;taskId?:string;delegationId?:string}[];due?:Due[]}>('/api/bear/board'),new Promise<never>((_,no)=>setTimeout(()=>no(new Error('Bear is taking too long to answer. Check your connection and try again.')),20000))]).then(r=>{
   if(r.onboarding){router.replace('/bear/onboarding');return;}setName(r.board?.name||'');setNotices(r.notices||[]);setDue(r.due||[]);setError(null);
   for(const d of r.due||[]){if(delivered.current.has(d.reminderId))continue;delivered.current.add(d.reminderId);const href=d.billId?`/bear/bills/${d.billId}?reminder=${d.reminderId}`:`/bear/brain/${d.taskId}`;
    apiSend('/api/bear/reminders/delivered',{reminderId:d.reminderId,via:'in_app'}).catch(()=>{});showLocalReminder(d.reminderId,d.message,href).then(ok=>{if(ok)apiSend('/api/bear/reminders/delivered',{reminderId:d.reminderId,via:'local'}).catch(()=>{});}).catch(()=>{});}
@@ -102,7 +102,7 @@ export default function DropBear(){
    </div>
   </section>}
   {due.map(d=><Link key={d.reminderId} href={d.billId?`/bear/bills/${d.billId}?reminder=${d.reminderId}`:`/bear/brain/${d.taskId}`} className="note teal" role="status" style={{display:'block',marginTop:12}}>🔔 {d.message}</Link>)}
-  {notices.map(n=><p key={n.id} className="note teal" role="status" style={{marginTop:12}}>{n.text} <Link href="/bear/shared" className="link-btn" onClick={()=>apiSend('/api/bear/shares/seen',{}).catch(()=>{})}>See</Link></p>)}
+  {notices.map(n=><p key={n.id} className="note teal" role="status" style={{marginTop:12}}>{n.text} {n.delegationId?<Link href={`/bear/brain/${n.taskId}`} className="link-btn" onClick={()=>apiSend(`/api/bear/share-bear/${n.delegationId}`,{action:'seen'}).catch(()=>{})}>See</Link>:<Link href="/bear/shared" className="link-btn" onClick={()=>apiSend('/api/bear/shares/seen',{}).catch(()=>{})}>See</Link>}</p>)}
   {toast&&<div className="undo-toast glass-strong" role="status"><span>{toast}</span></div>}
  </main>;
 }

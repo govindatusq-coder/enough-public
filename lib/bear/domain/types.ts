@@ -83,7 +83,7 @@ export interface Profile extends Owned{
  listLearning?:{word:string;listId:string;n:number;at:ISODateTime}[];
  // The people she shares with (Share Bear). Email and phone are optional and only used to open her own Mail or Messages
  // with the link filled in. joined: they have accepted a share, so they have Load Bear.
- household?:{id:string;name:string;email:string|null;phone:string|null;joined?:boolean}[];
+ household?:{id:string;name:string;email:string|null;phone:string|null;joined?:boolean;lastUsedAt?:string}[];
  // What Bear has learned about how she likes to do things (from her own choices), and the last few suggestions with why.
  preferences?:import('../rre/prefs.ts').UserPreference[];rreLast?:{taskId:string;minutes:number;at:string}|null;rreTrace?:import('../rre/decide.ts').Trace[];
  // Got a Moment? conversation: private to this person (never on anything shared with the household).
@@ -220,7 +220,9 @@ export interface Task extends Owned{projectId:Id;kind:TaskKind;title:string;stat
  // Responsibility Resolution Engine: Bear's plan for this responsibility (outcome, ways to do it, deadlines, progress), and
  // the way she chose herself, which Bear never overrides.
  rre?:import('../rre/plan.ts').Plan|null;rreChoice?:string|null;
- sharedOut?:{shareId:Id;mode:'info'|'action'|'transfer';to:string}|null;sharedIn?:{shareId:Id;mode:'info'|'action'|'transfer';from:string}|null;
+ sharedOut?:{shareId:Id;mode:'info'|'action'|'transfer';to:string}|null;
+ // Share Bear by text: who has been asked to help, and where that stands (the details live in the delegation record).
+ delegation?:{id:Id;to:string;status:import('../sharebear/core.ts').DStatus;at:string}|null;sharedIn?:{shareId:Id;mode:'info'|'action'|'transfer';from:string}|null;
  prepared?:{actionType:string;member:string|null;work:string;blocker:string|null;confidence:number;payload:{email:{to:string|null;subject:string;body:string}|null;sms:{to:string|null;body:string}|null;calendar_hold:{title:string;start:string;end:string|null;all_day:boolean;location:string|null}|null;shopping_list:string[]|null;steps:string[]|null}}|null}
 export interface TaskDependency extends Owned{taskId:Id;dependsOnTaskId:Id}
 

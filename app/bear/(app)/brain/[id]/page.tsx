@@ -7,6 +7,7 @@ import {formatAU} from '@/lib/bear/domain/dates';
 import {mailtoFor,smsFor} from '@/lib/bear/board/help';
 import type {BearList} from '@/lib/bear/board/logic';
 import {ErrorCard,Skeleton,TopBar} from '@/components/bear/ui';
+import {DelegationPanel,ShareBearSheet,useShareBear} from '@/components/bear/share-bear';
 
 type Detail=Awaited<ReturnType<typeof import('@/lib/bear/rre/service').detailView>>;
 // What her button says for each kind of step.
@@ -17,21 +18,33 @@ export default function ResponsibilityPage({params}:{params:Promise<{id:string}>
  const [d,setD]=useState<Detail|null>(null);const [lists,setLists]=useState<BearList[]>([]);const [err,setErr]=useState<string|null>(null);const [busy,setBusy]=useState<string|null>(null);const [saved,setSaved]=useState<string|null>(null);
  const load=useCallback(()=>Promise.all([apiGet<Detail>(`/api/bear/rre/${id}`),apiGet<{lists:BearList[]}>('/api/bear/board/lists')]).then(([x,l])=>{setD(x);setLists(l.lists);setErr(null);}).catch(e=>setErr((e as Error).message)),[id]);
  useEffect(()=>{load();},[load]);
+ const sb=useShareBear();const [asking,setAsking]=useState<{preset:{name:string;phone:string}|null}|null>(null);
+ // When Share Bear news has just updated this task (an answer, a "done"), show the task as it is now.
+ const sbStatus=sb.state?.requests.find(r=>r.taskId===id)?.status;useEffect(()=>{if(sbStatus&&d?.delegation&&d.delegation.status!==sbStatus)load();},[sbStatus]);// eslint-disable-line react-hooks/exhaustive-deps
  async function act(key:string,path:string,body:unknown,after?:string){setBusy(key);setErr(null);try{setD(await apiSend<Detail>(path,body));if(after)setSaved(after);}catch(e){setErr((e as Error).message);}finally{setBusy(null);}}
  async function classify(listId:string){setBusy('cat');try{await apiSend(`/api/bear/board/tasks/${id}/move`,{listId});await load();setSaved('Category changed. Bear will remember where you put things like this.');}catch(e){setErr((e as Error).message);}finally{setBusy(null);}}
  if(err&&!d)return <main id="main" className="bear-screen"><TopBar back={{href:'/bear/brain',label:'Bear Brain'}}/><ErrorCard message={err} retry={load}/></main>;
  if(!d)return <main id="main" className="bear-screen"><Skeleton/></main>;
  const cur=d.current;const done=d.taskStatus==='done'||d.status==='completed';
+ // Share Bear: the request this task is linked to (if any), and whether someone is helping with it right now.
+ const req=d.delegation?sb.state?.requests.find(r=>r.id===d.delegation!.id)||null:null;
+ const helping=!!req&&['PENDING_SEND','SENT','ACCEPTED'].includes(req.status);
+ const refresh=()=>{load();sb.reload();};
  return <main id="main" className="bear-screen v2-screen">
   <TopBar back={{href:'/bear/brain',label:'Bear Brain'}}/>
   <p className={`v2-status s-${d.status}`}>{d.statusLabel}</p>
   <h1 className="v2-detail-title">{d.title}</h1>
+  {!done&&!helping&&<p className="sb-entry-row"><button type="button" className="sb-entry" onClick={()=>setAsking({preset:null})}><span aria-hidden="true">🐻</span> Share Bear</button></p>}
   {saved&&<p className="note teal" role="status" style={{marginTop:10}}>{saved}</p>}
+  {req&&<DelegationPanel r={req} onChanged={refresh} askAgain={preset=>setAsking({preset})}/>}
+  {asking&&<ShareBearSheet task={{id:d.id,title:d.title,due:d.dueAt||d.deadlines.outcome,dueTime:d.dueTime}} state={sb.state} preset={asking.preset} onClose={()=>setAsking(null)} onDone={refresh}/>}
   {err&&<p className="note coral" role="alert" style={{marginTop:10}}>{err}</p>}
 
   <section className="v2-card v2-sec"><h2 className="v2-h3">What needs to happen</h2><p>{d.outcome}</p>{d.original&&d.original!==d.title&&<p className="tiny muted" style={{marginTop:4}}>You said: “{d.original}”</p>}</section>
 
-  {!done&&<section className="v2-card v2-sec v2-next" aria-labelledby="next-h"><h2 id="next-h" className="v2-h3">Next</h2>
+  {/* Someone has said yes: she isn't asked to do the next step; Bear watches and tells her if anything changes. */}
+  {!done&&req?.status==='ACCEPTED'&&<p className="note" style={{marginTop:14}}>{req.to} is handling this. Bear will remind them on the day and tell you if anything changes.</p>}
+  {!done&&req?.status!=='ACCEPTED'&&<section className="v2-card v2-sec v2-next" aria-labelledby="next-h"><h2 id="next-h" className="v2-h3">Next</h2>
    {cur?.who==='bear'&&<><p>{d.next?`${d.next.text} (about ${d.next.minutes} min of your time)`:cur.text}</p><p className="tiny muted">Bear does its part first: {cur.text.toLowerCase()}.</p>
     <button type="button" className="btn coral wide" disabled={!!busy} onClick={()=>act('give',`/api/bear/rre/${id}/give`,{},'Bear has prepared this for you to check.')}>{busy==='give'?'One moment…':'Give it to Bear'}</button></>}
    {cur&&cur.who==='you'&&cur.kind!=='wait'&&<><p><strong>{cur.text}</strong>{cur.userMinutes>1?` · about ${cur.userMinutes} min`:''}</p>

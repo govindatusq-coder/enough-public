@@ -10,6 +10,7 @@ import type {BrainItem} from '@/lib/bear/rre/service';
 import {ErrorCard,Skeleton} from '@/components/bear/ui';
 import {Swipe,TaskRow,useBoardActions,type Say} from '@/components/bear/board';
 import {Icon} from '@/components/bear/v2';
+import {useShareBear} from '@/components/bear/share-bear';
 
 interface Brain{total:number;waiting:number;priority:BrainItem[];categories:{id:string;title:string;icon:string;items:BrainItem[]}[]}
 const tint:Record<string,string>={night:'#ECE8FB',calls:'#E3F3EE',followup:'#FFE9DE',spare:'#FFF3D6',week:'#E3F0FB',aspire:'#E6F4E1'};
@@ -21,7 +22,7 @@ export default function BearBrain(){
  const [brain,setBrain]=useState<Brain|null>(null);const [board,setBoard]=useState<BoardView|null>(null);const [err,setErr]=useState<string|null>(null);
  const [open,setOpen]=useState<Record<string,boolean>>({});const [filter,setFilter]=useState<Filter>('all');
  // Both fold away until tapped: the full list of everything, and Priority Actions.
- const [allOpen,setAllOpen]=useState(false);const [prioOpen,setPrioOpen]=useState(false);
+ const [allOpen,setAllOpen]=useState(false);const [prioOpen,setPrioOpen]=useState(false);const [sharedOpen,setSharedOpen]=useState(false);const sb=useShareBear();
  const [searching,setSearching]=useState(false);const [q,setQ]=useState('');
  const [toast,setToast]=useState<{text:string;undo?:()=>void;key:number}|null>(null);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const load=useCallback(()=>Promise.all([apiGet<Brain>('/api/bear/rre/brain'),apiGet<{onboarding?:boolean;board?:BoardView}>('/api/bear/board')]).then(([b,bd])=>{if(bd.onboarding){router.replace('/bear/onboarding');return;}setBrain(b);setBoard(bd.board||null);setErr(null);})
@@ -60,6 +61,10 @@ export default function BearBrain(){
     <button type="button" className="v2-fold-head" aria-expanded={prioOpen} onClick={()=>setPrioOpen(o=>!o)}><span id="pa-h">Priority Actions{prio.length?` (${prio.length})`:''}</span><span className={`v2-chev${prioOpen?' down':''}`} aria-hidden="true">{Icon.chevron()}</span></button>
     {prioOpen&&(prio.length?<ul className="v2-plist">{prio.map(i=>row(i))}</ul>:<p className="faint" style={{padding:'4px 4px 12px'}}>Nothing needs your attention right now.</p>)}
    </section>
+   {!!sb.state?.requests.length&&<section className="v2-card v2-fold" aria-labelledby="sw-h">
+    <button type="button" className="v2-fold-head" aria-expanded={sharedOpen} onClick={()=>setSharedOpen(o=>!o)}><span id="sw-h">Shared with others ({sb.state.requests.filter(r=>!['CANCELLED'].includes(r.status)).length})</span><span className={`v2-chev${sharedOpen?' down':''}`} aria-hidden="true">{Icon.chevron()}</span></button>
+    {sharedOpen&&<ul className="v2-plist">{sb.state.requests.filter(r=>r.status!=='CANCELLED').map(r=><li key={r.id}><Link href={`/bear/brain/${r.taskId}`} className="v2-prow"><i className="v2-dot" style={{background:r.status==='ACCEPTED'?'#3FA77A':r.status==='COMPLETED'?'#A9B4C2':['DECLINED','UNABLE_TO_COMPLETE','EXPIRED','SEND_FAILED'].includes(r.status)?'var(--coral)':'#F0A030'}} aria-hidden="true"/><span className="v2-prow-main"><strong>{r.to}</strong><span>{r.title} · {['DECLINED','UNABLE_TO_COMPLETE','EXPIRED','SEND_FAILED'].includes(r.status)?'Needs attention':r.label}</span></span><span className="v2-chev" aria-hidden="true">{Icon.chevron()}</span></Link></li>)}</ul>}
+   </section>}
    <h2 className="v2-h2 v2-h2-out">By Category</h2>
    {brain.categories.map(c=>{const items=c.items.filter(i=>byId.has(i.id));const isOpen=!!open[c.id];return <section key={c.id} className="v2-cat" data-drop={c.id} style={{['--cat' as string]:tint[c.id]||'#EEF1F5'}}>
     <button type="button" className="v2-cat-head" aria-expanded={isOpen} onClick={()=>setOpen(o=>({...o,[c.id]:!o[c.id]}))}>
