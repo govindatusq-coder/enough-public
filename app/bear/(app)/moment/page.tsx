@@ -1,4 +1,4 @@
-// Got a Moment?: a conversation with Bear (talk or type). The responsibility engine sits behind it: say how long you've
-// got and Bear finds one thing that fits; ask for help and Bear prepares its part, then it's your turn.
-import {MomentChat} from '@/components/bear/moment-chat';
-export default function GotAMoment(){return <MomentChat/>;}
+// Got a Moment?: three choices (Need a Break, Talk It Out, Finish a Task). The responsibility engine, the conversation with
+// Bear and Share Bear sit behind them; nothing here changes Drop Bear or Bear Brain.
+import {MomentFlow} from '@/components/bear/moment-flow';
+export default function GotAMoment(){return <MomentFlow/>;}

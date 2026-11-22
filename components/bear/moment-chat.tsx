@@ -7,7 +7,7 @@ import {useRouter} from 'next/navigation';
 import {apiGet,apiSend,type ApiError} from '@/lib/bear/client';
 import type {MomentAction,MomentMessage} from '@/lib/bear/services/moment-chat';
 import {Art} from './art';
-import {AppHeader,Icon,LabelChip,MamaBear} from './v2';
+import {Icon,LabelChip} from './v2';
 import {AddToOutlook} from './add-to-outlook';
 import {useSpeechInput,useSpeechOutput} from './speech';
 
@@ -30,10 +30,12 @@ const I={
  x:svg(<path d="M6 6l12 12M18 6 6 18"/>,18),
 };
 
-export function MomentChat(){
+// Talk It Out: the conversation with Bear, opened from Got a Moment?'s three choices. No time question first.
+export const OPENER='I’m listening. What’s on your mind?';
+export function MomentChat({onBack}:{onBack:()=>void}){
  const router=useRouter();
  const [messages,setMessages]=useState<MomentMessage[]>([]);const [pending,setPending]=useState<Pending[]>([]);
- const [loaded,setLoaded]=useState(false);const [view,setView]=useState<'idle'|'chat'>('idle');const [freshFrom,setFreshFrom]=useState<number|null>(null);
+ const [loaded,setLoaded]=useState(false);const view='chat' as 'idle'|'chat';const [freshFrom,setFreshFrom]=useState<number|null>(null);
  const [text,setText]=useState('');const [busy,setBusy]=useState(false);const [autoRead,setAutoRead]=useState(false);
  const box=useRef<HTMLTextAreaElement>(null);const stick=useRef(true);
  const focus=useCallback(()=>box.current?.focus(),[]);
@@ -42,7 +44,7 @@ export function MomentChat(){
  // Open: what was being typed, the cached conversation (instant, works offline), then the kept one from the server.
  useEffect(()=>{queueMicrotask(()=>{setText(get(DRAFT)||'');setAutoRead(get(READ)==='on');try{const c=JSON.parse(get(CACHE)||'[]');if(Array.isArray(c))setMessages(c);}catch{/* none */}});
   apiGet<{messages:MomentMessage[];resume:boolean}>('/api/bear/moment/chat').then(r=>{setMessages(r.messages);put(CACHE,JSON.stringify(r.messages.slice(-40)));
-   if(r.resume&&r.messages.length){setView('chat');stick.current=true;}else setFreshFrom(r.messages.length);setLoaded(true);})
+   if(r.resume&&r.messages.length)stick.current=true;else setFreshFrom(r.messages.length);setLoaded(true);})
    .catch(e=>{if((e as ApiError).status===401){router.replace('/bear/signin');return;}setLoaded(true);});},[router]);
  useEffect(()=>{if(loaded)put(DRAFT,text||null);},[text,loaded]);
  useEffect(()=>{const el=box.current;if(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,view==='idle'?200:140)+'px';}},[text,view]);
@@ -63,11 +65,11 @@ export function MomentChat(){
  function send(){
   const t=text.trim();if(!t||busy)return;if(speech.listening)speech.cancel();
   const p:Pending={id:newId(),text:t,at:new Date().toISOString(),state:'sending'};
-  setText('');put(DRAFT,null);setPending(l=>[...l,p]);if(view==='idle'){setView('chat');if(freshFrom===null)setFreshFrom(messages.length);}
+  setText('');put(DRAFT,null);setPending(l=>[...l,p]);
   deliver(p);
  }
  function toggleRead(){const on=!autoRead;setAutoRead(on);put(READ,on?'on':null);if(!on)voice.stop();}
- async function clearChat(){if(!window.confirm('Clear this conversation? It can’t be brought back.'))return;try{await apiSend('/api/bear/moment/chat',{},'DELETE');setMessages([]);setPending([]);put(CACHE,null);setFreshFrom(0);setView('idle');}catch{/* stays as it was */}}
+ async function clearChat(){if(!window.confirm('Clear this conversation? It can’t be brought back.'))return;try{await apiSend('/api/bear/moment/chat',{},'DELETE');setMessages([]);setPending([]);put(CACHE,null);setFreshFrom(0);}catch{/* stays as it was */}}
  const state=speech.listening?'voice_recording':busy?'responding':pending.some(p=>p.state==='failed')?'error':text.trim()?'composing':view==='chat'?'ready':'idle';
 
  const composer=(idle:boolean)=><div className={idle?'mc-composer idle':'mc-composer'}>
@@ -84,16 +86,11 @@ export function MomentChat(){
   {(speech.hint||speech.listening)&&<p className="mc-hint" role="status" aria-live="polite">{speech.listening?'Listening… tap the microphone when you’re done, then check it and send.':speech.hint}</p>}
  </div>;
 
- if(view==='idle')return <main id="main" className="bear-screen v2-screen mc mc-idle" data-state={state}>
-  <AppHeader/>
-  <header className="mc-hero"><MamaBear/><h1 className="mc-title">Got a moment?</h1><p className="mc-prompt">How’s your day going?</p></header>
-  {composer(true)}
-  {loaded&&messages.length>0&&<button type="button" className="link-btn small mc-earlier" onClick={()=>{setView('chat');stick.current=true;}}>See your last chat with Bear</button>}
- </main>;
-
+ // Bear opens each new sitting the same way; it isn't saved, so it never piles up in her history.
+ const opener=<div className="mc-row mc-b"><Art file="avatar" className="mc-avatar"/><div className="mc-col"><div className="mc-bubble mc-b"><p>{OPENER}</p></div></div></div>;
  return <main id="main" className="bear-screen mc mc-chat" data-state={state}>
   <header className="mc-top">
-   <button type="button" className="mc-icon" onClick={()=>{voice.stop();setView('idle');window.scrollTo({top:0});}} aria-label="Back">{I.back}</button>
+   <button type="button" className="mc-icon" onClick={()=>{voice.stop();onBack();}} aria-label="Back">{I.back}</button>
    <Art file="avatar" className="mc-top-avatar"/>
    <div className="mc-who"><strong>Bear</strong><span>Here with you</span></div>
    {voice.can&&<button type="button" className={`mc-icon${autoRead?' on':''}`} onClick={toggleRead} aria-pressed={autoRead} aria-label="Read Bear’s replies aloud">{autoRead?I.speaker:I.speakerOff}</button>}
@@ -101,9 +98,10 @@ export function MomentChat(){
   <section className="mc-thread" aria-label="Conversation with Bear" aria-live="polite">
    {messages.length>0&&<p className="mc-clear"><button type="button" className="link-btn small" onClick={clearChat}>Clear this chat</button></p>}
    {messages.map((m,i)=><div key={m.id}>
-    {freshFrom!==null&&freshFrom>0&&i===freshFrom&&<p className="mc-divider"><span>Today</span></p>}
+    {freshFrom!==null&&i===freshFrom&&<>{freshFrom>0&&<p className="mc-divider"><span>Today</span></p>}{opener}</>}
     {m.role==='user'?<UserBubble text={m.text} at={m.at}/>:<BearBubble m={m} voice={voice}/>}
    </div>)}
+   {freshFrom!==null&&freshFrom>=messages.length&&<>{freshFrom>0&&<p className="mc-divider"><span>Today</span></p>}{opener}</>}
    {pending.map(p=><UserBubble key={p.id} text={p.text} at={p.at} state={p.state} retry={()=>deliver(p)}/>)}
    {busy&&<div className="mc-row mc-b"><Art file="avatar" className="mc-avatar"/><div className="mc-bubble mc-b mc-typing" aria-label="Bear is replying"><span className="dots" aria-hidden="true"><i/><i/><i/></span></div></div>}
   </section>

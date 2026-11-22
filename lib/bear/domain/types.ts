@@ -88,6 +88,8 @@ export interface Profile extends Owned{
  preferences?:import('../rre/prefs.ts').UserPreference[];rreLast?:{taskId:string;minutes:number;at:string}|null;rreTrace?:import('../rre/decide.ts').Trace[];
  // Got a Moment? conversation: private to this person (never on anything shared with the household).
  momentChat?:{messages:import('../services/moment-chat.ts').MomentMessage[];updatedAt:string}|null;
+ // Need a Break: ideas she said "Sounds good" to (counts) and the ones shown lately (so they aren't repeated straight away).
+ breakPrefs?:{liked:Record<string,number>;recent:{id:string;at:string}[]}|null;
  // Set when the person opened a sign-in link sent to their email: proof they own the address.
  emailVerifiedAt?:ISODateTime|null;
  // What matters to this person: values, goals, responsibilities, non-negotiables (editable).
