@@ -12,7 +12,7 @@ function storeLink(){
  const ua=typeof navigator==='undefined'?'':navigator.userAgent;
  const ios=process.env.NEXT_PUBLIC_LOADBEAR_IOS_URL,android=process.env.NEXT_PUBLIC_LOADBEAR_ANDROID_URL;
  if(/iPhone|iPad|iPod/.test(ua)&&ios)return ios;if(/Android/.test(ua)&&android)return android;
- return process.env.NEXT_PUBLIC_LOADBEAR_LANDING_URL||'/bear/welcome';
+ return process.env.NEXT_PUBLIC_LOADBEAR_LANDING_URL||'https://getloadbear.app';
 }
 export default function HelpRequest({params}:{params:Promise<{token:string}>}){
  const {token}=use(params);

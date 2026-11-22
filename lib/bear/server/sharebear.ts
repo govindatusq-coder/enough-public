@@ -9,9 +9,12 @@ import {pushConfig,sendPush} from './push';
 
 // Everything Share Bear needs on the server: where delegations live, the text provider, the address links point to, and
 // telling her straight away (by push, outside her quiet hours) when someone answers. Push failing never changes a delegation.
+// Set to 'https://app.getloadbear.app' once that address serves this app (Vercel domain + DNS record).
+const LINK_HOST:string|null=null;
 export async function shareBearDeps(req:Request):Promise<Deps|null>{
  const rows=await delegationRows();if(!rows)return null;
- const origin=new URL(req.url).origin;const baseUrl=process.env.SHARE_BEAR_BASE_URL||origin;
+ // Links in texts use the app's own address unless SHARE_BEAR_BASE_URL (or LINK_HOST below) names a domain that serves the app.
+ const origin=new URL(req.url).origin;const baseUrl=process.env.SHARE_BEAR_BASE_URL||LINK_HOST||origin;
  const sms=smsFromEnv();
  return {rows,sms,baseUrl,statusCallback:sms.mode==='twilio'&&baseUrl.startsWith('https://')?`${baseUrl}/api/bear/share-bear/sms-status`:null,notify:pushToOwner};
 }

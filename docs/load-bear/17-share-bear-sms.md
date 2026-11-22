@@ -78,7 +78,7 @@ Repeating the same move changes nothing.
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | Real texts. `TWILIO_FROM` is a number, or a Messaging Service SID (`MG…`, recommended, so Twilio handles STOP opt-outs). Without these, production offers "send it from your phone". |
 | `SHARE_BEAR_SMS=mock` | Test mode: never sends, and the screen says so. This is automatic when there's no database (local development). |
 | `SHARE_BEAR_BASE_URL` | The address links point to. Defaults to the address she's using; set it if a branded domain is added. |
-| `NEXT_PUBLIC_LOADBEAR_IOS_URL`, `NEXT_PUBLIC_LOADBEAR_ANDROID_URL`, `NEXT_PUBLIC_LOADBEAR_LANDING_URL` | Where "Get Load Bear" goes. Without them it goes to the web app's welcome page. |
+| `NEXT_PUBLIC_LOADBEAR_IOS_URL`, `NEXT_PUBLIC_LOADBEAR_ANDROID_URL`, `NEXT_PUBLIC_LOADBEAR_LANDING_URL` | Where "Get Load Bear" goes. Without them it goes to the marketing site, https://getloadbear.app. |
 
 **Twilio setup:**
 1. Create an account and buy an Australian number, or register an alphanumeric sender ID.
@@ -99,3 +99,10 @@ Australian texts cost roughly 5–8 cents each.
   them silently; they still see what they agreed to.
 - **Contact picker:** only browsers with the Contact Picker API offer it (mainly Android Chrome). iPhone uses typed numbers
   or recent helpers.
+
+## Using getloadbear.app for links
+getloadbear.app is the separate marketing site, hosted on Cloudflare; it does not serve this app. For text links to read
+`app.getloadbear.app/bear/r/…`:
+1. Add `app.getloadbear.app` to the Vercel project's Domains.
+2. Add a Cloudflare DNS record: CNAME `app` → `cname.vercel-dns.com`, DNS only.
+3. Set `LINK_HOST` in `lib/bear/server/sharebear.ts` (or `SHARE_BEAR_BASE_URL` in Vercel) to `https://app.getloadbear.app`.
