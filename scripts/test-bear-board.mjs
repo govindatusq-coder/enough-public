@@ -85,7 +85,8 @@ try{
   await p.click('button:has-text("Back to Got a Moment")');await p.waitForSelector('.gm-choices');
   // Talk It Out: straight into the conversation
   await p.click('.gm-choice:has-text("Talk It Out")');await p.waitForSelector('.mc-chat');
-  assert.match(await p.textContent('.mc-thread'),/I’m listening\. What’s on your mind\?/);assert.equal(await p.$$eval('.gm-time',e=>e.length),0,'no time question');
+  // Bear's opening line shows once the kept conversation has loaded (a fresh sitting), so wait for it rather than racing it.
+  await p.waitForSelector('.mc-thread .mc-bubble.mc-b:has-text("I’m listening. What’s on your mind?")');assert.equal(await p.$$eval('.gm-time',e=>e.length),0,'no time question');
   await p.fill('#mc-text','Rough day');await p.click('.mc-send');await p.waitForSelector('.mc-bubble.mc-b:has-text("thinking service isn’t connected")');
   await p.click('.mc-top button[aria-label="Back"]');await p.waitForSelector('.gm-choices');
   // Finish a Task: a real task from Bear Brain, one at a time
