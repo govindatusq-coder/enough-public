@@ -1,0 +1,11 @@
+{
+  "adapter": "http",
+  "dataset": "/home/user/enough-public/evaluation/eval200/eval200.jsonl",
+  "n": 200,
+  "errors": 0,
+  "mean_heuristic_score": 36.02,
+  "verified_completion_rate": 0.0,
+  "unverified_completion_claims": 0,
+  "total_approval_violations": 0,
+  "warning": "Heuristic diagnostics only. No demonstrated real-world task completion or mental-load reduction."
+}
