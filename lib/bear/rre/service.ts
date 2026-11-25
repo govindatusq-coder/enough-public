@@ -16,6 +16,8 @@ import {advance,buildPlan,currentStep,RULES_VERSION,resolveWait,selectedPath,sta
 const labelFor=(s:RStatus,p:Plan)=>s==='waiting'?(p.dependencies.some(d=>d.status==='open'&&d.kind==='delivery')?'Waiting for delivery':'Waiting for a response'):baseLabel[s];
 import {chooseMoment,nextForHer,type Candidate} from './decide.ts';
 import {prepareFor} from './prepare.ts';
+import {chooseShare} from './share-pick.ts';
+import {recordBehaviour} from '../services/behaviour.ts';
 import {describePreference,learn,purchasePreference} from './prefs.ts';
 
 async function ctxOf(store:BearStore,now:Date){
@@ -67,6 +69,19 @@ export async function recommend(store:BearStore,input:z.infer<typeof momentSchem
  await store.update('profiles',ctx.profile.id,{rreTrace:[res.trace,...(ctx.profile.rreTrace||[])].slice(0,10),// Browsing alternatives ("Something else") doesn't replace the main suggestion for this window.
   ...(res.recommendation&&!input.exclude.length?{rreLast:{taskId:res.recommendation.taskId,minutes:input.minutes,at:now.toISOString()}}:{})});
  return {recommendation:res.recommendation,message:res.message,suggestMinutes:res.suggestMinutes,waiting:res.waiting};
+}
+// "No time? Hand something off": one task someone else could do, or null (Bear says so honestly).
+export const sharePickSchema=z.object({exclude:z.array(z.string().uuid()).max(50).default([])}).strict();
+export async function recommendShare(store:BearStore,input:z.infer<typeof sharePickSchema>,now=new Date()){
+ const {ctx,rows:r}=await rows(store,now);
+ return {suggestion:chooseShare(r,{today:ctx.today,exclude:input.exclude})};
+}
+// What she did with a Got a Moment? suggestion, kept so we can see whether handing off helps: did she ask someone, ask for
+// another, or say not now. Only the choice and the task id are kept; never her words.
+export const momentFeedbackSchema=z.object({taskId:z.string().uuid(),surface:z.enum(['finish','share']),response:z.enum(['do_it','ask_someone','another','not_now'])}).strict();
+export async function momentFeedback(store:BearStore,input:z.infer<typeof momentFeedbackSchema>,now=new Date()){
+ const accepted=input.response==='do_it'||input.response==='ask_someone';
+ await recordBehaviour(store,accepted?'suggestion_accepted':'suggestion_rejected',{kind:`moment_${input.surface}`,response:input.response,taskId:input.taskId},now);
 }
 export async function skip(store:BearStore,taskId:string,now=new Date()){
  const t=await store.get('tasks',taskId);if(!t)throw new Error('not_found');const ctx=await ctxOf(store,now);const plan=await ensurePlan(store,t,ctx,now);

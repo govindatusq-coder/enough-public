@@ -37,11 +37,16 @@ Navigation has three tabs. Settings is the gear in each screen's header.
   - It asks before helping. A to-do list it suggests waits for her approval before anything is saved.
   - When she talks about feelings, Bear doesn't bring tasks or lists back.
   - If someone seems in danger, Bear always gives 000 and Lifeline (13 11 14).
-- **Finish a Task.**
+- **Finish or share a task.**
   - She picks her time, and Bear chooses one real task from Bear Brain that fits.
   - It weighs time fit, readiness, deadlines, and what finishing it unlocks.
-  - "Let's do it" has Bear prepare its part, with **Mark as done** and **Ask someone to do it**.
+  - The task card offers **Let's do it** and **Ask someone** side by side. "Let's do it" has Bear prepare its part, then
+    **Mark as done**. "Ask someone" opens Share Bear on that task.
+  - **No time? Hand something off** skips the time question. Bear suggests one task someone else could do (errands, buying
+    things, chores, calls and bookings coming up; never her own appointments, presents, bills or forms, or anything she has
+    started or already handed off), with **Ask someone**, **Another one**, **Not now** and **Choose from Bear Brain**.
   - Done gives a tick: "One less thing on your mind." If nothing fits, Bear says so honestly.
+  - What she chooses (do it, ask someone, another, not now) is kept as a private event, to see whether handing off helps.
 
 ### 3. Bear Brain: everything Bear is holding
 - **All Tasks,** with filters: All, Needs attention, Ready to check, Waiting. Plus search.

@@ -69,10 +69,10 @@ try{
   await p.click('button:has-text("I’ve ordered it")');await p.waitForSelector('.v2-status:has-text("Waiting for delivery")');assert.match(await p.textContent('main'),/Bear will check back then/);
   await p.click('button:has-text("It’s arrived")');await p.waitForSelector('text=Done.');assert.equal((await p.textContent('.v2-status')).trim(),'Completed');
  });
- await step('Got a Moment?: exactly three choices; Need a Break (time, one idea, a different one, Sounds good); Talk It Out opens the chat with no time question; Finish a Task (real task, Let’s do it, Bear prepares, Mark as done)',async()=>{
+ await step('Got a Moment?: exactly three choices; Need a Break (time, one idea, a different one, Sounds good); Talk It Out opens the chat with no time question; Finish or share a task (real task, Ask someone or Let’s do it, Bear prepares, Mark as done)',async()=>{
   await p.click('.bear-nav a[href="/bear/moment"]');await p.waitForSelector('.gm-choices');
   assert.equal((await p.textContent('.gm-title')).trim(),'Got a Moment?');assert.equal((await p.textContent('.gm-headline')).trim(),'What do you need right now?');
-  assert.deepEqual(await p.$$eval('.gm-choice strong',e=>e.map(x=>x.textContent)),['Need a Break','Talk It Out','Finish a Task']);
+  assert.deepEqual(await p.$$eval('.gm-choice strong',e=>e.map(x=>x.textContent)),['Need a Break','Talk It Out','Finish or share a task']);
   assert.deepEqual(await p.$$eval('.gm-choice-text span',e=>e.map(x=>x.textContent)),['A little time just for you','Get something off your chest','Get something off your list']);
   for(const none of ['.v2-pill','.chip','textarea','.v2-reco'])assert.equal(await p.$$eval(none,e=>e.length),0,`no ${none} on the opening screen`);
   assert.equal(await p.getAttribute('.bear-nav a[href="/bear/moment"]','aria-current'),'page');await shot('v04-moment');
@@ -89,11 +89,16 @@ try{
   await p.waitForSelector('.mc-thread .mc-bubble.mc-b:has-text("I’m listening. What’s on your mind?")');assert.equal(await p.$$eval('.gm-time',e=>e.length),0,'no time question');
   await p.fill('#mc-text','Rough day');await p.click('.mc-send');await p.waitForSelector('.mc-bubble.mc-b:has-text("thinking service isn’t connected")');
   await p.click('.mc-top button[aria-label="Back"]');await p.waitForSelector('.gm-choices');
-  // Finish a Task: a real task from Bear Brain, one at a time
-  await p.click('.gm-choice:has-text("Finish a Task")');await p.waitForSelector('.gm-h:has-text("Let’s get something done.")');
+  // Finish or share a task: a real task from Bear Brain, one at a time; handing off is offered without an extra question
+  await p.click('.gm-choice:has-text("Finish or share a task")');await p.waitForSelector('.gm-h:has-text("Let’s get something off your list.")');
+  assert.ok(await p.isVisible('button.gm-handoff:has-text("No time? Hand something off")'));await shot('v04b2-task-time');
   await p.click('.gm-time:has-text("10 min")');await p.waitForSelector('.gm-card-title');
   assert.equal((await p.textContent('.gm-card .v2-label')).trim(),'Worth doing now');assert.equal((await p.textContent('.gm-card-title')).trim(),'Review Christmas gift shortlist');
   assert.match(await p.textContent('.gm-card'),/Choosing a few now could avoid last-minute shopping/);await shot('v04c-task');
+  // Ask someone sits beside Let's do it, and opens Share Bear on this task; tapping outside closes it and leaves the suggestion as it was.
+  assert.ok(await p.isVisible('.gm-pair button:has-text("Let’s do it")')&&await p.isVisible('.gm-pair button:has-text("Ask someone")'));
+  await p.click('.gm-pair button:has-text("Ask someone")');await p.waitForSelector('.sb-h:has-text("Who can help with this?")');
+  await p.click('.sheet-backdrop',{position:{x:40,y:40}});await p.waitForSelector('.sb-sheet',{state:'detached'});assert.equal((await p.textContent('.gm-card-title')).trim(),'Review Christmas gift shortlist');
   await p.click('button:has-text("Let’s do it")');await p.waitForSelector('.gm-do');assert.match(await p.textContent('.gm-do'),/Sarah: \(add a few ideas\)/);
   assert.ok(await p.isVisible('button:has-text("Mark as done")'));assert.ok(await p.isVisible('button:has-text("Ask someone to do it")'));
   // Back steps back through the flow, not out of it.
@@ -139,13 +144,31 @@ try{
   await p.goto(base+'/bear/me/lists');await p.waitForSelector('input[aria-label="List name"]');assert.equal(await p.inputValue('input[aria-label="List name"] >> nth=0'),'Night Time');
   await p.goto(base+'/bear/me/learned');await p.click('button:has-text("I like to buy in person")');await p.waitForSelector('text=Prefers buying things in person');await p.click('button:has-text("Forget")');await p.waitForSelector('text=Nothing yet.');
  });
- await step('Got a Moment? Finish a Task with very little time: one real task or an honest "nothing fits", never an invented one',async()=>{
+ await step('Got a Moment? Finish or share a task with very little time: one real task or an honest "nothing fits", never an invented one',async()=>{
   const ctx2=await browser.newContext({viewport:{width:390,height:844}});const q=await ctx2.newPage();
   await q.goto(base+'/bear/moment');await q.waitForSelector('.gm-choices,.gm-h,.gm-card');
   if(await q.$('.gm-back'))await q.click('.gm-back');await q.waitForSelector('.gm-choices');
-  await q.click('.gm-choice:has-text("Finish a Task")');await q.click('.gm-time:has-text("2 min")');await q.waitForSelector('.gm-card');
+  await q.click('.gm-choice:has-text("Finish or share a task")');await q.click('.gm-time:has-text("2 min")');await q.waitForSelector('.gm-card');
   const txt=await q.textContent('.gm-card');assert.ok(/Nothing on your list looks like a good fit for the time you’ve got\./.test(txt)||/You could get this sorted\./.test(txt),txt);
   if(/Nothing on your list/.test(txt))assert.ok(await q.isVisible('a:has-text("See my tasks")'));await ctx2.close();
+ });
+ await step('Got a Moment? No time? Hand something off: no time question, one task someone else could do, Ask someone opens Share Bear, never a present or her own appointment',async()=>{
+  await api('/api/bear/board/dump',{text:'Pick up the dry cleaning on Thursday\nBook my dentist appointment',via:'text'});
+  const ctx3=await browser.newContext({viewport:{width:390,height:844}});const q=await ctx3.newPage();
+  await q.goto(base+'/bear/moment');await q.waitForSelector('.gm-choices,.gm-h,.gm-card');
+  while(await q.$('.gm-back')){await q.click('.gm-back');await q.waitForTimeout(150);}await q.waitForSelector('.gm-choices');
+  await q.click('.gm-choice:has-text("Finish or share a task")');await q.click('button.gm-handoff');await q.waitForSelector('.gm-card');
+  assert.equal(await q.$$eval('.gm-time',e=>e.length),0,'no time question');
+  const seen=[];
+  for(let k=0;k<10;k++){const txt=await q.textContent('.gm-card');if(/Nothing on your list looks easy/.test(txt))break;
+   assert.match(txt,/Someone else could take this\./);const t=(await q.textContent('.gm-card-title')).trim();seen.push(t);if(/dry cleaning/i.test(t))break;
+   await q.click('.gm-card button:has-text("Another one")');await q.waitForFunction(x=>document.querySelector('.gm-card-title')?.textContent.trim()!==x||/Nothing on your list/.test(document.querySelector('.gm-card')?.textContent||''),t);}
+  assert.ok(seen.some(t=>/dry cleaning/i.test(t)),'the dry cleaning is offered: '+seen.join(' | '));
+  assert.ok(!seen.some(t=>/dentist|christmas|gift/i.test(t)),'never her own appointment or a present: '+seen.join(' | '));
+  await q.screenshot({path:resolve(results,'v04e-handoff.png'),fullPage:true});
+  await q.click('.gm-card button:has-text("Ask someone")');await q.waitForSelector('.sb-h:has-text("Who can help with this?")');
+  await q.click('.sheet-backdrop',{position:{x:40,y:40}});await q.waitForSelector('.sb-sheet',{state:'detached'});
+  await q.click('.gm-card button:has-text("Not now")');await q.waitForSelector('.gm-choices');await ctx3.close();
  });
  await step('Share Bear by text: ask from the task, exact preview, test-mode send, Daniel answers without an account, she hears back, done',async()=>{
   await api('/api/bear/board/dump',{text:'Pick up Ella’s birthday cake on Friday before 3 pm',via:'text'});

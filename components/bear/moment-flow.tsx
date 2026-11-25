@@ -1,6 +1,7 @@
 'use client';
-// Got a Moment?: three choices, nothing else. Need a Break (an idea just for her), Talk It Out (Bear listens), Finish a Task
-// (one realistic thing from Bear Brain, and help to tick it off). She chooses; Bear doesn't guess what she needs.
+// Got a Moment?: three choices, nothing else. Need a Break (an idea just for her), Talk It Out (Bear listens), Finish or share
+// a task (one realistic thing from Bear Brain: do it with Bear's help, or ask someone). She chooses; Bear doesn't guess what
+// she needs. Sharing adds no extra question: the task card offers both, and "No time? Hand something off" skips the time.
 import {useCallback,useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {apiGet,apiSend} from '@/lib/bear/client';
@@ -9,12 +10,13 @@ import {AppHeader,LabelChip,MamaBear} from './v2';
 import {MomentChat} from './moment-chat';
 import {ShareBearSheet,useShareBear} from './share-bear';
 
-export type GmState='home'|'break_time'|'break_suggestion'|'talk'|'task_time'|'task_suggestion'|'task_action'|'task_complete';
+export type GmState='home'|'break_time'|'break_suggestion'|'talk'|'task_time'|'task_suggestion'|'task_action'|'task_complete'|'share_suggestion';
 type Idea={id:string;title:string;line:string;minutes:number;icon:string};
 type Rec={taskId:string;title:string;label:string;minutes:number;why:string;needsBear:boolean};
+type Share={taskId:string;title:string;why:string;dueAt:string|null;dueTime:string|null};
 type Detail={id:string;title:string;taskStatus:string;status:string;dueAt:string|null;dueTime:string|null;deadlines:{outcome:string|null};next:{text:string;minutes:number;needsBear:boolean}|null;current:{who:string;text:string}|null;
  prepared:{title:string;lines:string[];links:{label:string;url:string}[];draft?:{to:string;subject:string;body:string}|null;note:string}|null};
-interface Saved{stack:GmState[];minutes:number|null;idea:Idea|null;rec:Rec|null;seen:string[];done:string[]}
+interface Saved{stack:GmState[];minutes:number|null;idea:Idea|null;rec:Rec|null;seen:string[];done:string[];share?:Share|null;shareSeen?:string[]}
 const KEY='bear-gm-state';
 const TIMES=[2,5,10,20];
 const svg=(d:React.ReactNode,size=26)=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
@@ -34,7 +36,7 @@ const breakIcon:Record<string,React.ReactNode>={tea:Ico.cup,music:svg(<><path d=
 export function MomentFlow(){
  const [s,setS]=useState<Saved>({stack:['home'],minutes:null,idea:null,rec:null,seen:[],done:[]});
  const [busy,setBusy]=useState(false);const [msg,setMsg]=useState<string|null>(null);
- const [none,setNone]=useState(false);const [detail,setDetail]=useState<Detail|null>(null);const [sharing,setSharing]=useState(false);const [enjoy,setEnjoy]=useState(false);
+ const [none,setNone]=useState(false);const [detail,setDetail]=useState<Detail|null>(null);const [sharing,setSharing]=useState<{id:string;title:string;due:string|null;dueTime:string|null}|null>(null);const [enjoy,setEnjoy]=useState(false);
  const sb=useShareBear();const restored=useRef(false);const pushed=useRef(0);const cur=s.stack[s.stack.length-1];
  // Coming back to Got a Moment? picks up where she was (except half-way through a task, which goes back to its suggestion).
  useEffect(()=>{queueMicrotask(()=>{try{const v=JSON.parse(sessionStorage.getItem(KEY)||'null') as Saved|null;if(v&&Array.isArray(v.stack)&&v.stack.length){const st=v.stack.filter(x=>x!=='task_action'&&x!=='task_complete');setS({...v,stack:st.length?st:['home']});}}catch{/* fresh */}restored.current=true;});},[]);
@@ -62,8 +64,27 @@ export function MomentFlow(){
    go('task_suggestion',{minutes,rec:r.recommendation,seen:[...exclude,r.recommendation.taskId]});}
   catch{setMsg('Bear couldn’t look at your list just now. Nothing has changed; try again in a moment.');}
   finally{setBusy(false);}}
- async function notNowTask(){if(s.rec)apiSend(`/api/bear/rre/${s.rec.taskId}/skip`,{}).catch(()=>{});go('home');}
- async function letsDoIt(){if(!s.rec)return;setBusy(true);setMsg(null);
+ // What she chose, kept so we can see whether handing off helps (never her words).
+ const feedback=(taskId:string,surface:'finish'|'share',response:'do_it'|'ask_someone'|'another'|'not_now')=>{apiSend('/api/bear/rre/share-pick',{taskId,surface,response},'PUT').catch(()=>{});};
+ async function notNowTask(){if(s.rec){feedback(s.rec.taskId,'finish','not_now');apiSend(`/api/bear/rre/${s.rec.taskId}/skip`,{}).catch(()=>{});}go('home');}
+ function anotherTask(){if(s.rec)feedback(s.rec.taskId,'finish','another');return task(s.minutes||10,s.seen);}
+ // Ask someone straight from the suggestion: Share Bear opens on that task, with her recent helpers.
+ async function askFor(taskId:string,surface:'finish'|'share'){setBusy(true);setMsg(null);
+  try{const d=await apiGet<Detail>(`/api/bear/rre/${taskId}`);
+   if(d.taskStatus!=='open'||d.status==='completed'){setMsg('That one’s already been done.');return;}
+   feedback(taskId,surface,'ask_someone');setSharing({id:d.id,title:d.title,due:d.dueAt||d.deadlines.outcome,dueTime:d.dueTime});}
+  catch{setMsg('Bear couldn’t open that task just now. Nothing has changed; try again in a moment.');}
+  finally{setBusy(false);}}
+
+ // ---------- No time? Hand something off ----------
+ async function shareIdea(exclude:string[]){setBusy(true);setMsg(null);
+  try{const r=await apiSend<{suggestion:Share|null}>('/api/bear/rre/share-pick',{exclude});
+   go('share_suggestion',{share:r.suggestion,shareSeen:r.suggestion?[...exclude,r.suggestion.taskId]:exclude});}
+  catch{setMsg('Bear couldn’t look at your list just now. Nothing has changed; try again in a moment.');}
+  finally{setBusy(false);}}
+ function anotherShare(){if(s.share)feedback(s.share.taskId,'share','another');return shareIdea(s.shareSeen||[]);}
+ function notNowShare(){if(s.share)feedback(s.share.taskId,'share','not_now');go('home');}
+ async function letsDoIt(){if(!s.rec)return;setBusy(true);setMsg(null);feedback(s.rec.taskId,'finish','do_it');
   try{let d=await apiGet<Detail>(`/api/bear/rre/${s.rec.taskId}`);
    if(d.taskStatus!=='open'||d.status==='completed'){setMsg('That one’s already been done. Here’s another.');return task(s.minutes||10,s.seen);}
    // Bear does its part first (a draft, steps, a shortlist), then it's her turn. Nothing is sent or bought.
@@ -89,7 +110,7 @@ export function MomentFlow(){
    <MamaBear className="v2-bear gm-bear"/>
    <p className="gm-headline">What do you need right now?</p>
    <ul className="gm-choices">
-    {([['break_time',Ico.cup,'Need a Break','A little time just for you'],['talk',Ico.talk,'Talk It Out','Get something off your chest'],['task_time',Ico.check,'Finish a Task','Get something off your list']] as const).map(([to,icon,t,sub])=>
+    {([['break_time',Ico.cup,'Need a Break','A little time just for you'],['talk',Ico.talk,'Talk It Out','Get something off your chest'],['task_time',Ico.check,'Finish or share a task','Get something off your list']] as const).map(([to,icon,t,sub])=>
      <li key={to}><button type="button" className="gm-choice" onClick={()=>go(to)}><span className="gm-choice-icon">{icon}</span><span className="gm-choice-text"><strong>{t}</strong><span>{sub}</span></span><span className="gm-chev" aria-hidden="true">{Ico.chevron}</span></button></li>)}
    </ul>
   </>}
@@ -104,13 +125,15 @@ export function MomentFlow(){
     {enjoy&&<button type="button" className="btn quiet wide" onClick={()=>go('home')}>Back to Got a Moment</button>}
    </section>{note}</>}
 
-  {cur==='task_time'&&<>{backBtn}<h1 className="gm-h">Let’s get something done.</h1><p className="gm-q">How much time have you got?</p>{times(m=>task(m,s.done))}{note}</>}
+  {cur==='task_time'&&<>{backBtn}<h1 className="gm-h">Let’s get something off your list.</h1><p className="gm-q">How much time have you got?</p>{times(m=>task(m,s.done))}
+   <button type="button" className="gm-handoff" disabled={busy} onClick={()=>shareIdea([])}>No time? Hand something off</button>{note}</>}
   {cur==='task_suggestion'&&<>{backBtn}
    {none||!s.rec?<section className="gm-card" aria-live="polite"><h1 className="gm-card-title">Nothing on your list looks like a good fit for the time you’ve got.</h1>
      <div className="gm-actions"><Link href="/bear/brain" className="btn ghost wide">See my tasks</Link><button type="button" className="btn quiet wide" onClick={()=>go('home')}>Not now</button></div></section>
    :<section className="gm-card" aria-live="polite"><p className="gm-kicker">You could get this sorted.</p><LabelChip label={s.rec.label}/>
      <h1 className="gm-card-title">{s.rec.title}</h1><p className="gm-card-line">{s.rec.why}</p><p className="gm-card-small">About {s.rec.minutes} minute{s.rec.minutes===1?'':'s'} of your time (an estimate).</p>
-     <div className="gm-actions"><button type="button" className="btn coral wide" disabled={busy} onClick={letsDoIt}>{busy?'One moment…':'Let’s do it'}</button><button type="button" className="btn ghost wide" disabled={busy} onClick={()=>task(s.minutes||10,s.seen)}>Another task</button><button type="button" className="btn quiet wide" onClick={notNowTask}>Not now</button></div></section>}
+     <div className="gm-pair"><button type="button" className="btn coral wide" disabled={busy} onClick={letsDoIt}>{busy?'One moment…':'Let’s do it'}</button><button type="button" className="btn coral-line wide" disabled={busy} onClick={()=>askFor(s.rec!.taskId,'finish')}>Ask someone</button></div>
+     <div className="gm-actions"><button type="button" className="btn ghost wide" disabled={busy} onClick={anotherTask}>Another task</button><button type="button" className="btn quiet wide" onClick={notNowTask}>Not now</button></div></section>}
    {note}</>}
   {cur==='task_action'&&detail&&<>{backBtn}
    <section className="gm-card gm-do" aria-live="polite">
@@ -121,11 +144,19 @@ export function MomentFlow(){
      {detail.prepared.draft&&<div className="gm-draft"><p>{detail.prepared.draft.body}</p><div className="gm-row">{detail.prepared.draft.subject?<a className="btn ghost sm" href={mailtoFor(detail.prepared.draft)}>Open in Mail</a>:<a className="btn ghost sm" href={smsFor(detail.prepared.draft)}>Open in Messages</a>}<Link className="btn quiet sm" href={`/bear/help/${detail.id}`}>Edit it</Link></div><p className="gm-card-small">Nothing is sent until you send it.</p></div>}
      {detail.prepared.links.map(l=><a key={l.url} className="btn ghost sm gm-link" href={l.url} target={l.url.startsWith('http')?'_blank':undefined} rel="noopener noreferrer">{l.label}</a>)}</div>}
     <div className="gm-actions"><button type="button" className="btn coral wide" disabled={busy} onClick={markDone}>{busy?'Saving…':'Mark as done'}</button>
-     <button type="button" className="btn ghost wide" onClick={()=>setSharing(true)}>Ask someone to do it</button>
+     <button type="button" className="btn ghost wide" onClick={()=>setSharing({id:detail.id,title:detail.title,due:detail.dueAt||detail.deadlines.outcome,dueTime:detail.dueTime})}>Ask someone to do it</button>
      <Link href={`/bear/brain/${detail.id}`} className="btn quiet wide">Open the full task</Link></div>
    </section>{note}
-   {sharing&&<ShareBearSheet task={{id:detail.id,title:detail.title,due:detail.dueAt||detail.deadlines.outcome,dueTime:detail.dueTime}} state={sb.state} onClose={()=>setSharing(false)} onDone={()=>{sb.reload();go('home');}}/>}
   </>}
+  {cur==='share_suggestion'&&<>{backBtn}
+   {!s.share?<section className="gm-card" aria-live="polite"><h1 className="gm-card-title">Nothing on your list looks easy to hand to someone else right now.</h1>
+     <div className="gm-actions"><Link href="/bear/brain" className="btn ghost wide">Choose from Bear Brain</Link><button type="button" className="btn quiet wide" onClick={()=>go('home')}>Not now</button></div></section>
+   :<section className="gm-card" aria-live="polite"><p className="gm-kicker">Someone else could take this.</p>
+     <h1 className="gm-card-title">{s.share.title}</h1><p className="gm-card-line">{s.share.why}</p>
+     <div className="gm-actions"><button type="button" className="btn coral wide" disabled={busy} onClick={()=>askFor(s.share!.taskId,'share')}>{busy?'One moment…':'Ask someone'}</button><button type="button" className="btn ghost wide" disabled={busy} onClick={anotherShare}>Another one</button><button type="button" className="btn quiet wide" onClick={notNowShare}>Not now</button></div>
+     <Link href="/bear/brain" className="gm-handoff">Choose from Bear Brain</Link></section>}
+   {note}</>}
+  {sharing&&<ShareBearSheet task={sharing} state={sb.state} onClose={()=>setSharing(null)} onDone={()=>{sb.reload();setSharing(null);go('home');}}/>}
   {cur==='task_complete'&&<section className="gm-done" role="status" aria-live="polite">
    <svg className="gm-tick" width="96" height="96" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="none" strokeWidth="3"/><path fill="none" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" d="m15 27 7 7 15-16"/></svg>
    <h1 className="gm-h">One less thing on your mind.</h1>

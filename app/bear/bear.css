@@ -1199,3 +1199,10 @@
 @keyframes gm-draw{to{stroke-dashoffset:0;}}
 @media (prefers-reduced-motion:reduce){.bear .gm-tick circle,.bear .gm-tick path{animation:none;stroke-dashoffset:0;}.bear .gm-choice{transition:none;}}
 @media (max-height:700px){.bear .gm-bear{width:min(30vw,120px,17dvh);margin:4px 0 0;}.bear .gm-headline{margin:4px 0 12px;}.bear .gm-choice{min-height:72px;padding:10px 14px;}}
+/* Got a Moment?: Finish or share a task. "Let's do it" and "Ask someone" side by side, same size; the hand-off link. */
+.bear .btn.coral-line{background:#fff;color:var(--coral);box-shadow:inset 0 0 0 2px var(--coral);}
+.bear .gm-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-top:6px;}
+.bear .gm-pair .btn{min-height:54px;justify-content:center;font-size:17px;padding-left:8px;padding-right:8px;}
+.bear .gm-pair+.gm-actions{margin-top:10px;}
+.bear .gm-handoff{align-self:center;display:inline-flex;align-items:center;justify-content:center;margin-top:10px;min-height:44px;border:0;background:transparent;color:var(--coral);font-weight:600;font-size:15px;text-decoration:underline;cursor:pointer;}
+.bear .gm-card .gm-handoff{display:flex;width:fit-content;margin:10px auto 0;}
