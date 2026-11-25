@@ -8,6 +8,7 @@ import type {BoardTask,BoardView} from '@/lib/bear/board/service';
 import type {BearList} from '@/lib/bear/board/logic';
 import {Sheet} from '@/components/bear/ui';
 import {mailtoFor,smsFor} from '@/lib/bear/board/help';
+import {confetti,reducedMotion} from './celebrate';
 
 export type Say=(text:string,undo?:()=>void)=>void;
 
@@ -102,12 +103,15 @@ export function TaskRow({task,lists,index,count,actions,dragging,fresh,detailHre
  // Reorder from the keyboard: arrow keys on the handle. Focus follows the row to its new place.
  const nudge=(d:-1|1)=>{const to=index+d;if(to<0||to>=count)return;actions.move(task,task.listId,to);actions.say(`Moved ${d<0?'up':'down'}: ${task.title}`);requestAnimationFrame(()=>requestAnimationFrame(()=>(document.querySelector(`[data-row="${task.id}"] .b-handle`) as HTMLElement|null)?.focus()));};
  const [editing,setEditing]=useState(false);const [title,setTitle]=useState(task.title);const [menu,setMenu]=useState(false);
+ // Ticking it off: the box fills, a line crosses the title, a little confetti, then the row goes (Undo stays on the toast).
+ const [crossing,setCrossing]=useState(false);
+ function tick(e:React.MouseEvent<HTMLButtonElement>){if(crossing)return;setCrossing(true);confetti(e.currentTarget);setTimeout(()=>actions.complete(task),reducedMotion()?150:750);}
  function save(){setEditing(false);const t=title.trim();if(t&&t!==task.title)actions.rename(task,t);else setTitle(task.title);}
- return <Swipe className="b-swipe-row" data-row={task.id} data-list={task.listId||'inbox'} data-index={index} label={task.title} onDelete={()=>actions.remove(task)}><div className={`b-row${dragging?' dragging':''}${fresh?' fresh':''}`}>
-  <button type="button" className="b-check" role="checkbox" aria-checked={false} aria-label={`Done: ${task.title}`} onClick={()=>actions.complete(task)}><span/></button>
+ return <Swipe className="b-swipe-row" data-row={task.id} data-list={task.listId||'inbox'} data-index={index} label={task.title} onDelete={()=>actions.remove(task)}><div className={`b-row${dragging?' dragging':''}${fresh?' fresh':''}${crossing?' crossing':''}`}>
+  <button type="button" className={`b-check${crossing?' on':''}`} role="checkbox" aria-checked={crossing} aria-label={`Done: ${task.title}`} onClick={tick}><span/></button>
   <div className="b-main">
    {editing?<input className="b-edit" value={title} autoFocus maxLength={120} onChange={e=>setTitle(e.target.value)} onBlur={save} onKeyDown={e=>{if(e.key==='Enter')save();if(e.key==='Escape'){setTitle(task.title);setEditing(false);}}} aria-label="Edit"/>
-   :<button type="button" className="b-title" onClick={()=>{setTitle(task.title);setEditing(true);}} aria-label={`${task.title}. Tap to edit`}>{task.title}</button>}
+   :<button type="button" className="b-title" onClick={()=>{setTitle(task.title);setEditing(true);}} aria-label={`${task.title}. Tap to edit`}><span className="b-title-text">{task.title}</span></button>}
    <div className="b-meta">
     {lightDot(task.light)&&<i className="b-dot" style={{background:lightDot(task.light)!}} aria-label={task.light==='red'?'Urgent':'Soon'}/>}
     {task.dueAt&&<span>{formatAU(task.dueAt,'short')}{task.dueTime?` · ${task.dueTime}`:''}</span>}

@@ -9,6 +9,7 @@ import {mailtoFor,smsFor} from '@/lib/bear/board/help';
 import {AppHeader,LabelChip,MamaBear} from './v2';
 import {MomentChat} from './moment-chat';
 import {ShareBearSheet,useShareBear} from './share-bear';
+import {confetti} from './celebrate';
 
 export type GmState='home'|'break_time'|'break_suggestion'|'talk'|'task_time'|'task_suggestion'|'task_action'|'task_complete'|'share_suggestion';
 type Idea={id:string;title:string;line:string;minutes:number;icon:string};
@@ -92,8 +93,8 @@ export function MomentFlow(){
    setDetail(d);go('task_action');}
   catch{setMsg('Bear couldn’t open that task just now. Nothing has changed; try again in a moment.');}
   finally{setBusy(false);}}
- async function markDone(){if(!detail)return;setBusy(true);setMsg(null);
-  try{await apiSend(`/api/bear/tasks/${detail.id}/complete`,{method:null});go('task_complete',{done:[...s.done,detail.id]});}
+ async function markDone(e:React.MouseEvent<HTMLButtonElement>){if(!detail)return;const from=e.currentTarget.getBoundingClientRect();setBusy(true);setMsg(null);
+  try{await apiSend(`/api/bear/tasks/${detail.id}/complete`,{method:null});confetti({x:from.left+from.width/2,y:from.top});go('task_complete',{done:[...s.done,detail.id]});}
   catch(e){const m=(e as Error).message||'';if(/already/i.test(m))go('task_complete',{done:[...s.done,detail.id]});else setMsg('That didn’t save. Nothing was lost; try again.');}
   finally{setBusy(false);}}
 
@@ -159,6 +160,7 @@ export function MomentFlow(){
   {sharing&&<ShareBearSheet task={sharing} state={sb.state} onClose={()=>setSharing(null)} onDone={()=>{sb.reload();setSharing(null);go('home');}}/>}
   {cur==='task_complete'&&<section className="gm-done" role="status" aria-live="polite">
    <svg className="gm-tick" width="96" height="96" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24" fill="none" strokeWidth="3"/><path fill="none" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" d="m15 27 7 7 15-16"/></svg>
+   {detail&&<p className="gm-crossed"><span className="crossed-off">{detail.title}</span></p>}
    <h1 className="gm-h">One less thing on your mind.</h1>
    <div className="gm-actions"><button type="button" className="btn ghost wide" disabled={busy} onClick={()=>task(s.minutes||10,s.done)}>Another task</button><button type="button" className="btn quiet wide" onClick={()=>go('home')}>Back to Got a Moment</button></div>
    {note}

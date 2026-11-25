@@ -1206,3 +1206,31 @@
 .bear .gm-pair+.gm-actions{margin-top:10px;}
 .bear .gm-handoff{align-self:center;display:inline-flex;align-items:center;justify-content:center;margin-top:10px;min-height:44px;border:0;background:transparent;color:var(--coral);font-weight:600;font-size:15px;text-decoration:underline;cursor:pointer;}
 .bear .gm-card .gm-handoff{display:flex;width:fit-content;margin:10px auto 0;}
+/* Ticking a task off: the box fills with a tick, a line draws across the title, then the row softens before it goes. */
+.bear .b-check.on span{position:relative;box-shadow:none;}
+.bear .b-check.on span::after{content:'';position:absolute;left:7px;top:3px;width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg);}
+.bear .b-title-text{background:linear-gradient(currentColor,currentColor) no-repeat 0 55%/0 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;transition:background-size .4s ease;}
+.bear .b-row.crossing .b-title-text{background-size:100% 2px;}
+.bear .b-row.crossing{opacity:.55;transition:opacity .3s ease .35s;}
+@media (prefers-reduced-motion:reduce){.bear .b-title-text,.bear .b-row.crossing{transition:none;}}
+/* The crossed-off title on a finished task. */
+.bear .crossed-off{display:inline;background:linear-gradient(currentColor,currentColor) no-repeat 0 55%/100% 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;animation:bear-cross .5s ease both;color:var(--ink-2);}
+@keyframes bear-cross{from{background-size:0 2px;}to{background-size:100% 2px;}}
+@media (prefers-reduced-motion:reduce){.bear .crossed-off{animation:none;}}
+.bear .gm-crossed{margin:0 0 6px;font-size:17px;text-align:center;}
+/* My Wins: a count and the latest things crossed off. */
+.bear .mw-title{font-size:30px;margin:6px 0 14px;}
+.bear .mw-count{display:flex;flex-direction:column;align-items:center;text-align:center;padding:22px 16px;}
+.bear .mw-count b{font-size:52px;line-height:1;color:var(--coral);font-variant-numeric:tabular-nums;}
+.bear .mw-count span{font-weight:600;margin-top:4px;}
+.bear .mw-count p{margin:8px 0 0;color:var(--ink-2);font-size:15px;}
+.bear .mw-recent{margin-top:14px;}
+.bear .mw-recent ul{list-style:none;margin:6px 0 0;padding:0;}
+.bear .mw-recent li{display:flex;gap:10px;align-items:baseline;padding:9px 0;border-top:1px solid rgba(16,42,67,.08);}
+.bear .mw-recent li:first-child{border-top:0;}
+.bear .mw-tick{color:#3FA77A;font-weight:700;}
+.bear .mw-done{flex:1;min-width:0;text-decoration:line-through;text-decoration-thickness:2px;color:var(--ink-2);overflow-wrap:anywhere;}
+.bear .mw-recent time{color:var(--ink-2);font-size:13px;white-space:nowrap;}
+.bear .mw-empty{text-align:center;margin-top:14px;}
+.bear .mw-more{text-align:center;margin-top:18px;font-size:14px;}
+.bear .mw-more a{color:var(--ink-2);text-decoration:underline;}

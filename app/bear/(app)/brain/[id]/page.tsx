@@ -8,6 +8,7 @@ import {mailtoFor,smsFor} from '@/lib/bear/board/help';
 import type {BearList} from '@/lib/bear/board/logic';
 import {ErrorCard,Skeleton,TopBar} from '@/components/bear/ui';
 import {DelegationPanel,ShareBearSheet,useShareBear} from '@/components/bear/share-bear';
+import {confetti} from '@/components/bear/celebrate';
 
 type Detail=Awaited<ReturnType<typeof import('@/lib/bear/rre/service').detailView>>;
 // What her button says for each kind of step.
@@ -21,7 +22,11 @@ export default function ResponsibilityPage({params}:{params:Promise<{id:string}>
  const sb=useShareBear();const [asking,setAsking]=useState<{preset:{name:string;phone:string}|null}|null>(null);
  // When Share Bear news has just updated this task (an answer, a "done"), show the task as it is now.
  const sbStatus=sb.state?.requests.find(r=>r.taskId===id)?.status;useEffect(()=>{if(sbStatus&&d?.delegation&&d.delegation.status!==sbStatus)load();},[sbStatus]);// eslint-disable-line react-hooks/exhaustive-deps
- async function act(key:string,path:string,body:unknown,after?:string){setBusy(key);setErr(null);try{setD(await apiSend<Detail>(path,body));if(after)setSaved(after);}catch(e){setErr((e as Error).message);}finally{setBusy(null);}}
+ async function act(key:string,path:string,body:unknown,after?:string){setBusy(key);setErr(null);const was=d?.taskStatus==='done'||d?.status==='completed';
+  try{const next=await apiSend<Detail>(path,body);setD(next);if(after)setSaved(after);
+   // The whole task is finished (not just a step): a little confetti and the title crossed off.
+   if(!was&&(next.taskStatus==='done'||next.status==='completed'))confetti(document.querySelector('.v2-detail-title'));}
+  catch(e){setErr((e as Error).message);}finally{setBusy(null);}}
  async function classify(listId:string){setBusy('cat');try{await apiSend(`/api/bear/board/tasks/${id}/move`,{listId});await load();setSaved('Category changed. Bear will remember where you put things like this.');}catch(e){setErr((e as Error).message);}finally{setBusy(null);}}
  if(err&&!d)return <main id="main" className="bear-screen"><TopBar back={{href:'/bear/brain',label:'Bear Brain'}}/><ErrorCard message={err} retry={load}/></main>;
  if(!d)return <main id="main" className="bear-screen"><Skeleton/></main>;
@@ -33,7 +38,7 @@ export default function ResponsibilityPage({params}:{params:Promise<{id:string}>
  return <main id="main" className="bear-screen v2-screen">
   <TopBar back={{href:'/bear/brain',label:'Bear Brain'}}/>
   <p className={`v2-status s-${d.status}`}>{d.statusLabel}</p>
-  <h1 className="v2-detail-title">{d.title}</h1>
+  <h1 className="v2-detail-title">{done?<span className="crossed-off">{d.title}</span>:d.title}</h1>
   {!done&&!helping&&<p className="sb-entry-row"><button type="button" className="sb-entry" onClick={()=>setAsking({preset:null})}><span aria-hidden="true">🐻</span> Share Bear</button></p>}
   {saved&&<p className="note teal" role="status" style={{marginTop:10}}>{saved}</p>}
   {req&&<DelegationPanel r={req} onChanged={refresh} askAgain={preset=>setAsking({preset})}/>}

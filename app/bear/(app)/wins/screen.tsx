@@ -9,7 +9,7 @@ import {formatAU} from '@/lib/bear/domain/dates';
 import type {WinsView} from '@/lib/bear/services/wins';
 import {Art,EmptyArt,RoundBadge} from '@/components/bear/art';
 import {BearSays} from '@/components/bear/brand';
-import {Button,ErrorCard,Sheet,Skeleton,Toast} from '@/components/bear/ui';
+import {Button,ErrorCard,Sheet,Skeleton,Toast,TopBar} from '@/components/bear/ui';
 export function WinsScreen(){
  const router=useRouter();const params=useSearchParams();const just=params.get('just');
  const [data,setData]=useState<WinsView|null>(null);const [error,setError]=useState<string|null>(null);
@@ -25,7 +25,8 @@ export function WinsScreen(){
  const minutes=data?.totals.timeMinutes||0;
  return (
   <main id="main" className="bear-screen">
-   <h1>{brand.winsHeading}</h1><p className="muted" style={{marginTop:6}}>{brand.winsSub}</p>
+   <TopBar back={{href:'/bear/wins',label:'My Wins'}}/>
+   <h1>What Bear has protected</h1><p className="muted" style={{marginTop:6}}>{brand.winsSub}</p>
    {just&&<div className="glass" style={{padding:16,marginTop:16,display:'flex',gap:12,alignItems:'center'}}><RoundBadge size={88}/><div><BearSays>{brand.oneLess}</BearSays><p className="small muted">{just}</p></div></div>}
    {error&&<div style={{marginTop:14}}><ErrorCard message={error} retry={load}/></div>}
    {!data&&!error&&<div className="section"><Skeleton/></div>}

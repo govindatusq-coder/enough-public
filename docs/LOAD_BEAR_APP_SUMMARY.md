@@ -60,18 +60,29 @@ Navigation has three tabs. Settings is the gear in each screen's header.
   - This Week & Weekend
   - Aspirations
   - Bear files tasks into these. She can correct it, and Bear remembers.
-- **Task rows:** swipe left for a red **Delete** bin (with undo), or drag to reorder.
+- **Task rows:** tick the circle to finish one: the circle fills, a line crosses the title, a little confetti, then it goes
+  (with Undo). Swipe left for a red **Delete** bin (with undo), or drag to reorder.
 - **Each task's page:**
   - What needs to happen, and the next step.
   - **Give it to Bear,** where Bear prepares drafts, steps or shortlists, and never sends, buys or books.
   - The plan, other ways to do it, dates, the category and history.
   - **🐻 Share Bear.**
   - Add to Outlook, where connected.
-- **Links at the bottom:** Calendar, Share Bear, Bear Helps, Edit categories.
+- **Links at the bottom:** Calendar, Share Bear, Bear Helps, Edit categories, **My Wins** (with the count).
+
+### My Wins
+- How many things she has finished, with this week and this month, and the latest ones crossed off.
+- Just a count: no streaks, targets or badges. Examples never count, and undoing a "done" takes it back off.
+- The older detail (money and time Bear protected, pressure prevented, receipts) is one quiet link away.
+
+### Finishing a task
+- Wherever she finishes a whole task (a Bear Brain row, a task's page, Got a Moment?), the title is crossed off and a small,
+  one-second burst of confetti plays. Not for single steps. No sound. Skipped when the phone asks for reduced motion.
 
 ## Share Bear: ask someone for help
 - **Asking.** From a task, she chooses a recent helper or types a mobile number. She sees exactly what will be shared (never
   her notes), then sends.
+- **The sheet** has Cancel at every step, so she can back out before anything is sent.
 - **Their side.** They get a link and answer on a simple page with no app or account: Yes or No. Later they can mark it
   Done, say Still on track, say they can't any more, or turn reminders off.
 - **Bear's follow-up.**

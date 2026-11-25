@@ -95,10 +95,10 @@ try{
   await p.click('.gm-time:has-text("10 min")');await p.waitForSelector('.gm-card-title');
   assert.equal((await p.textContent('.gm-card .v2-label')).trim(),'Worth doing now');assert.equal((await p.textContent('.gm-card-title')).trim(),'Review Christmas gift shortlist');
   assert.match(await p.textContent('.gm-card'),/Choosing a few now could avoid last-minute shopping/);await shot('v04c-task');
-  // Ask someone sits beside Let's do it, and opens Share Bear on this task; tapping outside closes it and leaves the suggestion as it was.
+  // Ask someone sits beside Let's do it, and opens Share Bear on this task; Cancel closes it and leaves the suggestion as it was.
   assert.ok(await p.isVisible('.gm-pair button:has-text("Let’s do it")')&&await p.isVisible('.gm-pair button:has-text("Ask someone")'));
   await p.click('.gm-pair button:has-text("Ask someone")');await p.waitForSelector('.sb-h:has-text("Who can help with this?")');
-  await p.click('.sheet-backdrop',{position:{x:40,y:40}});await p.waitForSelector('.sb-sheet',{state:'detached'});assert.equal((await p.textContent('.gm-card-title')).trim(),'Review Christmas gift shortlist');
+  await p.click('.sb-sheet button:has-text("Cancel")');await p.waitForSelector('.sb-sheet',{state:'detached'});assert.equal((await p.textContent('.gm-card-title')).trim(),'Review Christmas gift shortlist');
   await p.click('button:has-text("Let’s do it")');await p.waitForSelector('.gm-do');assert.match(await p.textContent('.gm-do'),/Sarah: \(add a few ideas\)/);
   assert.ok(await p.isVisible('button:has-text("Mark as done")'));assert.ok(await p.isVisible('button:has-text("Ask someone to do it")'));
   // Back steps back through the flow, not out of it.
@@ -109,7 +109,7 @@ try{
   for(let k=0;k<8&&!/library/i.test(await p.textContent('.gm-card-title'));k++){const t=await p.textContent('.gm-card-title');await p.click('button:has-text("Another task")');await p.waitForFunction(x=>document.querySelector('.gm-card-title')?.textContent!==x||document.querySelector('.gm-card h1')?.textContent.startsWith('Nothing'),t);}
   assert.match(await p.textContent('.gm-card-title'),/library/i);
   await p.click('button:has-text("Let’s do it")');await p.waitForSelector('.gm-do');await p.click('button:has-text("Mark as done")');
-  await p.waitForSelector('.gm-done:has-text("One less thing on your mind.")');await shot('v04d-done');
+  await p.waitForSelector('.gm-done:has-text("One less thing on your mind.")');assert.match(await p.textContent('.gm-crossed .crossed-off'),/library/i,'the task, crossed off');await shot('v04d-done');
   const bd=(await api('/api/bear/board',null,'GET')).board;assert.ok(![...bd.inbox,...Object.values(bd.byList).flat()].some(t=>/library/i.test(t.title)),'done in Bear Brain straight away');
   await p.click('button:has-text("Back to Got a Moment")');await p.waitForSelector('.gm-choices');
  });
@@ -169,6 +169,22 @@ try{
   await q.click('.gm-card button:has-text("Ask someone")');await q.waitForSelector('.sb-h:has-text("Who can help with this?")');
   await q.click('.sheet-backdrop',{position:{x:40,y:40}});await q.waitForSelector('.sb-sheet',{state:'detached'});
   await q.click('.gm-card button:has-text("Not now")');await q.waitForSelector('.gm-choices');await ctx3.close();
+ });
+ await step('Crossing off in Bear Brain (box fills, line through, then it goes, Undo still there); My Wins counts it, from a small link',async()=>{
+  await api('/api/bear/board/dump',{text:'Water the pot plants',via:'text'});
+  const before=(await api('/api/bear/wins/summary',null,'GET')).total;
+  const brain=await api('/api/bear/rre/brain',null,'GET');const cat=brain.categories.find(c=>c.items.some(i=>/pot plants/i.test(i.title)));
+  await p.goto(base+'/bear/brain');await p.waitForSelector(`.v2-cat-head:has-text("${cat.title}")`);
+  await p.waitForSelector(`.board-links a.brain-wins:has-text("My Wins (${before})")`);
+  await p.click(`.v2-cat-head:has-text("${cat.title}")`);const row=p.locator('.b-row:has-text("Water the pot plants")');await row.waitFor();
+  await row.locator('.b-check').click();
+  await p.waitForSelector('.b-row.crossing:has-text("Water the pot plants") .b-check.on');
+  assert.equal(await p.$eval('.b-row.crossing .b-title-text',e=>getComputedStyle(e).backgroundImage.includes('gradient')),true,'a line draws through the title');
+  await p.waitForSelector('.b-row:has-text("Water the pot plants")',{state:'detached'});await p.waitForSelector('.undo-toast:has-text("Done: Water the pot plants") button:has-text("Undo")');
+  await p.click('.board-links a.brain-wins');await p.waitForSelector('.mw-count');
+  assert.equal(Number(await p.textContent('.mw-count b')),before+1);assert.match(await p.textContent('.mw-count p'),/^This week \d+ · This month \d+$/);
+  assert.match(await p.textContent('.mw-recent li:first-child .mw-done'),/Water the pot plants/);await shot('v08-my-wins');
+  await p.click('.mw-more a');await p.waitForSelector('h1:has-text("What Bear has protected")');
  });
  await step('Share Bear by text: ask from the task, exact preview, test-mode send, Daniel answers without an account, she hears back, done',async()=>{
   await api('/api/bear/board/dump',{text:'Pick up Ella’s birthday cake on Friday before 3 pm',via:'text'});

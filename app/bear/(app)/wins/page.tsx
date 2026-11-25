@@ -1,3 +1,3 @@
 import {Suspense} from 'react';
-import {WinsScreen} from './screen';
-export default function Wins(){return <Suspense fallback={null}><WinsScreen/></Suspense>;}
+import {MyWinsScreen} from './my-wins';
+export default function Wins(){return <Suspense fallback={null}><MyWinsScreen/></Suspense>;}

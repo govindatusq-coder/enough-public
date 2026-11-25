@@ -55,7 +55,7 @@ export default function Me(){
     <Link href="/bear/calendar" className="row">Bear’s calendar</Link>
     <Link href="/bear/overview" className="row">Your areas (Family, Home, Money, Work…)</Link>
     <Link href="/bear/ideas" className="row">Bear Ideas</Link>
-    <Link href="/bear/wins" className="row">What’s been handled</Link>
+    <Link href="/bear/wins" className="row">My Wins</Link>
    </div></section>
    <section className="section"><p className="eyebrow">Your Bear</p><div className="card">
     <div className="row"><span className="grow"><span className="title">Your name</span><br/>{nameDraft===null?<span className="faint">{p.name||'Not set yet'}</span>:<span style={{display:'flex',gap:8,marginTop:6}}><input aria-label="Your first name" value={nameDraft} maxLength={40} onChange={e=>setNameDraft(e.target.value)} style={{minWidth:0,flex:1}}/><Button className="sm" variant="primary" disabled={!nameDraft.trim()} onClick={async()=>{await apiSend('/api/bear/profile',{name:nameDraft.trim()},'PUT');setNameDraft(null);await load();}}>Save</Button></span>}</span>{nameDraft===null&&<Button className="sm" variant="ghost" onClick={()=>setNameDraft(p.name)}>{p.name?'Change':'Add'}</Button>}</div>

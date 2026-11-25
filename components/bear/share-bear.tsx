@@ -47,6 +47,7 @@ export function ShareBearSheet({task,state,onClose,onDone,preset}:{task:{id:stri
    <div className="sb-ways">
     {picker&&<button type="button" className="btn ghost wide" onClick={pick}>Choose from contacts</button>}
     <button type="button" className="btn ghost wide" onClick={()=>{setName('');setPhone('');setStep('enter');}}>Enter mobile number</button>
+    <button type="button" className="btn quiet wide" onClick={onClose}>Cancel</button>
    </div>
   </>}
   {step==='enter'&&<>
@@ -55,7 +56,7 @@ export function ShareBearSheet({task,state,onClose,onDone,preset}:{task:{id:stri
    <label className="sb-field">Mobile number<input value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" autoComplete="off" maxLength={24} placeholder="0412 345 678"/></label>
    {phone&&check.ok&&<p className="sb-note">Bear will text {check.display}. Check it’s {who}’s number.</p>}
    {err&&<p className="note coral" role="alert">{err}</p>}
-   <div className="sb-actions"><button type="button" className="btn coral wide" onClick={toPreview}>Next</button><button type="button" className="btn quiet wide" onClick={()=>setStep('who')}>Back</button></div>
+   <div className="sb-actions"><button type="button" className="btn coral wide" onClick={toPreview}>Next</button><button type="button" className="btn quiet wide" onClick={()=>setStep('who')}>Back</button><button type="button" className="btn quiet wide" onClick={onClose}>Cancel</button></div>
   </>}
   {step==='preview'&&check.ok&&<>
    <h2 className="sb-h">Ask {who} for help?</h2>
@@ -73,7 +74,7 @@ export function ShareBearSheet({task,state,onClose,onDone,preset}:{task:{id:stri
    {res.result==='own_phone'&&<div className="sb-done" role="status"><h2 className="sb-h">Send it from your phone</h2><p>Your Messages app opens with the text ready. Send it, then come back and tap “I’ve sent it”.</p>
     <div className="sb-actions"><a className="btn coral wide" href={res.smsHref}>Open Messages</a><button type="button" className="btn ghost wide" disabled={busy} onClick={()=>act('sent_myself')}>I’ve sent it</button></div></div>}
    {res.result==='failed'&&<div className="sb-done" role="alert"><h2 className="sb-h">Bear couldn’t send that request.</h2><p>Nothing was sent to {res.delegation.to}.</p>
-    <div className="sb-actions"><button type="button" className="btn coral wide" disabled={busy} onClick={()=>act('retry')}>Try again</button><button type="button" className="btn ghost wide" disabled={busy} onClick={async()=>{await act('cancel');setStep('enter');}}>Check number</button></div></div>}
+    <div className="sb-actions"><button type="button" className="btn coral wide" disabled={busy} onClick={()=>act('retry')}>Try again</button><button type="button" className="btn ghost wide" disabled={busy} onClick={async()=>{await act('cancel');setStep('enter');}}>Check number</button><button type="button" className="btn quiet wide" disabled={busy} onClick={onClose}>Close</button></div></div>}
    {err&&<p className="note coral" role="alert">{err}</p>}
    {res.result!=='own_phone'&&res.result!=='failed'&&<div className="sb-actions"><button type="button" className="btn ghost wide" onClick={()=>{onDone();onClose();}}>Done</button></div>}
   </>}
