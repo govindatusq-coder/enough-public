@@ -68,7 +68,7 @@ export function label(s:DStatus):string{return ({DRAFT:'Not sent',PENDING_SEND:'
 export function noticeText(d:Delegation,t:NoticeType):{title:string;body:string}{
  const who=d.recipient.name,what=d.snapshot.title.replace(/\.$/,'');const low=what.charAt(0).toLowerCase()+what.slice(1);
  switch(t){
-  case 'REQUEST_ACCEPTED':return {title:`${who}’s got this!`,body:`${who} accepted your request to ${low}.`};
+  case 'REQUEST_ACCEPTED':return {title:`${who}’s got this!`,body:`${who} accepted your request to ${low}. You don’t need to organise it yourself.`};
   case 'REQUEST_DECLINED':return {title:`${who} can’t take this one.`,body:`${who} declined: ${low}. It’s back with you.`};
   case 'REQUEST_COMPLETED':return {title:'All taken care of!',body:`${who} marked “${what}” as done.`};
   case 'REQUEST_UNABLE_TO_COMPLETE':return {title:`${who} needs a hand.`,body:`${who} can no longer ${low}. It’s back with you.`};

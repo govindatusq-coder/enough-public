@@ -3,6 +3,7 @@
 import {useEffect,useState} from 'react';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import {ErrorCard,Skeleton,TopBar} from '@/components/bear/ui';
+import {AdaptiveLearned} from '@/components/bear/adaptive-learned';
 interface Pref{id:string;text:string;source:'explicit'|'inferred'|'observed';evidenceCount:number;dimension:string;value:string}
 const where={explicit:'You told Bear',inferred:'Bear noticed this a few times',observed:'Bear noticed this once (not a rule yet)'};
 export default function Learned(){
@@ -23,6 +24,7 @@ export default function Learned(){
    <button type="button" className="chip" role="radio" aria-checked={buy?.source==='explicit'&&buy.value==='online'} onClick={()=>set('online')}>Order online when it saves a trip</button>
    <button type="button" className="chip" role="radio" aria-checked={buy?.source==='explicit'&&buy.value==='in_person'} onClick={()=>set('in_person')}>I like to buy in person</button>
   </div></section>
+  <AdaptiveLearned/>
   {err&&<div style={{marginTop:12}}><ErrorCard message={err}/></div>}
  </main>;
 }

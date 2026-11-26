@@ -59,6 +59,10 @@ export default function ResponsibilityPage({params}:{params:Promise<{id:string}>
      :<button type="button" className="btn coral sm" disabled={!!busy} onClick={()=>act('rep',`/api/bear/rre/${id}/step`,{action:'replied'})}>They’ve replied</button>}</div></>}
   </section>}
   {done&&<p className="note teal" style={{marginTop:14}}>Done. {d.outcome}.</p>}
+  {!done&&d.carrying&&<section className="v2-card v2-sec carrying" aria-labelledby="carry-h"><h2 id="carry-h" className="v2-h3">Who’s carrying what</h2>
+   {d.carrying.latestUsefulActionAt&&d.dueAt&&d.carrying.latestUsefulActionAt<d.dueAt&&<p className="tiny" style={{marginBottom:6}}>Best started by {fmt(d.carrying.latestUsefulActionAt)}, to allow time before {fmt(d.dueAt)}.</p>}
+   <ul className="carry-list">{([['anticipation','Noticing it'],['identification','Working out the options'],['decision','Deciding'],['execution','Doing it'],['monitoring','Keeping track']] as const).map(([k,l])=>{const w=d.carrying.labour[k];
+    return <li key={k}><span>{l}</span><b className={`cw-${w}`}>{w==='bear'?'Bear':w==='you'?'You':w==='someone_else'?'Someone else':w==='done'?'Done':'Not needed'}</b></li>;})}</ul></section>}
 
   {d.prepared&&<section className="v2-card v2-sec"><h2 className="v2-h3">What Bear has done</h2><p><strong>{d.prepared.title}</strong></p>
    {d.prepared.lines.length>0&&<ul className="v2-lines">{d.prepared.lines.map((l,i)=><li key={i}>{l}</li>)}</ul>}

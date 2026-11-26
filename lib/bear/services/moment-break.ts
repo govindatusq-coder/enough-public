@@ -59,5 +59,6 @@ export async function suggestBreak(store:BearStore,input:z.infer<typeof breakSch
 // Her "Sounds good": the only signal Bear learns from.
 export async function likeBreak(store:BearStore,id:string){
  if(!BREAKS.some(b=>b.id===id))return;const p=await ensureProfile(store);const prefs=p.breakPrefs||{liked:{},recent:[]};
+ {const {recordRelief}=await import('../adaptive/relief.ts');await recordRelief(store,{event:'recovery_chosen',taskId:null,source:'need_a_break',verified:'user_confirmed',visible:false});}
  await store.update('profiles',p.id,{breakPrefs:{...prefs,liked:{...prefs.liked,[id]:Math.min((prefs.liked[id]||0)+1,20)}}});
 }

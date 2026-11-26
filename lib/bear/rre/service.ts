@@ -18,7 +18,8 @@ import {chooseMoment,nextForHer,type Candidate} from './decide.ts';
 import {prepareFor} from './prepare.ts';
 import {chooseShare} from './share-pick.ts';
 import {attributesOf} from '../adaptive/attributes.ts';
-import {learnedList} from '../adaptive/learning.ts';
+import {learnedList,learnStrategy,mayAskFeedback} from '../adaptive/learning.ts';
+import {recordRelief} from '../adaptive/relief.ts';
 import {isKnownList,ruleSuggestion} from '../adaptive/lists.ts';
 import {adaptiveMoment} from '../adaptive/strategy.ts';
 import {conditionFor} from '../adaptive/flags.ts';
@@ -86,7 +87,9 @@ export async function recommend(store:BearStore,input:z.infer<typeof momentSchem
  // The decision trace is kept (last 10) for checking how Bear decided; it is not shown in the app.
  await store.update('profiles',ctx.profile.id,{rreTrace:[res.trace,...(ctx.profile.rreTrace||[])].slice(0,10),// Browsing alternatives ("Something else") doesn't replace the main suggestion for this window.
   ...(res.recommendation&&!input.exclude.length?{rreLast:{taskId:res.recommendation.taskId,minutes:input.minutes,at:now.toISOString()}}:{})});
- return {recommendation:res.recommendation,message:res.message,suggestMinutes:res.suggestMinutes,waiting:res.waiting,alternative:res.alternative,adaptive:res.adaptive};
+ return {recommendation:res.recommendation,message:res.message,suggestMinutes:res.suggestMinutes,waiting:res.waiting,alternative:res.alternative,adaptive:res.adaptive,
+  // Optional feedback is offered at most once a day, and only once she has told Bear how her days work.
+  askFeedback:!!ctx.profile.temporal&&mayAskFeedback(ctx.profile.adaptive,now)};
 }
 // "No time? Hand something off": one task someone else could do, or null (Bear says so honestly).
 export const sharePickSchema=z.object({exclude:z.array(z.string().uuid()).max(50).default([])}).strict();
@@ -96,10 +99,13 @@ export async function recommendShare(store:BearStore,input:z.infer<typeof shareP
 }
 // What she did with a Got a Moment? suggestion, kept so we can see whether handing off helps: did she ask someone, ask for
 // another, or say not now. Only the choice and the task id are kept; never her words.
-export const momentFeedbackSchema=z.object({taskId:z.string().uuid(),surface:z.enum(['finish','share']),response:z.enum(['do_it','ask_someone','another','not_now'])}).strict();
+export const momentFeedbackSchema=z.object({taskId:z.string().uuid(),surface:z.enum(['finish','share']),response:z.enum(['do_it','ask_someone','another','not_now']),strategy:z.enum(['allocate','prioritise','synchronise','adapt','match','offload','protect']).optional()}).strict();
 export async function momentFeedback(store:BearStore,input:z.infer<typeof momentFeedbackSchema>,now=new Date()){
  const accepted=input.response==='do_it'||input.response==='ask_someone';
- await recordBehaviour(store,accepted?'suggestion_accepted':'suggestion_rejected',{kind:`moment_${input.surface}`,response:input.response,taskId:input.taskId},now);
+ await recordBehaviour(store,accepted?'suggestion_accepted':'suggestion_rejected',{kind:`moment_${input.surface}`,response:input.response,taskId:input.taskId,strategy:input.strategy??null},now);
+ // Which kinds of help she takes up (strategy learning). "Another" or "not now" is read gently: it counts, but says nothing about her.
+ if(input.strategy){const p=await ensureProfile(store);await store.update('profiles',p.id,{adaptive:learnStrategy(p.adaptive,input.strategy,accepted)});}
+ if(accepted)await recordRelief(store,{event:'decision_simplified',taskId:input.taskId,source:'got_a_moment',verified:'user_confirmed',visible:false},now);
 }
 export async function skip(store:BearStore,taskId:string,now=new Date()){
  const t=await store.get('tasks',taskId);if(!t)throw new Error('not_found');const ctx=await ctxOf(store,now);const plan=await ensurePlan(store,t,ctx,now);
@@ -134,6 +140,7 @@ export async function giveToBear(store:BearStore,provider:StructuredModelProvide
    const ideas=plan.kind==='gifts'?await giftIdeas(store,provider,ctx.family,now):null;
    const prepared=prepareFor(plan,t,bill,{name:(ctx.profile.name||'').split(/\s+/)[0]||'',family:ctx.family,giftIdeas:ideas},now);
    plan={...plan,execution:{...plan.execution,state:'preparing',prepared,key:`${t.id}:${plan.selected}:${plan.stepIndex}`,log:[...plan.execution.log,{at:now.toISOString(),text:`Bear prepared: ${prepared.title}`}]}};
+   if(prepared.kind!=='steps'&&prepared.kind!=='note')await recordRelief(store,{event:'information_prepared',taskId:t.id,source:'bear',verified:'system_record',visible:true},now);
   }
   plan=advance(plan,now,ctx.today,'Ready for you');
   plan={...plan,execution:{...plan.execution,state:'ready_for_review'}};
@@ -159,6 +166,7 @@ export async function stepAction(store:BearStore,taskId:string,input:z.infer<typ
   plan=alt?switchPathway({...plan,execution:{...plan.execution,state:'failed'}},alt.id,now,`It didn’t arrive. Next: ${alt.label.toLowerCase()}`,'bear'):{...plan,execution:{...plan.execution,state:'failed',log:[...plan.execution.log,{at:now.toISOString(),text:'It didn’t arrive, and there’s no other way left that works in time'}]}};
  }else if(input.action==='arrived'||input.action==='replied'){
   plan=resolveWait(plan,now,ctx.today,input.action==='arrived'?'It arrived':'They replied');
+  await recordRelief(store,{event:'dependency_resolved',taskId:t.id,source:'user',verified:'user_confirmed',visible:true},now);
   // For a delivery, "it arrived" is the outcome itself, so it needs no second confirmation.
   if(input.action==='arrived'&&currentStep(plan)?.kind==='confirm')plan=advance(plan,now,ctx.today,'Outcome confirmed');
  }else{
@@ -166,6 +174,7 @@ export async function stepAction(store:BearStore,taskId:string,input:z.infer<typ
   plan=advance(plan,now,ctx.today,`Done: ${s.text}`);
   const nxt=currentStep(plan);
   // Waiting on a delivery or a reply: a real reminder (the durable reminder job) brings it back on the expected day.
+  if(nxt?.kind==='wait'&&plan.deadlines.followUp)await recordRelief(store,{event:'monitoring_established',taskId:t.id,source:'bear',verified:'system_record',visible:true},now);
   if(nxt?.kind==='wait'&&plan.deadlines.followUp){try{await acceptPlan(store,{taskId:t.id,when:zonedDateTime(plan.deadlines.followUp,9*60,ctx.tz),label:'Bear checks back',rationale:nxt.text,key:'custom',followUpIfUnpaid:false},now);}catch{/* still shown in Bear Brain on the day */}}
  }
  await store.update('tasks',t.id,{rre:plan});
@@ -185,7 +194,9 @@ function detailFrom(t:Task,plan:Plan,ctx:Ctx){
   next:n?{text:n.step.text,minutes:n.step.userMinutes,needsBear:n.needsBear}:null,current:currentStep(plan),
   prepared:plan.execution.prepared,log:plan.execution.log,dependencies:plan.dependencies,opportunities:plan.opportunities,
   alternatives:plan.pathways.filter(p=>p.id!==path.id).map(p=>({id:p.id,label:p.label,description:p.description,minutes:p.userMinutes,feasibility:p.feasibility,why:p.why})),
-  executionState:plan.execution.state,taskStatus:t.status,dueAt:t.dueAt||null,dueTime:t.dueTime||null,delegation:t.delegation||null};
+  executionState:plan.execution.state,taskStatus:t.status,dueAt:t.dueAt||null,dueTime:t.dueTime||null,delegation:t.delegation||null,
+  // Who is carrying each part (noticing, finding options, deciding, doing, keeping track), and the latest useful moment to act.
+  carrying:(()=>{const a=attributesOf(t,plan,{status});return {labour:a.labour,latestUsefulActionAt:a.latestUsefulActionAt,humanMinutes:a.humanMinutes,executionMode:a.executionMode};})()};
 }
 export async function detailView(store:BearStore,taskId:string,now=new Date()){
  const t=await store.get('tasks',taskId);if(!t)throw new Error('not_found');const ctx=await ctxOf(store,now);

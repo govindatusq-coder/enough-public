@@ -62,6 +62,7 @@ export async function completeTask(store:BearStore,input:CompleteInput,now=new D
   if(!isStep)win=await store.insert('wins',stamp<Win>(store.userId,{completionId:completion.id,category:task.kind==='appointment'&&/me|gp|doctor|dentist|physio/i.test(task.title)&&!task.forPerson?'me':'handled',title:task.title,detail:timing,amountCents:null,minutes:null,billId:null,isDemo:task.isDemo}));
  }
  await syncState(store,task.id,input.evidence==='time'?'system':input.evidence==='email'?'integration':'user',now).catch(()=>null);
+ {const {recordRelief}=await import('../adaptive/relief.ts');await recordRelief(store,{event:'responsibility_completed',taskId:task.id,source:input.method==='share_bear'?'share_bear':'user',verified:input.evidence==='email'||input.evidence==='receipt'?'system_record':input.evidence==='time'?'unverified':'user_confirmed',visible:true},now);}
  return {completion,win:win as Win,ledger,expectation,suggestion};
 }
 export const categoryLabel=(c:string)=>({electricity:'Electricity',gas:'Gas',water:'Water',internet:'Internet',mobile:'Mobile',council_rates:'Council rates',car_registration:'Car registration',insurance:'Insurance',school_fees:'School fee',childcare:'Childcare',sports_fees:'Sports fee',subscription:'Subscription',rent:'Rent',strata:'Strata',medical:'Medical',other:'Bill'} as Record<string,string>)[c]||'Bill';

@@ -38,7 +38,9 @@ export async function buildOutbox(store:BearStore,previous:Outbox|null,now=new D
   items.push({reminder:{id:r.id,taskId:r.taskId,billId:r.billId,status:r.status,scheduledFor:r.scheduledFor,kind:r.kind,message:r.message,attempts:r.attempts,deliveredAt:r.deliveredAt,deliveredVia:r.deliveredVia},
    task:{id:t.id,title:t.title,status:t.status,dueAt:t.dueAt,timing:t.timing,estimatedMinutes:t.estimatedMinutes},bill:b?{id:b.id,category:b.category}:null});
  }
- return {v:1,userId:store.userId,builtAt:now.toISOString(),subs,profile:{lifeRhythm:profile.lifeRhythm,notification:profile.notification,dayMode:profile.dayMode,dayModeSetAt:profile.dayModeSetAt},signals,items,sent};
+ // Her choice of how Bear helps through the day (How your days work) decides what reaches her phone.
+ const {commsFilter}=await import('../adaptive/comms.ts');const pushed=commsFilter(items,profile.temporal?.comms,profile.lifeRhythm.timezone||'Australia/Sydney');
+ return {v:1,userId:store.userId,builtAt:now.toISOString(),subs,profile:{lifeRhythm:profile.lifeRhythm,notification:profile.notification,dayMode:profile.dayMode,dayModeSetAt:profile.dayModeSetAt},signals,items:pushed,sent};
 }
 
 // Run by the scheduled job for one person. Same decision as the app itself (quiet hours, hard days, deadlines), one

@@ -146,6 +146,7 @@ export async function syncOwner(store:BearStore,rows:DelegationRows,complete:(ta
     if(d.status==='ACCEPTED'&&!d.changedSince&&(t.title!==d.snapshot.title||(t.dueAt||null)!==d.snapshot.due)){d={...d,changedSince:true,events:[...d.events,{at:now.toISOString(),type:'owner_changed_task',from:d.status,to:d.status,by:'owner'}]};d=await save(rows,d);}
     if(t.delegation?.id===d.id&&t.delegation.status!==d.status){
      if(d.status==='COMPLETED'&&t.status==='open'){await complete(t.id,d.recipient.name).catch(()=>null);}
+     if(d.status==='ACCEPTED'){const {recordRelief}=await import('../adaptive/relief.ts');await recordRelief(store,{event:'ownership_accepted',taskId:t.id,source:'share_bear',verified:'recipient_confirmed',visible:true},now);}
      const waiting=['PENDING_SEND','SENT','ACCEPTED'].includes(d.status);
      await store.update('tasks',t.id,{delegation:{...t.delegation,status:d.status,at:now.toISOString()},readiness:waiting?'waiting':t.readiness==='waiting'?null:t.readiness??null});
     }

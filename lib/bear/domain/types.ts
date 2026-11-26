@@ -264,7 +264,7 @@ export type WealthReason='late_fee_avoided'|'early_discount_used'|'subscription_
 export interface ValueLedgerEntry extends Owned{kind:LedgerKind;reason:WealthReason|'care_task'|'protected_time';label:string;amountCents:number|null;minutes:number|null;occurredAt:ISODateTime;sourceTaskId:Id|null;sourceBillId:Id|null;defensible:boolean;isDemo:boolean;source?:'user'}
 
 // ---------- Behaviour ----------
-export const behaviourTypes=['suggestion_accepted','suggestion_rejected','task_completed','reminder_delivered','reminder_opened','reminder_snoozed','reminder_dismissed','capture_created','capture_rejected','field_corrected','task_dropped','day_mode_set','rhythm_changed','assist_used','plan_accepted','plan_changed','pattern_unknown','load_action','priority_later','priority_importance','idea_response','coverage_merged','responsibility_op','research_signal'] as const;
+export const behaviourTypes=['suggestion_accepted','suggestion_rejected','task_completed','reminder_delivered','reminder_opened','reminder_snoozed','reminder_dismissed','capture_created','capture_rejected','field_corrected','task_dropped','day_mode_set','rhythm_changed','assist_used','plan_accepted','plan_changed','pattern_unknown','load_action','priority_later','priority_importance','idea_response','coverage_merged','responsibility_op','research_signal','relief'] as const;
 export type BehaviourType=typeof behaviourTypes[number];
 export interface BehaviourEvent extends Owned{type:BehaviourType;at:ISODateTime;hourLocal:number;weekday:Weekday;detail:Record<string,unknown>}
 

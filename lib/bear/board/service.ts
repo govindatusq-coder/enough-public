@@ -110,6 +110,7 @@ export async function unload(store:BearStore,provider:StructuredModelProvider|nu
    const t=await createOne(store,s,capture.id,today,minRank-parts.length+i,null,now);added.push({id:t.id,title:t.title});
   }
   await store.update('captures',capture.id,{status:'verified'});
+  if(added.length){const {recordRelief}=await import('../adaptive/relief.ts');await recordRelief(store,{event:'responsibility_captured',taskId:null,source:input.via,verified:'system_record',visible:false,count:added.length},now);}
   return {dumpId:capture.id,added,already,usedAI};
  }catch(e){await store.update('captures',capture.id,{status:'failed',error:e instanceof Error?e.message.slice(0,300):'failed'}).catch(()=>null);throw e;}
 }
@@ -199,7 +200,9 @@ export async function saveProgress(store:BearStore,taskId:string,input:z.infer<t
  const task=await store.get('tasks',taskId);if(!task)throw new Error('not_found');
  const prev=task.progress||{savedAt:now.toISOString()};
  const progress={...prev,...input,savedAt:now.toISOString()};
- return store.update('tasks',taskId,{progress});
+ const saved=await store.update('tasks',taskId,{progress});
+ {const {recordRelief}=await import('../adaptive/relief.ts');await recordRelief(store,{event:'progress_preserved',taskId,source:'user',verified:'system_record',visible:false},now);}
+ return saved;
 }
 export const detailsSchema=z.object({minutes:z.number().int().min(1).max(600).nullable().optional(),readiness:z.enum(['needs_info','waiting']).nullable().optional()}).strict();
 export async function setDetails(store:BearStore,taskId:string,input:z.infer<typeof detailsSchema>){

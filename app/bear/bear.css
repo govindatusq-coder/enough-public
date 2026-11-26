@@ -1264,3 +1264,9 @@
 .bear .ob-later{display:block;margin:14px auto 0;}
 .bear .lists-suggested{margin-top:14px;}
 .bear .gm-card-note{margin:6px 0 0;color:var(--navy);font-size:15px;background:#FFF4F2;border-radius:12px;padding:8px 12px;}
+/* A task's page: who is carrying each part of the mental work. */
+.bear .carry-list{list-style:none;margin:0;padding:0;display:grid;gap:4px;}
+.bear .carry-list li{display:flex;justify-content:space-between;gap:10px;font-size:15px;padding:3px 0;}
+.bear .carry-list b{font-weight:600;}.bear .carry-list .cw-bear{color:#2E8A64;}.bear .carry-list .cw-you{color:var(--coral);}
+.bear .carry-list .cw-not_needed,.bear .carry-list .cw-done{color:var(--ink-2);font-weight:400;}
+.bear .al .row{align-items:flex-start;gap:8px;}.bear .al-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}

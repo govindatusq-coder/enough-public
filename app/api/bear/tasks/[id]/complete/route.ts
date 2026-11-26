@@ -1,5 +1,8 @@
 import {json,readJson,withBear} from '@/lib/bear/server/context';
 import {completeSchema,completeTask} from '@/lib/bear/services/completion';
+import {ensureProfile} from '@/lib/bear/services/profile';
+import {reliefMessage} from '@/lib/bear/adaptive/relief';
+import {todayISO} from '@/lib/bear/domain/dates';
 import {sharesForRequest} from '@/lib/bear/server/robot-shares';
 import {pushToSender} from '@/lib/bear/server/share-push';
 export const dynamic='force-dynamic';
@@ -8,5 +11,8 @@ export const POST=(req:Request,{params}:{params:Promise<{id:string}>})=>withBear
  // Something someone handed her is finished: they see it straight away, without having to chase.
  const task=await store.get('tasks',id);
  if(task?.sharedIn){try{const b=(await sharesForRequest(store));const s=await b.get(task.sharedIn.shareId);if(s&&s.status==='accepted'){const saved=await b.save({...s,status:'done',senderSeen:false});await pushToSender(saved).catch(()=>null);}}catch{/* shown next time either opens the app */}}
- return json(res,201);
+ // A few true words for what just happened, suited to how her days work ("Sorted, ahead of time" only when it was).
+ const profile=await ensureProfile(store);const today=todayISO(profile.lifeRhythm.timezone||'Australia/Sydney');
+ const relief={message:reliefMessage('responsibility_completed',{profile:profile.temporal||null,early:!!task?.dueAt&&task.dueAt>today})};
+ return json({...res,relief},201);
 });
