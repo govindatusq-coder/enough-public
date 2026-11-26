@@ -41,7 +41,8 @@ async function build(sc){
  const s=new MemoryBackend().for('9e000000-0000-4000-8000-000000000001');await ensureProfile(s);
  await saveProfile(s,{name:'Synthetic',onboardingComplete:true,lifeRhythm:{timezone:sc.tz,blocks:[]}});await saveAnswers(s,{answers:PROFILES[sc.profileKey]},new Date('2026-11-23T08:00:00Z'));
  const received=new Date(zonedDateTime('2026-11-23',19*60,sc.tz));await unload(s,null,{text:sc.lines.join('\n'),via:'text'},received);
- const tasks=await openTasks(s);const target=tasks.find(t=>sc.chosen[0]&&t.title.toLowerCase().includes(sc.chosen[0].activity.toLowerCase().split(' ').slice(1,3).join(' ')))||tasks[0];
+ // The target is the task made from the first line she wrote (matched on her own words, not a guess from the title).
+ const tasks=await openTasks(s);const target=tasks.find(t=>(t.sorted?.originalInput||'').trim()===sc.lines[0].trim())||null;
  const at=new Date(zonedDateTime('2026-11-24',sc.evening?20*60+30:12*60+30,sc.tz));
  for(const t of tasks)await detailView(s,t.id,received);
  if(sc.T.declined&&target)await s.update('tasks',target.id,{delegation:{id:'x',to:'Helper',status:'DECLINED',at:received.toISOString()}});
@@ -67,7 +68,7 @@ async function run(sc,policy){
  else if(sc.T.expect==='only_consequential')onlyConsequential=true;
  const noneOrSmall=sc.T.expect==='none_or_small'?(!rec||(rec.minutes??99)<=5):null;
  const falseCompletion=(await s.list('tasks')).some(t=>t.status==='done');
- return {type:sc.type,profile:sc.realProfile,answeredAs:sc.profileKey,country:sc.country,policy,suggested:!!rec,intervention:rec?.intervention||null,attention,herSteps,decisions,prepared,fits,bh,
+ return {targetFound:!!target,type:sc.type,profile:sc.realProfile,answeredAs:sc.profileKey,country:sc.country,policy,suggested:!!rec,intervention:rec?.intervention||null,attention,herSteps,decisions,prepared,fits,bh,
   urgentFirst,deferredFirst,onlyConsequential,noneOrSmall,declinedRespected,askFeedbackOnHardDay:sc.T.day?!!res.askFeedback:null,falseCompletion};
 }
 const rows=[];const started=Date.now();let n=0;
@@ -81,6 +82,7 @@ const metrics=rs=>({n:rs.length,suggested:pct(rs,r=>r.suggested),avg_needing_her
  avg_decisions_on_suggestion:avg(rs.filter(r=>r.suggested),r=>r.decisions),prepared_before_shown:pct(rs.filter(r=>r.suggested),r=>r.prepared),fits_window:pct(rs,r=>r.fits),business_hours_respected:pct(rs,r=>r.bh),
  urgent_first:pct(rs,r=>r.urgentFirst),deferred_first:pct(rs,r=>r.deferredFirst),only_consequential_on_chaos_day:pct(rs,r=>r.onlyConsequential),none_or_small_when_optimal:pct(rs,r=>r.noneOrSmall),
  declined_respected:pct(rs,r=>r.declinedRespected),optional_question_on_hard_day:pct(rs,r=>r.askFeedbackOnHardDay),false_completion:rs.filter(r=>r.falseCompletion).length,
+ target_found:pct(rs,r=>r.targetFound),
  interventions:Object.fromEntries(Object.entries(rs.reduce((m,r)=>{const k=r.intervention||(r.suggested?'(previous engine)':'none');m[k]=(m[k]||0)+1;return m;},{})))});
 const by=(k)=>{const g={};for(const r of rows)((g[r[k]]??={})[r.policy]??=[]).push(r);return Object.fromEntries(Object.entries(g).map(([x,v])=>[x,{adaptive:metrics(v.adaptive||[]),relief:metrics(v.relief||[])}]));};
 const summary={name:'previous adaptive engine vs Cognitive Relief Policy',synthetic:true,scenarios:n,evaluations:rows.length,seconds:Math.round((Date.now()-started)/1000),
