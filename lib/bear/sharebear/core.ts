@@ -98,7 +98,9 @@ export const linkLive=(d:Delegation,now:Date)=>!d.tokenRevokedAt&&Date.parse(d.e
 // ---------- the text messages ----------
 // The date is added unless the task already says when, in its own words ("on Friday before 3 pm").
 const SAYS_WHEN=/\b(mon|tues|wednes|thurs|fri|satur|sun)day\b|\b(today|tonight|tomorrow)\b|\b\d{1,2}(:\d{2})?\s?(am|pm)\b|\bby (the )?\d/i;
-const when=(d:Delegation['snapshot'])=>{if(!d.due||SAYS_WHEN.test(d.title))return '';const day=new Date(`${d.due}T12:00:00+10:00`).toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',timeZone:'Australia/Sydney'});return d.dueTime?` by ${day}, ${d.dueTime}`:` by ${day}`;};
+// Times are stored as HH:MM; people read "3 pm" or "3:30 pm". Anything else is shown as it was written.
+export const friendlyTime=(t:string|null|undefined)=>{if(!t)return '';const m=/^(\d{2}):(\d{2})$/.exec(t);if(!m)return t;const h=+m[1];return `${h%12||12}${m[2]==='00'?'':`:${m[2]}`} ${h<12?'am':'pm'}`;};
+const when=(d:Delegation['snapshot'])=>{if(!d.due||SAYS_WHEN.test(d.title))return '';const day=new Date(`${d.due}T12:00:00+10:00`).toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',timeZone:'Australia/Sydney'});return d.dueTime?` by ${day}, ${friendlyTime(d.dueTime)}`:` by ${day}`;};
 export function requestText(d:Delegation,url:string){return `🐻 ${d.ownerName} wants your help with this:\n${d.snapshot.title}${when(d.snapshot)}.\n${d.snapshot.message?`“${d.snapshot.message}”\n`:''}Can you take care of it?\nAccept or decline:\n${url}`;}
 export function reminderText(d:Delegation,url:string,kind:'reminder_pending'|'reminder_due'){
  return kind==='reminder_pending'?`🐻 A quick nudge from Bear: ${d.ownerName} asked if you could help with “${d.snapshot.title}”.\nYes or no is fine:\n${url}`

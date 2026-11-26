@@ -16,6 +16,7 @@ export interface Sorted{
  suggestedStart:string|null;      // Bear's proposal: when to start, or a target day when no date was given
  urgency:Light|null;              // from the person's own words ("urgent", "tonight", "no rush"), apart from any date
  nextAction:string|null;light:Light;reason:string;
+ time?:string|null;                // a time of day the person stated ("09:00", "3 pm") as HH:MM, only kept with a date
 }
 
 // ---------- dates the person said ----------
@@ -75,13 +76,28 @@ const FILLER=/^(?:(?:and|then|also|plus|oh|ok|okay|so|um|uh|actually|first|next|
 const VERB_LED=/^(?:call|ring|phone|text|email|message|buy|get|grab|pick|drop|book|rebook|schedule|reschedule|organise|organize|arrange|plan|pay|renew|cancel|return|send|post|order|fix|clean|wash|pack|sign|fill|complete|submit|lodge|check|find|ask|tell|make|cook|prepare|take|bring|collect|register|enrol|enroll|apply|update|change|transfer|print|write|read|finish|start|sort|tidy|mow|water|feed|walk|visit|see|meet|confirm|reply|respond|follow|chase|look|research|compare|set|put|move|replace|repair|service|donate|sell|wrap|bake|do|speak|talk|contact|invite|rsvp|review|file|claim|go|attend|drive|clear|chase|practise|practice|study|download|upload|swap|exchange|hire|decide|choose|build|install|paint|plant|renovate|declutter|vacuum|empty|upgrade|learn|try)\b/i;
 const cap=(s:string)=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
 const the=(s:string)=>/^(?:the|a|an|my|our|your|his|her|their|\w+(?:'|’)s)\b/i.test(s)?s:'the '+s;
+// A time of day she said: "9:30", "09:00", "3 pm", "at 4.15pm". Never a bare number (that could be anything).
+export function timeOf(text:string):{time:string;span:[number,number]}|null{
+ const m=/(?:\b(?:at|by|before|from|until)\s+)?\b([01]?\d|2[0-3])(?:[:.]([0-5]\d))?\s*(am|pm|a\.m\.|p\.m\.)(?![a-z])|(?:\b(?:at|by|before|from|until)\s+)?\b([01]?\d|2[0-3]):([0-5]\d)\b/i.exec(text);
+ if(!m)return null;let h:number,min:number;
+ if(m[3]){h=+m[1]%12+(/^p/i.test(m[3])?12:0);min=m[2]?+m[2]:0;}else{h=+m[4];min=+m[5];}
+ return {time:`${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`,span:[m.index,m.index+m[0].length]};
+}
+// "Can you handle tidying the desk": after the request comes off, "tidying" becomes "Tidy" so it reads (and is understood)
+// as a task. Only used after a request, so titles like "Swimming lessons" are left alone.
+const E_WORDS=new Set(['writ','organiz','organis','prepar','mak','schedul','tak','us','chang','arrang','sav','serv','replac','purchas','rins','bak','receiv','updat','compar','declin','wip','scrap','stor','coordinat','arrang','handl','settl','renegotiat','sanitis','sanitiz','vacuum','prioritis','prioritiz','rotat','separat','reconcil','captur','creat','delegat','manag','pac','plac','shar','rak','grat','measur','secur','sav','lodg','charg','driv','giv','hav','leav','mov','rid']);
+function imperative(t:string){const m=/^([a-z]+)ing\b/i.exec(t);if(!m)return t;let w=m[1].toLowerCase();
+ if(w==='vacuum')return 'Vacuum'+t.slice(m[0].length);if(/(.)\1$/.test(w)&&!/(ll|ss|zz|ff)$/.test(w))w=w.slice(0,-1);else if(E_WORDS.has(w))w+='e';
+ return w.charAt(0).toUpperCase()+w.slice(1)+t.slice(m[0].length);}
+// Asking Bear to take something on ("Can you handle…", "Could you please sort out…") is how the request is phrased, not the task.
+const REQUEST=/^(?:hi bear[,!]?\s*)?(?:can|could|would|will)\s+you\s+(?:please\s+)?(?:handle|sort(?:\s+out)?|take\s+care\s+of|look\s+after|organi[sz]e|deal\s+with|manage|help\s+(?:me\s+)?with|do)\s+/i;
 export function titleFor(original:string,span:[number,number]|null):string{
  let t=original;
  // The date is kept as a field; a date hanging off the end (or "X is due Monday") comes out of the title.
- if(span){const before=t.slice(0,span[0]),after=t.slice(span[1]);if(!after.trim()||/^[\s,.!]*$/.test(after))t=before;else if(!before.trim())t=after;}
+ if(span){const before=t.slice(0,span[0]),after=t.slice(span[1]);if(!after.trim()||/^[\s,.!?]*$/.test(after))t=before;else if(!before.trim())t=after;}
  // "Remind me when X is on" is, for the person, a thing to find out: say so, and keep the whole question.
  {const m=/^(?:please\s+)?(?:remind me|let me know|tell me|alert me|notify me)\s+(when|what (?:date|day|time)|where|if|whether)\s+(.+)$/i.exec(original.trim().replace(/[?.!\s]+$/,''));if(m)return cap(`Find out ${m[1].toLowerCase()} ${m[2]}`).slice(0,90);}
- t=t.replace(FILLER,'').replace(/\s+(?:is|are|was|were)\s+(?:now\s+)?(?:due|overdue|coming up|on|urgent)\s*$/i,'').replace(/[\s,]+(?:some ?time|some ?day|eventually|at some point|when(?:ever)? i (?:can|get (?:a )?(?:chance|time))|asap|urgently|no rush)\s*$/i,'').replace(/\s+(?:is|are)\s*$/i,'').replace(/[\s,;:.!\-–]+$/,'').replace(/^[\s,;:.\-–]+/,'').trim();
+ const asked=REQUEST.test(t.trim());t=t.replace(/[?]+\s*$/,'').trim().replace(REQUEST,'');if(asked)t=imperative(t);t=t.replace(FILLER,'').replace(/\s+(?:is|are|was|were)\s+(?:now\s+)?(?:due|overdue|coming up|on|urgent)\s*$/i,'').replace(/[\s,]+(?:some ?time|some ?day|eventually|at some point|when(?:ever)? i (?:can|get (?:a )?(?:chance|time))|asap|urgently|no rush)\s*$/i,'').replace(/\s+(?:is|are)\s*$/i,'').replace(/[\s,;:.!\-–]+$/,'').replace(/^[\s,;:.\-–]+/,'').trim();
  if(!t)t=original.trim();
  if(VERB_LED.test(t))return cap(t).slice(0,90);
  const low=t.toLowerCase();
@@ -137,9 +153,11 @@ export function nextActionFor(title:string):string|null{
 }
 
 export function sortOne(original:string,today:string,children:string[]=[]):Sorted{
- const said=saidDate(original,today);const title=titleFor(original,said.span);const {domain,secondary}=classify(original,children);
+ // A time of day comes out first (kept as a field), then the date, so neither is left hanging in the title.
+ const tm=timeOf(original);const base=tm?(original.slice(0,tm.span[0])+original.slice(tm.span[1])).replace(/\s{2,}/g,' '):original;
+ const said=saidDate(base,today);const title=titleFor(base,said.span);const {domain,secondary}=classify(original,children);
  const urgency=urgencyOf(original);const {light,reason}=lightFor({deadline:said.date,windowBy:said.windowBy,urgency,soonByNature:soonByNature(title)},today);
- return {title,original:original.trim(),domain,secondary,deadline:said.date,deadlineSource:said.date?'stated':null,window:said.window,windowBy:said.windowBy,suggestedStart:suggestStart(title,said.date,light,today),urgency,nextAction:nextActionFor(title),light,reason};
+ return {title,original:original.trim(),domain,secondary,deadline:said.date,deadlineSource:said.date?'stated':null,window:said.window,windowBy:said.windowBy,suggestedStart:suggestStart(title,said.date,light,today),urgency,nextAction:nextActionFor(title),light,reason,time:said.date&&tm?tm.time:null};
 }
 
 // ---------- one message, many things ----------
@@ -149,8 +167,15 @@ const CLAUSE=/\b(?:is|are|'s|’s)\s+(?:due|coming up|on|next|this|tomorrow|toda
 const NOT_A_LIST=/\b(?:subject:|from:|dear\b|hi (?:parents|families|all|everyone)|regards|newsletter|account number|bpay|biller code|unsubscribe)\b/i;
 const led=(s:string)=>VERB_LED.test(s.replace(/^[\s\-–—•*·>]+/,'').replace(/^\(?\d{1,2}[.):]\s*/,'').replace(FILLER,''));
 const standsAlone=(s:string)=>led(s)||CLAUSE.test(s);
+// Background she gives with a request ("I am working most of the day", "Budget around $45", "I have not checked what we
+// have") is context for the task, not another task. It stays in the capture; it doesn't become a title or a to-do.
+const CONTEXT=/^(?:(?:i\s+am|i(?:'|’)m)\s+(?:working|busy|at\s+work|away|travell?ing|on\s+(?:shift|call)|flat\s+out|out\s+(?:all|most)\s+of\s+the\s+day|in\s+meetings)\b|i\s+have\s+not|i\s+haven(?:'|’)t|i(?:'|’)ve\s+not|we\s+have\s+not|we\s+haven(?:'|’)t|please\s+avoid|(?:my|our|the)?\s*budget\b|ideally|if\s+possible|i\s+work\b|i(?:'|’)ll\s+be|i\s+will\s+be|no\s+need\s+to|it(?:'|’)s\s+for\b)/i;
+export function withoutContext(text:string):string{
+ const sentences=text.split(/(?<=[.!?])\s+(?=[A-Z])/);if(sentences.length<2)return text;
+ const keep=sentences.filter(x=>!CONTEXT.test(x.trim()));return keep.length&&keep.length<sentences.length?keep.join(' '):text;
+}
 export function segment(text:string,max=12):string[]{
- const src=text.trim();if(src.length<8||src.length>1200||NOT_A_LIST.test(src))return [src];
+ const src=withoutContext(text.trim());if(src.length<8||src.length>1200||NOT_A_LIST.test(src))return [src];
  const hard=src.replace(/\s+(?=\(?\d{1,2}[.)]\s+\S)/g,'\n').split(/\n+/).map(l=>l.replace(/^[\s\-–—•*·>]+/,'').replace(/^\(?\d{1,2}[.):]\s*/,''))
   .flatMap(l=>l.split(/;\s*|(?<=[a-z0-9)’'"])[.!?]\s+(?=\S)/i)).map(s=>s.trim()).filter(Boolean);
  const parts:string[]=[];

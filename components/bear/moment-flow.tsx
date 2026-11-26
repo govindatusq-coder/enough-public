@@ -13,11 +13,12 @@ import {confetti} from './celebrate';
 
 export type GmState='home'|'break_time'|'break_suggestion'|'talk'|'task_time'|'task_suggestion'|'task_action'|'task_complete'|'share_suggestion';
 type Idea={id:string;title:string;line:string;minutes:number;icon:string};
-type Rec={taskId:string;title:string;label:string;minutes:number;why:string;needsBear:boolean};
+type Rec={taskId:string;title:string;label:string;minutes:number;why:string;needsBear:boolean;strategy?:string;primary?:{kind:string;label:string};note?:string|null;share?:boolean};
+type Alt={kind:'allocate'|'offload'|'protect';taskId:string|null;title:string|null;minutes:number|null;text:string};
 type Share={taskId:string;title:string;why:string;dueAt:string|null;dueTime:string|null};
 type Detail={id:string;title:string;taskStatus:string;status:string;dueAt:string|null;dueTime:string|null;deadlines:{outcome:string|null};next:{text:string;minutes:number;needsBear:boolean}|null;current:{who:string;text:string}|null;
  prepared:{title:string;lines:string[];links:{label:string;url:string}[];draft?:{to:string;subject:string;body:string}|null;note:string}|null};
-interface Saved{stack:GmState[];minutes:number|null;idea:Idea|null;rec:Rec|null;seen:string[];done:string[];share?:Share|null;shareSeen?:string[]}
+interface Saved{stack:GmState[];minutes:number|null;idea:Idea|null;rec:Rec|null;seen:string[];done:string[];share?:Share|null;shareSeen?:string[];unsure?:boolean;alt?:Alt|null}
 const KEY='bear-gm-state';
 const TIMES=[2,5,10,20];
 const svg=(d:React.ReactNode,size=26)=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
@@ -59,16 +60,16 @@ export function MomentFlow(){
  async function soundsGood(){if(!s.idea)return;setEnjoy(true);apiSend('/api/bear/moment/break',{id:s.idea.id,value:'liked'},'PUT').catch(()=>{});}
 
  // ---------- Finish a Task ----------
- async function task(minutes:number,exclude:string[]){setBusy(true);setMsg(null);setNone(false);
-  try{const r=await apiSend<{recommendation:Rec|null}>('/api/bear/rre/moment',{minutes,exclude});
-   if(!r.recommendation){setNone(true);go('task_suggestion',{minutes,rec:null,seen:exclude});return;}
-   go('task_suggestion',{minutes,rec:r.recommendation,seen:[...exclude,r.recommendation.taskId]});}
+ async function task(minutes:number,exclude:string[],unsure=false){setBusy(true);setMsg(null);setNone(false);
+  try{const r=await apiSend<{recommendation:Rec|null;alternative?:Alt|null}>('/api/bear/rre/moment',{minutes,exclude,...(unsure?{unsure:true}:{})});
+   if(!r.recommendation){setNone(true);go('task_suggestion',{minutes,unsure,rec:null,seen:exclude,alt:r.alternative||null});return;}
+   go('task_suggestion',{minutes,unsure,rec:r.recommendation,seen:[...exclude,r.recommendation.taskId],alt:null});}
   catch{setMsg('Bear couldn’t look at your list just now. Nothing has changed; try again in a moment.');}
   finally{setBusy(false);}}
  // What she chose, kept so we can see whether handing off helps (never her words).
  const feedback=(taskId:string,surface:'finish'|'share',response:'do_it'|'ask_someone'|'another'|'not_now')=>{apiSend('/api/bear/rre/share-pick',{taskId,surface,response},'PUT').catch(()=>{});};
  async function notNowTask(){if(s.rec){feedback(s.rec.taskId,'finish','not_now');apiSend(`/api/bear/rre/${s.rec.taskId}/skip`,{}).catch(()=>{});}go('home');}
- function anotherTask(){if(s.rec)feedback(s.rec.taskId,'finish','another');return task(s.minutes||10,s.seen);}
+ function anotherTask(){if(s.rec)feedback(s.rec.taskId,'finish','another');return task(s.minutes||10,s.seen,!!s.unsure);}
  // Ask someone straight from the suggestion: Share Bear opens on that task, with her recent helpers.
  async function askFor(taskId:string,surface:'finish'|'share'){setBusy(true);setMsg(null);
   try{const d=await apiGet<Detail>(`/api/bear/rre/${taskId}`);
@@ -127,13 +128,19 @@ export function MomentFlow(){
    </section>{note}</>}
 
   {cur==='task_time'&&<>{backBtn}<h1 className="gm-h">Let’s get something off your list.</h1><p className="gm-q">How much time have you got?</p>{times(m=>task(m,s.done))}
+   <button type="button" className="gm-more" disabled={busy} onClick={()=>task(10,s.done,true)}>Not sure</button>
    <button type="button" className="gm-handoff" disabled={busy} onClick={()=>shareIdea([])}>No time? Hand something off</button>{note}</>}
   {cur==='task_suggestion'&&<>{backBtn}
-   {none||!s.rec?<section className="gm-card" aria-live="polite"><h1 className="gm-card-title">Nothing on your list looks like a good fit for the time you’ve got.</h1>
-     <div className="gm-actions"><Link href="/bear/brain" className="btn ghost wide">See my tasks</Link><button type="button" className="btn quiet wide" onClick={()=>go('home')}>Not now</button></div></section>
+   {none||!s.rec?<section className="gm-card" aria-live="polite"><h1 className="gm-card-title">{s.alt?s.alt.text:'Nothing on your list looks like a good fit for the time you’ve got.'}</h1>
+     {s.alt?.title&&<p className="gm-card-line"><strong>{s.alt.title}</strong></p>}
+     <div className="gm-actions">
+      {s.alt?.kind==='offload'&&s.alt.taskId&&<Link href={`/bear/brain/${s.alt.taskId}`} className="btn coral wide">Open it</Link>}
+      {s.alt?.kind==='allocate'&&s.alt.taskId&&<Link href={`/bear/brain/${s.alt.taskId}`} className="btn coral wide">Find a time for it</Link>}
+      {s.alt?.kind==='protect'&&<button type="button" className="btn coral wide" onClick={()=>go('break_time')}>Take a break</button>}
+      <Link href="/bear/brain" className="btn ghost wide">See my tasks</Link><button type="button" className="btn quiet wide" onClick={()=>go('home')}>Not now</button></div></section>
    :<section className="gm-card" aria-live="polite"><p className="gm-kicker">You could get this sorted.</p><LabelChip label={s.rec.label}/>
-     <h1 className="gm-card-title">{s.rec.title}</h1><p className="gm-card-line">{s.rec.why}</p><p className="gm-card-small">About {s.rec.minutes} minute{s.rec.minutes===1?'':'s'} of your time (an estimate).</p>
-     <div className="gm-pair"><button type="button" className="btn coral wide" disabled={busy} onClick={letsDoIt}>{busy?'One moment…':'Let’s do it'}</button><button type="button" className="btn coral-line wide" disabled={busy} onClick={()=>askFor(s.rec!.taskId,'finish')}>Ask someone</button></div>
+     <h1 className="gm-card-title">{s.rec.title}</h1><p className="gm-card-line">{s.rec.why}</p>{s.rec.note&&<p className="gm-card-note">{s.rec.note}</p>}<p className="gm-card-small">About {s.rec.minutes} minute{s.rec.minutes===1?'':'s'} of your time (an estimate).</p>
+     <div className="gm-pair"><button type="button" className="btn coral wide" disabled={busy} onClick={letsDoIt}>{busy?'One moment…':s.rec.primary?.label||'Let’s do it'}</button><button type="button" className="btn coral-line wide" disabled={busy} onClick={()=>askFor(s.rec!.taskId,'finish')}>Ask someone</button></div>
      <div className="gm-actions"><button type="button" className="btn ghost wide" disabled={busy} onClick={anotherTask}>Another task</button><button type="button" className="btn quiet wide" onClick={notNowTask}>Not now</button></div></section>}
    {note}</>}
   {cur==='task_action'&&detail&&<>{backBtn}

@@ -66,7 +66,7 @@ export function understand(input:{title:string;original:string;dueAt:string|null
   form:`${cap(clean(title).replace(/^(?:sign|fill in|complete|submit|renew|do)\s+/i,''))} is done${by?` ${by}`:''}`,
   bill:`The bill is paid${by?` ${by}`:' on time'}`,
   followup:`You have an answer${who?` from ${who}`:''}, and it’s sorted`,
-  chore:`${cap(clean(title))}: done, when there’s time`,
+  chore:`${cap(clean(title))}: done${by?` ${by}`:', when there’s time'}`,
   aspiration:`${cap(clean(title))}: a step closer, at your own pace`,
   general:`${cap(clean(title))}${by?` ${by}`:''}`,
  } as Record<Kind,string>)[kind];

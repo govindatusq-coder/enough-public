@@ -96,10 +96,11 @@ try{
   assert.equal((await p.textContent('.gm-card .v2-label')).trim(),'Worth doing now');assert.equal((await p.textContent('.gm-card-title')).trim(),'Review Christmas gift shortlist');
   assert.match(await p.textContent('.gm-card'),/Choosing a few now could avoid last-minute shopping/);await shot('v04c-task');
   // Ask someone sits beside Let's do it, and opens Share Bear on this task; Cancel closes it and leaves the suggestion as it was.
-  assert.ok(await p.isVisible('.gm-pair button:has-text("Let’s do it")')&&await p.isVisible('.gm-pair button:has-text("Ask someone")'));
+  // The main button says what happens: Bear prepares the gift ideas first, so it's "Give it to Bear".
+  assert.equal((await p.textContent('.gm-pair .btn.coral')).trim(),'Give it to Bear');assert.ok(await p.isVisible('.gm-pair button:has-text("Ask someone")'));
   await p.click('.gm-pair button:has-text("Ask someone")');await p.waitForSelector('.sb-h:has-text("Who can help with this?")');
   await p.click('.sb-sheet button:has-text("Cancel")');await p.waitForSelector('.sb-sheet',{state:'detached'});assert.equal((await p.textContent('.gm-card-title')).trim(),'Review Christmas gift shortlist');
-  await p.click('button:has-text("Let’s do it")');await p.waitForSelector('.gm-do');assert.match(await p.textContent('.gm-do'),/Sarah: \(add a few ideas\)/);
+  await p.click('.gm-pair .btn.coral');await p.waitForSelector('.gm-do');assert.match(await p.textContent('.gm-do'),/Sarah: \(add a few ideas\)/);
   assert.ok(await p.isVisible('button:has-text("Mark as done")'));assert.ok(await p.isVisible('button:has-text("Ask someone to do it")'));
   // Back steps back through the flow, not out of it.
   await p.click('.gm-back');await p.waitForSelector('.gm-card-title:has-text("Review Christmas gift shortlist")');
@@ -108,7 +109,7 @@ try{
   await p.click('.gm-back');await p.click('.gm-time:has-text("20 min")');await p.waitForSelector('.gm-card-title');
   for(let k=0;k<8&&!/library/i.test(await p.textContent('.gm-card-title'));k++){const t=await p.textContent('.gm-card-title');await p.click('button:has-text("Another task")');await p.waitForFunction(x=>document.querySelector('.gm-card-title')?.textContent!==x||document.querySelector('.gm-card h1')?.textContent.startsWith('Nothing'),t);}
   assert.match(await p.textContent('.gm-card-title'),/library/i);
-  await p.click('button:has-text("Let’s do it")');await p.waitForSelector('.gm-do');await p.click('button:has-text("Mark as done")');
+  await p.click('.gm-pair .btn.coral');await p.waitForSelector('.gm-do');await p.click('button:has-text("Mark as done")');
   await p.waitForSelector('.gm-done:has-text("One less thing on your mind.")');assert.match(await p.textContent('.gm-crossed .crossed-off'),/library/i,'the task, crossed off');await shot('v04d-done');
   const bd=(await api('/api/bear/board',null,'GET')).board;assert.ok(![...bd.inbox,...Object.values(bd.byList).flat()].some(t=>/library/i.test(t.title)),'done in Bear Brain straight away');
   await p.click('button:has-text("Back to Got a Moment")');await p.waitForSelector('.gm-choices');
@@ -193,7 +194,7 @@ try{
   await p.click('button:has-text("Enter mobile number")');await p.fill('.sb-field:has-text("Their name") input','Daniel');await p.fill('.sb-field:has-text("Mobile number") input','0412 345');
   await p.click('.sb-actions button:has-text("Next")');await p.waitForSelector('.sb-sheet .note.coral');assert.match(await p.textContent('.sb-sheet .note.coral'),/Australian mobile|Check the number/);
   await p.fill('.sb-field:has-text("Mobile number") input','0412 345 678');await p.click('.sb-actions button:has-text("Next")');await p.waitForSelector('.sb-h:has-text("Ask Daniel for help?")');
-  await p.click('.sb-exact summary');const exact=await p.textContent('.sb-exact p');assert.match(exact,/^🐻 Sarah wants your help with this:\nPick up Ella’s birthday cake on Friday before 3 pm\.\nCan you take care of it\?/);
+  await p.click('.sb-exact summary');const exact=await p.textContent('.sb-exact p');assert.match(exact,/^🐻 Sarah wants your help with this:\nPick up Ella’s birthday cake by Friday \d+ \w+, 3 pm\.\nCan you take care of it\?/);
   assert.ok(await p.isVisible('text=Test mode: no real text will be sent.'));await shot('v07-sharebear-preview');
   await p.click('button:has-text("Send request")');await p.waitForSelector('.sb-testlink');const link=await p.getAttribute('.sb-testlink','href');
   await p.click('.sb-actions button:has-text("Done")');await p.waitForSelector('.sb-panel:has-text("Waiting")');assert.equal(await p.$$eval('.sb-entry',e=>e.length),0,'no second request while one is out');

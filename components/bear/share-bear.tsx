@@ -4,13 +4,13 @@
 import {useEffect,useState} from 'react';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import {formatAU} from '@/lib/bear/domain/dates';
-import {normalisePhone,requestText,type DStatus,type Delegation} from '@/lib/bear/sharebear/core';
+import {friendlyTime,normalisePhone,requestText,type DStatus,type Delegation} from '@/lib/bear/sharebear/core';
 import {Sheet} from './ui';
 
 export interface OwnerRequest{id:string;taskId:string;status:DStatus;label:string;to:string;phone:string;title:string;due:string|null;dueTime:string|null;message:string|null;createdAt:string;lastUpdate:string;sentBy:string|null;changedSince:boolean;lastError:string|null;history:{at:string;text:string}[]}
 export interface ShareBearState{requests:OwnerRequest[];contacts:{name:string;phone:string}[];sms:'twilio'|'mock'|'none';ownerName:string}
 const DEFAULT='Could you please take care of this?';
-const dueText=(due:string|null,time:string|null)=>due?`${formatAU(due,'weekday')} ${formatAU(due,'short')}${time?`, ${time}`:''}`:'No date';
+const dueText=(due:string|null,time:string|null)=>due?`${formatAU(due,'weekday')} ${formatAU(due,'short')}${time?`, ${friendlyTime(time)}`:''}`:'No date';
 const ago=(iso:string)=>new Date(iso).toLocaleString('en-AU',{weekday:'short',hour:'numeric',minute:'2-digit'});
 const newKey=()=>`sb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,10)}`;
 type ContactsApi={select(props:string[],o:{multiple:boolean}):Promise<{name?:string[];tel?:string[]}[]>};

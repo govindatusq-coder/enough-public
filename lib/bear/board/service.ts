@@ -76,7 +76,7 @@ async function createOne(store:BearStore,s:Sorted,dumpId:string|null,today:strin
  const project=await store.insert('projects',stamp<Project>(store.userId,{areaKey:s.domain,title:s.title,status:'active',dueAt:null,resourceDocumentIds:[],billId:null,captureId:null,priority:null,order:rank}));
  const {graph}=understand({text:s.original,title:s.title,today,caps:caps(),loadMap:profile.loadMap,asTodo:true});
  const suggestion=listId?null:suggestList(s.title,listsOf(profile),profile.listLearning);
- const task=await store.insert('tasks',stamp<Task>(store.userId,{projectId:project.id,kind:'custom',title:s.title.slice(0,120),status:'open',dueAt:s.deadline,estimatedMinutes:15,cognitiveEffort:'low',forPerson:null,isDemo:false,setupBy:'bear',
+ const task=await store.insert('tasks',stamp<Task>(store.userId,{projectId:project.id,kind:'custom',title:s.title.slice(0,120),status:'open',dueAt:s.deadline,dueTime:s.deadline&&s.time?s.time:null,estimatedMinutes:15,cognitiveEffort:'low',forPerson:null,isDemo:false,setupBy:'bear',
   timing:s.deadline?'time_sensitive':'flexible',size:'one_go',load:graph,listId,rank,suggestion,dumpId,
   sorted:{originalInput:s.original,via:'text',secondaryDomains:s.secondary,urgency:s.urgency,deadlineSource:s.deadline?'stated':null,window:s.window,windowBy:s.windowBy,suggestedStart:s.suggestedStart,nextAction:s.nextAction,reason:s.reason}}));
  if(listId!=='aspire')await ensureReminder(store,task,now);

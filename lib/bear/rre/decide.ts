@@ -34,10 +34,12 @@ function riskOf(p:Plan,today:string):Factors['risk']{
 }
 function hash(s:string){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 
-export function chooseMoment(items:Candidate[],ctx:MomentContext):MomentResult{
+export interface PoolItem{c:Candidate;f:Factors;step:Step;needsBear:boolean;title:string}
+// The hard feasibility checks, shared by Got a Moment's own choice and the adaptive engine: what she could actually do now.
+export function candidatesFor(items:Candidate[],ctx:MomentContext){
  const {minutes,today,now}=ctx;const open=businessOpen(now,ctx.timeZone);const hour=Number(new Intl.DateTimeFormat('en-AU',{timeZone:ctx.timeZone,hour:'numeric',hourCycle:'h23'}).format(now));
- const evening=hour>=19||hour<6;const considered:TraceItem[]=[];const pool:{c:Candidate;f:Factors;step:Step;needsBear:boolean;title:string}[]=[];
- let waiting=0,tooLong:number[]=[];
+ const evening=hour>=19||hour<6;const considered:TraceItem[]=[];const pool:PoolItem[]=[];
+ let waiting=0;const tooLong:number[]=[];
  for(const c of items){
   const p=c.plan;const base={taskId:c.taskId,title:c.title};
   if(c.status!=='open'){continue;}
@@ -65,6 +67,10 @@ export function chooseMoment(items:Candidate[],ctx:MomentContext):MomentResult{
   const f:Factors={risk,opp,oppLevel,ready,fit,minutes:step.userMinutes,aspiration:p.kind==='aspiration'};
   considered.push({...base,action:title,minutes:step.userMinutes,excluded:null,factors:f});pool.push({c,f,step,needsBear,title});
  }
+ return {pool,considered,waiting,tooLong,open,evening};
+}
+export function chooseMoment(items:Candidate[],ctx:MomentContext):MomentResult{
+ const {minutes,today,now}=ctx;const {pool,considered,waiting,tooLong}=candidatesFor(items,ctx);
  const trace=(selected:string|null,reason:string,confidence:number):Trace=>({at:now.toISOString(),rules:RULES_VERSION,minutes,considered,selected,reason,confidence});
  if(!pool.length){
   const shortest=tooLong.length?Math.min(...tooLong):null;const suggest=shortest?[5,10,20,60].find(m=>m>=shortest)||null:null;
@@ -102,3 +108,6 @@ export function explain(p:Plan,f:Factors,needsBear:boolean,today:string):{label:
  if(f.minutes<=3)return {label:'Quick win',why:`Takes about ${f.minutes} minute${f.minutes===1?'':'s'}.`};
  return {label:'Fits your time',why:p.kind==='aspiration'?'No deadline. Only if you feel like it.':'There’s no need to deal with this today, but it fits the time you have.'};
 }
+// The same transparent order chooseMoment uses, for breaking ties elsewhere (the adaptive engine).
+export const momentKey=(x:PoolItem)=>[x.f.risk==='high'?0:1,x.f.oppLevel===2?0:1,x.f.ready?0:1,x.f.risk==='medium'?0:1,x.f.oppLevel===1?0:1,x.f.fit?0:1,x.f.aspiration?1:0,x.f.minutes];
+export const tieHash=hash;

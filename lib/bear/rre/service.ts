@@ -20,6 +20,8 @@ import {chooseShare} from './share-pick.ts';
 import {attributesOf} from '../adaptive/attributes.ts';
 import {learnedList} from '../adaptive/learning.ts';
 import {isKnownList,ruleSuggestion} from '../adaptive/lists.ts';
+import {adaptiveMoment} from '../adaptive/strategy.ts';
+import {conditionFor} from '../adaptive/flags.ts';
 import {recordBehaviour} from '../services/behaviour.ts';
 import {describePreference,learn,purchasePreference} from './prefs.ts';
 
@@ -70,15 +72,21 @@ async function rows(store:BearStore,now:Date){
 }
 
 // ---------- Got a moment? ----------
-export const momentSchema=z.object({minutes:z.number().int().min(1).max(240),exclude:z.array(z.string().uuid()).max(50).default([])}).strict();
-export async function recommend(store:BearStore,input:z.infer<typeof momentSchema>,now=new Date()){
+export const momentSchema=z.object({minutes:z.number().int().min(1).max(240),exclude:z.array(z.string().uuid()).max(50).default([]),unsure:z.boolean().optional()}).strict();
+export async function recommend(store:BearStore,input:z.infer<typeof momentSchema>,now=new Date(),env:Record<string,string|undefined>=process.env){
  const {ctx,rows:r}=await rows(store,now);
  const items:Candidate[]=r.map(({task,plan})=>({taskId:task.id,title:task.title,listId:categoryOf(task,plan,ctx.lists,ctx.profile.listLearning,{profile:ctx.profile,status:statusOf(plan,task.status,ctx.today)}).id,plan,status:task.status,readiness:task.readiness??null,blockedByShare:task.sharedOut?.mode==='transfer'&&task.readiness==='waiting'}));
- const res=chooseMoment(items,{minutes:input.minutes,now,today:ctx.today,timeZone:ctx.tz,exclude:input.exclude,last:ctx.profile.rreLast??null});
+ // The adaptive engine: the same feasibility checks, then help suited to how her days work (if she has said), with the
+ // decision kept for checking. With no answers it chooses exactly as Got a Moment always has.
+ const condition=conditionFor(env,!!ctx.profile.temporal);
+ const attrs=new Map(r.map(({task,plan,status})=>[task.id,attributesOf(task,plan,{status})]));
+ const hourLocal=Number(new Intl.DateTimeFormat('en-AU',{timeZone:ctx.tz,hour:'numeric',hourCycle:'h23'}).format(now));
+ const res=adaptiveMoment(items,{minutes:input.minutes,unsure:input.unsure,now,today:ctx.today,timeZone:ctx.tz,exclude:input.exclude,last:ctx.profile.rreLast??null,
+  profile:ctx.profile.temporal||null,learning:ctx.profile.adaptive||null,attrs,tasks:new Map(r.map(x=>[x.task.id,x.task])),hourLocal,condition:condition==='A'?'B':condition});
  // The decision trace is kept (last 10) for checking how Bear decided; it is not shown in the app.
  await store.update('profiles',ctx.profile.id,{rreTrace:[res.trace,...(ctx.profile.rreTrace||[])].slice(0,10),// Browsing alternatives ("Something else") doesn't replace the main suggestion for this window.
   ...(res.recommendation&&!input.exclude.length?{rreLast:{taskId:res.recommendation.taskId,minutes:input.minutes,at:now.toISOString()}}:{})});
- return {recommendation:res.recommendation,message:res.message,suggestMinutes:res.suggestMinutes,waiting:res.waiting};
+ return {recommendation:res.recommendation,message:res.message,suggestMinutes:res.suggestMinutes,waiting:res.waiting,alternative:res.alternative,adaptive:res.adaptive};
 }
 // "No time? Hand something off": one task someone else could do, or null (Bear says so honestly).
 export const sharePickSchema=z.object({exclude:z.array(z.string().uuid()).max(50).default([])}).strict();
