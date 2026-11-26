@@ -56,6 +56,9 @@ export function domainOf(text:string,kind:string):{domain:Domain;confidence:numb
  return {domain:KIND_DOMAIN[kind]||'general',confidence:KIND_DOMAIN[kind]&&kind!=='general'?.4:.1};
 }
 const EMOTIONAL=/\b(funeral|sick|hospital|results|complain\w*|apolog\w*|sorry|dispute|conflict|divorce|custody|grief|bully\w*|overdue|debt|eviction)\b/i;
+// Whether Bear's preparation would genuinely save her work (a draft, a shortlist, gift ideas, the payment details), rather
+// than only noting it down (an errand she does in person).
+const substantivePrep=(kind:string,method:string)=>['gifts','form','bill','appointment','call','followup'].includes(kind)||(kind==='acquire'&&method==='online');
 const statusToReadiness=(s:RStatus,r:Readiness):Readiness=>s==='waiting'?'waiting':s==='completed'?'completed':s==='in_progress'||s==='awaiting_approval'?'in_progress':r;
 
 export interface AttributeContext{status:RStatus;capabilities?:Capability[];anticipationBufferDays?:number}
@@ -96,6 +99,6 @@ export function attributesOf(t:Task,p:Plan,ctx:AttributeContext):Attributes{
  return {domain,pattern:p.kind,contextTags:[...new Set(tags)],dueAt:t.dueAt||p.deadlines.outcome||null,latestUsefulActionAt:latest,
   humanMinutes,agentMinutes,cognitiveEffort,emotionalEffort,interruptibility,resumable,minimumUsefulWindow:(next?.userMinutes??humanMinutes)+1,
   requiresBusinessHours,locationRequirements:contexts.has('errand')?['out of the house']:[],readiness,nextAction:next?.text||null,missingInformation:missing,
-  executionMode,agentPreparationAvailable:bears.length>0&&!prepared,agentExecutionAvailable,delegationEligible:delegationEligible(t,p,ctx.status).ok,labour,
+  executionMode,agentPreparationAvailable:bears.length>0&&!prepared&&substantivePrep(p.kind,path.method),agentExecutionAvailable,delegationEligible:delegationEligible(t,p,ctx.status).ok,labour,
   confidence:{domain:dc,pattern:.6,humanMinutes:t.minutesBy==='you'?1:.4,cognitiveEffort:cognitiveEffort==='unknown'?0:.4,emotionalEffort:emotionalEffort==='unknown'?0:.5,interruptibility:.4,dueAt:t.dueAt?(p.deadlineSource==='stated'?.9:.6):0}};
 }

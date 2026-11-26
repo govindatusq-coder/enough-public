@@ -134,7 +134,9 @@ export async function moveTask(store:BearStore,taskId:string,input:z.infer<typeo
  const at=Math.min(input.index??siblings.length,siblings.length);siblings.splice(at,0,task);
  for(const [i,t] of siblings.entries())if(t.id!==taskId&&t.rank!==i)await store.update('tasks',t.id,{rank:i});
  const moved=await store.update('tasks',taskId,{listId,rank:at,...(listId?{suggestion:null}:{})});
- if(listId&&(task.listId??null)!==listId)await store.update('profiles',profile.id,{listLearning:learnChoice(profile.listLearning,task.title,listId,now.toISOString())});
+ if(listId&&(task.listId??null)!==listId){await store.update('profiles',profile.id,{listLearning:learnChoice(profile.listLearning,task.title,listId,now.toISOString())});
+  // And what kind of thing it is (its attributes), so similar things are suggested there too, whatever their wording.
+  try{const {noteListChoice}=await import('../adaptive/service.ts');await noteListChoice(store,task,listId,task.suggestion?.listId??null,now);}catch{/* learning never blocks a move */}}
  // Aspirational things are dreams, not deadlines: no reminders chase them.
  if(listId==='aspire')for(const r of await store.list('reminders',{where:[{column:'task_id',value:taskId},{column:'status',op:'in',value:['scheduled','snoozed']}]}))await store.update('reminders',r.id,{status:'cancelled'});
  return moved;

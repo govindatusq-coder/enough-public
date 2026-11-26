@@ -1,12 +1,16 @@
 'use client';
 // Her lists, her way: rename, add, remove, reorder, change icons. Removing a list never removes what's in it.
 import {useEffect,useState} from 'react';
+import Link from 'next/link';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import type {BearList} from '@/lib/bear/board/logic';
 import {ErrorCard,Skeleton,TopBar} from '@/components/bear/ui';
 type Row={id:string;title:string;icon:string};
 export default function Lists(){
  const [rows,setRows]=useState<Row[]|null>(null);const [icons,setIcons]=useState<string[]>([]);const [err,setErr]=useState<string|null>(null);const [note,setNote]=useState<string|null>(null);const [picking,setPicking]=useState<number|null>(null);const [busy,setBusy]=useState(false);
+ // Lists from Bear's suggested sets she can mix in (Bear knows what belongs in these, so it can suggest a place for things).
+ const [suggested,setSuggested]=useState<Row[]>([]);
+ useEffect(()=>{apiGet<{sets:{lists:Row[]}[]}>('/api/bear/adaptive').then(v=>{const seen=new Set<string>();setSuggested(v.sets.flatMap(s=>s.lists).filter(l=>!seen.has(l.id)&&seen.add(l.id)));}).catch(()=>{});},[]);
  useEffect(()=>{apiGet<{lists:BearList[];icons:string[]}>('/api/bear/board/lists').then(r=>{setRows(r.lists.map(({id,title,icon})=>({id,title,icon})));setIcons(r.icons);}).catch(e=>setErr((e as Error).message));},[]);
  if(err&&!rows)return <main id="main" className="bear-screen"><ErrorCard message={err}/></main>;
  if(!rows)return <main id="main" className="bear-screen"><Skeleton/></main>;
@@ -28,6 +32,9 @@ export default function Lists(){
    </li>)}
   </ul>
   <button type="button" className="btn ghost sm" style={{marginTop:12}} disabled={rows.length>=20} onClick={()=>setRows(r=>[...r!,{id:'new',title:'New list',icon:'⭐'}])}>Add a list</button>
+  {suggested.some(x=>!rows.some(r=>r.id===x.id))&&<div className="lists-suggested"><p className="small muted">Or add one of Bear’s lists:</p>
+   <div className="chips" style={{gap:6}}>{suggested.filter(x=>!rows.some(r=>r.id===x.id)).map(x=><button type="button" key={x.id} className="chip" disabled={rows.length>=20} onClick={()=>setRows(r=>[...r!,{...x}])}>{x.icon} {x.title}</button>)}</div></div>}
+  <p className="small" style={{marginTop:14}}><Link href="/bear/me/days">Lists that suit how your days work</Link></p>
   <div className="btn-row" style={{marginTop:18}}><button type="button" className="btn coral" disabled={busy} onClick={save}>{busy?'Saving…':'Save'}</button></div>
   {note&&<p className="note teal" role="status" style={{marginTop:12}}>{note}</p>}
   {err&&<div style={{marginTop:12}}><ErrorCard message={err}/></div>}

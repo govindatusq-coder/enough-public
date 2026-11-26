@@ -48,6 +48,7 @@ export default function Me(){
    <div style={{display:'flex',gap:14,alignItems:'center'}}><Avatar size={84}/><div><h1>{p.name||'You'}</h1><p className="muted small">{data.user.email}</p></div></div>
    <section className="section"><p className="eyebrow">Bear Brain and places</p><div className="card" style={{display:'grid',gap:2}}>
     <Link href="/bear/brain" className="row">Bear Brain: everything Bear is holding</Link>
+    <Link href="/bear/me/days" className="row">How your days work: so Bear can help in a way that suits you</Link>
     <Link href="/bear/me/lists" className="row">Categories: rename, add, reorder, change icons</Link>
     <Link href="/bear/me/learned" className="row">What Bear has learned about how you like to do things</Link>
     <Link href="/bear/shared" className="row">Shared: what you’ve handed over, and what’s been handed to you</Link>
@@ -79,7 +80,7 @@ export default function Me(){
       ['What Bear has learned',[m?.learned?.billLeadDays?`Bills come back ${m.learned.billLeadDays} days before they’re due`:'',m?.learned?.followUpDays?`Checks back after ${m.learned.followUpDays} days`:''].filter(Boolean).join('. ')||'Nothing yet'],
      ];
      return rows.map(([t,v])=><div key={t} className="row"><span className="grow"><span className="title">{t}</span><br/><span className="faint">{v}</span></span></div>);})()}
-    <div className="btn-row"><Button className="sm" variant="ghost" onClick={async()=>{await apiSend('/api/bear/profile',{onboardingStep:0},'PUT');router.push('/bear/onboarding');}}>Change my Load Map</Button>{(p.loadMap?.learned&&Object.keys(p.loadMap.learned).length>0||!!p.loadMap?.providers?.length)&&<Button className="sm" variant="quiet" onClick={async()=>{await apiSend('/api/bear/profile',{loadMap:{...p.loadMap!,learned:{},providers:[]}},'PUT');setToast('Bear has forgotten what it learned.');load();}}>Reset what Bear learned</Button>}</div>
+    <div className="btn-row"><Button className="sm" variant="ghost" onClick={()=>router.push('/bear/me/loadmap')}>Change my Load Map</Button>{(p.loadMap?.learned&&Object.keys(p.loadMap.learned).length>0||!!p.loadMap?.providers?.length)&&<Button className="sm" variant="quiet" onClick={async()=>{await apiSend('/api/bear/profile',{loadMap:{...p.loadMap!,learned:{},providers:[]}},'PUT');setToast('Bear has forgotten what it learned.');load();}}>Reset what Bear learned</Button>}</div>
    </div></section>
    <ValuesEditor onSaid={setToast}/>
    <section className="section"><p className="eyebrow">Today</p><div className="card"><p className="small">How&rsquo;s today? Bear goes gentler when you say it&rsquo;s a hard one. It asks again tomorrow.</p><div className="chips" role="group" aria-label="How's today" style={{marginTop:10}}>{(['good','full','wiped','chaos'] as const).map(m=><button key={m} type="button" className="chip" aria-pressed={data.dayMode===m} onClick={async()=>{await apiSend('/api/bear/day',{mode:data.dayMode===m?null:m});await load();}}>{{good:'Good',full:'Full',wiped:'Wiped',chaos:'Chaos'}[m]}</button>)}</div></div></section>

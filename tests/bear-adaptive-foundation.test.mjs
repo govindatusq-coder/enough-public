@@ -81,3 +81,7 @@ test('learning: two explicit corrections teach a list; Bear’s own guesses neve
  assert.deepEqual(resetLearning(l,'category').category,[]);assert.deepEqual(resetLearning(f,'all'),emptyLearning());
  let tm=emptyLearning();for(let i=0;i<6;i++)tm=learnTiming(tm,20);for(let i=0;i<3;i++)tm=learnTiming(tm,12);assert.deepEqual(usualHours(tm),[20,12]);
 });
+test('explanation matches what she said: a fixed routine is a pattern, not other people’s schedules',()=>{
+ const t=explainProfile(scoreProfile({control:'fixed_routine',howDone:'grab_moment'}));
+ assert.match(t,/follow a pattern/);assert.doesNotMatch(t,/other people’s schedules/);assert.match(t,/usual routines/);
+});

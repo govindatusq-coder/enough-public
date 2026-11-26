@@ -35,8 +35,10 @@ export const LIST_SETS:ListSet[]=[
   T('longer','A Longer Window','⏱️',a=>a.humanMinutes>20),T('quick','Quick Wins','⚡',any)]},
  {style:'support',name:'What I need help with',line:'What Bear can do, what others can, what’s yours',lists:[
   T('waiting','Waiting on Others','⏳',waiting),T('just_me','Just for Me','💛',a=>a.domain==='wellbeing'||a.domain==='personal_goals'||a.pattern==='aspiration'),
+  // A call or booking still needs her, live, in business hours, even if Bear writes what to say: that's arranging.
+  T('arrange','Needs Arranging','📋',a=>a.requiresBusinessHours),
   T('bear_prep','Bear Can Prepare','🐻',a=>a.agentPreparationAvailable),T('someone','Someone Else Can Do It','🤝',(a,c)=>a.delegationEligible&&c.delegationAccess>=.4),
-  T('arrange','Needs Arranging','📋',a=>a.requiresBusinessHours||['appointment','call','followup','form'].includes(a.pattern)),T('capacity','When I Have Capacity','🌿',any)]},
+  T('arrange','Needs Arranging','📋',a=>['appointment','call','followup','form'].includes(a.pattern)),T('capacity','When I Have Capacity','🌿',any)]},
 ];
 // Order the lists are shown in (the rules above are in priority order, which isn't always the natural reading order).
 const SHOW_ORDER:Record<string,string[]>={routine:['before','business','after','night','week','waiting'],windows:['quick','longer','open','out','quiet','waiting'],

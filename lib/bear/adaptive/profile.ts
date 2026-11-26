@@ -83,8 +83,8 @@ export const profileConfidence=(p:TemporalProfile|null|undefined)=>p?Math.round(
 // The warm explanation shown at the end of onboarding: written from the scored profile, never from a label.
 export function explainProfile(p:TemporalProfile):string{
  const d=p.dims;const parts:string[]=[];
- if(d.dependence>=.65||d.autonomy<=.3)parts.push('You’ve got a lot to fit around other people’s schedules.');
- else if(d.predictability>=.7&&d.autonomy<=.45)parts.push('Your days follow a pattern, even if it isn’t always yours to set.');
+ if(d.predictability>=.7&&d.autonomy<=.45&&d.dependence<.65)parts.push('Your days follow a pattern, even if it isn’t always yours to set.');
+ else if(d.dependence>=.65||d.autonomy<=.3)parts.push('You’ve got a lot to fit around other people’s schedules.');
  else if(d.predictability<=.4&&d.autonomy>=.6)parts.push('You’ve got some freedom, but your days rarely go to plan.');
  else if(d.autonomy>=.7&&d.predictability>=.6)parts.push('You can usually plan your own time.');
  else parts.push('Every day is a bit different.');

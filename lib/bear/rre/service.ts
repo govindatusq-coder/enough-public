@@ -3,7 +3,7 @@
 import {z} from 'zod';
 import {addDays,todayISO,zonedDateTime} from '../domain/dates.ts';
 import {areaLabels} from '../domain/labels.ts';
-import type {AIInference,Task} from '../domain/types.ts';
+import type {AIInference,Profile,Task} from '../domain/types.ts';
 import {stamp,type BearStore} from '../store/store.ts';
 import type {StructuredModelProvider} from '../ai/provider.ts';
 import {ensureProfile} from '../services/profile.ts';
@@ -17,6 +17,9 @@ const labelFor=(s:RStatus,p:Plan)=>s==='waiting'?(p.dependencies.some(d=>d.statu
 import {chooseMoment,nextForHer,type Candidate} from './decide.ts';
 import {prepareFor} from './prepare.ts';
 import {chooseShare} from './share-pick.ts';
+import {attributesOf} from '../adaptive/attributes.ts';
+import {learnedList} from '../adaptive/learning.ts';
+import {isKnownList,ruleSuggestion} from '../adaptive/lists.ts';
 import {recordBehaviour} from '../services/behaviour.ts';
 import {describePreference,learn,purchasePreference} from './prefs.ts';
 
@@ -45,13 +48,20 @@ export async function ensurePlan(store:BearStore,task:Task,ctx:Ctx,now:Date):Pro
 }
 // Where it shows in Bear Brain: her own choice always; otherwise Bear's best guess. Bear's guess is never written over hers.
 const byKind:Record<Kind,string>={acquire:'night',gifts:'week',appointment:'calls',call:'calls',form:'night',bill:'night',followup:'followup',chore:'spare',aspiration:'aspire',general:'spare'};
-export function categoryOf(t:Task,p:Plan,lists:BearList[],learning:Parameters<typeof suggestList>[2]):{id:string;by:'you'|'bear'}{
+export function categoryOf(t:Task,p:Plan,lists:BearList[],learning:Parameters<typeof suggestList>[2],adaptive?:{profile:Profile;status:RStatus}):{id:string;by:'you'|'bear'}{
  const ids=new Set(lists.map(l=>l.id));
  if(t.listId&&ids.has(t.listId))return {id:t.listId,by:'you'};
- const s=t.suggestion&&!t.suggestion.ignored&&ids.has(t.suggestion.listId)?t.suggestion.listId:suggestList(t.title,lists,learning)?.listId;
+ if(t.suggestion&&!t.suggestion.ignored&&ids.has(t.suggestion.listId))return {id:t.suggestion.listId,by:'bear'};
+ // What she has taught Bear about this kind of thing (two or more of her own moves) comes before any rule.
+ const attrs=adaptive?attributesOf(t,p,{status:adaptive.status}):null;
+ const learned=attrs?learnedList(adaptive!.profile.adaptive,attrs,ids):null;if(learned)return {id:learned.listId,by:'bear'};
+ const s=suggestList(t.title,lists,learning)?.listId;
  if(s&&ids.has(s))return {id:s,by:'bear'};
+ // Lists from one of the suggested sets: place by what the responsibility is (its attributes), not its wording.
+ if(attrs&&lists.some(l=>isKnownList(l.id)&&!byKindIds.has(l.id))){const r=ruleSuggestion(attrs,lists,adaptive!.profile.temporal?.dims.delegationAccess??.5);if(r)return {id:r,by:'bear'};}
  const k=byKind[p.kind];return {id:ids.has(k)?k:(lists[0]?.id||'spare'),by:'bear'};
 }
+const byKindIds=new Set(Object.values(byKind));
 async function rows(store:BearStore,now:Date){
  const ctx=await ctxOf(store,now);const tasks=await openTasks(store);
  const out:{task:Task;plan:Plan;status:RStatus}[]=[];
@@ -63,7 +73,7 @@ async function rows(store:BearStore,now:Date){
 export const momentSchema=z.object({minutes:z.number().int().min(1).max(240),exclude:z.array(z.string().uuid()).max(50).default([])}).strict();
 export async function recommend(store:BearStore,input:z.infer<typeof momentSchema>,now=new Date()){
  const {ctx,rows:r}=await rows(store,now);
- const items:Candidate[]=r.map(({task,plan})=>({taskId:task.id,title:task.title,listId:categoryOf(task,plan,ctx.lists,ctx.profile.listLearning).id,plan,status:task.status,readiness:task.readiness??null,blockedByShare:task.sharedOut?.mode==='transfer'&&task.readiness==='waiting'}));
+ const items:Candidate[]=r.map(({task,plan})=>({taskId:task.id,title:task.title,listId:categoryOf(task,plan,ctx.lists,ctx.profile.listLearning,{profile:ctx.profile,status:statusOf(plan,task.status,ctx.today)}).id,plan,status:task.status,readiness:task.readiness??null,blockedByShare:task.sharedOut?.mode==='transfer'&&task.readiness==='waiting'}));
  const res=chooseMoment(items,{minutes:input.minutes,now,today:ctx.today,timeZone:ctx.tz,exclude:input.exclude,last:ctx.profile.rreLast??null});
  // The decision trace is kept (last 10) for checking how Bear decided; it is not shown in the app.
  await store.update('profiles',ctx.profile.id,{rreTrace:[res.trace,...(ctx.profile.rreTrace||[])].slice(0,10),// Browsing alternatives ("Something else") doesn't replace the main suggestion for this window.
@@ -158,7 +168,7 @@ export async function stepAction(store:BearStore,taskId:string,input:z.infer<typ
 
 // ---------- Views ----------
 function detailFrom(t:Task,plan:Plan,ctx:Ctx){
- const status=statusOf(plan,t.status,ctx.today);const cat=categoryOf(t,plan,ctx.lists,ctx.profile.listLearning);const list=ctx.lists.find(l=>l.id===cat.id)||null;
+ const status=statusOf(plan,t.status,ctx.today);const cat=categoryOf(t,plan,ctx.lists,ctx.profile.listLearning,{profile:ctx.profile,status});const list=ctx.lists.find(l=>l.id===cat.id)||null;
  const n=nextForHer(plan);const path=selectedPath(plan);
  return {id:t.id,title:t.title,original:t.sorted?.originalInput||null,outcome:plan.outcome,kind:plan.kind,status,statusLabel:labelFor(status,plan),
   deadlines:plan.deadlines,deadlineSource:plan.deadlineSource,category:list?{id:list.id,title:list.title,icon:list.icon,by:cat.by}:null,
@@ -178,7 +188,7 @@ export async function brainView(store:BearStore,now=new Date()){
  const {ctx,rows:r}=await rows(store,now);
  const projects=new Map((await store.list('projects')).map(p=>[p.id,p.areaKey]));
  const items:BrainItem[]=r.filter(x=>!(x.task.sharedOut?.mode==='transfer'&&x.task.readiness==='waiting')).map(({task,plan,status})=>{
-  const cat=categoryOf(task,plan,ctx.lists,ctx.profile.listLearning);
+  const cat=categoryOf(task,plan,ctx.lists,ctx.profile.listLearning,{profile:ctx.profile,status:statusOf(plan,task.status,ctx.today)});
   const d=plan.deadlines.opportunity&&plan.deadlines.opportunity>=ctx.today?plan.deadlines.opportunity:plan.deadlines.outcome;
   const left=d?Math.round((Date.parse(d)-Date.parse(ctx.today))/86400000):null;
   const dep=plan.dependencies.find(x=>x.status==='open');
