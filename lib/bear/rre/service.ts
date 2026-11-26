@@ -6,7 +6,7 @@ import {areaLabels} from '../domain/labels.ts';
 import type {AIInference,Profile,Task} from '../domain/types.ts';
 import {stamp,type BearStore} from '../store/store.ts';
 import type {StructuredModelProvider} from '../ai/provider.ts';
-import {ensureProfile} from '../services/profile.ts';
+import {activeDayMode,ensureProfile} from '../services/profile.ts';
 import {completeSchema,completeTask} from '../services/completion.ts';
 import {acceptPlan} from '../services/reminder-planning.ts';
 import {listsOf,minutesFor,suggestList,type BearList} from '../board/logic.ts';
@@ -82,8 +82,17 @@ export async function recommend(store:BearStore,input:z.infer<typeof momentSchem
  const condition=conditionFor(env,!!ctx.profile.temporal);
  const attrs=new Map(r.map(({task,plan,status})=>[task.id,attributesOf(task,plan,{status})]));
  const hourLocal=Number(new Intl.DateTimeFormat('en-AU',{timeZone:ctx.tz,hour:'numeric',hourCycle:'h23'}).format(now));
+ // The Cognitive Relief Policy decides (BEAR_RELIEF_POLICY=off returns to the earlier adaptive scoring: an operations
+ // switch for rollback, not an experiment). What she said about today ("wiped", "chaos") is a moment, not a trait.
+ const day=activeDayMode(ctx.profile,ctx.today);const capacity=day==='chaos'?'very_low':day==='wiped'?'low':'normal';
+ const policy=env.BEAR_RELIEF_POLICY==='off'?'adaptive':'relief';
  const res=adaptiveMoment(items,{minutes:input.minutes,unsure:input.unsure,now,today:ctx.today,timeZone:ctx.tz,exclude:input.exclude,last:ctx.profile.rreLast??null,
-  profile:ctx.profile.temporal||null,learning:ctx.profile.adaptive||null,attrs,tasks:new Map(r.map(x=>[x.task.id,x.task])),hourLocal,condition:condition==='A'?'B':condition});
+  profile:ctx.profile.temporal||null,learning:ctx.profile.adaptive||null,attrs,tasks:new Map(r.map(x=>[x.task.id,x.task])),hourLocal,condition:condition==='A'?'B':condition,
+  policy,capacity,canPrepare:id=>{const row=r.find(x=>x.task.id===id);return !!row&&row.plan.kind!=='gifts';}});
+ // Prepare before presenting: when Bear can do its part without AI or any outside action (a draft, a shortlist, the details),
+ // it does it now, so she sees something ready to look at rather than another job.
+ if(res.recommendation?.intervention==='prepare'){try{const d=await giveToBear(store,null,res.recommendation.taskId,now);
+  res.recommendation={...res.recommendation,needsBear:false,primary:{kind:'review',label:'Review it'},note:'Bear has got it ready. It just needs a quick look.',minutes:d.next?.minutes??res.recommendation.minutes};}catch{/* offered as it is */}}
  // The decision trace is kept (last 10) for checking how Bear decided; it is not shown in the app.
  await store.update('profiles',ctx.profile.id,{rreTrace:[res.trace,...(ctx.profile.rreTrace||[])].slice(0,10),// Browsing alternatives ("Something else") doesn't replace the main suggestion for this window.
   ...(res.recommendation&&!input.exclude.length?{rreLast:{taskId:res.recommendation.taskId,minutes:input.minutes,at:now.toISOString()}}:{})});

@@ -136,7 +136,7 @@ try{
  await step('Bear Brain: search and filter',async()=>{
   await p.click('button[aria-label="Search"]');await p.fill('.v2-search','school');await p.waitForSelector('.v2-prow:has-text("school")');await p.click('button[aria-label="Search"]');
   await p.click('.v2-fold-head:has-text("All Tasks")');await p.click('.v2-filters .chip:has-text("Ready to check")');await p.waitForSelector('.v2-fold .v2-prow:has-text("Christmas")');
-  assert.ok(!(await p.textContent('.v2-fold .v2-plist')).includes('dentist'),'filtered');await p.click('.v2-filters .chip:has-text("All (")');await p.click('.v2-fold-head:has-text("All Tasks")');await p.waitForSelector('.v2-cat');
+  {const shown=await p.$$eval('.v2-fold .v2-plist .v2-prow',e=>e.length);const all=(await api('/api/bear/rre/brain',null,'GET')).categories.flatMap(c=>c.items);const ready=all.filter(x=>x.status==='awaiting_approval').length;assert.equal(shown,ready,'only the ones ready to check');assert.ok(shown<all.length,'filtered');}await p.click('.v2-filters .chip:has-text("All (")');await p.click('.v2-fold-head:has-text("All Tasks")');await p.waitForSelector('.v2-cat');
  });
  await step('Kept from before: Share Bear from a task’s menu, categories you can rename, what Bear has learned',async()=>{
   await p.click('.v2-cat-head:has-text("Organise Follow-Up")');await p.waitForSelector('[data-drop="followup"] .b-row:has-text("school")');
@@ -186,6 +186,11 @@ try{
   assert.equal(Number(await p.textContent('.mw-count b')),before+1);assert.match(await p.textContent('.mw-count p'),/^This week \d+ · This month \d+$/);
   assert.match(await p.textContent('.mw-recent li:first-child .mw-done'),/Water the pot plants/);await shot('v08-my-wins');
   await p.click('.mw-more a');await p.waitForSelector('h1:has-text("What Bear has protected")');
+ });
+ await step('Bear Brain’s links (Calendar, Share Bear, Bear Helps, Edit categories) each have a way back to Bear Brain',async()=>{
+  for(const name of ['Calendar','Share Bear','Bear Helps','Edit categories']){
+   await p.goto(base+'/bear/brain');await p.click(`.board-links a:has-text("${name}")`);await p.waitForSelector('.topbar a.back:has-text("Bear Brain")');
+   await p.click('.topbar a.back:has-text("Bear Brain")');await p.waitForURL(/\/bear\/brain$/);}
  });
  await step('Share Bear by text: ask from the task, exact preview, test-mode send, Daniel answers without an account, she hears back, done',async()=>{
   await api('/api/bear/board/dump',{text:'Pick up Ella’s birthday cake on Friday before 3 pm',via:'text'});

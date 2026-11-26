@@ -1270,3 +1270,11 @@
 .bear .carry-list b{font-weight:600;}.bear .carry-list .cw-bear{color:#2E8A64;}.bear .carry-list .cw-you{color:var(--coral);}
 .bear .carry-list .cw-not_needed,.bear .carry-list .cw-done{color:var(--ink-2);font-weight:400;}
 .bear .al .row{align-items:flex-start;gap:8px;}.bear .al-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+/* How your days work: each screen sits in the middle of the screen, with a Load Bear picture above the question. */
+.bear .ob{display:flex;flex-direction:column;min-height:100dvh;}
+.bear .ob-intro,.bear .ob-q{flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:max(24px,env(safe-area-inset-bottom));}
+.bear .ob-q{max-width:560px;width:100%;margin:0 auto;}
+.bear .ob-art{display:block;width:min(42vw,150px);height:auto;aspect-ratio:1/1;object-fit:contain;margin:0 auto 4px;mix-blend-mode:multiply;animation:tour-in .35s var(--spring,ease) both;}
+.bear .ob-q .ob-h{text-align:center;}.bear .ob-q .ob-p{text-align:center;}
+@media (max-height:700px){.bear .ob-art{width:96px;}}
+@media (prefers-reduced-motion:reduce){.bear .ob-art{animation:none;}}

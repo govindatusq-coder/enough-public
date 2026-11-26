@@ -9,6 +9,7 @@ import {candidatesFor,chooseMoment,explain,momentKey,tieHash,type Candidate,type
 import type {Attributes} from './attributes.ts';
 import {ARCHETYPES,type Archetype,type TemporalProfile,dominant} from './profile.ts';
 import {isSuppressed,strategyPreference,usualHours,type AdaptiveLearning,type StrategyId} from './learning.ts';
+import {choose,reliefNote,reliefWeights,INTERVENTION_STRATEGY,RELIEF_POLICY_VERSION,type Intervention,type PolicyContext} from './relief-policy.ts';
 
 export const STRATEGIES:{id:StrategyId;name:string;what:string}[]=[
  {id:'allocate',name:'Allocate',what:'Protected time for something that needs it, when she has the control to reserve it.'},
@@ -42,9 +43,12 @@ export function effectiveWindow(minutes:number,unsure:boolean,p:TemporalProfile|
 }
 
 export interface AdaptiveContext extends MomentContext{unsure?:boolean;profile:TemporalProfile|null;learning:AdaptiveLearning|null;attrs:Map<string,Attributes>;tasks:Map<string,Task>;hourLocal:number;
- condition?:'B'|'C'|'D'|'E'}
+ condition?:'B'|'C'|'D'|'E';
+ // The Cognitive Relief Policy (default) or the earlier adaptive scoring (for comparison and rollback). capacity: what she said
+ // about today ("wiped" or "chaos"), a moment, not a trait. canPrepare: whether Bear can prepare this without AI or outside action.
+ policy?:'adaptive'|'relief';capacity?:'normal'|'low'|'very_low';canPrepare?:(taskId:string)=>boolean}
 export interface Primary{kind:'do'|'give'|'review'|'call'|'share';label:string}
-export interface AdaptiveRecommendation extends Recommendation{strategy:StrategyId;primary:Primary;note:string|null;humanMinutes:number;window:number;share:boolean}
+export interface AdaptiveRecommendation extends Recommendation{strategy:StrategyId;primary:Primary;note:string|null;humanMinutes:number;window:number;share:boolean;intervention?:Intervention}
 export interface AdaptiveResult extends Omit<MomentResult,'recommendation'>{recommendation:AdaptiveRecommendation|null;adaptive:boolean;
  alternative:{kind:'allocate'|'offload'|'protect';taskId:string|null;title:string|null;minutes:number|null;text:string}|null;
  scores:{taskId:string;score:number;parts:Record<string,number>}[];weights:Weights;weightsVersion:string}
@@ -100,6 +104,7 @@ function noteFor(s:StrategyId,x:PoolItem,a:Attributes|undefined,ctx:AdaptiveCont
 }
 
 export function adaptiveMoment(items:Candidate[],ctx:AdaptiveContext):AdaptiveResult{
+ if(ctx.policy==='relief')return reliefMoment(items,ctx);
  const cond=ctx.condition||'E';const profile=cond==='D'||cond==='E'?ctx.profile:null;
  const weights=weightsFor(profile);
  // No profile (or a condition without adaptive strategy): exactly Got a Moment's own choice, labelled with its strategy.
@@ -145,4 +150,39 @@ export function adaptiveMoment(items:Candidate[],ctx:AdaptiveContext):AdaptiveRe
  const rec:AdaptiveRecommendation={taskId:top.x.c.taskId,title:top.x.title,label,minutes:top.x.f.minutes,why,needsBear:top.x.needsBear,alternative:scored[1]?{taskId:scored[1].x.c.taskId,title:scored[1].x.title}:null,confidence,
   strategy:s,primary:primaryFor(top.x,top.a),note:noteFor(s,top.x,top.a,ctx,share),humanMinutes:top.a?.humanMinutes??top.x.f.minutes,window,share};
  return {recommendation:rec,message:null,suggestMinutes:null,waiting,trace:trace(top.x.c.taskId,`${s}: ${label}: ${why}`,confidence),adaptive:true,alternative:null,scores,weights,weightsVersion:WEIGHTS_VERSION};
+}
+
+// ---------- Cognitive Relief Policy ----------
+// The same feasibility checks, then the intervention with the best expected net relief (see relief-policy.ts). It may choose
+// not to intervene. Her profile shifts the weights a little; what she said about today (capacity) shrinks the window and
+// raises the cost of asking anything of her.
+export function reliefMoment(items:Candidate[],ctx:AdaptiveContext):AdaptiveResult{
+ const cond=ctx.condition||'E';const profile=cond==='D'||cond==='E'?ctx.profile:null;const capacity=ctx.capacity||'normal';
+ const w=reliefWeights(profile);
+ const base=effectiveWindow(ctx.minutes,!!ctx.unsure,profile);const window=capacity==='low'?Math.max(2,Math.floor(base*.6)):capacity==='very_low'?Math.max(2,Math.floor(base*.4)):base;
+ const {pool:all,considered,waiting,open}=candidatesFor(items,{...ctx,minutes:window});
+ const pool=all.filter(x=>{const a=ctx.attrs.get(x.c.taskId);return !(a&&isSuppressed(ctx.learning,a)&&x.f.risk!=='high');});
+ const pctx:PolicyContext={window,profile,learning:ctx.learning,delegationAccess:profile?.dims.delegationAccess??0,openBusiness:open,capacity,canPrepare:x=>ctx.canPrepare?ctx.canPrepare(x.c.taskId):x.c.plan.kind!=='gifts'};
+ // Nothing feasible at all: say what would fit, exactly as Got a Moment always has (e.g. "the next thing takes about 10 minutes").
+ if(!pool.length){const b=chooseMoment(items,{...ctx,minutes:window});return {...b,recommendation:null,adaptive:true,alternative:null,scores:[],weights:weightsFor(profile),weightsVersion:RELIEF_POLICY_VERSION};}
+ const chosen=choose(pool.map(x=>({x,a:ctx.attrs.get(x.c.taskId)})),pctx,w);let top=chosen.top;const {scored,reason}=chosen;
+ // Stability: the same window asked again soon gets the same suggestion, unless something genuinely more pressing appeared.
+ if(top&&ctx.last&&ctx.last.minutes===ctx.minutes&&ctx.now.getTime()-Date.parse(ctx.last.at)<3*3600000){const keep=scored.find(x=>x.x.c.taskId===ctx.last!.taskId);if(keep&&!(top.x.f.risk==='high'&&keep.x.f.risk!=='high'))top=keep;}
+ const scores=scored.map(s=>({taskId:s.x.c.taskId,score:s.utility,parts:{...s.parts,[`via_${s.best.intervention}`]:1}}));
+ const trace=(selected:string|null,why:string,confidence:number)=>({at:ctx.now.toISOString(),rules:RELIEF_POLICY_VERSION,minutes:window,considered,selected,reason:why,confidence});
+ const weights=weightsFor(profile);
+ if(!top){
+  const message=reason==='capacity'?'It’s been a lot today. Nothing here needs you right now. A break counts too.'
+   :waiting?`Nothing needs you right now. ${waiting===1?'One thing is':`${waiting} things are`} waiting on someone else; they’re in Bear Brain.`
+   :'Nothing needs you right now. Everything is in Bear Brain when you want it.';
+  return {recommendation:null,message,suggestMinutes:null,waiting,trace:trace(null,`no intervention: ${reason}`,1),adaptive:true,
+   alternative:{kind:'protect',taskId:null,title:null,minutes:null,text:message},scores,weights,weightsVersion:RELIEF_POLICY_VERSION};
+ }
+ const x=top.x,a=top.a,e=top.best;const {label,why}=explain(x.c.plan,x.f,x.needsBear,ctx.today);
+ const started=x.c.plan.stepIndex>0&&!x.needsBear;
+ const s:StrategyId=e.intervention==='do'?strategyOf(x,a,{profile,unsure:ctx.unsure},open):INTERVENTION_STRATEGY[e.intervention];
+ const primary:Primary=e.intervention==='transfer'?{kind:'share',label:'Ask someone'}:e.intervention==='review'?{kind:'review',label:'Review it'}:e.intervention==='prepare'?{kind:'give',label:'Give it to Bear'}:primaryFor(x,a);
+ const rec:AdaptiveRecommendation={taskId:x.c.taskId,title:x.title,label,minutes:e.humanMinutes||x.f.minutes,why,needsBear:x.needsBear,alternative:scored[1]?{taskId:scored[1].x.c.taskId,title:scored[1].x.title}:null,
+  confidence:Math.round(e.confidence*100)/100,strategy:s,primary,note:reliefNote(e,false,started),humanMinutes:a?.humanMinutes??x.f.minutes,window,share:e.intervention==='transfer',intervention:e.intervention};
+ return {recommendation:rec,message:null,suggestMinutes:null,waiting,trace:trace(x.c.taskId,`${e.intervention}/${s}: ${label}: ${why}`,rec.confidence),adaptive:true,alternative:null,scores,weights,weightsVersion:RELIEF_POLICY_VERSION};
 }

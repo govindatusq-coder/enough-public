@@ -15,7 +15,8 @@ import {conditionFor} from '../lib/bear/adaptive/flags.ts';
 const TUE_LUNCH=new Date('2026-11-24T12:30:00+11:00'),TUE_NIGHT=new Date('2026-11-24T20:30:00+11:00');
 const backend=new MemoryBackend();let n=0;const env={};
 async function person(answers){const s=backend.for(`ad200000-0000-4000-8000-${String(++n).padStart(12,'0')}`);await ensureProfile(s);await saveProfile(s,{name:'Sarah',onboardingComplete:true});if(answers)await saveAnswers(s,{answers},TUE_LUNCH);return s;}
-const ask=(s,minutes,at,extra={})=>recommend(s,{minutes,exclude:[],...extra},at,env);
+// These tests pin the earlier adaptive scoring (still available for comparison and rollback).
+const ask=(s,minutes,at,extra={})=>recommend(s,{minutes,exclude:[],...extra},at,{BEAR_RELIEF_POLICY:'off'});
 
 test('seven strategies, versioned weights blended by profile, a window that allows for real life',()=>{
  assert.deepEqual(STRATEGIES.map(x=>x.id),['allocate','prioritise','synchronise','adapt','match','offload','protect']);

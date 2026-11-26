@@ -35,7 +35,9 @@ test('Scrunchie, end to end: tip on capture, "Saves time later" for 5 minutes, B
  const tip=await afterDrop(s,r.added.map(a=>a.id),MON);assert.match(tip.text,/ordering Sarah’s red scrunchie today could save you a shopping trip/);
  const m=await recommend(s,{minutes:5,exclude:[]},MON);const rec=m.recommendation;
  assert.equal(rec.label,'Saves time later');assert.equal(rec.title,'Order Sarah’s red scrunchie');assert.equal(rec.minutes,2,'her active time, not the delivery time');
- assert.equal(rec.why,'Ordering today could save a shopping trip later this week.');assert.equal(rec.needsBear,true);
+ assert.equal(rec.why,'Ordering today could save a shopping trip later this week.');
+ // Cognitive Relief Policy: Bear does its part before presenting it, so she sees it ready to look at.
+ assert.equal(rec.needsBear,false);assert.equal(rec.primary.label,'Review it');assert.match(rec.note,/ready/);
  const id=rec.taskId;let d=await giveToBear(s,null,id,MON);
  assert.equal(d.status,'awaiting_approval');assert.equal(d.prepared.kind,'shopping');assert.match(d.prepared.note,/doesn’t buy anything/);assert.match(d.prepared.links[0].url,/^https:\/\/www\.google\.com\/search\?tbm=shop&q=red%20scrunchie/);
  // Tapping twice never prepares twice.
@@ -123,7 +125,7 @@ test('Scenario H: a skipped suggestion isn’t offered again straight away, but 
 test('stability: asking again for the same time soon gives the same suggestion',async()=>{
  const s=await person();await unload(s,null,{text:'RSVP to the party\nReply to the swimming coach\nConfirm the playdate',via:'text'},MON);
  const a=(await recommend(s,{minutes:5,exclude:[]},MON)).recommendation;const b=(await recommend(s,{minutes:5,exclude:[]},at('2026-11-16T10:20:00+11:00'))).recommendation;assert.equal(a.taskId,b.taskId);
- const trace=(await ensureProfile(s)).rreTrace;assert.ok(trace.length>=2);assert.equal(trace[0].rules,'rre-1');assert.ok(trace[0].considered.length>=3);
+ const trace=(await ensureProfile(s)).rreTrace;assert.ok(trace.length>=2);assert.ok(['rre-1','crp-1'].includes(trace[0].rules));assert.ok(trace[0].considered.length>=3);
 });
 test('nothing fits: no busywork, and Bear says what would',async()=>{
  const s=await person();await addOne(s,{title:'Paint the fence',listId:null},MON);
