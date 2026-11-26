@@ -1,0 +1,1081 @@
+{
+ "name": "previous adaptive engine vs Cognitive Relief Policy",
+ "synthetic": true,
+ "scenarios": 1152,
+ "evaluations": 2304,
+ "seconds": 966,
+ "note": "Identical scenarios, tasks and capabilities for both policies. Expectations fixed per scenario type in advance; measures are observable states and counts, not either policy’s own estimates. Synthetic engineering results only.",
+ "overall": {
+  "adaptive": {
+   "n": 1152,
+   "suggested": 60.6,
+   "avg_needing_her_attention": 3.13,
+   "avg_her_steps_on_suggestion": 2.19,
+   "avg_decisions_on_suggestion": 0.16,
+   "prepared_before_shown": 0,
+   "fits_window": 100,
+   "business_hours_respected": 100,
+   "urgent_first": 32.7,
+   "deferred_first": 36.7,
+   "only_consequential_on_chaos_day": 45.8,
+   "none_or_small_when_optimal": 86.1,
+   "declined_respected": 100,
+   "optional_question_on_hard_day": 0,
+   "false_completion": 0,
+   "target_found": 99.7,
+   "urgent_first_when_doable": 85,
+   "deferred_first_when_doable": 64.3,
+   "interventions": {
+    "(previous engine)": 698,
+    "none": 454
+   }
+  },
+  "relief": {
+   "n": 1152,
+   "suggested": 57.5,
+   "avg_needing_her_attention": 3.13,
+   "avg_her_steps_on_suggestion": 2.19,
+   "avg_decisions_on_suggestion": 0.09,
+   "prepared_before_shown": 27.3,
+   "fits_window": 100,
+   "business_hours_respected": 100,
+   "urgent_first": 34.6,
+   "deferred_first": 42.9,
+   "only_consequential_on_chaos_day": 68.1,
+   "none_or_small_when_optimal": 91.7,
+   "declined_respected": 100,
+   "optional_question_on_hard_day": 0,
+   "false_completion": 0,
+   "target_found": 99.7,
+   "urgent_first_when_doable": 90,
+   "deferred_first_when_doable": 75,
+   "interventions": {
+    "do": 481,
+    "none": 490,
+    "prepare": 181
+   }
+  }
+ },
+ "byType": {
+  "routine": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 69.4,
+    "avg_needing_her_attention": 3.01,
+    "avg_her_steps_on_suggestion": 2.2,
+    "avg_decisions_on_suggestion": 0.2,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 98.6,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "(previous engine)": 50,
+     "none": 22
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 69.4,
+    "avg_needing_her_attention": 3.01,
+    "avg_her_steps_on_suggestion": 2.2,
+    "avg_decisions_on_suggestion": 0.1,
+    "prepared_before_shown": 24,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 98.6,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "do": 38,
+     "none": 22,
+     "prepare": 12
+    }
+   }
+  },
+  "competing": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 84.7,
+    "avg_needing_her_attention": 5.01,
+    "avg_her_steps_on_suggestion": 2.3,
+    "avg_decisions_on_suggestion": 0.23,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 98.6,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "(previous engine)": 61,
+     "none": 11
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 84.7,
+    "avg_needing_her_attention": 5.01,
+    "avg_her_steps_on_suggestion": 2.3,
+    "avg_decisions_on_suggestion": 0.15,
+    "prepared_before_shown": 24.6,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 98.6,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "do": 46,
+     "none": 11,
+     "prepare": 15
+    }
+   }
+  },
+  "very_limited": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 36.1,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.23,
+    "avg_decisions_on_suggestion": 0.31,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 46,
+     "(previous engine)": 26
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 36.1,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.23,
+    "avg_decisions_on_suggestion": 0.12,
+    "prepared_before_shown": 88.5,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 46,
+     "prepare": 23,
+     "do": 3
+    }
+   }
+  },
+  "low_energy": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 70.8,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.2,
+    "avg_decisions_on_suggestion": 0.22,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "(previous engine)": 51,
+     "none": 21
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 55.6,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.05,
+    "avg_decisions_on_suggestion": 0.03,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "do": 40,
+     "none": 32
+    }
+   }
+  },
+  "missing_info": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 81.9,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.17,
+    "avg_decisions_on_suggestion": 0.15,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "(previous engine)": 59,
+     "none": 13
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 81.9,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.17,
+    "avg_decisions_on_suggestion": 0.08,
+    "prepared_before_shown": 55.9,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "do": 26,
+     "none": 13,
+     "prepare": 33
+    }
+   }
+  },
+  "delegation_declined": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 65.3,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.26,
+    "avg_decisions_on_suggestion": 0.15,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "(previous engine)": 47,
+     "none": 25
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 65.3,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.21,
+    "avg_decisions_on_suggestion": 0.11,
+    "prepared_before_shown": 21.3,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "prepare": 10,
+     "none": 25,
+     "do": 37
+    }
+   }
+  },
+  "user_declines": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 36.1,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.08,
+    "avg_decisions_on_suggestion": 0.04,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": 100,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "(previous engine)": 26,
+     "none": 46
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 38.9,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.07,
+    "avg_decisions_on_suggestion": 0.04,
+    "prepared_before_shown": 17.9,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": 100,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "do": 23,
+     "prepare": 5,
+     "none": 44
+    }
+   }
+  },
+  "recovery": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 65.3,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.26,
+    "avg_decisions_on_suggestion": 0.21,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": 45.8,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "(previous engine)": 47,
+     "none": 25
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 33.3,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.5,
+    "avg_decisions_on_suggestion": 0.25,
+    "prepared_before_shown": 4.2,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": 68.1,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 48,
+     "do": 23,
+     "prepare": 1
+    }
+   }
+  },
+  "wrong_profile": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 33.3,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.08,
+    "avg_decisions_on_suggestion": 0.04,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 48,
+     "(previous engine)": 24
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 33.3,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.08,
+    "avg_decisions_on_suggestion": 0.04,
+    "prepared_before_shown": 79.2,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 48,
+     "prepare": 19,
+     "do": 5
+    }
+   }
+  },
+  "previously_rejected": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 62.5,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.22,
+    "avg_decisions_on_suggestion": 0.16,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 27,
+     "(previous engine)": 45
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 62.5,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.22,
+    "avg_decisions_on_suggestion": 0.11,
+    "prepared_before_shown": 15.6,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 27,
+     "do": 38,
+     "prepare": 7
+    }
+   }
+  },
+  "high_consequence": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 72.2,
+    "avg_needing_her_attention": 3.01,
+    "avg_her_steps_on_suggestion": 2.15,
+    "avg_decisions_on_suggestion": 0.23,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": 32.7,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 98.6,
+    "urgent_first_when_doable": 85,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 20,
+     "(previous engine)": 52
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 72.2,
+    "avg_needing_her_attention": 3.01,
+    "avg_her_steps_on_suggestion": 2.12,
+    "avg_decisions_on_suggestion": 0.06,
+    "prepared_before_shown": 26.9,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": 34.6,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 98.6,
+    "urgent_first_when_doable": 90,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 20,
+     "prepare": 14,
+     "do": 38
+    }
+   }
+  },
+  "repeatedly_deferred": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 68.1,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.16,
+    "avg_decisions_on_suggestion": 0.16,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": 36.7,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": 64.3,
+    "interventions": {
+     "(previous engine)": 49,
+     "none": 23
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 68.1,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.16,
+    "avg_decisions_on_suggestion": 0.08,
+    "prepared_before_shown": 30.6,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": 42.9,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": 75,
+    "interventions": {
+     "do": 34,
+     "none": 23,
+     "prepare": 15
+    }
+   }
+  },
+  "no_intervention_optimal": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 13.9,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2,
+    "avg_decisions_on_suggestion": 0,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": 86.1,
+    "declined_respected": null,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 62,
+     "(previous engine)": 10
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 8.3,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2,
+    "avg_decisions_on_suggestion": 0,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": 91.7,
+    "declined_respected": null,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 66,
+     "do": 6
+    }
+   }
+  },
+  "interruptions": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 61.1,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.32,
+    "avg_decisions_on_suggestion": 0.16,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "(previous engine)": 44,
+     "none": 28
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 61.1,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.32,
+    "avg_decisions_on_suggestion": 0.16,
+    "prepared_before_shown": 31.8,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "do": 30,
+     "prepare": 14,
+     "none": 28
+    }
+   }
+  },
+  "unpredictable_caregiving": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 59.7,
+    "avg_needing_her_attention": 3.01,
+    "avg_her_steps_on_suggestion": 2.09,
+    "avg_decisions_on_suggestion": 0.05,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 29,
+     "(previous engine)": 43
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 59.7,
+    "avg_needing_her_attention": 3.01,
+    "avg_her_steps_on_suggestion": 2.14,
+    "avg_decisions_on_suggestion": 0.07,
+    "prepared_before_shown": 9.3,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 29,
+     "do": 39,
+     "prepare": 4
+    }
+   }
+  },
+  "high_autonomy": {
+   "adaptive": {
+    "n": 72,
+    "suggested": 88.9,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.13,
+    "avg_decisions_on_suggestion": 0.06,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 8,
+     "(previous engine)": 64
+    }
+   },
+   "relief": {
+    "n": 72,
+    "suggested": 88.9,
+    "avg_needing_her_attention": 3,
+    "avg_her_steps_on_suggestion": 2.13,
+    "avg_decisions_on_suggestion": 0.06,
+    "prepared_before_shown": 14.1,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": null,
+    "deferred_first": null,
+    "only_consequential_on_chaos_day": null,
+    "none_or_small_when_optimal": null,
+    "declined_respected": null,
+    "optional_question_on_hard_day": null,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": null,
+    "interventions": {
+     "none": 8,
+     "do": 55,
+     "prepare": 9
+    }
+   }
+  }
+ },
+ "byProfile": {
+  "planner": {
+   "adaptive": {
+    "n": 288,
+    "suggested": 65.6,
+    "avg_needing_her_attention": 3.13,
+    "avg_her_steps_on_suggestion": 2.23,
+    "avg_decisions_on_suggestion": 0.12,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": 43.8,
+    "deferred_first": 40,
+    "only_consequential_on_chaos_day": 55.6,
+    "none_or_small_when_optimal": 72.2,
+    "declined_respected": 100,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": 100,
+    "deferred_first_when_doable": 57.1,
+    "interventions": {
+     "(previous engine)": 189,
+     "none": 99
+    }
+   },
+   "relief": {
+    "n": 288,
+    "suggested": 61.1,
+    "avg_needing_her_attention": 3.13,
+    "avg_her_steps_on_suggestion": 2.17,
+    "avg_decisions_on_suggestion": 0.09,
+    "prepared_before_shown": 24.4,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": 37.5,
+    "deferred_first": 60,
+    "only_consequential_on_chaos_day": 77.8,
+    "none_or_small_when_optimal": 83.3,
+    "declined_respected": 100,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 100,
+    "urgent_first_when_doable": 85.7,
+    "deferred_first_when_doable": 85.7,
+    "interventions": {
+     "do": 133,
+     "none": 112,
+     "prepare": 43
+    }
+   }
+  },
+  "juggler": {
+   "adaptive": {
+    "n": 288,
+    "suggested": 65.3,
+    "avg_needing_her_attention": 3.13,
+    "avg_her_steps_on_suggestion": 2.15,
+    "avg_decisions_on_suggestion": 0.2,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": 35.7,
+    "deferred_first": 28.6,
+    "only_consequential_on_chaos_day": 38.9,
+    "none_or_small_when_optimal": 83.3,
+    "declined_respected": 100,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 99.7,
+    "urgent_first_when_doable": 100,
+    "deferred_first_when_doable": 57.1,
+    "interventions": {
+     "(previous engine)": 188,
+     "none": 100
+    }
+   },
+   "relief": {
+    "n": 288,
+    "suggested": 62.2,
+    "avg_needing_her_attention": 3.13,
+    "avg_her_steps_on_suggestion": 2.17,
+    "avg_decisions_on_suggestion": 0.08,
+    "prepared_before_shown": 28.5,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": 35.7,
+    "deferred_first": 28.6,
+    "only_consequential_on_chaos_day": 61.1,
+    "none_or_small_when_optimal": 83.3,
+    "declined_respected": 100,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 99.7,
+    "urgent_first_when_doable": 100,
+    "deferred_first_when_doable": 57.1,
+    "interventions": {
+     "do": 128,
+     "none": 109,
+     "prepare": 51
+    }
+   }
+  },
+  "improviser": {
+   "adaptive": {
+    "n": 288,
+    "suggested": 57.6,
+    "avg_needing_her_attention": 3.13,
+    "avg_her_steps_on_suggestion": 2.14,
+    "avg_decisions_on_suggestion": 0.07,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": 35.7,
+    "deferred_first": 45.5,
+    "only_consequential_on_chaos_day": 38.9,
+    "none_or_small_when_optimal": 94.4,
+    "declined_respected": 100,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 99.7,
+    "urgent_first_when_doable": 62.5,
+    "deferred_first_when_doable": 83.3,
+    "interventions": {
+     "(previous engine)": 166,
+     "none": 122
+    }
+   },
+   "relief": {
+    "n": 288,
+    "suggested": 54.9,
+    "avg_needing_her_attention": 3.13,
+    "avg_her_steps_on_suggestion": 2.16,
+    "avg_decisions_on_suggestion": 0.08,
+    "prepared_before_shown": 32.3,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": 50,
+    "deferred_first": 45.5,
+    "only_consequential_on_chaos_day": 72.2,
+    "none_or_small_when_optimal": 100,
+    "declined_respected": 100,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 99.7,
+    "urgent_first_when_doable": 87.5,
+    "deferred_first_when_doable": 83.3,
+    "interventions": {
+     "do": 107,
+     "none": 130,
+     "prepare": 51
+    }
+   }
+  },
+  "oncall": {
+   "adaptive": {
+    "n": 288,
+    "suggested": 53.8,
+    "avg_needing_her_attention": 3.13,
+    "avg_her_steps_on_suggestion": 2.25,
+    "avg_decisions_on_suggestion": 0.25,
+    "prepared_before_shown": 0,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": 0,
+    "deferred_first": 35.7,
+    "only_consequential_on_chaos_day": 50,
+    "none_or_small_when_optimal": 94.4,
+    "declined_respected": 100,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 99.7,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": 62.5,
+    "interventions": {
+     "none": 133,
+     "(previous engine)": 155
+    }
+   },
+   "relief": {
+    "n": 288,
+    "suggested": 51.7,
+    "avg_needing_her_attention": 3.13,
+    "avg_her_steps_on_suggestion": 2.26,
+    "avg_decisions_on_suggestion": 0.13,
+    "prepared_before_shown": 24.2,
+    "fits_window": 100,
+    "business_hours_respected": 100,
+    "urgent_first": 0,
+    "deferred_first": 42.9,
+    "only_consequential_on_chaos_day": 61.1,
+    "none_or_small_when_optimal": 100,
+    "declined_respected": 100,
+    "optional_question_on_hard_day": 0,
+    "false_completion": 0,
+    "target_found": 99.7,
+    "urgent_first_when_doable": null,
+    "deferred_first_when_doable": 75,
+    "interventions": {
+     "none": 139,
+     "do": 113,
+     "prepare": 36
+    }
+   }
+  }
+ }
+}
