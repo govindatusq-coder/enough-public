@@ -86,6 +86,11 @@ export interface Profile extends Owned{
  household?:{id:string;name:string;email:string|null;phone:string|null;joined?:boolean;lastUsedAt?:string}[];
  // What Bear has learned about how she likes to do things (from her own choices), and the last few suggestions with why.
  preferences?:import('../rre/prefs.ts').UserPreference[];rreLast?:{taskId:string;minutes:number;at:string}|null;rreTrace?:import('../rre/decide.ts').Trace[];
+ // Adaptive Responsibility Engine (all optional; absent means Bear behaves as it always has).
+ // temporal: how her time works, scored from her own answers (never a label shown to her). country: for spelling, dates,
+ // money and holidays. listStyle: which starting lists she chose. adaptive: what Bear has learned from her choices.
+ temporal?:import('../adaptive/profile.ts').TemporalProfile|null;country?:'AU'|'CA'|'US'|'Other'|null;
+ listStyle?:import('../adaptive/lists.ts').ListStyle|null;adaptive?:import('../adaptive/learning.ts').AdaptiveLearning|null;
  // Got a Moment? conversation: private to this person (never on anything shared with the household).
  momentChat?:{messages:import('../services/moment-chat.ts').MomentMessage[];updatedAt:string}|null;
  // Need a Break: ideas she said "Sounds good" to (counts) and the ones shown lately (so they aren't repeated straight away).
