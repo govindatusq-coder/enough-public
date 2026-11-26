@@ -165,7 +165,14 @@ export function reliefMoment(items:Candidate[],ctx:AdaptiveContext):AdaptiveResu
  const pctx:PolicyContext={window,profile,learning:ctx.learning,delegationAccess:profile?.dims.delegationAccess??0,openBusiness:open,capacity,canPrepare:x=>ctx.canPrepare?ctx.canPrepare(x.c.taskId):x.c.plan.kind!=='gifts',
   declinedBefore:id=>ctx.tasks.get(id)?.delegation?.status==='DECLINED'};
  // Nothing feasible at all: say what would fit, exactly as Got a Moment always has (e.g. "the next thing takes about 10 minutes").
- if(!pool.length){const b=chooseMoment(items,{...ctx,minutes:window});return {...b,recommendation:null,adaptive:true,alternative:null,scores:[],weights:weightsFor(profile),weightsVersion:RELIEF_POLICY_VERSION};}
+ // If something bigger could still come off her plate (Bear gets it ready, or someone else takes it), offer that instead.
+ if(!pool.length){const b=chooseMoment(items,{...ctx,minutes:window});
+  const bigger=items.map(c=>({c,a:ctx.attrs.get(c.taskId)})).filter(({c,a})=>c.status==='open'&&a&&a.readiness!=='waiting'&&a.readiness!=='completed'&&!considered.find(k=>k.taskId===c.taskId&&k.excluded&&/waiting|marked|handed|skipped|asked for something else|nothing for you/.test(k.excluded))&&!(isSuppressed(ctx.learning,a)));
+  const prep=bigger.find(({c,a})=>a!.agentPreparationAvailable&&pctx.canPrepare({c} as PoolItem));
+  const hand=profile?bigger.find(({c,a})=>a!.delegationEligible&&profile.dims.delegationAccess>=.4&&ctx.tasks.get(c.taskId)?.delegation?.status!=='DECLINED'):undefined;
+  const alternative=prep?{kind:'offload' as const,taskId:prep.c.taskId,title:prep.c.title,minutes:null,text:'Nothing fits that time, but Bear could get this ready for later.'}
+   :hand?{kind:'offload' as const,taskId:hand.c.taskId,title:hand.c.title,minutes:null,text:'Nothing fits that time. Someone else could take this one, if you’d like to ask.'}:null;
+  return {...b,recommendation:null,message:alternative?.text??b.message,adaptive:true,alternative,scores:[],weights:weightsFor(profile),weightsVersion:RELIEF_POLICY_VERSION};}
  const chosen=choose(pool.map(x=>({x,a:ctx.attrs.get(x.c.taskId),saved:!!ctx.tasks.get(x.c.taskId)?.progress?.savedAt})),pctx,w);let top=chosen.top;const {scored,reason}=chosen;
  // Stability: the same window asked again soon gets the same suggestion, unless something genuinely more pressing appeared.
  if(top&&ctx.last&&ctx.last.minutes===ctx.minutes&&ctx.now.getTime()-Date.parse(ctx.last.at)<3*3600000){const keep=scored.find(x=>x.x.c.taskId===ctx.last!.taskId);if(keep&&!(top.x.f.risk==='high'&&keep.x.f.risk!=='high'))top=keep;}
