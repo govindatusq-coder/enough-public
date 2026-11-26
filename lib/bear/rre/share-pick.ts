@@ -6,6 +6,7 @@ import {daysBetween,formatAU} from '../domain/dates.ts';
 import type {Task} from '../domain/types.ts';
 import type {Kind} from './model.ts';
 import {selectedPath,type Plan} from './plan.ts';
+import {domainOf} from '../adaptive/attributes.ts';
 
 export interface ShareSuggestion{taskId:string;title:string;why:string;dueAt:string|null;dueTime:string|null}
 const SHAREABLE:Partial<Record<Kind,{weight:number;reason:string}>>={
@@ -29,6 +30,11 @@ export function delegationEligible(t:Task,p:Plan,status:string):{ok:boolean;reas
  const steps=selectedPath(p).steps;
  if(t.progress?.savedAt||steps.slice(0,p.stepIndex).some(s=>s.who==='you'))return {ok:false,reason:null};
  if(p.kind==='general'&&!(p.deadlines.outcome||t.dueAt))return {ok:false,reason:null};
+ // Her work, her money and her own wellbeing aren't someone else's to pick up; a general task counts only when it's the kind
+ // of thing others commonly do (household, errands, pets, getting around, pick-ups).
+ const dom=domainOf(`${t.title} ${t.sorted?.originalInput||''}`,p.kind).domain;
+ if(['work_admin','work_deliverables','finances','wellbeing','personal_goals','digital_admin'].includes(dom))return {ok:false,reason:null};
+ if(p.kind==='general'&&!['cleaning_laundry','home_maintenance','meals','replenishment','shopping','pets','transport','childcare'].includes(dom))return {ok:false,reason:null};
  return {ok:true,reason:rule.reason};
 }
 export function chooseShare(items:{task:Task;plan:Plan;status:string}[],ctx:{today:string;exclude?:string[]}):ShareSuggestion|null{

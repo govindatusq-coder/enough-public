@@ -91,3 +91,11 @@ test('found by the synthetic harness: plurals are recognised, and "By area of li
  assert.equal(ruleSuggestion(a,listsForStyle('areas')),'home','not whichever list is first (Work)');
  assert.deepEqual(listsForStyle('areas').map(l=>l.id),['work','family','home','money','wellbeing','goals'],'each list once');
 });
+test('found by the 30,000-evaluation harness: orders aren’t “waiting” before they’re ordered; her work and money aren’t someone else’s; money and work admin need focus',async()=>{
+ const s=new MemoryBackend().for('ad000000-0000-4000-8000-0000000000f1');await ensureProfile(s);await saveProfile(s,{name:'Sarah',onboardingComplete:true});
+ const r=await unload(s,null,{text:'Get batteries by Friday\nDo my expense claim by Friday\nUpdate the household budget by Friday',via:'text'},MON);
+ const at=async re=>{const id=r.added.find(a=>re.test(a.title)).id;const d=await detailView(s,id,MON);const t=await s.get('tasks',id);return attributesOf(t,t.rre,{status:d.status});};
+ const bat=await at(/batteries/i);assert.ok(!bat.contextTags.includes('waiting_on_others'),'nothing is waited on until it’s ordered');
+ const exp=await at(/expense/i);assert.equal(exp.delegationEligible,false);assert.ok(exp.contextTags.includes('needs_focus'));
+ const bud=await at(/budget/i);assert.equal(bud.delegationEligible,false);assert.ok(bud.contextTags.includes('needs_focus'));
+});

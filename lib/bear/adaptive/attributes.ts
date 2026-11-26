@@ -72,8 +72,9 @@ export function attributesOf(t:Task,p:Plan,ctx:AttributeContext):Attributes{
  const contexts=new Set(left.map(s=>s.context).filter(Boolean) as string[]);
  const requiresBusinessHours=contexts.has('phone')||(['appointment','call'].includes(p.kind)&&hers.some(s=>s.kind==='act'));
  const tags=[...contexts].filter(c=>c!=='any');if(requiresBusinessHours)tags.push('business_hours');
- if(left.some(s=>s.kind==='wait')||p.dependencies.some(d=>d.status==='open'))tags.push('waiting_on_others');
- if(['form','bill'].includes(p.kind))tags.push('needs_focus');
+ // Waiting means waiting now (the current step, or something outstanding), not a delivery that comes after she orders.
+ if(left[0]?.kind==='wait'||p.dependencies.some(d=>d.status==='open'))tags.push('waiting_on_others');
+ if(['form','bill'].includes(p.kind)||['finances','work_admin','work_deliverables'].includes(domain))tags.push('needs_focus');
  const humanMinutes=hers.length?hers.reduce((a,s)=>a+s.userMinutes,0):(left.length?0:minutesFor(t));
  const agentMinutes=bears.length;
  const cognitiveEffort:Effort=p.kind==='aspiration'?'high':['form','bill','appointment','gifts'].includes(p.kind)?'medium':['chore','followup','call','acquire'].includes(p.kind)?'low':humanMinutes>=30?'high':humanMinutes>=10?'medium':'unknown';
