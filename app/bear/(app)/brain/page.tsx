@@ -75,7 +75,7 @@ export default function BearBrain(){
     {isOpen&&<ul className="b-list v2-cat-list">{items.length?items.map((i,ix)=><TaskRow key={i.id} task={{...byId.get(i.id)!,listId:c.id}} index={ix} count={items.length} lists={board.lists} actions={actions} dragging={dragging===i.id} detailHref={`/bear/brain/${i.id}`} meta={i.status==='completed'?null:i.statusLabel+(i.categoryBy==='bear'?' · filed by Bear':'')}/>):<li className="faint" style={{padding:'10px 4px'}}>Nothing here.</li>}</ul>}
    </section>;})}
   </>}
-  <p className="board-links small"><Link href="/bear/calendar">Calendar</Link> · <Link href="/bear/shared">Share Bear</Link> · <Link href="/bear/helps">Bear Helps</Link> · <Link href="/bear/me/lists">Edit categories</Link> · <Link href="/bear/wins" className="brain-wins">My Wins{wins?` (${wins})`:''}</Link></p>
+  <p className="board-links small"><Link href="/bear/calendar?from=brain">Calendar</Link> · <Link href="/bear/shared?from=brain">Share Bear</Link> · <Link href="/bear/helps?from=brain">Bear Helps</Link> · <Link href="/bear/me/lists?from=brain">Edit categories</Link> · <Link href="/bear/wins" className="brain-wins">My Wins{wins?` (${wins})`:''}</Link></p>
   {toast&&<div key={toast.key} className="undo-toast glass-strong" role="status"><span>{toast.text}</span>{toast.undo&&<button type="button" onClick={()=>{toast.undo!();setToast(null);}}>Undo</button>}</div>}
  </main>;
 }

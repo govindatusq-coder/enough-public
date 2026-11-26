@@ -1,5 +1,6 @@
 'use client';
 // Shared: what she has handed to others (and how it's going), and what others have handed to her.
+import {SmartBack} from '@/components/bear/smart-back';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {apiGet,apiSend} from '@/lib/bear/client';
@@ -12,8 +13,8 @@ export default function Shared(){
  const [d,setD]=useState<{sent:Share[];received:Share[]}|null>(null);const [err,setErr]=useState<string|null>(null);const [reply,setReply]=useState<Record<string,string>>({});
  const load=()=>apiGet<{sent:Share[];received:Share[]}>('/api/bear/shares').then(r=>{setD(r);setErr(null);if(r.sent.some(s=>!s.senderSeen))apiSend('/api/bear/shares/seen',{}).catch(()=>{});}).catch(e=>setErr((e as Error).message));
  useEffect(()=>{load();},[]);
- if(err&&!d)return <main id="main" className="bear-screen"><h1>Shared</h1><div style={{marginTop:14}}><ErrorCard message={err} retry={load}/></div></main>;
- if(!d)return <main id="main" className="bear-screen"><Skeleton/></main>;
+ if(err&&!d)return <main id="main" className="bear-screen"><SmartBack fallback={{href:'/bear/brain',label:'Bear Brain'}}/><h1>Shared</h1><div style={{marginTop:14}}><ErrorCard message={err} retry={load}/></div></main>;
+ if(!d)return <main id="main" className="bear-screen"><SmartBack fallback={{href:'/bear/brain',label:'Bear Brain'}}/><Skeleton/></main>;
  async function act(path:string,body:unknown){try{await apiSend(path,body);load();}catch(e){setErr((e as Error).message);}}
  const card=(s:Share,mine:boolean)=><li key={s.id} className="share-card glass">
   <div className="b-meta"><span className="b-tag">{modeLabel[s.mode]}</span><span>{mine?`to ${s.toName}`:`from ${s.senderName}`}</span>{s.dueAt&&<span>by {formatAU(s.dueAt,'short')}</span>}</div>
@@ -25,7 +26,7 @@ export default function Shared(){
   {!mine&&s.recipientTaskId&&s.status==='accepted'&&<Link href={`/bear/help/${s.recipientTaskId}`} className="link-btn small" style={{display:'inline-block',marginTop:8}}>Open it</Link>}
  </li>;
  const live=(a:Share[])=>a.filter(s=>s.status!=='revoked');
- return <main id="main" className="bear-screen">
+ return <main id="main" className="bear-screen"><SmartBack fallback={{href:'/bear/brain',label:'Bear Brain'}}/>
   <h1>Shared</h1>
   <p className="small muted" style={{marginTop:6}}>Share Bear from any task’s ••• menu. Only the one thing you share is seen. Everything else stays private.</p>
   {err&&<div style={{marginTop:12}}><ErrorCard message={err}/></div>}

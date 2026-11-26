@@ -4,18 +4,16 @@ import {useRouter} from 'next/navigation';
 import {apiSend} from '@/lib/bear/client';
 import {Button} from './ui';
 
-// "How Bear works": a short tour, five screens, in Bear's own artwork and voice. Shown once on My Bear
-// (after the setup questions), skippable at any point, and replayable from Settings. Swipe, tap Next, or
-// use the arrow keys; Escape skips.
+// "How Bear works": three screens, one for each part of Load Bear, in Bear's own artwork and voice. Shown before the
+// "How your days work" questions (and on My Bear for anyone who hasn't seen it), skippable at any point, and replayable from
+// Settings. Swipe, tap Next, or use the arrow keys; Escape skips.
 const base='/bear/art/';
 const SLIDES=[
- {art:'capture-bear',title:'Give it to Bear',body:'Anything on your mind: a bill, a school note, a to-do. Tap + Bear and type it, say it, or snap a photo. You can also share straight from other apps.'},
- {art:'ob-hand-steps',title:'Bear sorts it out',body:'Bear works out what’s needed and by when, keeps the details together, and plans the reminders. Nothing to set up.'},
- {art:'home-calm',title:'Only what needs you',body:'My Bear stays calm. A red number means something needs you. Bear’s handling shows everything Bear is carrying for you.'},
- {art:'empty-ideas',title:'Ideas that save a thought',body:'Bear Ideas has a few suggestions to take things off your mind. Say yes, not now, or not relevant, and Bear learns.'},
- {art:'empty-wins',title:'Tell Bear when it’s done',body:'One tap when you’ve done your part. My Wins shows what Bear carried for you. Bear never pays, sends or signs anything for you.'},
+ {art:'capture-bear',title:'Drop Bear: get it out of your head',body:'Type it, say it, or snap a photo of a list, a letter or a school note. Bear catches every part and works out what’s needed and by when.'},
+ {art:'mama-bear',title:'Got a Moment?: help that fits',body:'Take a break, talk it out, or let Bear pick one thing that fits the time you have. Bear gets its part ready first, so there’s less for you to do.'},
+ {art:'home-calm',title:'Bear Brain: everything Bear is holding',body:'All your tasks, sorted into lists, with what’s next and who’s doing it. Ask someone to help with anything. Bear never pays, sends or signs anything for you.'},
 ];
-export function HowBearWorks({onDone,replay=false}:{onDone:(next:'home'|'capture')=>void;replay?:boolean}){
+export function HowBearWorks({onDone,replay=false,onboarding=false}:{onDone:(next:'home'|'capture')=>void;replay?:boolean;onboarding?:boolean}){
  const [i,setI]=useState(0);const startX=useRef<number|null>(null);const first=useRef<HTMLButtonElement>(null);
  const last=i===SLIDES.length-1;const s=SLIDES[i];
  async function finish(next:'home'|'capture'){if(!replay){try{await apiSend('/api/bear/profile',{tourSeenAt:new Date().toISOString()},'PUT');}catch{/* shows again next time; harmless */}}onDone(next);}
@@ -34,7 +32,7 @@ export function HowBearWorks({onDone,replay=false}:{onDone:(next:'home'|'capture
   </div>
   <div className="tour-dots" aria-hidden="true">{SLIDES.map((_,k)=><span key={k} className={k===i?'on':''}/>)}</div>
   <div className="tour-actions">
-   {last?<>
+   {last&&onboarding?<Button variant="coral" className="wide" onClick={()=>finish('home')}>Let’s get started</Button>:last?<>
     {!replay&&<Button variant="coral" className="wide" onClick={()=>finish('capture')}>Give Bear something</Button>}
     <Button variant={replay?'coral':'quiet'} className="wide" onClick={()=>finish('home')}>{replay?'Done':'Go to My Bear'}</Button>
    </>:<>

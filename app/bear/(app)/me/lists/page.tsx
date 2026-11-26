@@ -4,7 +4,8 @@ import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import type {BearList} from '@/lib/bear/board/logic';
-import {ErrorCard,Skeleton,TopBar} from '@/components/bear/ui';
+import {ErrorCard,Skeleton} from '@/components/bear/ui';
+import {SmartBack} from '@/components/bear/smart-back';
 type Row={id:string;title:string;icon:string};
 export default function Lists(){
  const [rows,setRows]=useState<Row[]|null>(null);const [icons,setIcons]=useState<string[]>([]);const [err,setErr]=useState<string|null>(null);const [note,setNote]=useState<string|null>(null);const [picking,setPicking]=useState<number|null>(null);const [busy,setBusy]=useState(false);
@@ -18,7 +19,7 @@ export default function Lists(){
  const swap=(i:number,j:number)=>setRows(r=>{const a=[...r!];[a[i],a[j]]=[a[j],a[i]];return a;});
  async function save(){setBusy(true);setErr(null);try{const r=await apiSend<{lists:BearList[];returned:number}>('/api/bear/board/lists',{lists:rows!.filter(x=>x.title.trim()).map(x=>({...x,title:x.title.trim()}))},'PUT');setRows(r.lists.map(({id,title,icon})=>({id,title,icon})));setNote(r.returned?`Saved. ${r.returned} ${r.returned===1?'thing':'things'} from a removed list went back to My Brain Dump.`:'Saved.');}catch(e){setErr((e as Error).message);}finally{setBusy(false);}}
  return <main id="main" className="bear-screen">
-  <TopBar back={{href:'/bear/home',label:'Home'}}/>
+  <SmartBack fallback={{href:'/bear/me',label:'Settings'}}/>
   <h1>My Lists</h1>
   <p className="small muted" style={{marginTop:6}}>Make them yours. If you remove a list, anything in it goes back to My Brain Dump. Nothing is deleted.</p>
   <ul className="b-list glass" style={{marginTop:16,padding:'4px 8px'}}>

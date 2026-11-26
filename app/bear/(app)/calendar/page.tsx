@@ -3,7 +3,8 @@ import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {apiGet,apiSend} from '@/lib/bear/client';
 import {daysBetween,formatAU} from '@/lib/bear/domain/dates';
-import {ErrorCard,Skeleton,TopBar} from '@/components/bear/ui';
+import {ErrorCard,Skeleton} from '@/components/bear/ui';
+import {SmartBack} from '@/components/bear/smart-back';
 
 // Load Bear's own calendar: everything Bear is holding that has a date, day by day. Tap one to open it. Things can be added here
 // directly; they become ordinary tasks, reminded like anything else.
@@ -26,7 +27,7 @@ export default function CalendarPage(){
  const [adding,setAdding]=useState(false);const [title,setTitle]=useState('');const [date,setDate]=useState('');const [time,setTime]=useState('');const [busy,setBusy]=useState(false);
  async function add(){setBusy(true);setErr(null);try{await apiSend('/api/bear/calendar-view',{title:title.trim(),date,time:time||null});setTitle('');setDate('');setTime('');setAdding(false);await load();}catch(e){setErr((e as Error).message);}finally{setBusy(false);}}
  return <main id="main" className="bear-screen flow">
-  <TopBar back={{href:'/bear/home',label:'My Bear'}}/>
+  <SmartBack fallback={{href:'/bear/brain',label:'Bear Brain'}}/>
   <h1>Calendar</h1>
   {!adding&&<div className="btn-row"><button type="button" className="btn coral sm" onClick={()=>setAdding(true)}>Add to calendar</button></div>}
   {adding&&<form className="card cal-addform" onSubmit={e=>{e.preventDefault();void add();}}>
