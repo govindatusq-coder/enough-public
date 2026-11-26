@@ -1,0 +1,7518 @@
+{
+ "name": "Load Bear temporal-autonomy synthetic task bank",
+ "version": "syn-1",
+ "synthetic": true,
+ "note": "SYNTHETIC fixture written for engineering tests, not data from real people. The research package referred to (tasks.csv, results.csv, summary.csv, sensitivity.csv, simulate.py) was not available in this repository, so this bank was written instead. Labels were assigned by hand per task and are not derived from Load Bear code; they are still one author’s judgement and are not validated.",
+ "flags": {
+  "business_hours": "a call or booking with an office, shop or service during its opening hours",
+  "delegatable": "someone else could reasonably do it",
+  "purchase_lead": "needs buying, with possible delivery lead time",
+  "quick": "about 5 minutes or less of her time",
+  "focus": "needs concentration (forms, money, writing)",
+  "personal": "hers alone (her body, health, inner life, own work)",
+  "long": "30 minutes or more",
+  "out": "needs a trip out of the house"
+ },
+ "tasks": [
+  {
+   "id": "TA-001",
+   "domain": "meals",
+   "activity": "Plan dinners for the week",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-002",
+   "domain": "meals",
+   "activity": "Make school lunches for tomorrow",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-003",
+   "domain": "meals",
+   "activity": "Batch-cook bolognese for the freezer",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-004",
+   "domain": "meals",
+   "activity": "Write the grocery list for the week",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-005",
+   "domain": "meals",
+   "activity": "Order the groceries online",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-006",
+   "domain": "meals",
+   "activity": "Defrost the chicken for tonight",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-007",
+   "domain": "meals",
+   "activity": "Find a new lunchbox recipe the kids will eat",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-008",
+   "domain": "meals",
+   "activity": "Pick up bread and milk on the way home",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-009",
+   "domain": "meals",
+   "activity": "Prep vegetables for the slow cooker",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-010",
+   "domain": "meals",
+   "activity": "Book a table for Saturday dinner",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-011",
+   "domain": "meals",
+   "activity": "Sort out the pantry and check what's expired",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-012",
+   "domain": "meals",
+   "activity": "Buy a birthday cake for Friday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-013",
+   "domain": "meals",
+   "activity": "Restock the snack drawer",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-014",
+   "domain": "meals",
+   "activity": "Make muffins for the bake sale",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-015",
+   "domain": "meals",
+   "activity": "Plan the menu for Christmas lunch",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-016",
+   "domain": "meals",
+   "activity": "Order a new lunch box for Mia",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-017",
+   "domain": "meals",
+   "activity": "Cook dinner for Nan on Sunday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-018",
+   "domain": "meals",
+   "activity": "Clean out the fridge",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-019",
+   "domain": "meals",
+   "activity": "Get ingredients for pancakes on the weekend",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-020",
+   "domain": "meals",
+   "activity": "Check the kids' allergy list for the party food",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-021",
+   "domain": "meals",
+   "activity": "Organise meals for the week Dad is away",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-022",
+   "domain": "meals",
+   "activity": "Return the casserole dish to Kate",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-023",
+   "domain": "meals",
+   "activity": "Buy coffee pods",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-024",
+   "domain": "meals",
+   "activity": "Make a double batch of soup",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-025",
+   "domain": "meals",
+   "activity": "Look up a quick gluten-free dinner",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-026",
+   "domain": "cleaning_laundry",
+   "activity": "Wash the school uniforms",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-027",
+   "domain": "cleaning_laundry",
+   "activity": "Change the sheets",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-028",
+   "domain": "cleaning_laundry",
+   "activity": "Vacuum the lounge room",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-029",
+   "domain": "cleaning_laundry",
+   "activity": "Clean the bathroom",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-030",
+   "domain": "cleaning_laundry",
+   "activity": "Fold the washing",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-031",
+   "domain": "cleaning_laundry",
+   "activity": "Iron work shirts for the week",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-032",
+   "domain": "cleaning_laundry",
+   "activity": "Take the doona to the dry cleaner",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-033",
+   "domain": "cleaning_laundry",
+   "activity": "Pick up the dry cleaning",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-034",
+   "domain": "cleaning_laundry",
+   "activity": "Buy laundry detergent",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-035",
+   "domain": "cleaning_laundry",
+   "activity": "Wipe down the kitchen benches",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-036",
+   "domain": "cleaning_laundry",
+   "activity": "Clean the oven",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-037",
+   "domain": "cleaning_laundry",
+   "activity": "Wash the dog's bed",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-038",
+   "domain": "cleaning_laundry",
+   "activity": "Mop the kitchen floor",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-039",
+   "domain": "cleaning_laundry",
+   "activity": "Declutter the hall cupboard",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-040",
+   "domain": "cleaning_laundry",
+   "activity": "Sort the kids' outgrown clothes",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-041",
+   "domain": "cleaning_laundry",
+   "activity": "Wash the car",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-042",
+   "domain": "cleaning_laundry",
+   "activity": "Clean the windows",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-043",
+   "domain": "cleaning_laundry",
+   "activity": "Replace the vacuum bags",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-044",
+   "domain": "cleaning_laundry",
+   "activity": "Hang the washing out",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-045",
+   "domain": "cleaning_laundry",
+   "activity": "Book a carpet clean",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-046",
+   "domain": "cleaning_laundry",
+   "activity": "Clean out the car",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-047",
+   "domain": "cleaning_laundry",
+   "activity": "Wash the towels",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-048",
+   "domain": "cleaning_laundry",
+   "activity": "Steam clean the couch",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-049",
+   "domain": "cleaning_laundry",
+   "activity": "Sort the sock basket",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-050",
+   "domain": "cleaning_laundry",
+   "activity": "Book a cleaner for after the party",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-051",
+   "domain": "school_admin",
+   "activity": "Return Ava's excursion permission form by Friday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-052",
+   "domain": "school_admin",
+   "activity": "Pay the school excursion levy by Thursday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-053",
+   "domain": "school_admin",
+   "activity": "RSVP to the class party",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-054",
+   "domain": "school_admin",
+   "activity": "Update Leo's emergency contacts on the school portal",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-055",
+   "domain": "school_admin",
+   "activity": "Read the school newsletter",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-056",
+   "domain": "school_admin",
+   "activity": "Order Mia's school photos",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-057",
+   "domain": "school_admin",
+   "activity": "Pay the school fees for term one",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-058",
+   "domain": "school_admin",
+   "activity": "Email the teacher about Leo's reading",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-059",
+   "domain": "school_admin",
+   "activity": "Sign the swimming carnival consent form",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-060",
+   "domain": "school_admin",
+   "activity": "Book the parent-teacher interview",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-061",
+   "domain": "school_admin",
+   "activity": "Buy a book for Book Week",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-062",
+   "domain": "school_admin",
+   "activity": "Find a costume for Book Week",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-063",
+   "domain": "school_admin",
+   "activity": "Label all the new school uniforms",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-064",
+   "domain": "school_admin",
+   "activity": "Cover the school books",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-065",
+   "domain": "school_admin",
+   "activity": "Fill in the enrolment form for next year",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-066",
+   "domain": "school_admin",
+   "activity": "Order lunch on the canteen app",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-067",
+   "domain": "school_admin",
+   "activity": "Check the term dates for next year",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-068",
+   "domain": "school_admin",
+   "activity": "Reply to the school about camp",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-069",
+   "domain": "school_admin",
+   "activity": "Pay for the music lessons",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-070",
+   "domain": "school_admin",
+   "activity": "Send in a gold coin for the mufti day",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-071",
+   "domain": "school_admin",
+   "activity": "Donate to the school fundraiser",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-072",
+   "domain": "school_admin",
+   "activity": "Buy new school shoes",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-073",
+   "domain": "school_admin",
+   "activity": "Get the uniform from the uniform shop",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-074",
+   "domain": "school_admin",
+   "activity": "Sign up to help at the school disco",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-075",
+   "domain": "school_admin",
+   "activity": "Check if Leo needs a hat for sport",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-076",
+   "domain": "childcare",
+   "activity": "Book vacation care for the January holidays",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-077",
+   "domain": "childcare",
+   "activity": "Arrange pick-up for Thursday",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-078",
+   "domain": "childcare",
+   "activity": "Find a babysitter for Saturday night",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-079",
+   "domain": "childcare",
+   "activity": "Pay the daycare invoice",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-080",
+   "domain": "childcare",
+   "activity": "Pack Leo's daycare bag",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-081",
+   "domain": "childcare",
+   "activity": "Label the daycare drink bottle",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-082",
+   "domain": "childcare",
+   "activity": "Call daycare about the extra day",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-083",
+   "domain": "childcare",
+   "activity": "Organise before-school care for Tuesdays",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-084",
+   "domain": "childcare",
+   "activity": "Book Mia into swimming lessons",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-085",
+   "domain": "childcare",
+   "activity": "Arrange a playdate with Ollie",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-086",
+   "domain": "childcare",
+   "activity": "Drop off spare clothes at daycare",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-087",
+   "domain": "childcare",
+   "activity": "Update the daycare allergy plan",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-088",
+   "domain": "childcare",
+   "activity": "Apply for the childcare subsidy",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-089",
+   "domain": "childcare",
+   "activity": "Check the after-school care roster",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-090",
+   "domain": "childcare",
+   "activity": "Ask Mum to mind the kids on Friday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-091",
+   "domain": "childcare",
+   "activity": "Buy nappies",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-092",
+   "domain": "childcare",
+   "activity": "Sort out pick-up when I'm at the conference",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-093",
+   "domain": "childcare",
+   "activity": "Fill in the daycare enrolment pack",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-094",
+   "domain": "childcare",
+   "activity": "Book a nanny for the school holidays",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-095",
+   "domain": "childcare",
+   "activity": "Send the daycare sign-out authority for Nan",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-096",
+   "domain": "childcare",
+   "activity": "Organise a sitter for parent-teacher night",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-097",
+   "domain": "childcare",
+   "activity": "Pay the vacation care deposit",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-098",
+   "domain": "childcare",
+   "activity": "Find out when daycare closes over Christmas",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-099",
+   "domain": "childcare",
+   "activity": "Buy a new sun hat for daycare",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-100",
+   "domain": "childcare",
+   "activity": "Confirm the carpool for Monday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-101",
+   "domain": "child_health",
+   "activity": "Book Leo's dentist check-up",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-102",
+   "domain": "child_health",
+   "activity": "Book the kids' flu vaccinations",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-103",
+   "domain": "child_health",
+   "activity": "Pick up Mia's asthma script",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-104",
+   "domain": "child_health",
+   "activity": "Fill Leo's prescription",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-105",
+   "domain": "child_health",
+   "activity": "Book the paediatrician follow-up",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-106",
+   "domain": "child_health",
+   "activity": "Get the eye test for Mia",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-107",
+   "domain": "child_health",
+   "activity": "Call the orthodontist about the brace",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-108",
+   "domain": "child_health",
+   "activity": "Update the immunisation record for school",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-109",
+   "domain": "child_health",
+   "activity": "Buy children's paracetamol",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-110",
+   "domain": "child_health",
+   "activity": "Book a hearing test for Leo",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-111",
+   "domain": "child_health",
+   "activity": "Renew Mia's EpiPen",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-112",
+   "domain": "child_health",
+   "activity": "Make the speech therapy appointment",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-113",
+   "domain": "child_health",
+   "activity": "Check Leo's growth chart notes before the visit",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-114",
+   "domain": "child_health",
+   "activity": "Book the GP for Mia's ear",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-115",
+   "domain": "child_health",
+   "activity": "Get a medical certificate for Leo's absence",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-116",
+   "domain": "child_health",
+   "activity": "Call the physio about Mia's ankle",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-117",
+   "domain": "child_health",
+   "activity": "Order a new asthma spacer",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-118",
+   "domain": "child_health",
+   "activity": "Write down questions for the paediatrician",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-119",
+   "domain": "child_health",
+   "activity": "Book the 4-year-old health check",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-120",
+   "domain": "child_health",
+   "activity": "Pick up the hearing aid batteries",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-121",
+   "domain": "child_health",
+   "activity": "Fill in the medical form for camp",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-122",
+   "domain": "child_health",
+   "activity": "Book the dental clean for both kids",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-123",
+   "domain": "child_health",
+   "activity": "Organise the skin check for Leo",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-124",
+   "domain": "child_health",
+   "activity": "Get the referral from the GP",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-125",
+   "domain": "child_health",
+   "activity": "Collect the X-ray results",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-126",
+   "domain": "wellbeing",
+   "activity": "Book my GP appointment",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-127",
+   "domain": "wellbeing",
+   "activity": "Book my physio",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-128",
+   "domain": "wellbeing",
+   "activity": "Go for a walk",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-129",
+   "domain": "wellbeing",
+   "activity": "Book my haircut",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-130",
+   "domain": "wellbeing",
+   "activity": "Book a massage",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-131",
+   "domain": "wellbeing",
+   "activity": "Renew my gym membership",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-132",
+   "domain": "wellbeing",
+   "activity": "Book my pap smear",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-133",
+   "domain": "wellbeing",
+   "activity": "Book my mammogram",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-134",
+   "domain": "wellbeing",
+   "activity": "Pick up my prescription",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-135",
+   "domain": "wellbeing",
+   "activity": "Book my eye test",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-136",
+   "domain": "wellbeing",
+   "activity": "Call my psychologist to reschedule",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-137",
+   "domain": "wellbeing",
+   "activity": "Do my yoga class",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-138",
+   "domain": "wellbeing",
+   "activity": "Have an early night",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-139",
+   "domain": "wellbeing",
+   "activity": "Book my dentist check-up",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-140",
+   "domain": "wellbeing",
+   "activity": "Buy new running shoes",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-141",
+   "domain": "wellbeing",
+   "activity": "Meditate for ten minutes",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-142",
+   "domain": "wellbeing",
+   "activity": "Book a skin check for me",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-143",
+   "domain": "wellbeing",
+   "activity": "Join the Saturday parkrun",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-144",
+   "domain": "wellbeing",
+   "activity": "Book my blood test",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-145",
+   "domain": "wellbeing",
+   "activity": "Get my flu shot",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-146",
+   "domain": "wellbeing",
+   "activity": "Read my book for an hour",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-147",
+   "domain": "wellbeing",
+   "activity": "Book a facial",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-148",
+   "domain": "wellbeing",
+   "activity": "Call my friend Jess",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-149",
+   "domain": "wellbeing",
+   "activity": "Take a long bath",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-150",
+   "domain": "wellbeing",
+   "activity": "Book my counselling session",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-151",
+   "domain": "work_admin",
+   "activity": "Submit my timesheet",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-152",
+   "domain": "work_admin",
+   "activity": "Do my expense claim",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-153",
+   "domain": "work_admin",
+   "activity": "Apply for leave in January",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-154",
+   "domain": "work_admin",
+   "activity": "Book the meeting room for Tuesday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-155",
+   "domain": "work_admin",
+   "activity": "Reply to HR about my contract",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-156",
+   "domain": "work_admin",
+   "activity": "Update my LinkedIn",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-157",
+   "domain": "work_admin",
+   "activity": "Complete the mandatory training",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-158",
+   "domain": "work_admin",
+   "activity": "Fill in the performance review form",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-159",
+   "domain": "work_admin",
+   "activity": "Book my flights for the conference",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-160",
+   "domain": "work_admin",
+   "activity": "Check the roster for next week",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-161",
+   "domain": "work_admin",
+   "activity": "Send the invoice to the client",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-162",
+   "domain": "work_admin",
+   "activity": "Renew my professional registration",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-163",
+   "domain": "work_admin",
+   "activity": "Organise the team lunch",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-164",
+   "domain": "work_admin",
+   "activity": "Return the work laptop charger",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-165",
+   "domain": "work_admin",
+   "activity": "Book the work car service",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-166",
+   "domain": "work_admin",
+   "activity": "Email IT about my password",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-167",
+   "domain": "work_admin",
+   "activity": "Update my out-of-office",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-168",
+   "domain": "work_admin",
+   "activity": "Submit the travel approval",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-169",
+   "domain": "work_admin",
+   "activity": "Arrange cover for my shift",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-170",
+   "domain": "work_admin",
+   "activity": "Print the handouts for Monday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-171",
+   "domain": "work_admin",
+   "activity": "File the receipts from last month",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-172",
+   "domain": "work_admin",
+   "activity": "Reply to the recruiter",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-173",
+   "domain": "work_admin",
+   "activity": "Order business cards",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-174",
+   "domain": "work_admin",
+   "activity": "Set up my superannuation choice",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-175",
+   "domain": "work_admin",
+   "activity": "Book the venue for the team offsite",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-176",
+   "domain": "work_deliverables",
+   "activity": "Finish the quarterly report",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-177",
+   "domain": "work_deliverables",
+   "activity": "Prepare the slides for Monday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-178",
+   "domain": "work_deliverables",
+   "activity": "Write the project proposal",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-179",
+   "domain": "work_deliverables",
+   "activity": "Review Sam's draft",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-180",
+   "domain": "work_deliverables",
+   "activity": "Finish the budget forecast",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-181",
+   "domain": "work_deliverables",
+   "activity": "Prepare for the client meeting",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-182",
+   "domain": "work_deliverables",
+   "activity": "Write the board paper",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-183",
+   "domain": "work_deliverables",
+   "activity": "Update the project plan",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-184",
+   "domain": "work_deliverables",
+   "activity": "Draft the newsletter",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-185",
+   "domain": "work_deliverables",
+   "activity": "Finish the grant application",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-186",
+   "domain": "work_deliverables",
+   "activity": "Analyse the survey results",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-187",
+   "domain": "work_deliverables",
+   "activity": "Prepare the training session",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-188",
+   "domain": "work_deliverables",
+   "activity": "Write the policy update",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-189",
+   "domain": "work_deliverables",
+   "activity": "Check the contract before signing",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-190",
+   "domain": "work_deliverables",
+   "activity": "Respond to the tender questions",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-191",
+   "domain": "work_deliverables",
+   "activity": "Edit the case study",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-192",
+   "domain": "work_deliverables",
+   "activity": "Finalise the event run sheet",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-193",
+   "domain": "work_deliverables",
+   "activity": "Prepare the handover notes",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-194",
+   "domain": "work_deliverables",
+   "activity": "Write my self-assessment",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-195",
+   "domain": "work_deliverables",
+   "activity": "Review the audit findings",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-196",
+   "domain": "work_deliverables",
+   "activity": "Draft the funding acquittal",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-197",
+   "domain": "work_deliverables",
+   "activity": "Prepare the agenda for Thursday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-198",
+   "domain": "work_deliverables",
+   "activity": "Finish the website copy",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-199",
+   "domain": "work_deliverables",
+   "activity": "Prepare the monthly figures",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-200",
+   "domain": "work_deliverables",
+   "activity": "Write the reference for Alex",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-201",
+   "domain": "finances",
+   "activity": "Pay the electricity bill",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-202",
+   "domain": "finances",
+   "activity": "Pay the water rates",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-203",
+   "domain": "finances",
+   "activity": "Do my tax return",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-204",
+   "domain": "finances",
+   "activity": "Renew the car insurance",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-205",
+   "domain": "finances",
+   "activity": "Pay the credit card",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-206",
+   "domain": "finances",
+   "activity": "Check the bank statement",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-207",
+   "domain": "finances",
+   "activity": "Set up the direct debit for the gym",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-208",
+   "domain": "finances",
+   "activity": "Call the bank about the fee",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-209",
+   "domain": "finances",
+   "activity": "Pay the council rates",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-210",
+   "domain": "finances",
+   "activity": "Transfer money to the holiday account",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-211",
+   "domain": "finances",
+   "activity": "Claim the health insurance rebate",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-212",
+   "domain": "finances",
+   "activity": "Compare home loan rates",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-213",
+   "domain": "finances",
+   "activity": "Cancel the streaming subscription",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-214",
+   "domain": "finances",
+   "activity": "Update the household budget",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-215",
+   "domain": "finances",
+   "activity": "Pay the strata levy",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-216",
+   "domain": "finances",
+   "activity": "Lodge the BAS",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-217",
+   "domain": "finances",
+   "activity": "Pay the phone bill",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-218",
+   "domain": "finances",
+   "activity": "Renew the home and contents insurance",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-219",
+   "domain": "finances",
+   "activity": "Dispute the parking fine",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-220",
+   "domain": "finances",
+   "activity": "Pay the private health premium",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-221",
+   "domain": "finances",
+   "activity": "Ask the accountant about deductions",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-222",
+   "domain": "finances",
+   "activity": "Sort the receipts for tax",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-223",
+   "domain": "finances",
+   "activity": "Pay the toll notice",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-224",
+   "domain": "finances",
+   "activity": "Check the super balance",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-225",
+   "domain": "finances",
+   "activity": "Pay the dentist invoice",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-226",
+   "domain": "home_maintenance",
+   "activity": "Fix the leaking tap",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-227",
+   "domain": "home_maintenance",
+   "activity": "Call a plumber about the blocked drain",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-228",
+   "domain": "home_maintenance",
+   "activity": "Get someone to fix the dishwasher",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-229",
+   "domain": "home_maintenance",
+   "activity": "Clean the gutters",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-230",
+   "domain": "home_maintenance",
+   "activity": "Mow the lawn",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-231",
+   "domain": "home_maintenance",
+   "activity": "Replace the smoke alarm battery",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-232",
+   "domain": "home_maintenance",
+   "activity": "Book the pest inspection",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-233",
+   "domain": "home_maintenance",
+   "activity": "Service the air conditioner",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-234",
+   "domain": "home_maintenance",
+   "activity": "Change the fridge water filter",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-235",
+   "domain": "home_maintenance",
+   "activity": "Paint the back fence",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-236",
+   "domain": "home_maintenance",
+   "activity": "Fix the squeaky door",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-237",
+   "domain": "home_maintenance",
+   "activity": "Trim the hedge",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-238",
+   "domain": "home_maintenance",
+   "activity": "Get a quote for the roof",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-239",
+   "domain": "home_maintenance",
+   "activity": "Replace the broken light globe",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-240",
+   "domain": "home_maintenance",
+   "activity": "Book an electrician for the power point",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-241",
+   "domain": "home_maintenance",
+   "activity": "Weed the garden beds",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-242",
+   "domain": "home_maintenance",
+   "activity": "Clean the pool filter",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-243",
+   "domain": "home_maintenance",
+   "activity": "Fix the loose fence paling",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-244",
+   "domain": "home_maintenance",
+   "activity": "Get the chimney swept",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-245",
+   "domain": "home_maintenance",
+   "activity": "Replace the shower head",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-246",
+   "domain": "home_maintenance",
+   "activity": "Organise the garage",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-247",
+   "domain": "home_maintenance",
+   "activity": "Fix the flyscreen",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-248",
+   "domain": "home_maintenance",
+   "activity": "Book the termite inspection",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-249",
+   "domain": "home_maintenance",
+   "activity": "Repair the letterbox",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-250",
+   "domain": "home_maintenance",
+   "activity": "Get the carpets cleaned",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-251",
+   "domain": "transport",
+   "activity": "Renew the car registration",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-252",
+   "domain": "transport",
+   "activity": "Book the car service",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-253",
+   "domain": "transport",
+   "activity": "Get the tyres checked",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-254",
+   "domain": "transport",
+   "activity": "Fill up the car",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-255",
+   "domain": "transport",
+   "activity": "Top up the Opal card",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-256",
+   "domain": "transport",
+   "activity": "Renew my driver's licence",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-257",
+   "domain": "transport",
+   "activity": "Pay the parking ticket",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-258",
+   "domain": "transport",
+   "activity": "Book the car in for a wheel alignment",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-259",
+   "domain": "transport",
+   "activity": "Wash the car",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-260",
+   "domain": "transport",
+   "activity": "Get a new car battery",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-261",
+   "domain": "transport",
+   "activity": "Organise roadside assistance",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-262",
+   "domain": "transport",
+   "activity": "Book the car for a safety check",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-263",
+   "domain": "transport",
+   "activity": "Pick up the car from the mechanic",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-264",
+   "domain": "transport",
+   "activity": "Renew the CTP insurance",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-265",
+   "domain": "transport",
+   "activity": "Get the windscreen chip fixed",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-266",
+   "domain": "transport",
+   "activity": "Arrange a lift to the airport",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-267",
+   "domain": "transport",
+   "activity": "Book an Uber for Friday morning",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-268",
+   "domain": "transport",
+   "activity": "Check the tyre pressure",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-269",
+   "domain": "transport",
+   "activity": "Buy a car seat for the baby",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-270",
+   "domain": "transport",
+   "activity": "Get Leo's bike fixed",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-271",
+   "domain": "transport",
+   "activity": "Buy a new bike helmet",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-272",
+   "domain": "transport",
+   "activity": "Clean out the boot",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-273",
+   "domain": "transport",
+   "activity": "Renew the parking permit",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-274",
+   "domain": "transport",
+   "activity": "Book the rental car for the holiday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-275",
+   "domain": "transport",
+   "activity": "Get the toll tag topped up",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-276",
+   "domain": "shopping",
+   "activity": "Buy a red scrunchie for Sarah",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-277",
+   "domain": "shopping",
+   "activity": "Get a present for Ollie's party",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-278",
+   "domain": "shopping",
+   "activity": "Buy new sneakers for Leo",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-279",
+   "domain": "shopping",
+   "activity": "Order a new phone case",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-280",
+   "domain": "shopping",
+   "activity": "Buy a gift card for the teacher",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-281",
+   "domain": "shopping",
+   "activity": "Get batteries",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-282",
+   "domain": "shopping",
+   "activity": "Buy wrapping paper",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-283",
+   "domain": "shopping",
+   "activity": "Order printer ink",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-284",
+   "domain": "shopping",
+   "activity": "Buy a new kettle",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-285",
+   "domain": "shopping",
+   "activity": "Get a birthday card for Nan",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-286",
+   "domain": "shopping",
+   "activity": "Buy sunscreen",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-287",
+   "domain": "shopping",
+   "activity": "Order a replacement charger",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-288",
+   "domain": "shopping",
+   "activity": "Buy a costume for the dress-up day",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-289",
+   "domain": "shopping",
+   "activity": "Get new swimmers for Mia",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-290",
+   "domain": "shopping",
+   "activity": "Buy a raincoat for Leo",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-291",
+   "domain": "shopping",
+   "activity": "Order photo prints",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-292",
+   "domain": "shopping",
+   "activity": "Buy a new lunch box",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-293",
+   "domain": "shopping",
+   "activity": "Get a new school bag",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-294",
+   "domain": "shopping",
+   "activity": "Buy a present for the Kris Kringle",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-295",
+   "domain": "shopping",
+   "activity": "Order flowers for Mum's birthday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-296",
+   "domain": "shopping",
+   "activity": "Buy a new doona cover",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-297",
+   "domain": "shopping",
+   "activity": "Get the kids' haircuts",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-298",
+   "domain": "shopping",
+   "activity": "Buy party supplies",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-299",
+   "domain": "shopping",
+   "activity": "Order the new couch",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-300",
+   "domain": "shopping",
+   "activity": "Return the faulty toaster",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-301",
+   "domain": "family_coordination",
+   "activity": "Plan the family calendar for next week",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-302",
+   "domain": "family_coordination",
+   "activity": "Organise Christmas with the in-laws",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-303",
+   "domain": "family_coordination",
+   "activity": "Sort out who's driving to soccer",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-304",
+   "domain": "family_coordination",
+   "activity": "Book the family photo shoot",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-305",
+   "domain": "family_coordination",
+   "activity": "Plan the weekend",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-306",
+   "domain": "family_coordination",
+   "activity": "Organise the family holiday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-307",
+   "domain": "family_coordination",
+   "activity": "Share the school holiday plan with James",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-308",
+   "domain": "family_coordination",
+   "activity": "Organise a babysitting swap with Kate",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-309",
+   "domain": "family_coordination",
+   "activity": "Plan Mia's birthday party",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-310",
+   "domain": "family_coordination",
+   "activity": "Send out the party invitations",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-311",
+   "domain": "family_coordination",
+   "activity": "Book the party venue",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-312",
+   "domain": "family_coordination",
+   "activity": "Organise the family dinner for Dad's birthday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-313",
+   "domain": "family_coordination",
+   "activity": "Work out the Easter plans",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-314",
+   "domain": "family_coordination",
+   "activity": "Organise the kids' activities for next term",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-315",
+   "domain": "family_coordination",
+   "activity": "Sort out the carpool roster",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-316",
+   "domain": "family_coordination",
+   "activity": "Arrange a weekend away for us",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-317",
+   "domain": "family_coordination",
+   "activity": "Plan the school holiday activities",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-318",
+   "domain": "family_coordination",
+   "activity": "Coordinate Nan's visit",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-319",
+   "domain": "family_coordination",
+   "activity": "Arrange for someone to feed the cat while we're away",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-320",
+   "domain": "family_coordination",
+   "activity": "Book the campsite for Easter",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-321",
+   "domain": "family_coordination",
+   "activity": "Organise the family movie night",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-322",
+   "domain": "family_coordination",
+   "activity": "Share the shopping list with James",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-323",
+   "domain": "family_coordination",
+   "activity": "Book the restaurant for the anniversary",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-324",
+   "domain": "family_coordination",
+   "activity": "Plan who hosts Christmas lunch",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-325",
+   "domain": "family_coordination",
+   "activity": "Sort out the kids' sleepover",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-326",
+   "domain": "adult_caregiving",
+   "activity": "Call Mum's GP about her medication",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-327",
+   "domain": "adult_caregiving",
+   "activity": "Book Dad's specialist appointment",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-328",
+   "domain": "adult_caregiving",
+   "activity": "Pick up Mum's prescription",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-329",
+   "domain": "adult_caregiving",
+   "activity": "Visit Nan on Sunday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-330",
+   "domain": "adult_caregiving",
+   "activity": "Organise Dad's aged care assessment",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-331",
+   "domain": "adult_caregiving",
+   "activity": "Arrange transport for Mum's appointment",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-332",
+   "domain": "adult_caregiving",
+   "activity": "Call the aged care provider about the roster",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-333",
+   "domain": "adult_caregiving",
+   "activity": "Order Nan's groceries online",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-334",
+   "domain": "adult_caregiving",
+   "activity": "Pay Mum's power bill",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-335",
+   "domain": "adult_caregiving",
+   "activity": "Check in on Dad",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-336",
+   "domain": "adult_caregiving",
+   "activity": "Organise a carer for the weekend",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-337",
+   "domain": "adult_caregiving",
+   "activity": "Fill in Mum's NDIS plan review",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-338",
+   "domain": "adult_caregiving",
+   "activity": "Book Dad's hearing test",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-339",
+   "domain": "adult_caregiving",
+   "activity": "Sort out Nan's pill organiser",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-340",
+   "domain": "adult_caregiving",
+   "activity": "Arrange respite care",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-341",
+   "domain": "adult_caregiving",
+   "activity": "Book Mum's podiatrist",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-342",
+   "domain": "adult_caregiving",
+   "activity": "Help Dad with his tax",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-343",
+   "domain": "adult_caregiving",
+   "activity": "Call the pharmacy about Nan's Webster pack",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-344",
+   "domain": "adult_caregiving",
+   "activity": "Organise Mum's birthday lunch",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-345",
+   "domain": "adult_caregiving",
+   "activity": "Set up Dad's medical alarm",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-346",
+   "domain": "adult_caregiving",
+   "activity": "Clean Nan's unit",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-347",
+   "domain": "adult_caregiving",
+   "activity": "Drive Mum to the specialist",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-348",
+   "domain": "adult_caregiving",
+   "activity": "Update Dad's power of attorney",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-349",
+   "domain": "adult_caregiving",
+   "activity": "Arrange a home care visit",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-350",
+   "domain": "adult_caregiving",
+   "activity": "Buy Mum a new walking frame",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-351",
+   "domain": "pets",
+   "activity": "Book the dog's vaccination",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-352",
+   "domain": "pets",
+   "activity": "Buy dog food",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-353",
+   "domain": "pets",
+   "activity": "Book the cat's desexing",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-354",
+   "domain": "pets",
+   "activity": "Give the dog its worming tablet",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-355",
+   "domain": "pets",
+   "activity": "Book the dog groomer",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-356",
+   "domain": "pets",
+   "activity": "Walk the dog",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-357",
+   "domain": "pets",
+   "activity": "Buy flea treatment",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-358",
+   "domain": "pets",
+   "activity": "Clean the fish tank",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-359",
+   "domain": "pets",
+   "activity": "Book the kennel for the holidays",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-360",
+   "domain": "pets",
+   "activity": "Renew the pet registration",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-361",
+   "domain": "pets",
+   "activity": "Change the cat litter",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-362",
+   "domain": "pets",
+   "activity": "Buy a new dog lead",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-363",
+   "domain": "pets",
+   "activity": "Take the dog to the vet",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-364",
+   "domain": "pets",
+   "activity": "Order the pet insurance",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-365",
+   "domain": "pets",
+   "activity": "Get the cat microchipped",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-366",
+   "domain": "pets",
+   "activity": "Book puppy school",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-367",
+   "domain": "pets",
+   "activity": "Buy chicken feed",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-368",
+   "domain": "pets",
+   "activity": "Clean out the chicken coop",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-369",
+   "domain": "pets",
+   "activity": "Buy a new cat scratching post",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-370",
+   "domain": "pets",
+   "activity": "Bath the dog",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-371",
+   "domain": "pets",
+   "activity": "Refill the bird feeder",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-372",
+   "domain": "pets",
+   "activity": "Book the dog walker for next week",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-373",
+   "domain": "pets",
+   "activity": "Get the dog's nails clipped",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-374",
+   "domain": "pets",
+   "activity": "Pick up the cat's medication from the vet",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-375",
+   "domain": "pets",
+   "activity": "Buy a dog bed",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-376",
+   "domain": "digital_admin",
+   "activity": "Back up the photos",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-377",
+   "domain": "digital_admin",
+   "activity": "Update the passwords",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-378",
+   "domain": "digital_admin",
+   "activity": "Cancel the unused subscriptions",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-379",
+   "domain": "digital_admin",
+   "activity": "Set up the new phone",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-380",
+   "domain": "digital_admin",
+   "activity": "Sort out the family iCloud storage",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-381",
+   "domain": "digital_admin",
+   "activity": "Unsubscribe from the junk emails",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-382",
+   "domain": "digital_admin",
+   "activity": "Update the apps on the iPad",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-383",
+   "domain": "digital_admin",
+   "activity": "Set up parental controls",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-384",
+   "domain": "digital_admin",
+   "activity": "Renew the domain name",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-385",
+   "domain": "digital_admin",
+   "activity": "Clear out the email inbox",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-386",
+   "domain": "digital_admin",
+   "activity": "Download the school app",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-387",
+   "domain": "digital_admin",
+   "activity": "Reset the Wi-Fi password",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-388",
+   "domain": "digital_admin",
+   "activity": "Set up two-factor on the bank",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-389",
+   "domain": "digital_admin",
+   "activity": "Organise the digital photos",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-390",
+   "domain": "digital_admin",
+   "activity": "Update the address on my accounts",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-391",
+   "domain": "digital_admin",
+   "activity": "Print the boarding passes",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-392",
+   "domain": "digital_admin",
+   "activity": "Set up the new printer",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-393",
+   "domain": "digital_admin",
+   "activity": "Sort out the Netflix profiles",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-394",
+   "domain": "digital_admin",
+   "activity": "Update the kids' tablets",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-395",
+   "domain": "digital_admin",
+   "activity": "Change the internet plan",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-396",
+   "domain": "digital_admin",
+   "activity": "Scan the important documents",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-397",
+   "domain": "digital_admin",
+   "activity": "Fix the email on my phone",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-398",
+   "domain": "digital_admin",
+   "activity": "Install the antivirus",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-399",
+   "domain": "digital_admin",
+   "activity": "Book the computer repair",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-400",
+   "domain": "digital_admin",
+   "activity": "Update the family calendar app",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-401",
+   "domain": "social",
+   "activity": "RSVP to Kate's wedding",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-402",
+   "domain": "social",
+   "activity": "Buy a gift for the baby shower",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-403",
+   "domain": "social",
+   "activity": "Send a thank-you card to Jo",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-404",
+   "domain": "social",
+   "activity": "Organise a catch-up with the girls",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-405",
+   "domain": "social",
+   "activity": "Plan the dinner party",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-406",
+   "domain": "social",
+   "activity": "Buy a birthday present for Sam",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-407",
+   "domain": "social",
+   "activity": "Call Aunty Lyn for her birthday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-408",
+   "domain": "social",
+   "activity": "Write the Christmas cards",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-409",
+   "domain": "social",
+   "activity": "Organise the neighbourhood barbecue",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-410",
+   "domain": "social",
+   "activity": "Book the restaurant for book club",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-411",
+   "domain": "social",
+   "activity": "Reply to the group chat about Saturday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-412",
+   "domain": "social",
+   "activity": "Send flowers to Jess",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-413",
+   "domain": "social",
+   "activity": "Plan the farewell for Anna",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-414",
+   "domain": "social",
+   "activity": "Buy a wedding gift",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-415",
+   "domain": "social",
+   "activity": "Organise the school mums' night out",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-416",
+   "domain": "social",
+   "activity": "Make a card for Grandpa",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-417",
+   "domain": "social",
+   "activity": "Arrange the Christmas Kris Kringle",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-418",
+   "domain": "social",
+   "activity": "Book tickets for the show",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-419",
+   "domain": "social",
+   "activity": "Send a sympathy card to the Browns",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-420",
+   "domain": "social",
+   "activity": "Invite the neighbours for drinks",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-421",
+   "domain": "social",
+   "activity": "Organise the reunion",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-422",
+   "domain": "social",
+   "activity": "Buy a housewarming present",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-423",
+   "domain": "social",
+   "activity": "Plan the baby shower",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-424",
+   "domain": "social",
+   "activity": "Call Mel to catch up",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-425",
+   "domain": "social",
+   "activity": "Organise a meal train for Sophie",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-426",
+   "domain": "travel",
+   "activity": "Renew my passport",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-427",
+   "domain": "travel",
+   "activity": "Book the flights to Brisbane",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-428",
+   "domain": "travel",
+   "activity": "Book the hotel for the conference",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-429",
+   "domain": "travel",
+   "activity": "Pack for the holiday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-430",
+   "domain": "travel",
+   "activity": "Apply for the visa",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-431",
+   "domain": "travel",
+   "activity": "Book the airport parking",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-432",
+   "domain": "travel",
+   "activity": "Organise travel insurance",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-433",
+   "domain": "travel",
+   "activity": "Book the dog into the kennel for the trip",
+   "labels": {
+    "business_hours": true,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-434",
+   "domain": "travel",
+   "activity": "Get the kids' passports renewed",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-435",
+   "domain": "travel",
+   "activity": "Book the holiday house",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-436",
+   "domain": "travel",
+   "activity": "Check in online for the flight",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-437",
+   "domain": "travel",
+   "activity": "Buy travel adaptors",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-438",
+   "domain": "travel",
+   "activity": "Exchange money for the trip",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-439",
+   "domain": "travel",
+   "activity": "Arrange someone to collect the mail",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-440",
+   "domain": "travel",
+   "activity": "Print the travel documents",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-441",
+   "domain": "travel",
+   "activity": "Book the train tickets",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-442",
+   "domain": "travel",
+   "activity": "Organise the itinerary",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-443",
+   "domain": "travel",
+   "activity": "Buy a new suitcase",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-444",
+   "domain": "travel",
+   "activity": "Book the airport transfer",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-445",
+   "domain": "travel",
+   "activity": "Hold the newspaper delivery",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-446",
+   "domain": "travel",
+   "activity": "Get the travel vaccinations",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-447",
+   "domain": "travel",
+   "activity": "Download the offline maps",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-448",
+   "domain": "travel",
+   "activity": "Book the ski lessons",
+   "labels": {
+    "business_hours": true,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-449",
+   "domain": "travel",
+   "activity": "Sort out the car hire",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-450",
+   "domain": "travel",
+   "activity": "Book the campervan",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-451",
+   "domain": "replenishment",
+   "activity": "Buy toilet paper",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-452",
+   "domain": "replenishment",
+   "activity": "Get more milk",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-453",
+   "domain": "replenishment",
+   "activity": "Restock the nappies",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-454",
+   "domain": "replenishment",
+   "activity": "Buy dishwasher tablets",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-455",
+   "domain": "replenishment",
+   "activity": "Get more bread for lunches",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-456",
+   "domain": "replenishment",
+   "activity": "Buy shampoo",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-457",
+   "domain": "replenishment",
+   "activity": "Restock the first aid kit",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-458",
+   "domain": "replenishment",
+   "activity": "Buy more printer paper",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-459",
+   "domain": "replenishment",
+   "activity": "Get more dog food",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-460",
+   "domain": "replenishment",
+   "activity": "Buy batteries for the remote",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-461",
+   "domain": "replenishment",
+   "activity": "Order the coffee beans",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-462",
+   "domain": "replenishment",
+   "activity": "Buy toothpaste",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-463",
+   "domain": "replenishment",
+   "activity": "Restock the pantry staples",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-464",
+   "domain": "replenishment",
+   "activity": "Get more sunscreen",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-465",
+   "domain": "replenishment",
+   "activity": "Buy the bin liners",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-466",
+   "domain": "replenishment",
+   "activity": "Order the water filter cartridges",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-467",
+   "domain": "replenishment",
+   "activity": "Get the gas bottle refilled",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-468",
+   "domain": "replenishment",
+   "activity": "Buy more school lunch snacks",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-469",
+   "domain": "replenishment",
+   "activity": "Restock the cleaning sprays",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-470",
+   "domain": "replenishment",
+   "activity": "Buy the light globes",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-471",
+   "domain": "replenishment",
+   "activity": "Order the contact lenses",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-472",
+   "domain": "replenishment",
+   "activity": "Get more ice for the esky",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-473",
+   "domain": "replenishment",
+   "activity": "Buy laundry powder",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-474",
+   "domain": "replenishment",
+   "activity": "Restock the tissues",
+   "labels": {
+    "business_hours": false,
+    "delegatable": true,
+    "purchase_lead": true,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": true
+   }
+  },
+  {
+   "id": "TA-475",
+   "domain": "replenishment",
+   "activity": "Order the vitamins",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": true,
+    "quick": true,
+    "focus": false,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-476",
+   "domain": "personal_goals",
+   "activity": "Learn to play the guitar one day",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-477",
+   "domain": "personal_goals",
+   "activity": "Start a vegetable garden",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-478",
+   "domain": "personal_goals",
+   "activity": "Read more books this year",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-479",
+   "domain": "personal_goals",
+   "activity": "Train for the fun run",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-480",
+   "domain": "personal_goals",
+   "activity": "Learn Italian",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-481",
+   "domain": "personal_goals",
+   "activity": "Write a memoir someday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-482",
+   "domain": "personal_goals",
+   "activity": "Build a chicken coop eventually",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-483",
+   "domain": "personal_goals",
+   "activity": "Start a savings plan for a holiday",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-484",
+   "domain": "personal_goals",
+   "activity": "Take a pottery class",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-485",
+   "domain": "personal_goals",
+   "activity": "Finish the online course",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-486",
+   "domain": "personal_goals",
+   "activity": "Learn to sew",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-487",
+   "domain": "personal_goals",
+   "activity": "Plan a renovation of the kitchen one day",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-488",
+   "domain": "personal_goals",
+   "activity": "Get fit before summer",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-489",
+   "domain": "personal_goals",
+   "activity": "Start journalling",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-490",
+   "domain": "personal_goals",
+   "activity": "Learn to surf",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-491",
+   "domain": "personal_goals",
+   "activity": "Volunteer at the animal shelter",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-492",
+   "domain": "personal_goals",
+   "activity": "Do a photography course",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-493",
+   "domain": "personal_goals",
+   "activity": "Run a half marathon",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-494",
+   "domain": "personal_goals",
+   "activity": "Grow my own herbs",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": false,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-495",
+   "domain": "personal_goals",
+   "activity": "Learn to bake sourdough",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-496",
+   "domain": "personal_goals",
+   "activity": "Start a side business",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": true,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-497",
+   "domain": "personal_goals",
+   "activity": "Take up painting",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-498",
+   "domain": "personal_goals",
+   "activity": "Learn to meditate",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": false,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-499",
+   "domain": "personal_goals",
+   "activity": "Hike the coastal walk",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  },
+  {
+   "id": "TA-500",
+   "domain": "personal_goals",
+   "activity": "Do a first aid course",
+   "labels": {
+    "business_hours": false,
+    "delegatable": false,
+    "purchase_lead": false,
+    "quick": false,
+    "focus": false,
+    "personal": true,
+    "long": true,
+    "out": false
+   }
+  }
+ ]
+}

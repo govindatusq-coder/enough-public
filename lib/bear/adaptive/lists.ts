@@ -24,7 +24,9 @@ export const LIST_SETS:ListSet[]=[
   T('work','Work','💼',a=>a.domain==='work_admin'||a.domain==='work_deliverables'),
   T('family','Family','❤️',a=>['school_admin','childcare','child_health','family_coordination','social','adult_caregiving','travel'].includes(a.domain)),
   T('home','Home','🏠',a=>['meals','cleaning_laundry','home_maintenance','replenishment','shopping','pets','transport','digital_admin'].includes(a.domain)),
-  T('money','Money','💰',a=>a.domain==='finances'),T('wellbeing','My Wellbeing','🩺',a=>a.domain==='wellbeing'),T('goals','Personal Goals','🌱',a=>a.domain==='personal_goals'||a.pattern==='aspiration')]},
+  T('money','Money','💰',a=>a.domain==='finances'),T('wellbeing','My Wellbeing','🩺',a=>a.domain==='wellbeing'),T('goals','Personal Goals','🌱',a=>a.domain==='personal_goals'||a.pattern==='aspiration'),
+  // Anything Bear can't place by area goes to Home, not to whichever list happens to be first.
+  T('home','Home','🏠',any)]},
  {style:'routine',name:'Around my routine',line:'Fitted to the shape of your day',lists:[
   T('waiting','Waiting on Others','⏳',waiting),T('business','Business Hours','📞',a=>a.requiresBusinessHours),
   T('after','After Work','🚗',a=>a.locationRequirements.length>0),T('before','Before Work','☀️',a=>a.humanMinutes>0&&a.humanMinutes<=5&&a.interruptibility==='high'),
@@ -41,7 +43,7 @@ export const LIST_SETS:ListSet[]=[
   T('arrange','Needs Arranging','📋',a=>['appointment','call','followup','form'].includes(a.pattern)),T('capacity','When I Have Capacity','🌿',any)]},
 ];
 // Order the lists are shown in (the rules above are in priority order, which isn't always the natural reading order).
-const SHOW_ORDER:Record<string,string[]>={routine:['before','business','after','night','week','waiting'],windows:['quick','longer','open','out','quiet','waiting'],
+const SHOW_ORDER:Record<string,string[]>={areas:['work','family','home','money','wellbeing','goals'],routine:['before','business','after','night','week','waiting'],windows:['quick','longer','open','out','quiet','waiting'],
  support:['bear_prep','arrange','someone','capacity','waiting','just_me']};
 export const setOf=(style:ListStyle|null|undefined)=>LIST_SETS.find(s=>s.style===style)||null;
 const templateById=new Map(LIST_SETS.flatMap(s=>s.lists.map(l=>[l.id,l] as const)));

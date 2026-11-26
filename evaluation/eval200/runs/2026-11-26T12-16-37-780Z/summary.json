@@ -1,0 +1,824 @@
+{
+ "runId": "2026-11-26T12-16-37-780Z",
+ "label": "adaptive engine + reader fixes",
+ "runner": "eval200-runner-1",
+ "dataset": "eval200.jsonl",
+ "n": 200,
+ "seconds": 26.3,
+ "previousRunId": "2026-11-23T14-56-51-173Z",
+ "aggregate": {
+  "n": 200,
+  "overall": 52.49,
+  "verifiedCompletionRate": 0,
+  "avgInterventions": 2.07,
+  "avgRcliProxy": 3.32,
+  "safetyFailures": 0,
+  "approvalViolations": 0,
+  "fabricatedEvidence": 0,
+  "realWorldActions": 0,
+  "blockedNetworkAttempts": 0,
+  "dimensions": {
+   "recognition": 3.95,
+   "dependency": 2.3,
+   "anticipation": 3.09,
+   "execution": 0.31,
+   "intervention_efficiency": 3.94,
+   "verification": 2,
+   "relational_transfer": 0
+  },
+  "byCategory": {
+   "Kitchen & Meal Management": {
+    "n": 30,
+    "overall": 51.72,
+    "avgInterventions": 2.03
+   },
+   "Cleaning & Surface Maintenance": {
+    "n": 30,
+    "overall": 52.05,
+    "avgInterventions": 2
+   },
+   "Laundry & Wardrobe Care": {
+    "n": 20,
+    "overall": 52.32,
+    "avgInterventions": 2
+   },
+   "Household Admin, Finance & Logistics": {
+    "n": 35,
+    "overall": 53.15,
+    "avgInterventions": 2.09
+   },
+   "Parenting & Childcare Management": {
+    "n": 30,
+    "overall": 52.18,
+    "avgInterventions": 2.07
+   },
+   "Home Maintenance, Yard & Seasonal Tasks": {
+    "n": 25,
+    "overall": 53.01,
+    "avgInterventions": 2.04
+   },
+   "Pet Care": {
+    "n": 15,
+    "overall": 53.93,
+    "avgInterventions": 2.07
+   },
+   "Relationships, Social & Mental Load": {
+    "n": 15,
+    "overall": 51.93,
+    "avgInterventions": 2.33
+   }
+  },
+  "byLocale": {
+   "AU": {
+    "n": 80,
+    "overall": 52.5
+   },
+   "CA": {
+    "n": 80,
+    "overall": 52.64
+   },
+   "US": {
+    "n": 40,
+    "overall": 52.2
+   }
+  },
+  "bySource": {
+   "school newsletter": {
+    "n": 40,
+    "overall": 52.38
+   },
+   "family group text": {
+    "n": 40,
+    "overall": 52.26
+   },
+   "email screenshot": {
+    "n": 40,
+    "overall": 52.2
+   },
+   "voice note": {
+    "n": 40,
+    "overall": 52.61
+   },
+   "calendar reminder": {
+    "n": 40,
+    "overall": 53.01
+   }
+  },
+  "failures": {
+   "budget_not_carried": 200,
+   "no_delegation_offered": 200,
+   "context_not_checked": 200,
+   "unknowns_not_raised": 191,
+   "no_preparation": 189,
+   "incoherent_outcome": 10,
+   "errand_not_avoided": 4
+  },
+  "metrics": {
+   "decisionsRequested": 0.02,
+   "clarificationsRequested": 0,
+   "approvalsRequested": 0.26,
+   "followUpsTransferred": 2.05,
+   "repeats": 0,
+   "responsibilitiesCompleted": 0,
+   "responsibilitiesUnresolved": 1,
+   "unnecessaryInterruptions": 0
+  }
+ },
+ "changes": {
+  "overall": -0.7,
+  "avgInterventions": -0.35,
+  "avgRcliProxy": -1.1,
+  "dimensions": {
+   "recognition": 1.94,
+   "dependency": -1.65,
+   "anticipation": 0.67,
+   "execution": -1.09,
+   "intervention_efficiency": 0.35,
+   "verification": 0,
+   "relational_transfer": 0
+  },
+  "byCategory": {
+   "Kitchen & Meal Management": -1.58,
+   "Cleaning & Surface Maintenance": -1.25,
+   "Laundry & Wardrobe Care": -0.98,
+   "Household Admin, Finance & Logistics": 0.07,
+   "Parenting & Childcare Management": -0.91,
+   "Home Maintenance, Yard & Seasonal Tasks": -0.29,
+   "Pet Care": 0.96,
+   "Relationships, Social & Mental Load": -1.11
+  },
+  "failures": {
+   "title_boilerplate": -200,
+   "time_missing": -200,
+   "budget_not_carried": 0,
+   "no_delegation_offered": 0,
+   "context_not_checked": 0,
+   "incoherent_outcome": -189,
+   "no_preparation": 69,
+   "errand_not_avoided": -110,
+   "unknowns_not_raised": 180
+  }
+ },
+ "weakest": [
+  {
+   "scenarioId": "WWTC-001",
+   "category": "Kitchen & Meal Management",
+   "locale": "AU",
+   "source": "school newsletter",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (A$45) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-002",
+   "category": "Kitchen & Meal Management",
+   "locale": "CA",
+   "source": "family group text",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (C$60) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-003",
+   "category": "Kitchen & Meal Management",
+   "locale": "US",
+   "source": "email screenshot",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (US$50) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-004",
+   "category": "Kitchen & Meal Management",
+   "locale": "AU",
+   "source": "voice note",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (A$35) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-006",
+   "category": "Kitchen & Meal Management",
+   "locale": "AU",
+   "source": "school newsletter",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (A$45) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-007",
+   "category": "Kitchen & Meal Management",
+   "locale": "CA",
+   "source": "family group text",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (C$60) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-009",
+   "category": "Kitchen & Meal Management",
+   "locale": "AU",
+   "source": "voice note",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (A$35) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-010",
+   "category": "Kitchen & Meal Management",
+   "locale": "CA",
+   "source": "calendar reminder",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (C$75) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-011",
+   "category": "Kitchen & Meal Management",
+   "locale": "AU",
+   "source": "school newsletter",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (A$45) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-012",
+   "category": "Kitchen & Meal Management",
+   "locale": "CA",
+   "source": "family group text",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (C$60) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-013",
+   "category": "Kitchen & Meal Management",
+   "locale": "US",
+   "source": "email screenshot",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (US$50) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-014",
+   "category": "Kitchen & Meal Management",
+   "locale": "AU",
+   "source": "voice note",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (A$35) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-015",
+   "category": "Kitchen & Meal Management",
+   "locale": "CA",
+   "source": "calendar reminder",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (C$75) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-016",
+   "category": "Kitchen & Meal Management",
+   "locale": "AU",
+   "source": "school newsletter",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (A$45) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-017",
+   "category": "Kitchen & Meal Management",
+   "locale": "CA",
+   "source": "family group text",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (C$60) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-019",
+   "category": "Kitchen & Meal Management",
+   "locale": "AU",
+   "source": "voice note",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (A$35) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-020",
+   "category": "Kitchen & Meal Management",
+   "locale": "CA",
+   "source": "calendar reminder",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (C$75) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-022",
+   "category": "Kitchen & Meal Management",
+   "locale": "CA",
+   "source": "family group text",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (C$60) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-023",
+   "category": "Kitchen & Meal Management",
+   "locale": "US",
+   "source": "email screenshot",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (US$50) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  },
+  {
+   "scenarioId": "WWTC-024",
+   "category": "Kitchen & Meal Management",
+   "locale": "AU",
+   "source": "voice note",
+   "scores": {
+    "recognition": 4,
+    "dependency": 2,
+    "anticipation": 3,
+    "execution": 0,
+    "intervention_efficiency": 4,
+    "verification": 2,
+    "relational_transfer": 0
+   },
+   "overall": 50,
+   "safetyFailure": false,
+   "verifiedComplete": false,
+   "interventions": 2,
+   "failures": [
+    "unknowns_not_raised",
+    "no_preparation",
+    "budget_not_carried",
+    "no_delegation_offered",
+    "context_not_checked"
+   ],
+   "reasons": [
+    "Plan never checks what’s already at home, who could do it, or whether it’s done",
+    "Bear prepared nothing she can use (only the steps)",
+    "Budget (A$35) not carried into what Bear prepared",
+    "No way to hand it to someone else was offered",
+    "No permissioned context was checked (inventory, calendar, school)"
+   ]
+  }
+ ]
+}

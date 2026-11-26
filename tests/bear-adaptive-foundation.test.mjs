@@ -85,3 +85,9 @@ test('explanation matches what she said: a fixed routine is a pattern, not other
  const t=explainProfile(scoreProfile({control:'fixed_routine',howDone:'grab_moment'}));
  assert.match(t,/follow a pattern/);assert.doesNotMatch(t,/other people’s schedules/);assert.match(t,/usual routines/);
 });
+test('found by the synthetic harness: plurals are recognised, and "By area of life" has a home for everything',()=>{
+ assert.equal(domainOf('Plan dinners for the week','general').domain,'meals');assert.equal(domainOf('Write the grocery list','general').domain,'meals');
+ const a={domain:'general',pattern:'general',contextTags:[],requiresBusinessHours:false,locationRequirements:[],humanMinutes:20,interruptibility:'medium',readiness:'ready',agentPreparationAvailable:false,delegationEligible:false,cognitiveEffort:'unknown'};
+ assert.equal(ruleSuggestion(a,listsForStyle('areas')),'home','not whichever list is first (Work)');
+ assert.deepEqual(listsForStyle('areas').map(l=>l.id),['work','family','home','money','wellbeing','goals'],'each list once');
+});

@@ -38,7 +38,10 @@ Navigation has three tabs. Settings is the gear in each screen's header.
   - When she talks about feelings, Bear doesn't bring tasks or lists back.
   - If someone seems in danger, Bear always gives 000 and Lifeline (13 11 14).
 - **Finish or share a task.**
-  - She picks her time, and Bear chooses one real task from Bear Brain that fits.
+  - She picks her time (or "Not sure"), and Bear chooses one real task from Bear Brain that fits. If she has said how her
+    days work, Bear allows for getting started and interruptions, favours what it can prepare or hand on when she has little
+    control, and offers calls while places are open. The button says what happens (Give it to Bear, Review it, Make the
+    call, Let's do it), with a short reason. When nothing fits, Bear offers something useful instead, or a break.
   - It weighs time fit, readiness, deadlines, and what finishing it unlocks.
   - The task card offers **Let's do it** and **Ask someone** side by side. "Let's do it" has Bear prepare its part, then
     **Mark as done**. "Ask someone" opens Share Bear on that task.
@@ -52,7 +55,9 @@ Navigation has three tabs. Settings is the gear in each screen's header.
 - **All Tasks,** with filters: All, Needs attention, Ready to check, Waiting. Plus search.
 - **Priority Actions:** what needs attention, with the reason.
 - **Shared with others:** people she has asked for help, and where each request stands.
-- **By Category:** six categories she can rename.
+- **By Category:** six categories she can rename. Besides Bear's originals (below) there are four suggested sets: by area
+  of life, around her routine, by the time she's got, and what she needs help with. She can mix them. Bear places things by
+  what they are (calls need business hours, errands need a trip out) and learns from two of her own moves.
   - Night Time
   - Phone Calls
   - Organise Follow-Up
@@ -96,11 +101,17 @@ Navigation has three tabs. Settings is the gear in each screen's header.
 - **The older link-based share** (in a task's ⋯ menu, for people who use Load Bear) still works.
 
 ## Other parts of the app
-- **Onboarding.** What she carries, who's at home, and where she lives. Every step can be skipped.
+- **Onboarding: How your days work.** Seven one-tap questions (control over her day, how things get done, what gets in the
+  way, what she'd like help with, whether others can help, how Bear should help through the day, where she lives), all
+  skippable. Bear explains how it will help and suggests Bear Brain lists that suit her; she can keep, change or skip them.
+  The older questions (what she carries, household) are in Settings › My Load Map.
 - **Settings.**
   - Her household and contacts, categories, and quiet hours.
   - Notifications, and connecting Outlook calendar.
-  - "What Bear has learned", where she can see and remove preferences.
+  - "What Bear has learned": preferences, where she puts things, kinds of help she takes, when she usually gets things
+    done, and things she asked Bear not to suggest. Each can be reset.
+  - "How your days work", where she can change her answers or lists. Her choice of how Bear helps through the day decides
+    which reminders reach her phone.
   - Deleting all her data.
 - **More screens.** Calendar, Bills (check a bill, then Bear plans reminders), Bear Helps, Wins, Wishlist, and areas
   (Work, Family, Home, Money, Health, Me).
