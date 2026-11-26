@@ -32,8 +32,8 @@ test('reinforcement says only what happened, in a way that suits her',()=>{
  assert.equal(reliefMessage('responsibility_completed'),'One less thing on your mind.');
  assert.equal(reliefMessage('responsibility_completed',{profile:scoreProfile({control:'plan_own',howDone:'in_advance'}),early:true}),'Sorted, ahead of time.');
  assert.equal(reliefMessage('responsibility_completed',{profile:scoreProfile({control:'plan_own',howDone:'in_advance'}),early:false}),'That’s sorted.');
- assert.equal(reliefMessage('responsibility_completed',{profile:scoreProfile({control:'depends_others'})}),'That’s one less thing to carry.');
- assert.match(reliefMessage('ownership_accepted',{who:'Daniel'}),/^Daniel said yes\. You don’t need to organise it yourself\.$/);
+ assert.equal(reliefMessage('responsibility_completed',{profile:scoreProfile({control:'depends_others'})}),'That’s sorted. Nothing more to do on it.');
+ assert.match(reliefMessage('ownership_accepted',{who:'Daniel'}),/^Daniel accepted this\. You don’t need to organise it yourself\.$/);
  for(const e of RELIEF_EVENTS)assert.doesNotMatch(reliefMessage(e),/streak|minutes saved|hours|points|\d/,'no scores, no invented savings');
 });
 test('feedback is optional and cautious; strategy choices are learned; "don’t suggest" can be undone',async()=>{
@@ -62,4 +62,25 @@ test('a task’s page says who is carrying each part, and the latest useful mome
  const d=await detailView(s,r.added[0].id,new Date('2026-11-23T10:00:00+11:00'));
  assert.equal(d.carrying.labour.anticipation,'bear');assert.ok(['bear','you'].includes(d.carrying.labour.execution));
  assert.ok(d.carrying.latestUsefulActionAt&&d.carrying.latestUsefulActionAt<d.dueAt,'ordering online needs lead time');
+});
+test('relief policy integration: awareness and quiet backup plans; a push budget; her place kept when interrupted',async()=>{
+ const s=await person();const r=await unload(s,null,{text:'Call the dentist to book a check-up by Friday\nOrder a red scrunchie for Sarah by Friday',via:'text'},new Date('2026-11-23T10:00:00+11:00'));
+ const {attributesOf}=await import('../lib/bear/adaptive/attributes.ts');
+ for(const a of r.added){const d=await detailView(s,a.id,new Date('2026-11-23T10:00:00+11:00'));const t=await s.get('tasks',a.id);const at=attributesOf(t,t.rre,{status:d.status});
+  assert.ok(['ready_for_her','understood_not_ready','prepared_for_approval'].includes(at.awareness),at.awareness);assert.ok(at.contingencies.some(c=>/deadline/.test(c.if)));}
+ const items=[0,1,2,3,4].map(i=>({reminder:{scheduledFor:`2026-11-24T${String(8+i).padStart(2,'0')}:00:00+11:00`},task:{dueAt:i===4?'2026-11-24':'2026-12-10'}}));
+ const kept=commsFilter(items,null,'Australia/Sydney');assert.equal(kept.length,3,'three a day');assert.ok(kept.some(i=>i.task.dueAt==='2026-11-24'),'due-today always gets through');
+ const id=r.added[0].id;const {saveProgress}=await import('../lib/bear/board/service.ts');await saveProgress(s,id,{},new Date('2026-11-23T11:00:00+11:00'));
+ const rec=await recommend(s,{minutes:20,exclude:[id===r.added[0].id?r.added[1].id:r.added[0].id]},new Date('2026-11-24T12:30:00+11:00'),{});
+ if(rec.recommendation?.taskId===id)assert.match(rec.recommendation.note||'',/where you left off|ready/);
+});
+test('relief policy: consequence first, prepared before presenting, and nothing offered on a chaos day unless it matters',async()=>{
+ const AT=new Date('2026-11-24T20:30:00+11:00');
+ const s=await person();await unload(s,null,{text:'Pay the excursion levy by tomorrow\nTidy the linen cupboard',via:'text'},new Date('2026-11-24T19:00:00+11:00'));
+ const r1=await recommend(s,{minutes:20,exclude:[]},AT,{});assert.match((await s.get('tasks',r1.recommendation.taskId)).title,/levy/i,'the deadline at risk comes first');
+ const t=await unload(s,null,{text:'Reply to Mel about camp by Friday',via:'text'},AT);void t;
+ const p=await ensureProfile(s);await s.update('profiles',p.id,{dayMode:'chaos',dayModeSetAt:AT.toISOString()});
+ const r2=await recommend(s,{minutes:20,exclude:[]},AT,{});
+ assert.ok(!r2.recommendation||/levy/i.test((await s.get('tasks',r2.recommendation.taskId)).title),'on a chaos day only what matters');
+ const old=await recommend(s,{minutes:20,exclude:[]},AT,{BEAR_RELIEF_POLICY:'off'});assert.ok(old.recommendation||old.message,'rollback still works');
 });

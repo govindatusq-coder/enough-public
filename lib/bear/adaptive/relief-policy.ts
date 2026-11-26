@@ -37,9 +37,9 @@ const sum=(b:Burden)=>BURDENS.reduce((a,k)=>a+b[k],0);
 const RISK={high:1,medium:.6,low:.25,none:0} as const;
 
 // What this responsibility still asks of her, now (0–1 each).
-export function burdenOf(x:PoolItem,a:Attributes|undefined):Burden{
+export function burdenOf(x:PoolItem,a:Attributes|undefined,saved=false):Burden{
  const p=x.c.plan;const her=a?a.humanMinutes:x.f.minutes;const steps=p.pathways.find(w=>w.id===p.selected)?.steps||[];const hers=steps.slice(p.stepIndex).filter(s=>s.who==='you');
- const watched=!!a&&a.labour.monitoring==='bear';const started=p.stepIndex>0&&hers.length>0;
+ const watched=!!a&&a.labour.monitoring==='bear';const started=(p.stepIndex>0&&hers.length>0)||saved;
  return {
   remembering:Math.min(1,(watched?.1:.5)+(p.deadlines.outcome?.3:0)),
   anticipation:p.deadlines.outcome?(a?.latestUsefulActionAt?.1:.3):(a?.missingInformation.length?.5:.2),
@@ -54,7 +54,9 @@ export function burdenOf(x:PoolItem,a:Attributes|undefined):Burden{
  };
 }
 export interface PolicyContext{window:number;profile:TemporalProfile|null;learning:AdaptiveLearning|null;delegationAccess:number;openBusiness:boolean;
- capacity:'normal'|'low'|'very_low';canPrepare:(x:PoolItem)=>boolean}
+ capacity:'normal'|'low'|'very_low';canPrepare:(x:PoolItem)=>boolean;
+ // Someone already said no to this once: asking again is worth less, and costs her more coordinating.
+ declinedBefore?:(taskId:string)=>boolean}
 // The ways Bear could help with this responsibility now, each with what it would take off her and what it would ask of her.
 export function interventionsFor(x:PoolItem,a:Attributes|undefined,b:Burden,ctx:PolicyContext):InterventionEstimate[]{
  const out:InterventionEstimate[]=[];const risk=RISK[x.f.risk];const step=x.f.minutes;
@@ -69,7 +71,7 @@ export function interventionsFor(x:PoolItem,a:Attributes|undefined,b:Burden,ctx:
   {},{humanMinutes:Math.min(step,5),interactions:1,decisions:1,progress:.9,resolution:.3,interruptionRisk:interr*.5}));
  // Hand it on (Share Bear): only when someone could, she has help, and the coordination it asks is worth it. It isn't hers
  // to stop thinking about until they accept; Bear follows up, so the monitoring left with her is small.
- if(a?.delegationEligible&&ctx.delegationAccess>=.4&&ctx.window>=2){const p=ctx.delegationAccess*(x.c.plan.dependencies.length?0.8:1);
+ if(a?.delegationEligible&&ctx.delegationAccess>=.4&&ctx.window>=2){const p=ctx.delegationAccess*(x.c.plan.dependencies.length?0.8:1)*(ctx.declinedBefore?.(x.c.taskId)?.5:1);
   out.push(est('transfer',{executionEffort:b.executionEffort*.9*p,remembering:b.remembering*.6*p,planning:b.planning*.5*p},{coordination:.3,monitoring:.1,decisionMaking:.1},
    {humanMinutes:2,interactions:2,decisions:1,progress:p,resolution:p*.8,interruptionRisk:.05,permissionRequired:true}));}
  // Doing the next step herself, now.
@@ -94,9 +96,9 @@ export function utilityOf(e:InterventionEstimate,x:PoolItem,a:Attributes|undefin
 }
 // Below this, offering anything costs her more than it gives (unless something consequential is at stake): Bear doesn't intervene.
 export const NO_INTERVENTION_BELOW=.2;
-export function choose(pool:{x:PoolItem;a:Attributes|undefined}[],ctx:PolicyContext,w:ReliefWeights):{top:Scored|null;scored:Scored[];reason:string}{
+export function choose(pool:{x:PoolItem;a:Attributes|undefined;saved?:boolean}[],ctx:PolicyContext,w:ReliefWeights):{top:Scored|null;scored:Scored[];reason:string}{
  const scored:Scored[]=[];
- for(const {x,a} of pool){const b=burdenOf(x,a);const opts=interventionsFor(x,a,b,ctx);if(!opts.length)continue;const deferrals=x.c.plan.dismissed.length;
+ for(const {x,a,saved} of pool){const b=burdenOf(x,a,!!saved);const opts=interventionsFor(x,a,b,ctx);if(!opts.length)continue;const deferrals=x.c.plan.dismissed.length;
   let best:Scored|null=null;for(const e of opts){const u=utilityOf(e,x,a,ctx,w,deferrals);if(!best||u.utility>best.utility)best={x,a,burden:b,best:e,...u};}
   if(best)scored.push(best);}
  if(!scored.length)return {top:null,scored,reason:'nothing feasible'};

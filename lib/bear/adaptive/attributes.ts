@@ -26,7 +26,10 @@ export interface Attributes{
  readiness:Readiness;nextAction:string|null;missingInformation:string[];
  executionMode:ExecutionMode;agentPreparationAvailable:boolean;agentExecutionAvailable:boolean;delegationEligible:boolean;
  labour:Labour;confidence:Record<string,number>;
+ // Where it really stands (never shown as a new status; Bear's own reckoning), and the backup plans Bear holds quietly.
+ awareness:Awareness;contingencies:{if:string;then:string}[];
 }
+export type Awareness='captured'|'understood_not_ready'|'ready_for_her'|'prepared_for_approval'|'in_progress'|'awaiting_external'|'accepted_by_other'|'monitored'|'completed'|'cancelled';
 
 const DOMAIN_RULES:[Domain,RegExp][]=[
  ['school_admin',/\b(school|excursion|permission|newsletter|uniform|term|teacher|class|homework|canteen|book ?club|book week|crazy hair|sport day|carnival|enrol\w*)\b/i],
@@ -96,7 +99,14 @@ export function attributesOf(t:Task,p:Plan,ctx:AttributeContext):Attributes{
   execution:delegated?'someone_else':ctx.status==='completed'?'done':hers.some(s=>s.kind==='act')?'you':bears.length?'bear':'you',
   monitoring:waitingOn||left.some(s=>s.kind==='wait')||delegated?'bear':ctx.status==='completed'?'done':'not_needed',
  };
- return {domain,pattern:p.kind,contextTags:[...new Set(tags)],dueAt:t.dueAt||p.deadlines.outcome||null,latestUsefulActionAt:latest,
+ const awareness:Awareness=t.status==='done'||ctx.status==='completed'?'completed':t.status==='dropped'||t.status==='archived'?'cancelled':t.delegation?.status==='ACCEPTED'?'accepted_by_other'
+  :ctx.status==='waiting'?(p.deadlines.followUp?'monitored':'awaiting_external'):ctx.status==='awaiting_approval'?'prepared_for_approval':ctx.status==='in_progress'?'in_progress'
+  :t.readiness==='needs_info'||missing.length?'understood_not_ready':!t.listId&&t.dumpId&&!t.rre?'captured':'ready_for_her';
+ // Contingent plans: kept internally and only surfaced when one changes what she needs to do next.
+ const alt=p.pathways.find(w=>w.id!==p.selected&&w.feasibility!=='infeasible');
+ const contingencies=[...(requiresBusinessHours?[{if:'places are closed',then:'kept for when they open'}]:[]),...(alt?[{if:`${path.label.toLowerCase()} doesn’t work out`,then:alt.label}]:[]),
+  ...(delegationEligible(t,p,ctx.status).ok?[{if:'someone she asks says no',then:'it comes back to her, unchanged'}]:[]),...(p.deadlines.outcome?[{if:'the deadline gets close',then:'it moves up in what Bear offers'}]:[])];
+ return {awareness,contingencies,domain,pattern:p.kind,contextTags:[...new Set(tags)],dueAt:t.dueAt||p.deadlines.outcome||null,latestUsefulActionAt:latest,
   humanMinutes,agentMinutes,cognitiveEffort,emotionalEffort,interruptibility,resumable,minimumUsefulWindow:(next?.userMinutes??humanMinutes)+1,
   requiresBusinessHours,locationRequirements:contexts.has('errand')?['out of the house']:[],readiness,nextAction:next?.text||null,missingInformation:missing,
   executionMode,agentPreparationAvailable:bears.length>0&&!prepared&&substantivePrep(p.kind,path.method),agentExecutionAvailable,delegationEligible:delegationEligible(t,p,ctx.status).ok,labour,

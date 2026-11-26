@@ -29,11 +29,12 @@ export function reliefMessage(event:ReliefEvent,ctx:{profile?:TemporalProfile|nu
  switch(event){
   case 'responsibility_completed':
    if(ctx.early&&d==='planner')return 'Sorted, ahead of time.';
-   return d==='planner'?'That’s sorted.':d==='juggler'?'Done, and off your list.':d==='improviser'?'That’s one less thing to deal with.':d==='oncall'?'That’s one less thing to carry.':'One less thing on your mind.';
-  case 'ownership_accepted':return `${ctx.who||'They'} said yes. You don’t need to organise it yourself.`;
-  case 'information_prepared':return 'Bear has got this ready for you.';
+   // Says what happened to the responsibility, never how she feels about it.
+   return d==='planner'?'That’s sorted.':d==='juggler'?'Done, and off your list.':d==='improviser'?'That’s done.':d==='oncall'?'That’s sorted. Nothing more to do on it.':'One less thing on your mind.';
+  case 'ownership_accepted':return `${ctx.who||'They'} accepted this. You don’t need to organise it yourself.`;
+  case 'information_prepared':return 'Bear has prepared the information you need.';
   case 'monitoring_established':return 'Bear is keeping an eye on this, so you don’t have to.';
-  case 'progress_preserved':return 'Your place is saved.';
+  case 'progress_preserved':return 'Bear kept everything where you left it.';
   case 'dependency_resolved':return 'That’s no longer held up.';
   case 'recovery_chosen':return 'Enjoy it. Everything else can wait.';
   default:return 'Done.';

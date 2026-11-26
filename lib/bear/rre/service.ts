@@ -98,7 +98,8 @@ export async function recommend(store:BearStore,input:z.infer<typeof momentSchem
   ...(res.recommendation&&!input.exclude.length?{rreLast:{taskId:res.recommendation.taskId,minutes:input.minutes,at:now.toISOString()}}:{})});
  return {recommendation:res.recommendation,message:res.message,suggestMinutes:res.suggestMinutes,waiting:res.waiting,alternative:res.alternative,adaptive:res.adaptive,
   // Optional feedback is offered at most once a day, and only once she has told Bear how her days work.
-  askFeedback:!!ctx.profile.temporal&&mayAskFeedback(ctx.profile.adaptive,now)};
+  // Minimum viable interaction: optional questions are never asked on a day she's said is hard.
+  askFeedback:!!ctx.profile.temporal&&capacity==='normal'&&mayAskFeedback(ctx.profile.adaptive,now)};
 }
 // "No time? Hand something off": one task someone else could do, or null (Bear says so honestly).
 export const sharePickSchema=z.object({exclude:z.array(z.string().uuid()).max(50).default([])}).strict();

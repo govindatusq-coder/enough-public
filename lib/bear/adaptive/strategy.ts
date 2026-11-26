@@ -162,10 +162,11 @@ export function reliefMoment(items:Candidate[],ctx:AdaptiveContext):AdaptiveResu
  const base=effectiveWindow(ctx.minutes,!!ctx.unsure,profile);const window=capacity==='low'?Math.max(2,Math.floor(base*.6)):capacity==='very_low'?Math.max(2,Math.floor(base*.4)):base;
  const {pool:all,considered,waiting,open}=candidatesFor(items,{...ctx,minutes:window});
  const pool=all.filter(x=>{const a=ctx.attrs.get(x.c.taskId);return !(a&&isSuppressed(ctx.learning,a)&&x.f.risk!=='high');});
- const pctx:PolicyContext={window,profile,learning:ctx.learning,delegationAccess:profile?.dims.delegationAccess??0,openBusiness:open,capacity,canPrepare:x=>ctx.canPrepare?ctx.canPrepare(x.c.taskId):x.c.plan.kind!=='gifts'};
+ const pctx:PolicyContext={window,profile,learning:ctx.learning,delegationAccess:profile?.dims.delegationAccess??0,openBusiness:open,capacity,canPrepare:x=>ctx.canPrepare?ctx.canPrepare(x.c.taskId):x.c.plan.kind!=='gifts',
+  declinedBefore:id=>ctx.tasks.get(id)?.delegation?.status==='DECLINED'};
  // Nothing feasible at all: say what would fit, exactly as Got a Moment always has (e.g. "the next thing takes about 10 minutes").
  if(!pool.length){const b=chooseMoment(items,{...ctx,minutes:window});return {...b,recommendation:null,adaptive:true,alternative:null,scores:[],weights:weightsFor(profile),weightsVersion:RELIEF_POLICY_VERSION};}
- const chosen=choose(pool.map(x=>({x,a:ctx.attrs.get(x.c.taskId)})),pctx,w);let top=chosen.top;const {scored,reason}=chosen;
+ const chosen=choose(pool.map(x=>({x,a:ctx.attrs.get(x.c.taskId),saved:!!ctx.tasks.get(x.c.taskId)?.progress?.savedAt})),pctx,w);let top=chosen.top;const {scored,reason}=chosen;
  // Stability: the same window asked again soon gets the same suggestion, unless something genuinely more pressing appeared.
  if(top&&ctx.last&&ctx.last.minutes===ctx.minutes&&ctx.now.getTime()-Date.parse(ctx.last.at)<3*3600000){const keep=scored.find(x=>x.x.c.taskId===ctx.last!.taskId);if(keep&&!(top.x.f.risk==='high'&&keep.x.f.risk!=='high'))top=keep;}
  const scores=scored.map(s=>({taskId:s.x.c.taskId,score:s.utility,parts:{...s.parts,[`via_${s.best.intervention}`]:1}}));
@@ -179,7 +180,8 @@ export function reliefMoment(items:Candidate[],ctx:AdaptiveContext):AdaptiveResu
    alternative:{kind:'protect',taskId:null,title:null,minutes:null,text:message},scores,weights,weightsVersion:RELIEF_POLICY_VERSION};
  }
  const x=top.x,a=top.a,e=top.best;const {label,why}=explain(x.c.plan,x.f,x.needsBear,ctx.today);
- const started=x.c.plan.stepIndex>0&&!x.needsBear;
+ // Interrupted earlier (a step done, or her place saved): she picks up where she left off, nothing to reconstruct.
+ const started=(x.c.plan.stepIndex>0&&!x.needsBear)||!!ctx.tasks.get(x.c.taskId)?.progress?.savedAt;
  const s:StrategyId=e.intervention==='do'?strategyOf(x,a,{profile,unsure:ctx.unsure},open):INTERVENTION_STRATEGY[e.intervention];
  const primary:Primary=e.intervention==='transfer'?{kind:'share',label:'Ask someone'}:e.intervention==='review'?{kind:'review',label:'Review it'}:e.intervention==='prepare'?{kind:'give',label:'Give it to Bear'}:primaryFor(x,a);
  const rec:AdaptiveRecommendation={taskId:x.c.taskId,title:x.title,label,minutes:e.humanMinutes||x.f.minutes,why,needsBear:x.needsBear,alternative:scored[1]?{taskId:scored[1].x.c.taskId,title:scored[1].x.title}:null,

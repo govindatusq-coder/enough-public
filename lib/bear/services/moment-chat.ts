@@ -5,6 +5,7 @@
 // This file is pure (no AI call, no route): the message types, Bear's instructions, the tools Bear may use (each mapped to
 // an existing part of the responsibility engine), the answer Bear gives when the AI is not connected, the safety line, and
 // how the private conversation is kept.
+import {BEAR_CORE} from '../ai/bear-core.ts';
 import {z} from 'zod';
 import type {BearStore} from '../store/store.ts';
 import type {StructuredModelProvider} from '../ai/provider.ts';
@@ -54,7 +55,9 @@ What you can do (only through the tools; never claim anything else happened):
 - draft_message: write a message for her to review (to a school, a partner, a business). Bear cannot send email or texts: she sends it herself. A message to her partner contains only the practical request, never anything private she has told you.
 - propose_tasks: when she wants things written down or a to-do list made, propose the list. Nothing is saved until she approves it in the app (she can untick items). Never say a list is saved until a note shows she approved it.
 The app shows what a tool returns as a card under your message, so do not repeat its details. Say in one short line what you did. Never say something was sent, booked, paid, shared or arranged unless a tool result says it was confirmed.
-A note in square brackets after one of your earlier messages records what the app really showed under it; trust it and never write such notes yourself.`;
+A note in square brackets after one of your earlier messages records what the app really showed under it; trust it and never write such notes yourself.
+
+${BEAR_CORE}`;
 
 // ---------- tools (the adapter onto the responsibility engine) ----------
 const t=(name:string,description:string,properties:Record<string,unknown>,required:string[])=>({name,description,strict:true,input_schema:{type:'object',additionalProperties:false,required,properties}});

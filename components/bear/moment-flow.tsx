@@ -48,7 +48,10 @@ export function MomentFlow(){
  // The phone's back gesture steps back through the flow, not out of the page.
  useEffect(()=>{const on=()=>{pushed.current=Math.max(0,pushed.current-1);back();};window.addEventListener('popstate',on);return()=>window.removeEventListener('popstate',on);},[back]);
  // The on-screen Back and the phone's back gesture do the same thing.
- const goBack=useCallback(()=>{if(pushed.current>0)history.back();else back();},[back]);
+ const goBack=useCallback(()=>{
+  // Leaving a task part-way: Bear keeps her place, so next time she picks up where she left off.
+  if(s.stack[s.stack.length-1]==='task_action'&&detail&&detail.taskStatus==='open')apiSend(`/api/bear/board/tasks/${detail.id}/progress`,{},'PUT').catch(()=>{});
+  if(pushed.current>0)history.back();else back();},[back,s.stack,detail]);
 
  // ---------- Need a Break ----------
  async function idea(minutes:number,exclude:string[]){setBusy(true);setMsg(null);setEnjoy(false);
@@ -144,7 +147,9 @@ export function MomentFlow(){
       <Link href="/bear/brain" className="btn ghost wide">See my tasks</Link><button type="button" className="btn quiet wide" onClick={()=>go('home')}>Not now</button></div></section>
    :<section className="gm-card" aria-live="polite"><p className="gm-kicker">You could get this sorted.</p><LabelChip label={s.rec.label}/>
      <h1 className="gm-card-title">{s.rec.title}</h1><p className="gm-card-line">{s.rec.why}</p>{s.rec.note&&<p className="gm-card-note">{s.rec.note}</p>}<p className="gm-card-small">About {s.rec.minutes} minute{s.rec.minutes===1?'':'s'} of your time (an estimate).</p>
-     <div className="gm-pair"><button type="button" className="btn coral wide" disabled={busy} onClick={letsDoIt}>{busy?'One moment…':s.rec.primary?.label||'Let’s do it'}</button><button type="button" className="btn coral-line wide" disabled={busy} onClick={()=>askFor(s.rec!.taskId,'finish')}>Ask someone</button></div>
+     {s.rec.primary?.kind==='share'
+      ?<div className="gm-pair"><button type="button" className="btn coral wide" disabled={busy} onClick={()=>askFor(s.rec!.taskId,'finish')}>{busy?'One moment…':'Ask someone'}</button><button type="button" className="btn coral-line wide" disabled={busy} onClick={letsDoIt}>I’ll do it</button></div>
+      :<div className="gm-pair"><button type="button" className="btn coral wide" disabled={busy} onClick={letsDoIt}>{busy?'One moment…':s.rec.primary?.label||'Let’s do it'}</button><button type="button" className="btn coral-line wide" disabled={busy} onClick={()=>askFor(s.rec!.taskId,'finish')}>Ask someone</button></div>}
      <div className="gm-actions"><button type="button" className="btn ghost wide" disabled={busy} onClick={anotherTask}>Another task</button><button type="button" className="btn quiet wide" onClick={notNowTask}>Not now</button></div></section>}
    {note}</>}
   {cur==='task_action'&&detail&&<>{backBtn}
