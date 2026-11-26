@@ -84,3 +84,11 @@ test('relief policy: consequence first, prepared before presenting, and nothing 
  assert.ok(!r2.recommendation||/levy/i.test((await s.get('tasks',r2.recommendation.taskId)).title),'on a chaos day only what matters');
  const old=await recommend(s,{minutes:20,exclude:[]},AT,{BEAR_RELIEF_POLICY:'off'});assert.ok(old.recommendation||old.message,'rollback still works');
 });
+test('consequence protection: a deadline that can’t be done right now isn’t hidden; one heads-up on the card',async()=>{
+ const s=await person();const AT=new Date('2026-11-24T20:30:00+11:00');
+ await unload(s,null,{text:'Renew the car registration by tomorrow\nReply to Mel about Saturday',via:'text'},new Date('2026-11-24T19:00:00+11:00'));
+ const regoId=(await s.list('tasks')).find(t=>/registration/i.test(t.title)).id;await s.update('tasks',regoId,{estimatedMinutes:40,minutesBy:'you'});
+ const r=await recommend(s,{minutes:5,exclude:[]},AT,{});
+ assert.ok(r.recommendation);assert.notEqual(r.recommendation.taskId,regoId,'too long for five minutes');
+ assert.match(r.recommendation.note||'',/^Heads up: “renew the car registration” is due tomorrow and needs about \d+ min/);
+});

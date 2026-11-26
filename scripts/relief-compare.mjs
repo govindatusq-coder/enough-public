@@ -57,6 +57,7 @@ async function run(sc,policy){
  let exclude=[];
  if(sc.T.declineFirst){const first=await recommend(s,{minutes:sc.minutes,exclude:[]},at,env);if(first.recommendation){exclude=[first.recommendation.taskId];await skip(s,first.recommendation.taskId,at);}}
  const res=await recommend(s,{minutes:sc.minutes,exclude,...(sc.unsure?{unsure:true}:{})},at,env);const rec=res.recommendation;
+ const tr=(await ensureProfile(s)).rreTrace?.[0];const tc=target&&tr?tr.considered.find(c=>c.taskId===target.id):null;const targetFeasible=!!tc&&!tc.excluded;const targetWhy=tc?.excluded||null;
  const open=await openTasks(s);let attention=0,decisions=0,herSteps=0,prepared=false,fits=null,bh=null,urgentFirst=null,deferredFirst=null,onlyConsequential=null,declinedRespected=null;
  for(const t of open){const d=await detailView(s,t.id,at);const f=await s.get('tasks',t.id);const a=attributesOf(f,f.rre,{status:d.status});if(needsHer(a))attention++;}
  if(rec){const d=await detailView(s,rec.taskId,at);const f=await s.get('tasks',rec.taskId);const a=attributesOf(f,f.rre,{status:d.status});
@@ -68,11 +69,12 @@ async function run(sc,policy){
  else if(sc.T.expect==='only_consequential')onlyConsequential=true;
  const noneOrSmall=sc.T.expect==='none_or_small'?(!rec||(rec.minutes??99)<=5):null;
  const falseCompletion=(await s.list('tasks')).some(t=>t.status==='done');
- return {targetFound:!!target,type:sc.type,profile:sc.realProfile,answeredAs:sc.profileKey,country:sc.country,policy,suggested:!!rec,intervention:rec?.intervention||null,attention,herSteps,decisions,prepared,fits,bh,
+ return {targetFound:!!target,targetFeasible,targetWhy,type:sc.type,profile:sc.realProfile,answeredAs:sc.profileKey,country:sc.country,policy,suggested:!!rec,intervention:rec?.intervention||null,attention,herSteps,decisions,prepared,fits,bh,
   urgentFirst,deferredFirst,onlyConsequential,noneOrSmall,declinedRespected,askFeedbackOnHardDay:sc.T.day?!!res.askFeedback:null,falseCompletion};
 }
 const rows=[];const started=Date.now();let n=0;
-for(const type of Object.keys(TYPES))for(const pk of Object.keys(PROFILES))for(const c of Object.keys(COUNTRIES))for(let seed=0;seed<SEEDS;seed++){
+const ONLY=arg('--types')?arg('--types').split(','):null;
+for(const type of Object.keys(TYPES).filter(t=>!ONLY||ONLY.includes(t)))for(const pk of Object.keys(PROFILES))for(const c of Object.keys(COUNTRIES))for(let seed=0;seed<SEEDS;seed++){
  const sc=scenario(type,pk,c,seed);for(const policy of ['adaptive','relief'])rows.push(await run(sc,policy));n++;
  if(n%200===0)console.error(`${n} scenarios (${Math.round((Date.now()-started)/1000)}s)`);
 }
@@ -83,6 +85,7 @@ const metrics=rs=>({n:rs.length,suggested:pct(rs,r=>r.suggested),avg_needing_her
  urgent_first:pct(rs,r=>r.urgentFirst),deferred_first:pct(rs,r=>r.deferredFirst),only_consequential_on_chaos_day:pct(rs,r=>r.onlyConsequential),none_or_small_when_optimal:pct(rs,r=>r.noneOrSmall),
  declined_respected:pct(rs,r=>r.declinedRespected),optional_question_on_hard_day:pct(rs,r=>r.askFeedbackOnHardDay),false_completion:rs.filter(r=>r.falseCompletion).length,
  target_found:pct(rs,r=>r.targetFound),
+ urgent_first_when_doable:pct(rs.filter(r=>r.targetFeasible),r=>r.urgentFirst),deferred_first_when_doable:pct(rs.filter(r=>r.targetFeasible),r=>r.deferredFirst),
  interventions:Object.fromEntries(Object.entries(rs.reduce((m,r)=>{const k=r.intervention||(r.suggested?'(previous engine)':'none');m[k]=(m[k]||0)+1;return m;},{})))});
 const by=(k)=>{const g={};for(const r of rows)((g[r[k]]??={})[r.policy]??=[]).push(r);return Object.fromEntries(Object.entries(g).map(([x,v])=>[x,{adaptive:metrics(v.adaptive||[]),relief:metrics(v.relief||[])}]));};
 const summary={name:'previous adaptive engine vs Cognitive Relief Policy',synthetic:true,scenarios:n,evaluations:rows.length,seconds:Math.round((Date.now()-started)/1000),

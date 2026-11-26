@@ -184,7 +184,21 @@ export function reliefMoment(items:Candidate[],ctx:AdaptiveContext):AdaptiveResu
  const started=(x.c.plan.stepIndex>0&&!x.needsBear)||!!ctx.tasks.get(x.c.taskId)?.progress?.savedAt;
  const s:StrategyId=e.intervention==='do'?strategyOf(x,a,{profile,unsure:ctx.unsure},open):INTERVENTION_STRATEGY[e.intervention];
  const primary:Primary=e.intervention==='transfer'?{kind:'share',label:'Ask someone'}:e.intervention==='review'?{kind:'review',label:'Review it'}:e.intervention==='prepare'?{kind:'give',label:'Give it to Bear'}:primaryFor(x,a);
+ // Consequence protection when the deadline thing can't be done right now (too long for this window, a trip out, places
+ // closed): it isn't hidden. One short heads-up rides on the card; nothing else changes.
+ const heads=x.f.risk==='high'?null:headsUp(items,considered,ctx.today);
  const rec:AdaptiveRecommendation={taskId:x.c.taskId,title:x.title,label,minutes:e.humanMinutes||x.f.minutes,why,needsBear:x.needsBear,alternative:scored[1]?{taskId:scored[1].x.c.taskId,title:scored[1].x.title}:null,
-  confidence:Math.round(e.confidence*100)/100,strategy:s,primary,note:reliefNote(e,false,started),humanMinutes:a?.humanMinutes??x.f.minutes,window,share:e.intervention==='transfer',intervention:e.intervention};
+  confidence:Math.round(e.confidence*100)/100,strategy:s,primary,note:heads||reliefNote(e,false,started),humanMinutes:a?.humanMinutes??x.f.minutes,window,share:e.intervention==='transfer',intervention:e.intervention};
  return {recommendation:rec,message:null,suggestMinutes:null,waiting,trace:trace(x.c.taskId,`${e.intervention}/${s}: ${label}: ${why}`,rec.confidence),adaptive:true,alternative:null,scores,weights,weightsVersion:RELIEF_POLICY_VERSION};
+}
+
+// A deadline that's due today or tomorrow and couldn't be offered now, said plainly (its title and what's in the way).
+function headsUp(items:Candidate[],considered:{taskId:string;excluded:string|null}[],today:string):string|null{
+ for(const c of considered){if(!c.excluded||!/^(takes about|needs a trip out|businesses are closed)/.test(c.excluded))continue;
+  const it=items.find(i=>i.taskId===c.taskId);const due=it?.plan.deadlines.outcome;if(!it||!due||it.plan.kind==='aspiration')continue;
+  const days=Math.round((Date.parse(due)-Date.parse(today))/86400000);if(days>1||days<0)continue;
+  const when=days===0?'today':'tomorrow';const t=it.title.charAt(0).toLowerCase()+it.title.slice(1);
+  const what=/^takes about/.test(c.excluded)?`needs ${c.excluded.replace(/^takes /,'')}. Worth setting time aside`:/^needs a trip/.test(c.excluded)?'needs a trip out. Worth fitting it in when you’re out':'needs a call once places open';
+  return `Heads up: “${t}” is due ${when} and ${what}.`;}
+ return null;
 }
