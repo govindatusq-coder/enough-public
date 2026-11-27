@@ -29,7 +29,6 @@ export default function BearBrain(){
   .catch(e=>{const x=e as {status?:number;message:string};if(x.status===401)router.replace('/bear/signin');else setErr(x.message);}),[router]);
  useEffect(()=>{load();},[load]);
  // My Wins: just the count, as a small link at the bottom.
- const [wins,setWins]=useState<number|null>(null);useEffect(()=>{apiGet<{total:number}>('/api/bear/wins/summary').then(w=>setWins(w.total)).catch(()=>{});},[]);
  const say:Say=useCallback((text,undo)=>{if(timer.current)clearTimeout(timer.current);setToast({text,undo,key:Date.now()});timer.current=setTimeout(()=>setToast(null),undo?6000:3500);},[]);
  const {actions,dragging}=useBoardActions(board,setBoard,load,say);
  const byId=useMemo(()=>{const m=new Map<string,BoardTask>();if(board){for(const t of board.inbox)m.set(t.id,t);for(const l of Object.values(board.byList))for(const t of l)m.set(t.id,t);}return m;},[board]);
@@ -75,7 +74,6 @@ export default function BearBrain(){
     {isOpen&&<ul className="b-list v2-cat-list">{items.length?items.map((i,ix)=><TaskRow key={i.id} task={{...byId.get(i.id)!,listId:c.id}} index={ix} count={items.length} lists={board.lists} actions={actions} dragging={dragging===i.id} detailHref={`/bear/brain/${i.id}`} meta={i.status==='completed'?null:i.statusLabel+(i.categoryBy==='bear'?' · filed by Bear':'')}/>):<li className="faint" style={{padding:'10px 4px'}}>Nothing here.</li>}</ul>}
    </section>;})}
   </>}
-  <p className="board-links small"><Link href="/bear/calendar?from=brain">Calendar</Link> · <Link href="/bear/shared?from=brain">Share Bear</Link> · <Link href="/bear/helps?from=brain">Bear Helps</Link> · <Link href="/bear/me/lists?from=brain">Edit categories</Link> · <Link href="/bear/wins" className="brain-wins">My Wins{wins?` (${wins})`:''}</Link></p>
   {toast&&<div key={toast.key} className="undo-toast glass-strong" role="status"><span>{toast.text}</span>{toast.undo&&<button type="button" onClick={()=>{toast.undo!();setToast(null);}}>Undo</button>}</div>}
  </main>;
 }

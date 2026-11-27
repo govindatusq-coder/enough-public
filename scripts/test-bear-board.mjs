@@ -172,26 +172,25 @@ try{
   await q.click('.sheet-backdrop',{position:{x:40,y:40}});await q.waitForSelector('.sb-sheet',{state:'detached'});
   await q.click('.gm-card button:has-text("Not now")');await q.waitForSelector('.gm-choices');await ctx3.close();
  });
- await step('Crossing off in Bear Brain (box fills, line through, then it goes, Undo still there); My Wins counts it, from a small link',async()=>{
+ await step('Crossing off in Bear Brain (box fills, line through, then it goes, Undo still there); My Wins counts it',async()=>{
   await api('/api/bear/board/dump',{text:'Water the pot plants',via:'text'});
   const before=(await api('/api/bear/wins/summary',null,'GET')).total;
   const brain=await api('/api/bear/rre/brain',null,'GET');const cat=brain.categories.find(c=>c.items.some(i=>/pot plants/i.test(i.title)));
   await p.goto(base+'/bear/brain');await p.waitForSelector(`.v2-cat-head:has-text("${cat.title}")`);
-  await p.waitForSelector(`.board-links a.brain-wins:has-text("My Wins (${before})")`);
+  assert.equal(await p.$('.board-links'),null,'no row of links under Bear Brain');
   await p.click(`.v2-cat-head:has-text("${cat.title}")`);const row=p.locator('.b-row:has-text("Water the pot plants")');await row.waitFor();
   await row.locator('.b-check').click();
   await p.waitForSelector('.b-row.crossing:has-text("Water the pot plants") .b-check.on');
   assert.equal(await p.$eval('.b-row.crossing .b-title-text',e=>getComputedStyle(e).backgroundImage.includes('gradient')),true,'a line draws through the title');
   await p.waitForSelector('.b-row:has-text("Water the pot plants")',{state:'detached'});await p.waitForSelector('.undo-toast:has-text("Done: Water the pot plants") button:has-text("Undo")');
-  await p.click('.board-links a.brain-wins');await p.waitForSelector('.mw-count');
+  await p.goto(base+'/bear/wins');await p.waitForSelector('.mw-count');
   assert.equal(Number(await p.textContent('.mw-count b')),before+1);assert.match(await p.textContent('.mw-count p'),/^This week \d+ · This month \d+$/);assert.match(await p.textContent('.mw-saved'),/time saved/);assert.match(await p.textContent('.mw-saved'),/money saved/);
   assert.match(await p.textContent('.mw-recent li:first-child .mw-done'),/Water the pot plants/);await shot('v08-my-wins');
   await p.click('.mw-more a');await p.waitForSelector('h1:has-text("What Bear has protected")');
  });
- await step('Bear Brain’s links (Calendar, Share Bear, Bear Helps, Edit categories) each have a way back to Bear Brain',async()=>{
-  for(const name of ['Calendar','Share Bear','Bear Helps','Edit categories']){
-   await p.goto(base+'/bear/brain');await p.click(`.board-links a:has-text("${name}")`);await p.waitForSelector('.topbar a.back:has-text("Bear Brain")');
-   await p.click('.topbar a.back:has-text("Bear Brain")');await p.waitForURL(/\/bear\/brain$/);}
+ await step('Calendar, Share Bear, Bear Helps, categories and My Wins are in Settings, each with a way back',async()=>{
+  for(const href of ['/bear/calendar','/bear/shared','/bear/helps','/bear/me/lists','/bear/wins']){
+   await p.goto(base+'/bear/me');await p.click(`a.row[href="${href}"]`);await p.waitForURL(new RegExp(href.replace(/\//g,'\\/')));await p.waitForSelector('.topbar a.back');}
  });
  await step('Share Bear by text: ask from the task, exact preview, test-mode send, Daniel answers without an account, she hears back, done',async()=>{
   await api('/api/bear/board/dump',{text:'Pick up Ella’s birthday cake on Friday before 3 pm',via:'text'});
