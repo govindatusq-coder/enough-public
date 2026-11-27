@@ -1276,5 +1276,6 @@
 .bear .ob-q{max-width:560px;width:100%;margin:0 auto;}
 .bear .ob-art{display:block;width:min(42vw,150px);height:auto;aspect-ratio:1/1;object-fit:contain;margin:0 auto 4px;mix-blend-mode:multiply;animation:tour-in .35s var(--spring,ease) both;}
 .bear .ob-q .ob-h{text-align:center;}.bear .ob-q .ob-p{text-align:center;}
-@media (max-height:700px){.bear .ob-art{width:96px;}}
+.bear .ob-art.ob-hero{width:min(52vw,190px);}
+@media (max-height:700px){.bear .ob-art{width:96px;}.bear .ob-art.ob-hero{width:120px;}}
 @media (prefers-reduced-motion:reduce){.bear .ob-art{animation:none;}}

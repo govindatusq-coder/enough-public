@@ -9,9 +9,9 @@ import {Button} from './ui';
 // Settings. Swipe, tap Next, or use the arrow keys; Escape skips.
 const base='/bear/art/';
 const SLIDES=[
- {art:'capture-bear',title:'Drop Bear: get it out of your head',body:'Type it, say it, or snap a photo of a list, a letter or a school note. Bear catches every part and works out what’s needed and by when.'},
- {art:'mama-bear',title:'Got a Moment?: help that fits',body:'Take a break, talk it out, or let Bear pick one thing that fits the time you have. Bear gets its part ready first, so there’s less for you to do.'},
- {art:'home-calm',title:'Bear Brain: everything Bear is holding',body:'All your tasks, sorted into lists, with what’s next and who’s doing it. Ask someone to help with anything. Bear never pays, sends or signs anything for you.'},
+ {art:'tour-drop-bear',title:'Drop Bear: get it out of your head',body:'Type it, say it, or snap a photo of a list, a letter or a school note. Bear catches every part and works out what’s needed and by when.'},
+ {art:'tour-got-a-moment',title:'Got a Moment?: help that fits',body:'Take a break, talk it out, or let Bear pick one thing that fits the time you have. Bear gets its part ready first, so there’s less for you to do.'},
+ {art:'tour-bear-brain',title:'Bear Brain: everything Bear is holding',body:'All your tasks, sorted into lists, with what’s next and who’s doing it. Ask someone to help with anything. Bear never pays, sends or signs anything for you.'},
 ];
 export function HowBearWorks({onDone,replay=false,onboarding=false}:{onDone:(next:'home'|'capture')=>void;replay?:boolean;onboarding?:boolean}){
  const [i,setI]=useState(0);const startX=useRef<number|null>(null);const first=useRef<HTMLButtonElement>(null);

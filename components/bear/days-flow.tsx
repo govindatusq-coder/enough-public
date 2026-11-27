@@ -5,20 +5,19 @@
 import {useEffect,useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {apiGet,apiSend} from '@/lib/bear/client';
-import {MamaBear} from './v2';
 import {Art} from './art';
 import {HowBearWorks} from './how-bear-works';
 
 type One={key:string;label:string};
 type Q={id:'control'|'howDone'|'barriers'|'assist'|'helpers'|'comms'|'country';q:string;sub?:string;multi?:boolean;options:One[];art:string};
 const QUESTIONS:Q[]=[
- {id:'control',art:'need-family-calendar',q:'How much control do you usually have over your day?',options:[{key:'plan_own',label:'I can usually plan my own time.'},{key:'fixed_routine',label:'My day follows a fairly fixed routine.'},{key:'flexible_changing',label:'I have flexibility, but things change constantly.'},{key:'depends_others',label:'My time mostly depends on other people.'},{key:'depends_day',label:'It really depends on the day.'}]},
- {id:'howDone',art:'ob-hand-timing',q:'When you get something done, how does it usually happen?',options:[{key:'in_advance',label:'I make time for it in advance.'},{key:'routine',label:'I fit it into my usual routine.'},{key:'grab_moment',label:'I grab a moment when I can.'},{key:'when_urgent',label:'Usually when it becomes urgent.'},{key:'someone_helps',label:'Someone else helps me get it done.'}]},
- {id:'barriers',art:'need-things-i-forget',q:'What tends to get in your way?',sub:'Pick as many as you like.',multi:true,options:[{key:'competing',label:'Too many things competing for my attention.'},{key:'not_enough_time',label:'Not enough time.'},{key:'interruptions',label:'Constant interruptions.'},{key:'exhausted',label:'Feeling mentally exhausted.'},{key:'depend_on_others',label:'Having to depend on other people.'},{key:'remembering',label:'Remembering everything that needs doing.'},{key:'getting_started',label:'Getting started.'},{key:'following_up',label:'Having to follow things up.'}]},
- {id:'assist',art:'ob-hand-preparing',q:'What would you most like Bear to help you with?',sub:'Pick as many as you like.',multi:true,options:[{key:'organise',label:'Organise everything on my mind.'},{key:'what_needs_attention',label:'Help me work out what needs attention.'},{key:'find_moments',label:'Find things I can do when I have a moment.'},{key:'prepare',label:'Prepare things so I can just finish them.'},{key:'share',label:'Help me share responsibilities with others.'},{key:'take_off_plate',label:'Take things off my plate.'}]},
- {id:'helpers',art:'strength-asking-for-help',q:'Can other people help with some of your responsibilities?',options:[{key:'regularly',label:'Yes, regularly.'},{key:'sometimes_if_organised',label:'Sometimes, if I organise it.'},{key:'rarely',label:'Rarely.'},{key:'independent',label:'I’d rather work independently.'},{key:'depends',label:'It depends on the responsibility.'}]},
- {id:'comms',art:'pref-nudge',q:'How would you like Bear to help you throughout the day?',sub:'You can change this any time. Notifications stay off until you turn them on.',options:[{key:'only_when_open',label:'Only when I open the app.'},{key:'daily_checkin',label:'A gentle daily check-in.'},{key:'important_only',label:'When something important needs attention.'},{key:'as_i_go',label:'Help me decide as I go.'}]},
- {id:'country',art:'ob-loc-au',q:'Where do you live?',sub:'For dates, money and holidays.',options:[{key:'AU',label:'Australia'},{key:'CA',label:'Canada'},{key:'US',label:'United States'},{key:'Other',label:'Somewhere else'}]},
+ {id:'control',art:'ob-q-control',q:'How much control do you usually have over your day?',options:[{key:'plan_own',label:'I can usually plan my own time.'},{key:'fixed_routine',label:'My day follows a fairly fixed routine.'},{key:'flexible_changing',label:'I have flexibility, but things change constantly.'},{key:'depends_others',label:'My time mostly depends on other people.'},{key:'depends_day',label:'It really depends on the day.'}]},
+ {id:'howDone',art:'ob-q-how-done',q:'When you get something done, how does it usually happen?',options:[{key:'in_advance',label:'I make time for it in advance.'},{key:'routine',label:'I fit it into my usual routine.'},{key:'grab_moment',label:'I grab a moment when I can.'},{key:'when_urgent',label:'Usually when it becomes urgent.'},{key:'someone_helps',label:'Someone else helps me get it done.'}]},
+ {id:'barriers',art:'ob-q-barriers',q:'What tends to get in your way?',sub:'Pick as many as you like.',multi:true,options:[{key:'competing',label:'Too many things competing for my attention.'},{key:'not_enough_time',label:'Not enough time.'},{key:'interruptions',label:'Constant interruptions.'},{key:'exhausted',label:'Feeling mentally exhausted.'},{key:'depend_on_others',label:'Having to depend on other people.'},{key:'remembering',label:'Remembering everything that needs doing.'},{key:'getting_started',label:'Getting started.'},{key:'following_up',label:'Having to follow things up.'}]},
+ {id:'assist',art:'ob-q-assist',q:'What would you most like Bear to help you with?',sub:'Pick as many as you like.',multi:true,options:[{key:'organise',label:'Organise everything on my mind.'},{key:'what_needs_attention',label:'Help me work out what needs attention.'},{key:'find_moments',label:'Find things I can do when I have a moment.'},{key:'prepare',label:'Prepare things so I can just finish them.'},{key:'share',label:'Help me share responsibilities with others.'},{key:'take_off_plate',label:'Take things off my plate.'}]},
+ {id:'helpers',art:'ob-q-helpers',q:'Can other people help with some of your responsibilities?',options:[{key:'regularly',label:'Yes, regularly.'},{key:'sometimes_if_organised',label:'Sometimes, if I organise it.'},{key:'rarely',label:'Rarely.'},{key:'independent',label:'I’d rather work independently.'},{key:'depends',label:'It depends on the responsibility.'}]},
+ {id:'comms',art:'ob-q-comms',q:'How would you like Bear to help you throughout the day?',sub:'You can change this any time. Notifications stay off until you turn them on.',options:[{key:'only_when_open',label:'Only when I open the app.'},{key:'daily_checkin',label:'A gentle daily check-in.'},{key:'important_only',label:'When something important needs attention.'},{key:'as_i_go',label:'Help me decide as I go.'}]},
+ {id:'country',art:'ob-q-country',q:'Where do you live?',sub:'For dates, money and holidays.',options:[{key:'AU',label:'Australia'},{key:'CA',label:'Canada'},{key:'US',label:'United States'},{key:'Other',label:'Somewhere else'}]},
 ];
 type Answers=Partial<Record<Q['id'],string|string[]|null>>;
 type View={temporal:unknown;explanation:string|null;recommended:string;style:string|null;country:string|null;lists:{id:string;title:string;icon:string}[];
@@ -58,7 +57,7 @@ export function DaysFlow({mode}:{mode:'onboarding'|'settings'}){
    <button type="button" className="ob-skip" disabled={busy} onClick={next}>Skip</button>
   </div>}
   {step===-1&&<section className="ob-intro">
-   <MamaBear className="v2-bear ob-bear"/>
+   <Art file="ob-welcome" className="ob-art ob-hero"/>
    <h1 className="ob-h">Your life doesn’t always go to plan. That’s okay.</h1>
    <p className="ob-p">Tell Bear a little about how your days work, so she can help in a way that works for you.</p>
    {/* Her name comes from signing up; only asked here if Bear doesn't have it. */}
@@ -77,7 +76,7 @@ export function DaysFlow({mode}:{mode:'onboarding'|'settings'}){
    {err&&<p className="note coral" role="alert">{err}</p>}
   </section>}
   {step===total&&view&&<section className="ob-done" aria-live="polite">
-   <MamaBear className="v2-bear ob-bear"/>
+   <Art file="ob-done" className="ob-art ob-hero"/>
    <h1 className="ob-h">{name.trim()?`Thanks, ${name.trim()}.`:'Thanks.'}</h1>
    {view.explanation&&<p className="ob-explain">{view.explanation}</p>}
    {!choosing&&set&&<>
