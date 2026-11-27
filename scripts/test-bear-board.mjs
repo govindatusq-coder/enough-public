@@ -69,15 +69,16 @@ try{
   await p.click('button:has-text("I’ve ordered it")');await p.waitForSelector('.v2-status:has-text("Waiting for delivery")');assert.match(await p.textContent('main'),/Bear will check back then/);
   await p.click('button:has-text("It’s arrived")');await p.waitForSelector('text=Done.');assert.equal((await p.textContent('.v2-status')).trim(),'Completed');
  });
- await step('Got a Moment?: exactly three choices; Need a Break (time, one idea, a different one, Sounds good); Talk It Out opens the chat with no time question; Finish or share a task (real task, Ask someone or Let’s do it, Bear prepares, Mark as done)',async()=>{
+ await step('Got a Moment?: exactly three choices; Take a break or celebrate your wins (time, one idea, a different one, Sounds good); Talk It Out opens the chat with no time question; Finish or share a task (real task, Ask someone or Let’s do it, Bear prepares, Mark as done)',async()=>{
   await p.click('.bear-nav a[href="/bear/moment"]');await p.waitForSelector('.gm-choices');
   assert.equal((await p.textContent('.gm-title')).trim(),'Got a Moment?');assert.equal((await p.textContent('.gm-headline')).trim(),'What do you need right now?');
-  assert.deepEqual(await p.$$eval('.gm-choice strong',e=>e.map(x=>x.textContent)),['Need a Break','Talk It Out','Finish or share a task']);
-  assert.deepEqual(await p.$$eval('.gm-choice-text span',e=>e.map(x=>x.textContent)),['A little time just for you','Get something off your chest','Get something off your list']);
+  assert.deepEqual(await p.$$eval('.gm-choice strong',e=>e.map(x=>x.textContent)),['Take a break or celebrate your wins','Talk It Out','Finish or share a task']);
+  assert.deepEqual(await p.$$eval('.gm-choice-text span',e=>e.map(x=>x.textContent)),['A little time for you, or see what you’ve done','Get something off your chest','Get something off your list']);
   for(const none of ['.v2-pill','.chip','textarea','.v2-reco'])assert.equal(await p.$$eval(none,e=>e.length),0,`no ${none} on the opening screen`);
   assert.equal(await p.getAttribute('.bear-nav a[href="/bear/moment"]','aria-current'),'page');await shot('v04-moment');
-  // Need a Break
-  await p.click('.gm-choice:has-text("Need a Break")');await p.waitForSelector('.gm-h:has-text("Let’s find you a little breathing room.")');
+  // Take a break or celebrate your wins
+  await p.click('.gm-choice:has-text("Take a break")');await p.waitForSelector('.gm-h:has-text("Let’s find you a little breathing room.")');
+  assert.equal(await p.getAttribute('.gm-chips a:has-text("Celebrate your wins")','href'),'/bear/wins?from=moment','Celebrate your wins opens My Wins');
   assert.deepEqual(await p.$$eval('.gm-time',e=>e.map(x=>x.textContent)),['2 min','5 min','10 min','20 min']);
   await p.click('.gm-time:has-text("5 min")');await p.waitForSelector('.gm-card-title');const first=(await p.textContent('.gm-card-title')).trim();
   await p.click('button:has-text("Another idea")');await p.waitForFunction(t=>document.querySelector('.gm-card-title')?.textContent.trim()!==t,first);
@@ -91,7 +92,7 @@ try{
   await p.click('.mc-top button[aria-label="Back"]');await p.waitForSelector('.gm-choices');
   // Finish or share a task: a real task from Bear Brain, one at a time; handing off is offered without an extra question
   await p.click('.gm-choice:has-text("Finish or share a task")');await p.waitForSelector('.gm-h:has-text("Let’s get something off your list.")');
-  assert.ok(await p.isVisible('button.gm-handoff:has-text("No time? Hand something off")'));await shot('v04b2-task-time');
+  assert.ok(await p.isVisible('.gm-chips button.chip:has-text("Share a task")'));assert.equal(await p.getAttribute('.gm-chips a:has-text("See what’s coming up")','href'),'/bear/calendar?from=moment');await shot('v04b2-task-time');
   await p.click('.gm-time:has-text("10 min")');await p.waitForSelector('.gm-card-title');
   assert.equal((await p.textContent('.gm-card .v2-label')).trim(),'Worth doing now');assert.equal((await p.textContent('.gm-card-title')).trim(),'Review Christmas gift shortlist');
   assert.match(await p.textContent('.gm-card'),/Choosing a few now could avoid last-minute shopping/);await shot('v04c-task');
@@ -158,7 +159,7 @@ try{
   const ctx3=await browser.newContext({viewport:{width:390,height:844}});const q=await ctx3.newPage();
   await q.goto(base+'/bear/moment');await q.waitForSelector('.gm-choices,.gm-h,.gm-card');
   while(await q.$('.gm-back')){await q.click('.gm-back');await q.waitForTimeout(150);}await q.waitForSelector('.gm-choices');
-  await q.click('.gm-choice:has-text("Finish or share a task")');await q.click('button.gm-handoff');await q.waitForSelector('.gm-card');
+  await q.click('.gm-choice:has-text("Finish or share a task")');await q.click('.gm-chips button:has-text("Share a task")');await q.waitForSelector('.gm-card');
   assert.equal(await q.$$eval('.gm-time',e=>e.length),0,'no time question');
   const seen=[];
   for(let k=0;k<10;k++){const txt=await q.textContent('.gm-card');if(/Nothing on your list looks easy/.test(txt))break;
@@ -183,7 +184,7 @@ try{
   assert.equal(await p.$eval('.b-row.crossing .b-title-text',e=>getComputedStyle(e).backgroundImage.includes('gradient')),true,'a line draws through the title');
   await p.waitForSelector('.b-row:has-text("Water the pot plants")',{state:'detached'});await p.waitForSelector('.undo-toast:has-text("Done: Water the pot plants") button:has-text("Undo")');
   await p.click('.board-links a.brain-wins');await p.waitForSelector('.mw-count');
-  assert.equal(Number(await p.textContent('.mw-count b')),before+1);assert.match(await p.textContent('.mw-count p'),/^This week \d+ · This month \d+$/);
+  assert.equal(Number(await p.textContent('.mw-count b')),before+1);assert.match(await p.textContent('.mw-count p'),/^This week \d+ · This month \d+$/);assert.match(await p.textContent('.mw-saved'),/time saved/);assert.match(await p.textContent('.mw-saved'),/money saved/);
   assert.match(await p.textContent('.mw-recent li:first-child .mw-done'),/Water the pot plants/);await shot('v08-my-wins');
   await p.click('.mw-more a');await p.waitForSelector('h1:has-text("What Bear has protected")');
  });

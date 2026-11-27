@@ -1,5 +1,5 @@
 'use client';
-// Got a Moment?: three choices, nothing else. Need a Break (an idea just for her), Talk It Out (Bear listens), Finish or share
+// Got a Moment?: three choices, nothing else. Take a break or celebrate your wins (an idea just for her, or My Wins), Talk It Out (Bear listens), Finish or share
 // a task (one realistic thing from Bear Brain: do it with Bear's help, or ask someone). She chooses; Bear doesn't guess what
 // she needs. Sharing adds no extra question: the task card offers both, and "No time? Hand something off" skips the time.
 import {useCallback,useEffect,useRef,useState} from 'react';
@@ -119,12 +119,13 @@ export function MomentFlow(){
    <MamaBear className="v2-bear gm-bear"/>
    <p className="gm-headline">What do you need right now?</p>
    <ul className="gm-choices">
-    {([['break_time',Ico.cup,'Need a Break','A little time just for you'],['talk',Ico.talk,'Talk It Out','Get something off your chest'],['task_time',Ico.check,'Finish or share a task','Get something off your list']] as const).map(([to,icon,t,sub])=>
+    {([['break_time',Ico.cup,'Take a break or celebrate your wins','A little time for you, or see what you’ve done'],['talk',Ico.talk,'Talk It Out','Get something off your chest'],['task_time',Ico.check,'Finish or share a task','Get something off your list']] as const).map(([to,icon,t,sub])=>
      <li key={to}><button type="button" className="gm-choice" onClick={()=>go(to)}><span className="gm-choice-icon">{icon}</span><span className="gm-choice-text"><strong>{t}</strong><span>{sub}</span></span><span className="gm-chev" aria-hidden="true">{Ico.chevron}</span></button></li>)}
    </ul>
   </>}
 
-  {cur==='break_time'&&<>{backBtn}<h1 className="gm-h">Let’s find you a little breathing room.</h1><p className="gm-q">How much time have you got?</p>{times('break')}{note}</>}
+  {cur==='break_time'&&<>{backBtn}<h1 className="gm-h">Let’s find you a little breathing room.</h1><p className="gm-q">How much time have you got?</p>{times('break')}
+   <div className="chips gm-chips" role="group" aria-label="Or"><Link href="/bear/wins?from=moment" className="chip">🎉 Celebrate your wins</Link></div>{note}</>}
   {cur==='break_suggestion'&&s.idea&&<>{backBtn}
    <section className="gm-card" aria-live="polite">
     <span className="gm-card-icon">{breakIcon[s.idea.icon]||Ico.cup}</span>
@@ -136,7 +137,11 @@ export function MomentFlow(){
 
   {cur==='task_time'&&<>{backBtn}<h1 className="gm-h">Let’s get something off your list.</h1><p className="gm-q">How much time have you got?</p>{times('task')}
    <button type="button" className="gm-more" disabled={busy} onClick={()=>task(10,s.done,true)}>Not sure</button>
-   <button type="button" className="gm-handoff" disabled={busy} onClick={()=>shareIdea([])}>No time? Hand something off</button>{note}</>}
+   {/* Other ways in, as chips: what's coming up, or hand something to someone. */}
+   <div className="chips gm-chips" role="group" aria-label="Or">
+    <Link href="/bear/calendar?from=moment" className="chip">📅 See what’s coming up</Link>
+    <button type="button" className="chip" disabled={busy} onClick={()=>shareIdea([])}>🤝 Share a task</button>
+   </div>{note}</>}
   {cur==='task_suggestion'&&<>{backBtn}
    {none||!s.rec?<section className="gm-card" aria-live="polite"><h1 className="gm-card-title">{s.alt?s.alt.text:'Nothing on your list looks like a good fit for the time you’ve got.'}</h1>
      {s.alt?.title&&<p className="gm-card-line"><strong>{s.alt.title}</strong></p>}
