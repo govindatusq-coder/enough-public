@@ -12,10 +12,11 @@ const SLIDES=[
  {art:'ob-q-assist',title:'Bear does the thinking.',body:'Bear sorts, plans and helps get things ready.'},
  {art:'ob-done',title:'Less on your mind. More of your life.',body:'Get things done, share the load or take a break.'},
 ];
-export function HowBearWorks({onDone,replay=false,onboarding=false}:{onDone:(next:'home'|'capture')=>void;replay?:boolean;onboarding?:boolean}){
+// preview: before signing up (nothing to save yet; the next screen is creating her account).
+export function HowBearWorks({onDone,replay=false,onboarding=false,preview=false}:{onDone:(next:'home'|'capture')=>void;replay?:boolean;onboarding?:boolean;preview?:boolean}){
  const [i,setI]=useState(0);const startX=useRef<number|null>(null);const first=useRef<HTMLButtonElement>(null);
  const last=i===SLIDES.length-1;const s=SLIDES[i];
- async function finish(next:'home'|'capture'){if(!replay){try{await apiSend('/api/bear/profile',{tourSeenAt:new Date().toISOString()},'PUT');}catch{/* shows again next time; harmless */}}onDone(next);}
+ async function finish(next:'home'|'capture'){if(preview){try{localStorage.setItem('bear-intro-seen','1');}catch{/* the intro shows again after sign-up; harmless */}onDone(next);return;}if(!replay){try{await apiSend('/api/bear/profile',{tourSeenAt:new Date().toISOString()},'PUT');}catch{/* shows again next time; harmless */}}onDone(next);}
  useEffect(()=>{first.current?.focus();},[i]);
  // The tour has the whole screen: the navigation bar steps aside while it's open.
  useEffect(()=>{document.documentElement.classList.add('tour-open');return()=>document.documentElement.classList.remove('tour-open');},[]);
@@ -31,7 +32,7 @@ export function HowBearWorks({onDone,replay=false,onboarding=false}:{onDone:(nex
   </div>
   <div className="tour-dots" aria-hidden="true">{SLIDES.map((_,k)=><span key={k} className={k===i?'on':''}/>)}</div>
   <div className="tour-actions">
-   {last&&onboarding?<Button variant="coral" className="wide" onClick={()=>finish('home')}>Let’s get started</Button>:last?<>
+   {last&&(onboarding||preview)?<Button variant="coral" className="wide" onClick={()=>finish('home')}>Let’s get started</Button>:last?<>
     {!replay&&<Button variant="coral" className="wide" onClick={()=>finish('capture')}>Give it to Bear</Button>}
     <Button variant={replay?'coral':'quiet'} className="wide" onClick={()=>finish('home')}>{replay?'Done':'Go to My Bear'}</Button>
    </>:<>

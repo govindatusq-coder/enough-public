@@ -31,7 +31,9 @@ export function DaysFlow({mode}:{mode:'onboarding'|'settings'}){
  const [view,setView]=useState<View|null>(null);const [pick,setPick]=useState<string|null>(null);const [choosing,setChoosing]=useState(false);
  const [busy,setBusy]=useState(false);const [err,setErr]=useState<string|null>(null);
  useEffect(()=>{apiGet<{profile:{name:string;tourSeenAt?:string|null;temporal?:{answers:Answers}|null;country?:string|null};user?:{name?:string|null}}>('/api/bear/profile').then(({profile,user})=>{const n=profile.name?.trim()||user?.name?.trim()||'';setName(n);setHadName(!!n);
-  if(mode==='onboarding'&&!profile.tourSeenAt)setStep(-2);
+  // The three screens on what Bear does come before signing up; only someone who hasn't seen them gets them here.
+  if(mode==='onboarding'&&!profile.tourSeenAt){let seen=false;try{seen=localStorage.getItem('bear-intro-seen')==='1';}catch{/* not available */}
+   if(seen)void apiSend('/api/bear/profile',{tourSeenAt:new Date().toISOString()},'PUT').catch(()=>null);else setStep(-2);}
   setA({...(profile.temporal?.answers||{}),country:profile.temporal?.answers?.country??profile.country??guessCountry()});}).catch(e=>{if((e as {status?:number}).status===401)router.replace('/bear/signin');});},[router,mode]);
  const q=step>=0&&step<QUESTIONS.length?QUESTIONS[step]:null;
  async function submit(){setBusy(true);setErr(null);
@@ -44,7 +46,7 @@ export function DaysFlow({mode}:{mode:'onboarding'|'settings'}){
  async function finish(style:string|null,then:'start'|'edit'){setBusy(true);setErr(null);
   try{if(style&&!(style==='classic'&&!view?.style))await apiSend('/api/bear/adaptive/lists',{style});
    if(mode==='onboarding')await apiSend('/api/bear/profile',{onboardingComplete:true},'PUT');
-   router.replace(then==='edit'?'/bear/me/lists':mode==='onboarding'?'/bear/capture?first=1':'/bear/brain');}
+   router.replace(then==='edit'?'/bear/me/lists':mode==='onboarding'?'/bear/home?tour=1':'/bear/brain');}
   catch(e){setErr((e as Error).message||'That didn’t save. Try again.');setBusy(false);}}
  const total=QUESTIONS.length;
  const set=view?.sets.find(s=>s.style===pick)||null;

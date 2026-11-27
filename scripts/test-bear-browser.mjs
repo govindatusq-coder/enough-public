@@ -34,11 +34,13 @@ try{
  const step=async(name,fn)=>{try{await fn();console.log('ok -',name);}catch(e){failures.push(name+': '+e.message);console.log('FAIL -',name,e.message);await shot('fail-'+name.replace(/\W+/g,'-'));}};
 
  await step('welcome renders the brand and the promise',async()=>{await page.goto(base+'/bear/welcome');await page.waitForSelector('text=Let’s begin');const body=await page.textContent('body');assert.ok(!body.includes('Less on your mind. More in your day.'),'tagline removed');assert.ok(body.includes('thinking, planning and follow-up'));await shot('01-welcome');});
- await step('root routes a new user to onboarding: three screens on how Bear works first, then how her days work',async()=>{await page.goto(base+'/bear');await page.waitForURL(/\/bear\/onboarding/);
+ await step('before signing up: Let’s begin shows the three screens on what Bear does, then creating an account',async()=>{await page.goto(base+'/bear/welcome');await page.click('a:has-text("Let’s begin")');await page.waitForURL(/\/bear\/intro/);
   await page.waitForSelector('.tour >> text=1 of 3');assert.match(await page.textContent('.tour-title'),/Too much on your mind\?/);await shot('01-tour-1');
   await page.click('.tour button:has-text("Next")');await page.waitForSelector('.tour >> text=2 of 3');assert.match(await page.textContent('.tour-title'),/Bear does the thinking/);
   await page.click('.tour button:has-text("Next")');await page.waitForSelector('.tour >> text=3 of 3');assert.match(await page.textContent('.tour-title'),/More of your life/);await shot('01-tour-3');
-  await page.click('.tour button:has-text("Let’s get started")');await page.waitForSelector('text=Your life doesn’t always go to plan. That’s okay.');await shot('02-days-intro');});
+  await page.click('.tour button:has-text("Let’s get started")');await page.waitForURL(/\/bear\/signin\?mode=create/);await page.waitForSelector('text=Get yourself a Bear.');});
+ await step('after signing up, onboarding goes straight to how her days work (the three screens aren’t shown twice)',async()=>{await page.goto(base+'/bear');await page.waitForURL(/\/bear\/onboarding/);
+  await page.waitForSelector('text=Your life doesn’t always go to plan. That’s okay.');assert.equal(await page.$('.tour'),null,'no second tour');await shot('02-days-intro');});
  await step('how your days work: one question per screen, every one skippable, no demographic questions',async()=>{
   // Her name is only asked here if signing up didn't give it.
   if(await page.$('.ob-name input'))await page.fill('.ob-name input','Sarah');await page.click('button:has-text("Let’s start")');
@@ -60,7 +62,13 @@ try{
  await step('choose a different style: five to pick from; keeping Bear’s originals works too',async()=>{
   await page.click('button:has-text("Choose a different style")');assert.equal(await page.$$eval('.ob-style',e=>e.length),5);await shot('06-days-styles');
   await page.click('.ob-style:has-text("Bear’s originals")');await page.click('button:has-text("Use these lists")');assert.match(await page.textContent('.ob-lists'),/Night Time/);
-  await page.click('button:has-text("Keep these lists")');await page.waitForURL(/\/bear\/capture\?first=1/);await page.waitForSelector('h1:has-text("What’s on your mind?")');await page.goto(base+'/bear/overview');
+  await page.click('button:has-text("Keep these lists")');await page.waitForURL(/\/bear\/home\?tour=1/);
+  // A spotlight on each of the three places in the navigation bar, not the chat.
+  await page.waitForSelector('.coach-spot');assert.match(await page.textContent('.coach-title'),/Drop Bear/);await page.waitForTimeout(450);await shot('07-coach-1');
+  const onTab=await page.evaluate(()=>{const s=document.querySelector('.coach-spot').getBoundingClientRect(),t=document.querySelector('.bear-nav a[href="/bear/home"]:not(.nav-brand)').getBoundingClientRect();const cx=s.left+s.width/2,cy=s.top+s.height/2;return cx>t.left&&cx<t.right&&cy>t.top&&cy<t.bottom;});assert.ok(onTab,'the spotlight is on the Drop Bear tab');
+  await page.click('.coach button:has-text("Next")');assert.match(await page.textContent('.coach-title'),/Got a Moment/);await page.waitForTimeout(450);await shot('07-coach-2');
+  await page.click('.coach button:has-text("Next")');assert.match(await page.textContent('.coach-title'),/Bear Brain/);await page.waitForTimeout(450);await shot('07-coach-3');
+  await page.click('.coach button:has-text("Got it")');await page.waitForFunction(()=>!document.querySelector('.coach')&&!location.search.includes('tour'));await page.goto(base+'/bear/overview');
  });
  await step('the tour isn’t shown again on its own, and can be replayed from Settings',async()=>{
   await page.waitForSelector('.hero-banner');await page.waitForTimeout(800);assert.equal(await page.$$eval('.tour',e=>e.length),0,'seen in onboarding, so not again');

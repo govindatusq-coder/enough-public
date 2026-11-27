@@ -1283,3 +1283,13 @@
 .bear .ob{padding-top:max(12px,env(safe-area-inset-top));}
 .bear .ob-icon{width:28px;flex:none;text-align:center;font-size:20px;}
 .bear .ob-opt-icon{font-weight:600;}
+/* After onboarding: the spotlight tour of the three main places. */
+.bear .coach{position:fixed;inset:0;z-index:90;}
+.bear .coach-spot{position:fixed;border-radius:18px;box-shadow:0 0 0 9999px rgba(16,42,67,.62);transition:all .3s var(--spring,ease);pointer-events:none;outline:2px solid #fff;}
+.bear .coach-dim{position:fixed;inset:0;background:rgba(16,42,67,.62);}
+.bear .coach-note{position:fixed;left:16px;right:16px;max-width:420px;margin:0 auto;background:#fff;border-radius:20px;padding:16px 18px;box-shadow:0 12px 32px rgba(16,42,67,.25);}
+.bear .coach-count{margin:0;}
+.bear .coach-title{margin:2px 0 4px;font-size:20px;color:var(--navy);}
+.bear .coach-text{margin:0;font-size:16px;line-height:1.4;color:var(--ink-2,#334);}
+.bear .coach-actions{display:flex;justify-content:flex-end;align-items:center;gap:14px;margin-top:12px;}
+@media (prefers-reduced-motion:reduce){.bear .coach-spot{transition:none;}}
