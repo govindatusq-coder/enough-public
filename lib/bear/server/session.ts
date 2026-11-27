@@ -14,7 +14,7 @@ export function devStore():{store:BearStore;user:{id:string;email:string|null;na
  if(process.env.BEAR_DEV_STORE!=='memory'||process.env.NEXT_PUBLIC_SUPABASE_URL||process.env.VERCEL)return null;
  g.__bearDevBackend??=new MemoryBackend();
  const id=process.env.BEAR_DEV_USER_ID||'00000000-0000-4000-8000-000000000001';
- return {store:g.__bearDevBackend.for(id),user:{id,email:'dev@loadbear.local',name:''}};
+ return {store:g.__bearDevBackend.for(id),user:{id,email:'dev@loadbear.local',name:process.env.BEAR_DEV_NAME||''}};
 }
 export async function bearSession(req?:Request):Promise<{store:BearStore;user:{id:string;email:string|null;name:string;emailConfirmed?:boolean};loadProfile:()=>ReturnType<typeof loadProfile>}|null>{
  const dev=devStore();if(dev)return {...dev,loadProfile:()=>loadProfile(dev.store)};

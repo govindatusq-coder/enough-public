@@ -30,7 +30,7 @@ export function DaysFlow({mode}:{mode:'onboarding'|'settings'}){
  const [step,setStep]=useState(mode==='onboarding'?-1:0);const [a,setA]=useState<Answers>({});const [name,setName]=useState('');const [hadName,setHadName]=useState(false);
  const [view,setView]=useState<View|null>(null);const [pick,setPick]=useState<string|null>(null);const [choosing,setChoosing]=useState(false);
  const [busy,setBusy]=useState(false);const [err,setErr]=useState<string|null>(null);
- useEffect(()=>{apiGet<{profile:{name:string;tourSeenAt?:string|null;temporal?:{answers:Answers}|null;country?:string|null}}>('/api/bear/profile').then(({profile})=>{setName(profile.name||'');setHadName(!!profile.name?.trim());
+ useEffect(()=>{apiGet<{profile:{name:string;tourSeenAt?:string|null;temporal?:{answers:Answers}|null;country?:string|null};user?:{name?:string|null}}>('/api/bear/profile').then(({profile,user})=>{const n=profile.name?.trim()||user?.name?.trim()||'';setName(n);setHadName(!!n);
   if(mode==='onboarding'&&!profile.tourSeenAt)setStep(-2);
   setA({...(profile.temporal?.answers||{}),country:profile.temporal?.answers?.country??profile.country??guessCountry()});}).catch(e=>{if((e as {status?:number}).status===401)router.replace('/bear/signin');});},[router,mode]);
  const q=step>=0&&step<QUESTIONS.length?QUESTIONS[step]:null;
