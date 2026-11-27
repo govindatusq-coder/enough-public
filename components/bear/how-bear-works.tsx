@@ -31,7 +31,7 @@ export function HowBearWorks({onDone,replay=false,onboarding=false}:{onDone:(nex
   </div>
   <div className="tour-dots" aria-hidden="true">{SLIDES.map((_,k)=><span key={k} className={k===i?'on':''}/>)}</div>
   <div className="tour-actions">
-   {last&&onboarding?<Button variant="coral" className="wide" onClick={()=>finish('capture')}>Give it to Bear</Button>:last?<>
+   {last&&onboarding?<Button variant="coral" className="wide" onClick={()=>finish('home')}>Let’s get started</Button>:last?<>
     {!replay&&<Button variant="coral" className="wide" onClick={()=>finish('capture')}>Give it to Bear</Button>}
     <Button variant={replay?'coral':'quiet'} className="wide" onClick={()=>finish('home')}>{replay?'Done':'Go to My Bear'}</Button>
    </>:<>

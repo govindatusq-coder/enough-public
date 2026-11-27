@@ -44,7 +44,7 @@ export function DaysFlow({mode}:{mode:'onboarding'|'settings'}){
  async function finish(style:string|null,then:'start'|'edit'){setBusy(true);setErr(null);
   try{if(style&&!(style==='classic'&&!view?.style))await apiSend('/api/bear/adaptive/lists',{style});
    if(mode==='onboarding')await apiSend('/api/bear/profile',{onboardingComplete:true},'PUT');
-   router.replace(then==='edit'?'/bear/me/lists':mode==='onboarding'?'/bear/home':'/bear/brain');}
+   router.replace(then==='edit'?'/bear/me/lists':mode==='onboarding'?'/bear/capture?first=1':'/bear/brain');}
   catch(e){setErr((e as Error).message||'That didn’t save. Try again.');setBusy(false);}}
  const total=QUESTIONS.length;
  const set=view?.sets.find(s=>s.style===pick)||null;

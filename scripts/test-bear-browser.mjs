@@ -34,21 +34,33 @@ try{
  const step=async(name,fn)=>{try{await fn();console.log('ok -',name);}catch(e){failures.push(name+': '+e.message);console.log('FAIL -',name,e.message);await shot('fail-'+name.replace(/\W+/g,'-'));}};
 
  await step('welcome renders the brand and the promise',async()=>{await page.goto(base+'/bear/welcome');await page.waitForSelector('text=Let’s begin');const body=await page.textContent('body');assert.ok(!body.includes('Less on your mind. More in your day.'),'tagline removed');assert.ok(body.includes('thinking, planning and follow-up'));await shot('01-welcome');});
- await step('a new user sees three short screens on what Bear does, about 30 words in all',async()=>{await page.goto(base+'/bear');await page.waitForURL(/\/bear\/onboarding/);
-  const words=[];
-  await page.waitForSelector('.tour >> text=1 of 3');assert.match(await page.textContent('.tour-title'),/Too much on your mind\?/);words.push(await page.textContent('.tour-body'));await shot('01-tour-1');
-  await page.click('.tour button:has-text("Next")');await page.waitForSelector('.tour >> text=2 of 3');assert.match(await page.textContent('.tour-title'),/Bear does the thinking/);words.push(await page.textContent('.tour-body'));
-  await page.click('.tour button:has-text("Next")');await page.waitForSelector('.tour >> text=3 of 3');assert.match(await page.textContent('.tour-title'),/More of your life/);words.push(await page.textContent('.tour-body'));await shot('01-tour-3');
-  const n=words.join(' ').split(/\s+/).filter(Boolean).length;assert.ok(n<=50,`the three screens say it in ${n} words`);
-  assert.equal(await page.$$eval('.tour-actions .btn',e=>e.length),1,'one button on the last screen');
-  await page.click('.tour button:has-text("Give it to Bear")');});
- await step('then one optional question, and no questionnaire, no name asked again, no lists to set up',async()=>{
-  await page.waitForSelector('h1:has-text("What would help most right now?")');assert.equal(await page.$$eval('.ob-opt',e=>e.length),3);assert.ok(await page.isVisible('.ob-skip'),'it can be skipped');
-  const body=await page.textContent('body');assert.ok(!/What should Bear call you|How much control|What tends to get in your way|Where do you live|Keep these lists/i.test(body),'nothing else is asked');
-  const top=await page.$eval('.ob-skip',e=>e.getBoundingClientRect().top);assert.ok(top>=12,'Skip sits below the status bar');await shot('02-focus');
-  await page.click('.ob-opt:has-text("Clear my head")');await page.waitForURL(/\/bear\/capture\?first=1/);
-  await page.waitForSelector('h1:has-text("What’s on your mind?")');assert.match(await page.textContent('body'),/Anything at all\. Bear will help sort it out\./);await shot('03-first-capture');
-  await page.goto(base+'/bear/overview');
+ await step('root routes a new user to onboarding: three screens on how Bear works first, then how her days work',async()=>{await page.goto(base+'/bear');await page.waitForURL(/\/bear\/onboarding/);
+  await page.waitForSelector('.tour >> text=1 of 3');assert.match(await page.textContent('.tour-title'),/Too much on your mind\?/);await shot('01-tour-1');
+  await page.click('.tour button:has-text("Next")');await page.waitForSelector('.tour >> text=2 of 3');assert.match(await page.textContent('.tour-title'),/Bear does the thinking/);
+  await page.click('.tour button:has-text("Next")');await page.waitForSelector('.tour >> text=3 of 3');assert.match(await page.textContent('.tour-title'),/More of your life/);await shot('01-tour-3');
+  await page.click('.tour button:has-text("Let’s get started")');await page.waitForSelector('text=Your life doesn’t always go to plan. That’s okay.');await shot('02-days-intro');});
+ await step('how your days work: one question per screen, every one skippable, no demographic questions',async()=>{
+  // Her name is only asked here if signing up didn't give it.
+  if(await page.$('.ob-name input'))await page.fill('.ob-name input','Sarah');await page.click('button:has-text("Let’s start")');
+  assert.ok(await page.isVisible('.ob-q .ob-art'),'a Load Bear picture with each question');
+  const box=await page.$eval('.ob-q h1',e=>{const r=e.getBoundingClientRect();return {top:r.top,h:window.innerHeight};});assert.ok(box.top>box.h*0.2,'the question sits in the middle, not at the top');
+  await page.waitForSelector('h1:has-text("How much control do you usually have over your day?")');assert.equal(await page.$$eval('.ob-opt',e=>e.length),5);await shot('03-days-control');
+  await page.click('.ob-opt:has-text("My day follows a fairly fixed routine.")');await page.waitForSelector('h1:has-text("When you get something done")');
+  await page.click('.ob-opt:has-text("I grab a moment when I can.")');await page.waitForSelector('h1:has-text("What tends to get in your way?")');
+  await page.click('.ob-opt:has-text("Constant interruptions.")');await page.click('.ob-opt:has-text("Having to follow things up.")');assert.equal(await page.$$eval('.ob-opt[aria-checked="true"]',e=>e.length),2);await shot('04-days-barriers');
+  await page.click('.ob-q button:has-text("Next")');await page.waitForSelector('h1:has-text("What would you most like Bear to help you with?")');
+  await page.click('.ob-skip');await page.waitForSelector('h1:has-text("Can other people help")');
+  await page.click('.ob-opt:has-text("Sometimes, if I organise it.")');await page.waitForSelector('h1:has-text("How would you like Bear to help you throughout the day?")');
+  assert.match(await page.textContent('.ob-q'),/Notifications stay off until you turn them on/);
+  await page.click('.ob-opt:has-text("Only when I open the app.")');await page.waitForSelector('h1:has-text("Where do you live?")');
+  await page.click('.ob-opt:has-text("Australia")');await page.waitForSelector('.ob-done');
+  const body=await page.textContent('body');assert.ok(!/gender|date of birth|your age|planner|juggler|improviser|on-call|autonomy/i.test(body),'no demographics, no labels');
+  assert.ok((await page.textContent('.ob-explain')).length>20,'a personal explanation');assert.equal(await page.$$eval('.ob-lists li',e=>e.length),6);await shot('05-days-done');
+ });
+ await step('choose a different style: five to pick from; keeping Bear’s originals works too',async()=>{
+  await page.click('button:has-text("Choose a different style")');assert.equal(await page.$$eval('.ob-style',e=>e.length),5);await shot('06-days-styles');
+  await page.click('.ob-style:has-text("Bear’s originals")');await page.click('button:has-text("Use these lists")');assert.match(await page.textContent('.ob-lists'),/Night Time/);
+  await page.click('button:has-text("Keep these lists")');await page.waitForURL(/\/bear\/capture\?first=1/);await page.waitForSelector('h1:has-text("What’s on your mind?")');await page.goto(base+'/bear/overview');
  });
  await step('the tour isn’t shown again on its own, and can be replayed from Settings',async()=>{
   await page.waitForSelector('.hero-banner');await page.waitForTimeout(800);assert.equal(await page.$$eval('.tour',e=>e.length),0,'seen in onboarding, so not again');
