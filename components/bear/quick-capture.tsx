@@ -37,7 +37,7 @@ const openPicker=()=>{(document.getElementById('qc-file') as HTMLInputElement|nu
 const places=[{href:'/bear/home',label:'Home'},{href:'/bear/shared',label:'Shared'},{href:'/bear/helps',label:'Bear Helps'},{href:'/bear/me',label:'Settings'}];
 const MicIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>;
 
-type Turn={id:number;said:string;busy:boolean;batch?:string|null;reply?:string;done?:boolean;triage?:TriageView|null;triaging?:boolean;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null};
+type Turn={id:number;said:string;busy:boolean;batch?:string|null;reply?:string;done?:boolean;triage?:TriageView|null;triaging?:boolean;file?:boolean;page?:{events:number;undated:number}|null;items:Item[];found:Found[];other:Other|null;confirmed:boolean;note:string|null;ready?:string[]|null};
 let turnSeq=0;
 const blank=(said:string):Turn=>({id:++turnSeq,said,busy:true,items:[],found:[],other:null,confirmed:false,note:null});
 
@@ -73,6 +73,11 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
  const [aiChat,setAiChat]=useState<boolean|null>(null);const aiTrouble=useRef<string|null>(null);
  const pendingAsk=()=>{const last=turns[turns.length-1];const o=last?.other;return o?.kind==='ask'&&!o.answered?{turnId:last.id,captureId:o.captureId,guess:o.guess}:null;};
  const patch=(id:number,fn:(t:Turn)=>Turn)=>setTurns(list=>list.map(t=>t.id===id?fn(t):t));
+ // Several new things: ask which of them Bear can get ready itself, so the reply can say so (once per turn).
+ const askedReady=useRef(new Set<number>());
+ useEffect(()=>{for(const t of turns){if(t.busy||askedReady.current.has(t.id))continue;const ids=t.items.filter(i=>i.taskId&&!i.already&&!i.removed).map(i=>i.taskId!);
+  if(ids.length<2)continue;askedReady.current.add(t.id);
+  apiSend<{ready:string[]}>('/api/bear/rre/ready',{taskIds:ids}).then(r=>setTurns(l=>l.map(x=>x.id===t.id?{...x,ready:r.ready}:x))).catch(()=>{/* the line is optional */});}},[turns]);
  const idsOf=(t:Turn)=>t.items.map(i=>i.taskId).filter((x):x is string=>!!x);
  const swap=(id:number,next:Item)=>patch(id,t=>({...t,items:t.items.map(x=>x.taskId===next.taskId?{...next,already:x.already}:x)}));
  async function send(){
@@ -220,7 +225,8 @@ export function QuickCapture({onChanged,hero,links,initial}:{onChanged:()=>void;
       {f.remindedAs&&<p className="qc-note" role="status">Saved. {f.remindedAs.taskId?<Link href={`/bear/tasks/${f.remindedAs.taskId}`} style={{textDecoration:'underline'}}>{f.remindedAs.title}</Link>:f.remindedAs.title} · {f.remindedAs.when}. I’ll remind you as it gets close.</p>}
      </div>)}
      {turn.items.length>0&&<div className="qc-reply qc-sorted">
-      {!turn.reply&&<p className="qc-head">{turn.page?`I found ${turn.page.events} things on that page.`:turn.items.length===1?'I’ve sorted this for you.':'I’ve sorted these for you.'}</p>}
+      {!turn.reply&&<p className="qc-head">{turn.page?`I found ${turn.page.events} things on that page.`:turn.items.length===1?'I’ve sorted this for you.':`Got it. I’ve found ${turn.items.length} things to take care of.`}</p>}
+      {!!turn.ready?.length&&<p className="qc-next qc-ready">I can help get {turn.ready.length===1?'one of these':`${turn.ready.length} of these`} ready. <Link href={turn.ready.length===1?`/bear/tasks/${turn.ready[0]}`:'/bear/brain'} className="qc-link">Show me</Link></p>}
       {turn.page&&turn.page.events>turn.items.length&&<p className="qc-next">{turn.page.events-turn.items.length} already past, so I left {turn.page.events-turn.items.length===1?'it':'them'} out.</p>}
       {turn.page&&turn.page.undated>0&&<p className="qc-next">{turn.page.undated===1?'One has':`${turn.page.undated} have`} no date on the page, so I haven’t guessed one.</p>}
       {groups.map(g=>{const list=turn.items.filter(i=>i.light===g.light);if(!list.length)return null;

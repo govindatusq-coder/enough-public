@@ -101,10 +101,15 @@ Navigation has three tabs. Settings is the gear in each screen's header.
 - **The older link-based share** (in a task's ⋯ menu, for people who use Load Bear) still works.
 
 ## Other parts of the app
-- **Onboarding: How your days work.** Seven one-tap questions (control over her day, how things get done, what gets in the
-  way, what she'd like help with, whether others can help, how Bear should help through the day, where she lives), all
-  skippable. Bear explains how it will help and suggests Bear Brain lists that suit her; she can keep, change or skip them.
-  The older questions (what she carries, household) are in Settings › My Load Map.
+- **First run.** Three short screens on what Bear does (about 30 words in all), one optional question ("What would help
+  most right now?": clear my head, get things done, or find a moment for myself), then straight to Drop Bear ("What's on
+  your mind?"). Her name comes from sign-up and her country from her phone's settings. Nothing else is asked and no lists are
+  set up: Bear's usual lists are used and things are filed into them as she adds them. After a brain dump with several
+  things, Bear says how many it found and how many it can get ready ("Show me").
+- **How your days work** (Settings). The seven one-tap questions (control over her day, how things get done, what gets in
+  the way, what she'd like help with, whether others can help, how Bear should help through the day, where she lives), all
+  skippable, with list styles to choose from. No longer part of the first run. The older questions (what she carries,
+  household) are in Settings › My Load Map.
 - **Settings.**
   - Her household and contacts, categories, and quiet hours.
   - Notifications, and connecting Outlook calendar.

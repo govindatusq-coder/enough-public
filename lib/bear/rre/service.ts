@@ -247,3 +247,12 @@ export async function afterDrop(store:BearStore,ids:string[],now=new Date()){
    tip={taskId:t.id,text:o.id==='order-online'?`One thing worth knowing: ordering ${what} today could save you a shopping trip.`:`One thing worth knowing: ${o.description.charAt(0).toLowerCase()}${o.description.slice(1)}`};}}
  return tip;
 }
+// After a brain dump: which of the new things Bear can get ready itself (its own step comes first on the plan). Only a count
+// and the ids; nothing is prepared or sent here.
+export const readySchema=z.object({taskIds:z.array(z.string().uuid()).max(40)}).strict();
+export async function readyAmong(store:BearStore,input:z.infer<typeof readySchema>,now=new Date()){
+ const ctx=await ctxOf(store,now);const ready:string[]=[];
+ for(const id of input.taskIds){const t=await store.get('tasks',id);if(!t||t.status!=='open')continue;
+  const plan=await ensurePlan(store,t,ctx,now);if(nextForHer(plan)?.needsBear)ready.push(id);}
+ return {ready};
+}

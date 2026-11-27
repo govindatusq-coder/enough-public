@@ -24,3 +24,8 @@ test('background sentences are context, not tasks',()=>{
  assert.equal(withoutContext('I am out of milk.'),'I am out of milk.','a single sentence is left as it is');
  assert.equal(withoutContext('I am out of milk. Call Mum.'),'I am out of milk. Call Mum.','“I am out of milk” is a task, not background');
 });
+
+test('a day that is the subject stays in the title; a day that is the deadline comes out',()=>{
+ assert.equal(sortOne('Email Sarah about Friday','2026-11-27').title,'Email Sarah about Friday');
+ assert.equal(sortOne('Pay rent by Friday','2026-11-27').title,'Pay rent');
+});

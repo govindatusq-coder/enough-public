@@ -4,14 +4,13 @@ import {useRouter} from 'next/navigation';
 import {apiSend} from '@/lib/bear/client';
 import {Button} from './ui';
 
-// "How Bear works": three screens, one for each part of Load Bear, in Bear's own artwork and voice. Shown before the
-// "How your days work" questions (and on My Bear for anyone who hasn't seen it), skippable at any point, and replayable from
-// Settings. Swipe, tap Next, or use the arrow keys; Escape skips.
+// "How Bear works": three short screens (the problem, what Bear does, the payoff), about 30 words in all. Shown first to a new
+// user (and on My Bear for anyone who hasn't seen it), skippable at any point, and replayable from Settings. Swipe, tap Next, or use the arrow keys; Escape skips.
 const base='/bear/art/';
 const SLIDES=[
- {art:'tour-drop-bear',title:'Drop Bear: get it out of your head',body:'Type it, say it, or snap a photo of a list, a letter or a school note. Bear catches every part and works out what’s needed and by when.'},
- {art:'tour-got-a-moment',title:'Got a Moment?: help that fits',body:'Take a break, talk it out, or let Bear pick one thing that fits the time you have. Bear gets its part ready first, so there’s less for you to do.'},
- {art:'tour-bear-brain',title:'Bear Brain: everything Bear is holding',body:'All your tasks, sorted into lists, with what’s next and who’s doing it. Ask someone to help with anything. Bear never pays, sends or signs anything for you.'},
+ {art:'tour-drop-bear',title:'Too much on your mind?',body:'Tell Bear what’s on your mind. No organising needed.'},
+ {art:'ob-q-assist',title:'Bear does the thinking.',body:'Bear sorts, plans and helps get things ready.'},
+ {art:'ob-done',title:'Less on your mind. More of your life.',body:'Get things done, share the load or take a break.'},
 ];
 export function HowBearWorks({onDone,replay=false,onboarding=false}:{onDone:(next:'home'|'capture')=>void;replay?:boolean;onboarding?:boolean}){
  const [i,setI]=useState(0);const startX=useRef<number|null>(null);const first=useRef<HTMLButtonElement>(null);
@@ -32,8 +31,8 @@ export function HowBearWorks({onDone,replay=false,onboarding=false}:{onDone:(nex
   </div>
   <div className="tour-dots" aria-hidden="true">{SLIDES.map((_,k)=><span key={k} className={k===i?'on':''}/>)}</div>
   <div className="tour-actions">
-   {last&&onboarding?<Button variant="coral" className="wide" onClick={()=>finish('home')}>Let’s get started</Button>:last?<>
-    {!replay&&<Button variant="coral" className="wide" onClick={()=>finish('capture')}>Give Bear something</Button>}
+   {last&&onboarding?<Button variant="coral" className="wide" onClick={()=>finish('capture')}>Give it to Bear</Button>:last?<>
+    {!replay&&<Button variant="coral" className="wide" onClick={()=>finish('capture')}>Give it to Bear</Button>}
     <Button variant={replay?'coral':'quiet'} className="wide" onClick={()=>finish('home')}>{replay?'Done':'Go to My Bear'}</Button>
    </>:<>
     <button ref={first} type="button" className="btn coral wide" onClick={()=>setI(i+1)}>Next</button>

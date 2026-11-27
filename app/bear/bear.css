@@ -1279,3 +1279,7 @@
 .bear .ob-art.ob-hero{width:min(52vw,190px);}
 @media (max-height:700px){.bear .ob-art{width:96px;}.bear .ob-art.ob-hero{width:120px;}}
 @media (prefers-reduced-motion:reduce){.bear .ob-art{animation:none;}}
+/* First run: room for the status bar on a phone, and the one optional question with an icon on each answer. */
+.bear .ob{padding-top:max(12px,env(safe-area-inset-top));}
+.bear .ob-icon{width:28px;flex:none;text-align:center;font-size:20px;}
+.bear .ob-opt-icon{font-weight:600;}
