@@ -119,7 +119,7 @@ export function MomentFlow(){
    <MamaBear className="v2-bear gm-bear"/>
    <p className="gm-headline">What do you need right now?</p>
    <ul className="gm-choices">
-    {([['break_time',Ico.cup,'Recharge','Take a break or celebrate your wins'],['talk',Ico.talk,'Talk it out','Get something off your chest'],['task_time',Ico.check,'Lighten the load','Finish or share a task']] as const).map(([to,icon,t,sub])=>
+    {([['break_time',Ico.cup,'Recharge','Take a break or celebrate your wins'],['talk',Ico.talk,'Talk it out','Get something off your chest'],['task_time',Ico.check,'Get it Done','Finish or share a task']] as const).map(([to,icon,t,sub])=>
      <li key={to}><button type="button" className="gm-choice" onClick={()=>go(to)}><span className="gm-choice-icon">{icon}</span><span className="gm-choice-text"><strong>{t}</strong><span>{sub}</span></span><span className="gm-chev" aria-hidden="true">{Ico.chevron}</span></button></li>)}
    </ul>
   </>}
