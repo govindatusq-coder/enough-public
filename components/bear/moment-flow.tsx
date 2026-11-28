@@ -115,11 +115,11 @@ export function MomentFlow(){
  return <main id="main" className="bear-screen v2-screen gm" data-state={cur}>
   {cur==='home'&&<>
    <AppHeader/>
-   <h1 className="gm-title">Got a Moment?</h1>
+   <h1 className="gm-title">Bear Boost</h1>
    <MamaBear className="v2-bear gm-bear"/>
    <p className="gm-headline">What do you need right now?</p>
    <ul className="gm-choices">
-    {([['break_time',Ico.cup,'Take a break or celebrate your wins','A little time for you, or see what you’ve done'],['talk',Ico.talk,'Talk It Out','Get something off your chest'],['task_time',Ico.check,'Finish or share a task','Get something off your list']] as const).map(([to,icon,t,sub])=>
+    {([['break_time',Ico.cup,'Recharge','Take a break or celebrate your wins'],['talk',Ico.talk,'Talk it out','Get something off your chest'],['task_time',Ico.check,'Lighten the load','Finish or share a task']] as const).map(([to,icon,t,sub])=>
      <li key={to}><button type="button" className="gm-choice" onClick={()=>go(to)}><span className="gm-choice-icon">{icon}</span><span className="gm-choice-text"><strong>{t}</strong><span>{sub}</span></span><span className="gm-chev" aria-hidden="true">{Ico.chevron}</span></button></li>)}
    </ul>
   </>}
