@@ -1,5 +1,5 @@
 'use client';
-// Bear Boost: a conversation with Bear. It opens on one invitation and one box (no menus, moods, timers or chips); the
+// Lighten Load: a conversation with Bear. It opens on one invitation and one box (no menus, moods, timers or chips); the
 // first message turns the same screen into a chat. Talk or type; Bear's replies can be read aloud on request.
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import Link from 'next/link';
@@ -30,7 +30,7 @@ const I={
  x:svg(<path d="M6 6l12 12M18 6 6 18"/>,18),
 };
 
-// Talk It Out: the conversation with Bear, opened from Bear Boost's three choices. No time question first.
+// Talk It Out: the conversation with Bear, opened from Lighten Load's three choices. No time question first.
 export const OPENER='I’m listening. What’s on your mind?';
 export function MomentChat({onBack}:{onBack:()=>void}){
  const router=useRouter();

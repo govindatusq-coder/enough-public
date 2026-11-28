@@ -66,7 +66,7 @@ try{
   // A spotlight on each of the three places in the navigation bar, not the chat.
   await page.waitForSelector('.coach-spot');assert.match(await page.textContent('.coach-title'),/Drop Bear/);await page.waitForTimeout(450);await shot('07-coach-1');
   const onTab=await page.evaluate(()=>{const s=document.querySelector('.coach-spot').getBoundingClientRect(),t=document.querySelector('.bear-nav a[href="/bear/home"]:not(.nav-brand)').getBoundingClientRect();const cx=s.left+s.width/2,cy=s.top+s.height/2;return cx>t.left&&cx<t.right&&cy>t.top&&cy<t.bottom;});assert.ok(onTab,'the spotlight is on the Drop Bear tab');
-  await page.click('.coach button:has-text("Next")');assert.match(await page.textContent('.coach-title'),/Bear Boost/);await page.waitForTimeout(450);await shot('07-coach-2');
+  await page.click('.coach button:has-text("Next")');assert.match(await page.textContent('.coach-title'),/Lighten Load/);await page.waitForTimeout(450);await shot('07-coach-2');
   await page.click('.coach button:has-text("Next")');assert.match(await page.textContent('.coach-title'),/Bear Brain/);await page.waitForTimeout(450);await shot('07-coach-3');
   await page.click('.coach button:has-text("Got it")');await page.waitForFunction(()=>!document.querySelector('.coach')&&!location.search.includes('tour'));await page.goto(base+'/bear/overview');
  });
@@ -131,8 +131,8 @@ try{
   await page.goto(base+'/bear/me');await page.waitForSelector('text=Nothing to answer right now');await page.click('button:has-text("Leave the study")');await page.click('[role="dialog"] button:has-text("Leave and delete my answers")');
   await page.waitForSelector('button:has-text("Join the study")');
  });
- await step('navigation is Drop Bear, Bear Boost, Bear Brain; Bear Ideas is still reachable from Settings',async()=>{
-  await page.goto(base+'/bear/overview');await page.waitForSelector('.bear-nav');assert.deepEqual(await page.$$eval('.bear-nav a:not(.nav-brand) span',e=>e.map(x=>x.textContent)),['Drop Bear','Bear Boost','Bear Brain']);
+ await step('navigation is Drop Bear, Lighten Load, Bear Brain; Bear Ideas is still reachable from Settings',async()=>{
+  await page.goto(base+'/bear/overview');await page.waitForSelector('.bear-nav');assert.deepEqual(await page.$$eval('.bear-nav a:not(.nav-brand) span',e=>e.map(x=>x.textContent)),['Drop Bear','Lighten Load','Bear Brain']);
   await page.goto(base+'/bear/me');await page.click('a:has-text("Bear Ideas")');await page.waitForURL(/\/bear\/ideas/);
  });
  await step('Settings has What matters to you, with goals Bear can use',async()=>{await page.goto(base+'/bear/me');await page.waitForSelector('#matters');await page.click('[aria-label="Values"] button.chip:has-text("Parenting")');await page.waitForSelector('[aria-label="Values"] button.chip[aria-pressed="true"]:has-text("Parenting")');await page.fill('#goal-text','Maintain my professional registration');await page.click('#matters + .card button.chip:has-text("Must not slip")');await page.click('#matters + .card button:has-text("Add")');await page.waitForSelector('text=Maintain my professional registration');await page.locator('#matters').scrollIntoViewIfNeeded();await shot('53-matters');});

@@ -5,7 +5,7 @@ import {useCallback,useEffect,useLayoutEffect,useState} from 'react';
 // Shown once, straight after onboarding (?tour=1); skippable at any point.
 const STEPS=[
  {href:'/bear/home',title:'Drop Bear',text:'Tell Bear anything on your mind. Type it, say it or snap a photo.'},
- {href:'/bear/moment',title:'Bear Boost',text:'Got a few minutes? Bear finds one thing that fits, or helps you share the load or take a break.'},
+ {href:'/bear/moment',title:'Lighten Load',text:'Got a few minutes? Bear finds one thing that fits, or helps you share the load or take a break.'},
  {href:'/bear/brain',title:'Bear Brain',text:'Everything Bear is holding, sorted, with what’s next and who’s doing it.'},
 ];
 type Box={top:number;left:number;width:number;height:number};

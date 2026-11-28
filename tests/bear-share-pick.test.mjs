@@ -1,4 +1,4 @@
-// Bear Boost, "No time? Hand something off": which task Bear offers to share, what it never offers, the honest "nothing",
+// Lighten Load, "No time? Hand something off": which task Bear offers to share, what it never offers, the honest "nothing",
 // and the choice she makes being kept (without her words).
 import test from 'node:test';
 import assert from 'node:assert/strict';

@@ -35,7 +35,7 @@ function riskOf(p:Plan,today:string):Factors['risk']{
 function hash(s:string){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 
 export interface PoolItem{c:Candidate;f:Factors;step:Step;needsBear:boolean;title:string}
-// The hard feasibility checks, shared by Bear Boost's own choice and the adaptive engine: what she could actually do now.
+// The hard feasibility checks, shared by Lighten Load's own choice and the adaptive engine: what she could actually do now.
 export function candidatesFor(items:Candidate[],ctx:MomentContext){
  const {minutes,today,now}=ctx;const open=businessOpen(now,ctx.timeZone);const hour=Number(new Intl.DateTimeFormat('en-AU',{timeZone:ctx.timeZone,hour:'numeric',hourCycle:'h23'}).format(now));
  const evening=hour>=19||hour<6;const considered:TraceItem[]=[];const pool:PoolItem[]=[];

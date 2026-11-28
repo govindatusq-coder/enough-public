@@ -1,5 +1,5 @@
 // Eval200 runner: puts one benchmark scenario through Load Bear's real pipeline, in a sealed simulation.
-//   Drop Bear's unload → the Responsibility Resolution Engine's plan → Bear Boost's pick → Give it to Bear (prepare)
+//   Drop Bear's unload → the Responsibility Resolution Engine's plan → Lighten Load's pick → Give it to Bear (prepare)
 // Sealed means: a fresh in-memory account for a synthetic parent (no database), no AI provider (so no keys are read and the
 // rule-based path is what's measured), outbound network blocked and recorded, and only mock services for anything outside.
 // Load Bear has no step that sends, buys, books or pays on its own, so under the benchmark's simulate_only policy nothing
@@ -71,7 +71,7 @@ async function runOne(c:Scenario,opts:RunOptions):Promise<ScenarioRun>{
     approval:{required:CONSEQUENTIAL.has(d.kind)&&s.kind==='act',status:CONSEQUENTIAL.has(d.kind)&&s.kind==='act'?'not_requested':'not_needed'}});
   }
 
-  // 3. Bear Boost: what Bear would pick if she had ten minutes.
+  // 3. Lighten Load: what Bear would pick if she had ten minutes.
   clock=new Date(clock.getTime()+60*60000);
   const pick=await recommend(store,{minutes:10,exclude:[]},clock).catch(()=>null);
   const rec=(pick as {recommendation?:{taskId?:string;label?:string}|null}|null)?.recommendation||null;

@@ -1,4 +1,4 @@
-// Browser walkthrough of Load Bear v2: Drop Bear, Bear Boost, Bear Brain, the responsibility page, and the features
+// Browser walkthrough of Load Bear v2: Drop Bear, Lighten Load, Bear Brain, the responsibility page, and the features
 // that carried over (sharing, categories, what Bear has learned), at phone and desktop width. In-memory store, no AI key.
 // Screenshots land in BEAR_TEST_RESULTS (default .bear-board-results).
 import {spawn} from 'node:child_process';
@@ -33,7 +33,7 @@ try{
   assert.equal(await p.getAttribute('#dump-text','placeholder'),'Drop it here. I’ll sort it, plan it and get it moving.');
   assert.ok(await p.$('button[aria-label="Add a photo or PDF"]'));assert.ok(await p.$('.drop-card .dump-go'));
   assert.ok(await p.$('.drop-card .dump-mic:not(.drop-attach)'),'the microphone is always there');
-  assert.deepEqual(await p.$$eval('.bear-nav a:not(.nav-brand) span',e=>e.map(x=>x.textContent)),['Drop Bear','Bear Boost','Bear Brain']);
+  assert.deepEqual(await p.$$eval('.bear-nav a:not(.nav-brand) span',e=>e.map(x=>x.textContent)),['Drop Bear','Lighten Load','Bear Brain']);
   assert.equal(await p.getAttribute('.bear-nav a:not(.nav-brand)[href="/bear/home"]','aria-current'),'page');
   assert.equal(await p.$('.list-block, .dump-card, .sort-btn'),null,'no task-management controls on Drop Bear');
   await shot('v01-drop-bear');
@@ -69,9 +69,9 @@ try{
   await p.click('button:has-text("I’ve ordered it")');await p.waitForSelector('.v2-status:has-text("Waiting for delivery")');assert.match(await p.textContent('main'),/Bear will check back then/);
   await p.click('button:has-text("It’s arrived")');await p.waitForSelector('text=Done.');assert.equal((await p.textContent('.v2-status')).trim(),'Completed');
  });
- await step('Bear Boost: exactly three choices; Take a break or celebrate your wins (time, one idea, a different one, Sounds good); Talk It Out opens the chat with no time question; Finish or share a task (real task, Ask someone or Let’s do it, Bear prepares, Mark as done)',async()=>{
+ await step('Lighten Load: exactly three choices; Take a break or celebrate your wins (time, one idea, a different one, Sounds good); Talk It Out opens the chat with no time question; Finish or share a task (real task, Ask someone or Let’s do it, Bear prepares, Mark as done)',async()=>{
   await p.click('.bear-nav a[href="/bear/moment"]');await p.waitForSelector('.gm-choices');
-  assert.equal((await p.textContent('.gm-title')).trim(),'Bear Boost');assert.equal((await p.textContent('.gm-headline')).trim(),'What do you need right now?');
+  assert.equal((await p.textContent('.gm-title')).trim(),'Lighten Load');assert.equal((await p.textContent('.gm-headline')).trim(),'What do you need right now?');
   assert.deepEqual(await p.$$eval('.gm-choice strong',e=>e.map(x=>x.textContent)),['Recharge','Talk it out','Lighten the load']);
   assert.deepEqual(await p.$$eval('.gm-choice-text span',e=>e.map(x=>x.textContent)),['Take a break or celebrate your wins','Get something off your chest','Finish or share a task']);
   for(const none of ['.v2-pill','.chip','textarea','.v2-reco'])assert.equal(await p.$$eval(none,e=>e.length),0,`no ${none} on the opening screen`);
@@ -83,7 +83,7 @@ try{
   await p.click('.gm-time:has-text("5 min")');await p.waitForSelector('.gm-card-title');const first=(await p.textContent('.gm-card-title')).trim();
   await p.click('button:has-text("Another idea")');await p.waitForFunction(t=>document.querySelector('.gm-card-title')?.textContent.trim()!==t,first);
   await shot('v04b-break');await p.click('button:has-text("Sounds good")');await p.waitForSelector('.gm-enjoy');
-  await p.click('button:has-text("Back to Bear Boost")');await p.waitForSelector('.gm-choices');
+  await p.click('button:has-text("Back to Lighten Load")');await p.waitForSelector('.gm-choices');
   // Talk It Out: straight into the conversation
   await p.click('.gm-choice:has-text("Talk it out")');await p.waitForSelector('.mc-chat');
   // Bear's opening line shows once the kept conversation has loaded (a fresh sitting), so wait for it rather than racing it.
@@ -113,7 +113,7 @@ try{
   await p.click('.gm-pair .btn.coral');await p.waitForSelector('.gm-do');await p.click('button:has-text("Mark as done")');
   await p.waitForSelector('.gm-done:has-text("One less thing on your mind.")');assert.match(await p.textContent('.gm-crossed .crossed-off'),/library/i,'the task, crossed off');await shot('v04d-done');
   const bd=(await api('/api/bear/board',null,'GET')).board;assert.ok(![...bd.inbox,...Object.values(bd.byList).flat()].some(t=>/library/i.test(t.title)),'done in Bear Brain straight away');
-  await p.click('button:has-text("Back to Bear Boost")');await p.waitForSelector('.gm-choices');
+  await p.click('button:has-text("Back to Lighten Load")');await p.waitForSelector('.gm-choices');
  });
  await step('Bear Brain: title, All Tasks count, Priority Actions, the six categories in order with counts',async()=>{
   await p.click('.bear-nav a[href="/bear/brain"]');await p.waitForSelector('.v2-brain-head');
@@ -146,7 +146,7 @@ try{
   await p.goto(base+'/bear/me/lists');await p.waitForSelector('input[aria-label="List name"]');assert.equal(await p.inputValue('input[aria-label="List name"] >> nth=0'),'Night Time');
   await p.goto(base+'/bear/me/learned');await p.click('button:has-text("I like to buy in person")');await p.waitForSelector('text=Prefers buying things in person');await p.click('button:has-text("Forget")');await p.waitForSelector('text=Nothing yet.');
  });
- await step('Bear Boost Finish or share a task with very little time: one real task or an honest "nothing fits", never an invented one',async()=>{
+ await step('Lighten Load Finish or share a task with very little time: one real task or an honest "nothing fits", never an invented one',async()=>{
   const ctx2=await browser.newContext({viewport:{width:390,height:844}});const q=await ctx2.newPage();
   await q.goto(base+'/bear/moment');await q.waitForSelector('.gm-choices,.gm-h,.gm-card');
   if(await q.$('.gm-back'))await q.click('.gm-back');await q.waitForSelector('.gm-choices');
@@ -154,7 +154,7 @@ try{
   const txt=await q.textContent('.gm-card');assert.ok(/Nothing on your list looks like a good fit for the time you’ve got\./.test(txt)||/You could get this sorted\./.test(txt),txt);
   if(/Nothing on your list/.test(txt))assert.ok(await q.isVisible('a:has-text("See my tasks")'));await ctx2.close();
  });
- await step('Bear Boost No time? Hand something off: no time question, one task someone else could do, Ask someone opens Share Bear, never a present or her own appointment',async()=>{
+ await step('Lighten Load No time? Hand something off: no time question, one task someone else could do, Ask someone opens Share Bear, never a present or her own appointment',async()=>{
   await api('/api/bear/board/dump',{text:'Pick up the dry cleaning on Thursday\nBook my dentist appointment',via:'text'});
   const ctx3=await browser.newContext({viewport:{width:390,height:844}});const q=await ctx3.newPage();
   await q.goto(base+'/bear/moment');await q.waitForSelector('.gm-choices,.gm-h,.gm-card');

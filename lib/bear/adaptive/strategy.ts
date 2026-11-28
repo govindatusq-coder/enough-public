@@ -2,8 +2,8 @@
 // Order of thinking: understand the responsibility; check deadlines, risks and dependencies; see what Bear can prepare or do;
 // see whether someone else could take it; check her time, place and readiness; pick a strategy; offer the smallest
 // meaningful next step. Hard feasibility checks (business hours, waiting, information, trips, too long) come first and are
-// shared with Bear Boost's own choice. Then an explainable score, with weights that are versioned and depend on how her
-// days work. With no profile, this returns exactly what Bear Boost has always chosen.
+// shared with Lighten Load's own choice. Then an explainable score, with weights that are versioned and depend on how her
+// days work. With no profile, this returns exactly what Lighten Load has always chosen.
 import type {Task} from '../domain/types.ts';
 import {candidatesFor,chooseMoment,explain,momentKey,tieHash,type Candidate,type MomentContext,type MomentResult,type PoolItem,type Recommendation} from '../rre/decide.ts';
 import type {Attributes} from './attributes.ts';
@@ -107,7 +107,7 @@ export function adaptiveMoment(items:Candidate[],ctx:AdaptiveContext):AdaptiveRe
  if(ctx.policy==='relief')return reliefMoment(items,ctx);
  const cond=ctx.condition||'E';const profile=cond==='D'||cond==='E'?ctx.profile:null;
  const weights=weightsFor(profile);
- // No profile (or a condition without adaptive strategy): exactly Bear Boost's own choice, labelled with its strategy.
+ // No profile (or a condition without adaptive strategy): exactly Lighten Load's own choice, labelled with its strategy.
  if(!profile){
   const base=chooseMoment(items,{...ctx,minutes:ctx.unsure?5:ctx.minutes});
   const r=base.recommendation;let rec:AdaptiveRecommendation|null=null;
@@ -164,7 +164,7 @@ export function reliefMoment(items:Candidate[],ctx:AdaptiveContext):AdaptiveResu
  const pool=all.filter(x=>{const a=ctx.attrs.get(x.c.taskId);return !(a&&isSuppressed(ctx.learning,a)&&x.f.risk!=='high');});
  const pctx:PolicyContext={window,profile,learning:ctx.learning,delegationAccess:profile?.dims.delegationAccess??0,openBusiness:open,capacity,canPrepare:x=>ctx.canPrepare?ctx.canPrepare(x.c.taskId):x.c.plan.kind!=='gifts',
   declinedBefore:id=>ctx.tasks.get(id)?.delegation?.status==='DECLINED'};
- // Nothing feasible at all: say what would fit, exactly as Bear Boost always has (e.g. "the next thing takes about 10 minutes").
+ // Nothing feasible at all: say what would fit, exactly as Lighten Load always has (e.g. "the next thing takes about 10 minutes").
  // If something bigger could still come off her plate (Bear gets it ready, or someone else takes it), offer that instead.
  if(!pool.length){const b=chooseMoment(items,{...ctx,minutes:window});
   const bigger=items.map(c=>({c,a:ctx.attrs.get(c.taskId)})).filter(({c,a})=>c.status==='open'&&a&&a.readiness!=='waiting'&&a.readiness!=='completed'&&!considered.find(k=>k.taskId===c.taskId&&k.excluded&&/waiting|marked|handed|skipped|asked for something else|nothing for you/.test(k.excluded))&&!(isSuppressed(ctx.learning,a)));

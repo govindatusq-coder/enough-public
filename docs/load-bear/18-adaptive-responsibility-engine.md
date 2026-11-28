@@ -2,7 +2,7 @@
 
 Load Bear keeps its three screens:
 - **Drop Bear**, where she unloads what's on her mind
-- **Bear Boost**, for help that suits her right now
+- **Lighten Load**, for help that suits her right now
 - **Bear Brain**, which organises everything Bear is holding
 
 Underneath them sits one shared layer, in `lib/bear/adaptive/`. It changes what Bear does, not only how things look.
@@ -84,7 +84,7 @@ When something isn't filed by her, Bear places it in this order:
 
 Bear's own guesses never teach it, and a change in what it has learned never moves something she has already filed.
 
-## Choosing what to offer (Bear Boost)
+## Choosing what to offer (Lighten Load)
 
 For each request, Bear works through these steps:
 1. **Hard feasibility checks.** These are shared with the original picker: waiting on someone, missing information, a trip out, longer than the window, businesses closed, a way that can't work in time, skipped recently.
@@ -120,7 +120,7 @@ When nothing fits, Bear offers one of these instead:
 - setting time aside (for planning-style days)
 - a break
 
-**With no profile, the choice is exactly what Bear Boost always made.** Experimental conditions are read from `BEAR_ENGINE_CONDITION` only outside production.
+**With no profile, the choice is exactly what Lighten Load always made.** Experimental conditions are read from `BEAR_ENGINE_CONDITION` only outside production.
 
 ## Reinforcement (relief, not gamification)
 

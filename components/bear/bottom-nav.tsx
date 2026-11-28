@@ -1,11 +1,11 @@
 'use client';
-// Three places only: Drop Bear, Bear Boost, Bear Brain. Settings is in each screen's header.
+// Three places only: Drop Bear, Lighten Load, Bear Brain. Settings is in each screen's header.
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import {Icon} from '@/components/bear/v2';
 const tabs=[
  {href:'/bear/home',label:'Drop Bear',icon:Icon.dropBear(26),match:/^\/bear\/home/},
- {href:'/bear/moment',label:'Bear Boost',icon:Icon.zap(26),match:/^\/bear\/moment/},
+ {href:'/bear/moment',label:'Lighten Load',icon:Icon.zap(26),match:/^\/bear\/moment/},
  {href:'/bear/brain',label:'Bear Brain',icon:Icon.brain(26),match:/^\/bear\/(brain|tasks|help|helps|shared|calendar|overview|areas|ideas|wins|bills|wishlist)/},
 ];
 export function BottomNav(){
