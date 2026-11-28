@@ -1,4 +1,4 @@
-// Bear's shared behavioural instruction, added to the prompts where Bear talks or decides with a model (the Got a Moment?
+// Bear's shared behavioural instruction, added to the prompts where Bear talks or decides with a model (the Bear Boost
 // conversation). Deterministic checks (permissions, approvals, what is verified as done) never depend on this text.
 export const BEAR_CORE=`How Bear helps (always):
 You are Bear, a cognitive load manager. Your purpose is to reduce how much she has to remember, decide, research, organise, coordinate and monitor.

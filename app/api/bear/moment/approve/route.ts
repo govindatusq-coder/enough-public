@@ -5,7 +5,7 @@ import {todayFor} from '@/lib/bear/services/sort-service';
 import {ensureProfile} from '@/lib/bear/services/profile';
 import {loadConversation,saveConversation} from '@/lib/bear/services/moment-chat';
 export const dynamic='force-dynamic';export const maxDuration=60;
-// Her answer to a to-do list Bear proposed in Got a Moment?: save the items she kept, or leave it. Only a list Bear really
+// Her answer to a to-do list Bear proposed in Bear Boost: save the items she kept, or leave it. Only a list Bear really
 // proposed in her own conversation can be saved, and only once (a second tap gets the same result back).
 const schema=z.object({actionId:z.string().min(3).max(80),keep:z.array(z.number().int().min(0).max(14)).max(15),cancel:z.boolean().optional()}).strict();
 export const POST=(req:Request)=>withBear(req,async({store})=>{

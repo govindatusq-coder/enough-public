@@ -8,7 +8,7 @@ import type {AIInference} from '@/lib/bear/domain/types';
 import {DAILY_MOMENT_CHAT,SITTING_GAP_MS,contextTurns,draftMessage,feelingsOnly,findResponsibilities,proposeTasks,loadConversation,momentSystemPrompt,momentTools,offlineReply,prepareHelp,saveConversation,sendSchema,suggestForTime,withSafety,type MomentAction,type MomentMessage} from '@/lib/bear/services/moment-chat';
 export const dynamic='force-dynamic';
 export const maxDuration=120;
-// Got a Moment?: the one entry point for talking to Bear. The conversation is private to the person (kept on her own
+// Bear Boost: the one entry point for talking to Bear. The conversation is private to the person (kept on her own
 // profile). Bear acts only through the tools in moment-chat.ts, each backed by the responsibility engine; nothing here sends,
 // books, buys or shares. The person's words are never written to logs.
 

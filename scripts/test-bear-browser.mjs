@@ -66,7 +66,7 @@ try{
   // A spotlight on each of the three places in the navigation bar, not the chat.
   await page.waitForSelector('.coach-spot');assert.match(await page.textContent('.coach-title'),/Drop Bear/);await page.waitForTimeout(450);await shot('07-coach-1');
   const onTab=await page.evaluate(()=>{const s=document.querySelector('.coach-spot').getBoundingClientRect(),t=document.querySelector('.bear-nav a[href="/bear/home"]:not(.nav-brand)').getBoundingClientRect();const cx=s.left+s.width/2,cy=s.top+s.height/2;return cx>t.left&&cx<t.right&&cy>t.top&&cy<t.bottom;});assert.ok(onTab,'the spotlight is on the Drop Bear tab');
-  await page.click('.coach button:has-text("Next")');assert.match(await page.textContent('.coach-title'),/Got a Moment/);await page.waitForTimeout(450);await shot('07-coach-2');
+  await page.click('.coach button:has-text("Next")');assert.match(await page.textContent('.coach-title'),/Bear Boost/);await page.waitForTimeout(450);await shot('07-coach-2');
   await page.click('.coach button:has-text("Next")');assert.match(await page.textContent('.coach-title'),/Bear Brain/);await page.waitForTimeout(450);await shot('07-coach-3');
   await page.click('.coach button:has-text("Got it")');await page.waitForFunction(()=>!document.querySelector('.coach')&&!location.search.includes('tour'));await page.goto(base+'/bear/overview');
  });

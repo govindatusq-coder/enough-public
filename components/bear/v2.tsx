@@ -1,5 +1,5 @@
 'use client';
-// Load Bear v2: pieces shared by the three screens (Drop Bear, Got a Moment?, Bear Brain).
+// Load Bear v2: pieces shared by the three screens (Drop Bear, Bear Boost, Bear Brain).
 import Link from 'next/link';
 import {Art} from '@/components/bear/art';
 
@@ -16,7 +16,7 @@ export const Icon={
  chevron:(s=18)=>svg(<path d="m9 6 6 6-6 6"/>,s,2.4),
  down:(s=18)=>svg(<path d="m6 9 6 6 6-6"/>,s,2.4),
 };
-// Header on Drop Bear and Got a Moment?: the Load Bear name, Mama Bear, and Settings (the only way to Settings).
+// Header on Drop Bear and Bear Boost: the Load Bear name, Mama Bear, and Settings (the only way to Settings).
 export function AppHeader(){
  return <div className="v2-top">
   <Link href="/bear/home" className="v2-logo" aria-label="Load Bear"><Art file="logo-header" alt="Load Bear" className="v2-logo-img"/></Link>

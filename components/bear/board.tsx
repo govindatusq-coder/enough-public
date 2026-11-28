@@ -243,7 +243,7 @@ export function MomentPicker({onDone,open,onToggle}:{onDone:(id:string,title:str
  return <section className="moment home-card" aria-label="When I have a moment">
   <button type="button" className="home-card-head" aria-expanded={open} onClick={onToggle}>
    <span className="home-card-icon moment-icon" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M10 2.5h4M12 2.5V6M18.5 6.5l1.5-1.5"/></svg></span>
-   <span className="home-card-text"><strong>Got a moment?</strong><span>Find something you can tackle now</span></span>
+   <span className="home-card-text"><strong>Bear Boost</strong><span>Find something you can tackle now</span></span>
    <span className={`home-chev${open?' up':''}`} aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>
   </button>
   {open&&<div className="moment-row">

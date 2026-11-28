@@ -1,4 +1,4 @@
-// Got a Moment?: the conversation's own rules: safety, the answer without the AI, the tools onto the responsibility engine
+// Bear Boost: the conversation's own rules: safety, the answer without the AI, the tools onto the responsibility engine
 // (prepare only, never send), the private conversation, and the bounded context Bear reads back.
 import test from 'node:test';
 import assert from 'node:assert/strict';

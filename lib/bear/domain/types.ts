@@ -91,7 +91,7 @@ export interface Profile extends Owned{
  // money and holidays. listStyle: which starting lists she chose. adaptive: what Bear has learned from her choices.
  temporal?:import('../adaptive/profile.ts').TemporalProfile|null;country?:'AU'|'CA'|'US'|'Other'|null;
  listStyle?:import('../adaptive/lists.ts').ListStyle|null;adaptive?:import('../adaptive/learning.ts').AdaptiveLearning|null;
- // Got a Moment? conversation: private to this person (never on anything shared with the household).
+ // Bear Boost conversation: private to this person (never on anything shared with the household).
  momentChat?:{messages:import('../services/moment-chat.ts').MomentMessage[];updatedAt:string}|null;
  // Need a Break: ideas she said "Sounds good" to (counts) and the ones shown lately (so they aren't repeated straight away).
  breakPrefs?:{liked:Record<string,number>;recent:{id:string;at:string}[]}|null;

@@ -1,5 +1,5 @@
 'use client';
-// Got a Moment?: three choices, nothing else. Take a break or celebrate your wins (an idea just for her, or My Wins), Talk It Out (Bear listens), Finish or share
+// Bear Boost: three choices, nothing else. Take a break or celebrate your wins (an idea just for her, or My Wins), Talk It Out (Bear listens), Finish or share
 // a task (one realistic thing from Bear Brain: do it with Bear's help, or ask someone). She chooses; Bear doesn't guess what
 // she needs. Sharing adds no extra question: the task card offers both, and "No time? Hand something off" skips the time.
 import {useCallback,useEffect,useRef,useState} from 'react';
@@ -40,7 +40,7 @@ export function MomentFlow(){
  const [busy,setBusy]=useState(false);const [msg,setMsg]=useState<string|null>(null);
  const [none,setNone]=useState(false);const [detail,setDetail]=useState<Detail|null>(null);const [sharing,setSharing]=useState<{id:string;title:string;due:string|null;dueTime:string|null}|null>(null);const [enjoy,setEnjoy]=useState(false);
  const sb=useShareBear();const restored=useRef(false);const pushed=useRef(0);const cur=s.stack[s.stack.length-1];
- // Coming back to Got a Moment? picks up where she was (except half-way through a task, which goes back to its suggestion).
+ // Coming back to Bear Boost picks up where she was (except half-way through a task, which goes back to its suggestion).
  useEffect(()=>{queueMicrotask(()=>{try{const v=JSON.parse(sessionStorage.getItem(KEY)||'null') as Saved|null;if(v&&Array.isArray(v.stack)&&v.stack.length){const st=v.stack.filter(x=>x!=='task_action'&&x!=='task_complete');setS({...v,stack:st.length?st:['home']});}}catch{/* fresh */}restored.current=true;});},[]);
  useEffect(()=>{if(restored.current)try{sessionStorage.setItem(KEY,JSON.stringify(s));}catch{/* no storage */}},[s]);
  const go=useCallback((to:GmState,patch:Partial<Saved>={})=>{setMsg(null);setS(v=>({...v,...patch,stack:to==='home'?['home']:[...v.stack.filter(x=>x!==to),to]}));try{history.pushState({gm:to},'');pushed.current++;}catch{/* fine */}window.scrollTo({top:0});},[]);
@@ -132,7 +132,7 @@ export function MomentFlow(){
     <h1 className="gm-card-title">{s.idea.title}</h1><p className="gm-card-line">{s.idea.line}</p>
     {enjoy?<p className="gm-enjoy" role="status">Enjoy it. Everything else can wait.</p>
      :<div className="gm-actions"><button type="button" className="btn coral wide" onClick={soundsGood}>Sounds good</button><button type="button" className="btn ghost wide" disabled={busy} onClick={()=>idea(s.minutes||5,s.seen)}>{busy?'One moment…':'Another idea'}</button><button type="button" className="btn quiet wide" onClick={()=>go('home')}>Not now</button></div>}
-    {enjoy&&<button type="button" className="btn quiet wide" onClick={()=>go('home')}>Back to Got a Moment</button>}
+    {enjoy&&<button type="button" className="btn quiet wide" onClick={()=>go('home')}>Back to Bear Boost</button>}
    </section>{note}</>}
 
   {cur==='task_time'&&<>{backBtn}<h1 className="gm-h">Let’s get something off your list.</h1><p className="gm-q">How much time have you got?</p>{times('task')}
@@ -190,7 +190,7 @@ export function MomentFlow(){
    {detail&&<p className="gm-crossed"><span className="crossed-off">{detail.title}</span></p>}
    <h1 className="gm-h">{s.reliefMsg||'One less thing on your mind.'}</h1>
    {s.askFeedback&&s.rec&&!thanked&&<button type="button" className="gm-handoff" onClick={()=>{tell('helped',s.rec!.taskId);setThanked(true);}}>That helped</button>}
-   <div className="gm-actions"><button type="button" className="btn ghost wide" disabled={busy} onClick={()=>task(s.minutes||10,s.done)}>Another task</button><button type="button" className="btn quiet wide" onClick={()=>go('home')}>Back to Got a Moment</button></div>
+   <div className="gm-actions"><button type="button" className="btn ghost wide" disabled={busy} onClick={()=>task(s.minutes||10,s.done)}>Another task</button><button type="button" className="btn quiet wide" onClick={()=>go('home')}>Back to Bear Boost</button></div>
    {note}
   </section>}
  </main>;

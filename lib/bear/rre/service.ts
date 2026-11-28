@@ -1,5 +1,5 @@
 // RRE part 6: storage. One record per responsibility (the task), with Bear's plan kept on it. Drop Bear creates them,
-// Got a Moment? asks the engine for one action, Bear Brain shows them all. All three read the same records.
+// Bear Boost asks the engine for one action, Bear Brain shows them all. All three read the same records.
 import {z} from 'zod';
 import {addDays,todayISO,zonedDateTime} from '../domain/dates.ts';
 import {areaLabels} from '../domain/labels.ts';
@@ -72,13 +72,13 @@ async function rows(store:BearStore,now:Date){
  return {ctx,rows:out};
 }
 
-// ---------- Got a moment? ----------
+// ---------- Bear Boost ----------
 export const momentSchema=z.object({minutes:z.number().int().min(1).max(240),exclude:z.array(z.string().uuid()).max(50).default([]),unsure:z.boolean().optional()}).strict();
 export async function recommend(store:BearStore,input:z.infer<typeof momentSchema>,now=new Date(),env:Record<string,string|undefined>=process.env){
  const {ctx,rows:r}=await rows(store,now);
  const items:Candidate[]=r.map(({task,plan})=>({taskId:task.id,title:task.title,listId:categoryOf(task,plan,ctx.lists,ctx.profile.listLearning,{profile:ctx.profile,status:statusOf(plan,task.status,ctx.today)}).id,plan,status:task.status,readiness:task.readiness??null,blockedByShare:task.sharedOut?.mode==='transfer'&&task.readiness==='waiting'}));
  // The adaptive engine: the same feasibility checks, then help suited to how her days work (if she has said), with the
- // decision kept for checking. With no answers it chooses exactly as Got a Moment always has.
+ // decision kept for checking. With no answers it chooses exactly as Bear Boost always has.
  const condition=conditionFor(env,!!ctx.profile.temporal);
  const attrs=new Map(r.map(({task,plan,status})=>[task.id,attributesOf(task,plan,{status})]));
  const hourLocal=Number(new Intl.DateTimeFormat('en-AU',{timeZone:ctx.tz,hour:'numeric',hourCycle:'h23'}).format(now));
@@ -107,7 +107,7 @@ export async function recommendShare(store:BearStore,input:z.infer<typeof shareP
  const {ctx,rows:r}=await rows(store,now);
  return {suggestion:chooseShare(r,{today:ctx.today,exclude:input.exclude})};
 }
-// What she did with a Got a Moment? suggestion, kept so we can see whether handing off helps: did she ask someone, ask for
+// What she did with a Bear Boost suggestion, kept so we can see whether handing off helps: did she ask someone, ask for
 // another, or say not now. Only the choice and the task id are kept; never her words.
 export const momentFeedbackSchema=z.object({taskId:z.string().uuid(),surface:z.enum(['finish','share']),response:z.enum(['do_it','ask_someone','another','not_now']),strategy:z.enum(['allocate','prioritise','synchronise','adapt','match','offload','protect']).optional()}).strict();
 export async function momentFeedback(store:BearStore,input:z.infer<typeof momentFeedbackSchema>,now=new Date()){

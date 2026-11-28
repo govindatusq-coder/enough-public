@@ -1,4 +1,4 @@
-// Got a Moment?, "No time? Hand something off": one task from Bear Brain that someone else could reasonably do.
+// Bear Boost, "No time? Hand something off": one task from Bear Brain that someone else could reasonably do.
 // A plain rule, not a judgement about her life: errands, buying things, chores, calls and bookings that are coming up, and
 // not anything personal, anything she has already started, anything already handed to someone, or bills and forms that need
 // her own logins. She always decides; if nothing fits, Bear says so rather than forcing one.

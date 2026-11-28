@@ -1,4 +1,4 @@
-// Got a Moment?'s Need a Break: one idea that fits the time, shaped by her PINS interests and her "Sounds good"s, never a
+// Bear Boost's Need a Break: one idea that fits the time, shaped by her PINS interests and her "Sounds good"s, never a
 // chore; "Another idea" is really different; no interests saved still works.
 import test from 'node:test';
 import assert from 'node:assert/strict';

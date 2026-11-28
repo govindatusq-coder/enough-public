@@ -25,7 +25,7 @@ Navigation has three tabs. Settings is the gear in each screen's header.
 - **When it's done,** a list shows everything Bear caught, with **Back to Drop Bear** and **See it in Bear Brain**.
 - **News appears here.** Due reminders, and answers from people she asked for help.
 
-### 2. Got a Moment?: three choices, nothing else
+### 2. Bear Boost: three choices, nothing else
 - **Need a Break.**
   - She picks 2, 5, 10 or 20 minutes (or longer) and gets one restful idea.
   - Ideas use her interests where saved, and are never chores or errands.
@@ -81,7 +81,7 @@ Navigation has three tabs. Settings is the gear in each screen's header.
 - The older detail (money and time Bear protected, pressure prevented, receipts) is one quiet link away.
 
 ### Finishing a task
-- Wherever she finishes a whole task (a Bear Brain row, a task's page, Got a Moment?), the title is crossed off and a small,
+- Wherever she finishes a whole task (a Bear Brain row, a task's page, Bear Boost), the title is crossed off and a small,
   one-second burst of confetti plays. Not for single steps. No sound. Skipped when the phone asks for reduced motion.
 
 ## Share Bear: ask someone for help
@@ -132,7 +132,7 @@ Navigation has three tabs. Settings is the gear in each screen's header.
   - A scheduled job runs every 15 minutes and also does Share Bear follow-up.
 - **AI.** Claude, called from the server only, with daily limits per person. AI is used for:
   - reading photos, PDFs and emails
-  - the Got a Moment? chat
+  - the Bear Boost chat
   - sorting text into tasks
   - gift ideas
   - optional web look-ups
@@ -145,7 +145,7 @@ Navigation has three tabs. Settings is the gear in each screen's header.
 
 ## Privacy and data
 - **Accounts and storage:** Supabase for sign-in and storage. Each person's data is protected by row-level security.
-- **The Got a Moment? conversation** stays private to her and is never shared with her household. Logs never contain her words.
+- **The Bear Boost conversation** stays private to her and is never shared with her household. Logs never contain her words.
 - **Share Bear recipients** see only the one task they were asked about, through a secure link that expires.
 - **Deleting her data** removes her tasks, conversations and Share Bear requests.
 

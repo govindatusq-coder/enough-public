@@ -816,7 +816,7 @@
 .bear .sort-row .b-main{display:grid;gap:1px;}
 .bear .sort-unsure{margin-top:12px;}
 
-/* ===================== Load Bear v2: Drop Bear · Got a Moment? · Bear Brain ===================== */
+/* ===================== Load Bear v2: Drop Bear · Bear Boost · Bear Brain ===================== */
 .bear .v2-screen{max-width:600px;}
 .bear-nav .bar.three{grid-template-columns:repeat(3,1fr);align-items:center;}
 .bear .v2-top{display:flex;align-items:center;justify-content:space-between;margin:2px 0 4px;}
@@ -847,7 +847,7 @@
 .bear .v2-ack{margin-top:14px;padding:16px;border-radius:20px;background:rgba(255,255,255,.75);border:1px solid rgba(16,42,67,.06);display:grid;gap:10px;justify-items:start;}
 .bear .v2-tip{font-weight:600;color:var(--navy);}
 .bear .v2-link{color:var(--coral);font-weight:600;}
-/* Got a Moment? */
+/* Bear Boost */
 .bear .v2-pills{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
 .bear .v2-pill{flex:1;min-width:72px;min-height:46px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.8);border:1.5px solid rgba(16,42,67,.12);color:var(--navy);font-weight:600;font-size:15px;}
 .bear .v2-pill.on{background:var(--coral);border-color:var(--coral);color:#fff;box-shadow:0 8px 18px -10px rgba(255,81,71,.9);}
@@ -924,11 +924,11 @@
 .bear .v2-filters .chip.on{background:var(--coral);border-color:var(--coral);color:#fff;}
 .bear .v2-fold .v2-plist{border-top:1px solid var(--line);margin-bottom:6px;}
 .bear .v2-bear-tile{inset:6% !important;width:88% !important;height:88% !important;object-fit:cover !important;border-radius:24%;box-shadow:0 14px 30px -16px rgba(16,42,67,.55),inset 0 0 0 1px rgba(255,255,255,.4);}
-/* The Load Bear logo at the top of Drop Bear and Got a Moment? */
+/* The Load Bear logo at the top of Drop Bear and Bear Boost */
 .bear .v2-logo{display:block;line-height:0;}
 .bear .v2-logo-img{display:block;height:54px;width:auto;}
 
-/* Full-screen, centred layout for Drop Bear and Got a Moment?: Mama Bear and the greeting centred at the top,
+/* Full-screen, centred layout for Drop Bear and Bear Boost: Mama Bear and the greeting centred at the top,
    bigger text, and the input box growing to fill the rest of the screen (no empty space left below). */
 .bear .v2-fill{display:flex;flex-direction:column;}
 .bear .v2-hero.stacked{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;margin-top:0;}
@@ -949,7 +949,7 @@
 .bear .v2-fill .drop-card .dump-hint,.bear .v2-fill .drop-card .dump-fail{grid-column:1/-1;font-size:16px;}
 .bear .v2-fill .dump-more{font-size:15px;align-self:center;}
 .bear .v2-fill .v2-ack{font-size:18px;}
-/* Got a Moment?: bigger buttons and text; "See All Tasks" sits at the bottom of the screen. */
+/* Bear Boost: bigger buttons and text; "See All Tasks" sits at the bottom of the screen. */
 .bear .v2-moment .v2-pills{margin-top:22px;gap:10px;}
 .bear .v2-moment .v2-pill{min-height:60px;font-size:18px;border-radius:999px;}
 .bear .v2-moment .v2-reco{padding:22px;gap:12px;margin-top:22px;}
@@ -1011,13 +1011,13 @@
 .bear .v2-drop-wrap{display:flex;flex-direction:column;flex:1 1 auto;}
 .bear .v2-drop-wrap[hidden]{display:none;}
 
-/* Got a Moment?: Calendar and Share Bear as chips above See All Tasks */
+/* Bear Boost: Calendar and Share Bear as chips above See All Tasks */
 .bear .v2-more-chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:auto;padding-top:22px;}
 .bear .v2-more-chip{display:inline-flex;align-items:center;gap:8px;min-height:52px;padding:0 20px;border-radius:999px;background:rgba(255,255,255,.85);border:1px solid rgba(16,42,67,.1);color:var(--navy);font-size:17px;font-weight:600;text-decoration:none;box-shadow:0 2px 8px rgba(16,42,67,.06);}
 .bear .v2-more-chip:active{transform:scale(.97);}
 .bear .v2-more-chips+.v2-see-all{margin-top:0;padding-top:14px;}
 
-/* ---------- Got a Moment?: conversation with Bear ---------- */
+/* ---------- Bear Boost: conversation with Bear ---------- */
 .bear .mc-idle{display:flex;flex-direction:column;}
 .bear .mc-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;margin-top:4px;}
 .bear .mc-hero .v2-bear{width:min(58vw,250px,30dvh);}
@@ -1152,7 +1152,7 @@
 .bear .hr-note{background:#FBE3E1;border-radius:12px;padding:10px 12px;margin:0;font-size:15px;}
 .bear .hr-foot{margin-top:auto;padding-top:16px;font-size:13px;color:#486581;text-align:center;}
 
-/* ---------- Got a Moment?: three choices ---------- */
+/* ---------- Bear Boost: three choices ---------- */
 .bear .gm{display:flex;flex-direction:column;}
 .bear .gm-title{font-family:var(--font-archivo),system-ui,sans-serif;font-size:clamp(30px,8.6vw,38px);color:var(--navy);text-align:center;margin:4px 0 0;line-height:1.1;}
 .bear .gm-bear{align-self:center;width:min(40vw,170px,22dvh);margin:10px 0 2px;}
@@ -1199,7 +1199,7 @@
 @keyframes gm-draw{to{stroke-dashoffset:0;}}
 @media (prefers-reduced-motion:reduce){.bear .gm-tick circle,.bear .gm-tick path{animation:none;stroke-dashoffset:0;}.bear .gm-choice{transition:none;}}
 @media (max-height:700px){.bear .gm-bear{width:min(30vw,120px,17dvh);margin:4px 0 0;}.bear .gm-headline{margin:4px 0 12px;}.bear .gm-choice{min-height:72px;padding:10px 14px;}}
-/* Got a Moment?: Finish or share a task. "Let's do it" and "Ask someone" side by side, same size; the hand-off link. */
+/* Bear Boost: Finish or share a task. "Let's do it" and "Ask someone" side by side, same size; the hand-off link. */
 .bear .btn.coral-line{background:#fff;color:var(--coral);box-shadow:inset 0 0 0 2px var(--coral);}
 .bear .gm-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-top:6px;}
 .bear .gm-pair .btn{min-height:54px;justify-content:center;font-size:17px;padding-left:8px;padding-right:8px;}

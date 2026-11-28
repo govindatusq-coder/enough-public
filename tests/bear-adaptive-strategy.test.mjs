@@ -1,4 +1,4 @@
-// Adaptive Responsibility Engine, strategy selection: identical to Got a Moment's own choice with no profile; with one,
+// Adaptive Responsibility Engine, strategy selection: identical to Bear Boost's own choice with no profile; with one,
 // the window allows for getting started and interruptions, business hours and readiness are respected, what Bear can
 // prepare or hand on is favoured for those with little control, nothing-fits offers a useful alternative or a break.
 import test from 'node:test';
@@ -27,7 +27,7 @@ test('seven strategies, versioned weights blended by profile, a window that allo
  assert.ok(effectiveWindow(10,false,scoreProfile({control:'depends_others'}))<effectiveWindow(10,false,scoreProfile({control:'fixed_routine'})),'less predictable days leave more room');
  assert.equal(effectiveWindow(30,true,null),5,'not sure: a small step');
 });
-test('no answers: exactly the choice Got a Moment always made',async()=>{
+test('no answers: exactly the choice Bear Boost always made',async()=>{
  const s=await person(null);await unload(s,null,{text:'Call the dentist to book a check-up\nReply to the school email about camp',via:'text'},TUE_LUNCH);
  const r=await ask(s,10,TUE_LUNCH);assert.equal(r.adaptive,false);assert.ok(r.recommendation);assert.ok(r.recommendation.strategy);assert.ok(r.recommendation.primary.label);
 });

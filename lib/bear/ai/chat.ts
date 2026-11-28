@@ -13,7 +13,7 @@ export function describeError(e:unknown):string{
  if(e instanceof Error)return `${e.name}: ${e.message.slice(0,200)}`;return 'unknown error';
 }
 export type ToolRunner=(name:string,input:unknown)=>Promise<string>;
-// `system` replaces the Drop Bear chat instructions (Got a Moment? brings its own); `web` false leaves out web search.
+// `system` replaces the Drop Bear chat instructions (Bear Boost brings its own); `web` false leaves out web search.
 export function chatFromEnv(tools:Anthropic.Beta.BetaToolUnion[],opts:{system?:string;web?:boolean}={}):((history:ChatTurn[],ctx:ChatContext,run:ToolRunner)=>Promise<ChatResult>)|null{
  const key=process.env.ANTHROPIC_API_KEY;if(!key)return null;
  const model=process.env.BEAR_MODEL||'claude-opus-5-5';const web=process.env.BEAR_WEB_LOOKUP!=='off'&&opts.web!==false;

@@ -1,10 +1,10 @@
-# Got a Moment? as a conversation with Bear
+# Bear Boost as a conversation with Bear
 
 Status: built and tested locally (unit tests and browser walkthroughs). The live AI conversation has not been checked
 on production yet.
 
 ## What the person sees
-- **Opening:** the Load Bear logo, Settings, Mama Bear, "Got a moment?", "How's your day going?", and one box ("Whatever's
+- **Opening:** the Load Bear logo, Settings, Mama Bear, "Bear Boost", "How's your day going?", and one box ("Whatever's
   on your mind…") with a microphone, an optional "read replies aloud" switch and Send. No chips, timers, moods or cards.
 - **First message:** the same screen turns into a chat (no route change). The header shows a small Mama Bear, "Bear",
   "Here with you", Back and the read-aloud switch. Her messages are pale blue on the right; Bear's are warm white on the

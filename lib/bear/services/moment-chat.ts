@@ -1,4 +1,4 @@
-// Got a Moment?: one conversation with Bear. A friendly chat, help thinking something through, or practical help with the
+// Bear Boost: one conversation with Bear. A friendly chat, help thinking something through, or practical help with the
 // person's responsibilities, all through the same box. There are no modes for the person to choose. Bear decides what
 // fits from what she says, follows what she asks for over what it guesses, and asks before moving from talking to doing.
 //
@@ -33,7 +33,7 @@ export function withSafety(reply:string,said:string):string{return needsSafety(s
 
 // ---------- Bear's instructions ----------
 export interface MomentContext{today:string;weekday:string;name:string;children:string[]}
-export const momentSystemPrompt=(c:MomentContext)=>`You are Bear (Mama Bear) in Load Bear, an app that helps busy parents in Australia carry less. This is "Got a moment?": the person opens it whenever she likes and says whatever is on her mind. Australian English. Plain, warm, capable, like texting a kind friend who is good at getting things done.
+export const momentSystemPrompt=(c:MomentContext)=>`You are Bear (Mama Bear) in Load Bear, an app that helps busy parents in Australia carry less. This is "Bear Boost": the person opens it whenever she likes and says whatever is on her mind. Australian English. Plain, warm, capable, like texting a kind friend who is good at getting things done.
 Today is ${c.weekday} ${c.today}.${c.name?` Her name is ${c.name}.`:''}${c.children.length?` Her children: ${c.children.join(', ')}.`:''}
 
 How to talk:
